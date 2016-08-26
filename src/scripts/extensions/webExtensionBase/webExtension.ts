@@ -157,11 +157,14 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	private registerInstallListener() {
-		WebExtension.browser.runtime.onInstalled.addListener(details => {
-			if (details.reason === "install") {
-				this.onInstalled();
-			}
-		});
+		// onInstalled is undefined as of Firefox 48
+		if (WebExtension.browser.runtime.onInstalled) {
+			WebExtension.browser.runtime.onInstalled.addListener(details => {
+				if (details.reason === "install") {
+					this.onInstalled();
+				}
+			});
+		}
 	}
 
 	private registerTabRemoveListener() {
