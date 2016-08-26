@@ -1073,22 +1073,6 @@ gulp.task("runTests", function() {
 	return qunit(PATHS.SERVERROOT + "tests/index.html");
 });
 
-gulp.task("run", function() {
-	return gulp.src("")
-		.pipe(open({ uri: "https://localhost:8043/" }));
-});
-
-////////////////////////////////////////
-// SERVER
-////////////////////////////////////////
-gulp.task("start", function() {
-	forever.startDaemon("serverRoot/server.js");
-});
-
-gulp.task("stop", function() {
-	forever.stopAll();
-});
-
 ////////////////////////////////////////
 // WATCH TASKS
 ////////////////////////////////////////
