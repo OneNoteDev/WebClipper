@@ -1,0 +1,8 @@
+.vs
+build
+node_modules
+serverRoot/root
+target
+typings
+*.user
+src/scripts/**/*_internal.*

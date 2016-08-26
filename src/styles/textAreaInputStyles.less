@@ -1,0 +1,48 @@
+/*---------------------------------------------------------*
+	Styles used to manage the shared textArea input boxes.
+*---------------------------------------------------------*/
+
+@TextAreaBorderThickness: 1px;
+@TextAreaPadding: 2px;
+
+.textAreaInput, .textAreaInputMirror {
+	font-family: @Calibri;
+	font-size: inherit;
+	line-height: inherit;
+	background-color: @PreviewHeaderContainerBackground;
+	border: @TextAreaBorderThickness solid transparent;
+	margin: 0px;
+	outline: 0px;
+	padding: @TextAreaPadding;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	box-sizing: border-box;
+
+	&:hover {
+		border: @TextAreaBorderThickness solid @PreviewHeaderInputHoverColor;
+	}
+
+	&:focus {
+		border: @TextAreaBorderThickness solid @PreviewHeaderInputFocusColor;
+	}
+}
+
+.textAreaInput {
+	position: absolute;
+	overflow: hidden;
+	height: 100%;
+	width: 100%;
+	top: 0px;
+	left: 0px;
+	resize: none;
+}
+
+.textAreaInputMirror {
+	display: block;
+	margin-bottom: 0px;
+	margin-top: 0px;
+	visibility: hidden;
+}

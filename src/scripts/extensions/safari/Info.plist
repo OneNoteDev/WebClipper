@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Author</key>
+	<string>Microsoft Corporation</string>
+	<key>Builder Version</key>
+	<string>11601.7.7</string>
+	<key>CFBundleDisplayName</key>
+	<string>OneNote Web Clipper</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.microsoft.onenote.clipper</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>3.2</string>
+	<key>CFBundleVersion</key>
+	<string>3.2.4</string>
+	<key>Chrome</key>
+	<dict>
+		<key>Global Page</key>
+		<string>safariExtension.html</string>
+		<key>Toolbar Items</key>
+		<array>
+			<dict>
+				<key>Command</key>
+				<string>ClipperInvoker</string>
+				<key>Identifier</key>
+				<string>Clipper</string>
+				<key>Image</key>
+				<string>icon-16-alpha.png</string>
+				<key>Include By Default</key>
+				<true/>
+				<key>Label</key>
+				<string>OneNote Web Clipper</string>
+			</dict>
+		</array>
+	</dict>
+	<key>Content</key>
+	<dict>
+		<key>Scripts</key>
+		<dict>
+			<key>Start</key>
+			<array>
+				<string>safariDebugLoggingInject.js</string>
+				<string>safariInject.js</string>
+				<string>safariPageNavInject.js</string>
+			</array>
+		</dict>
+	</dict>
+	<key>Description</key>
+	<string>Microsoft OneNote Web Clipper</string>
+	<key>DeveloperIdentifier</key>
+	<string>UBF8T346G9</string>
+	<key>ExtensionInfoDictionaryVersion</key>
+	<string>1.0</string>
+	<key>Permissions</key>
+	<dict>
+		<key>Website Access</key>
+		<dict>
+			<key>Include Secure Pages</key>
+			<true/>
+			<key>Level</key>
+			<string>All</string>
+		</dict>
+	</dict>
+	<key>Update Manifest URL</key>
+	<string>https://www.onenote.com/extensions/onenoteclipper.plist</string>
+	<key>Website</key>
+	<string>https://www.onenote.com/clipper</string>
+</dict>
+</plist>

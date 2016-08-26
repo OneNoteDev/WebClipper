@@ -1,0 +1,39 @@
+import {Constants} from "../../constants";
+
+import {Localization} from "../../localization/localization";
+
+import {ClipMode} from "../clipMode";
+import {ClipperStateProp} from "../clipperState";
+import {ComponentBase} from "../componentBase";
+
+class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
+	handleCancelButton() {
+		this.props.clipperState.reset();
+	}
+
+	render() {
+		return (
+			<div id={Constants.Ids.regionInstructionsContainer}>
+				<div className="regionClipPadding">
+					<div className="messageLabelContainer">
+						<span className="informationLabelFont messageLabel"
+							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+							{Localization.getLocalizedString("WebClipper.Label.DragAndRelease")}
+						</span>
+					</div>
+					<a id={Constants.Ids.regionClipCancelButton} {...this.enableInvoke(this.handleCancelButton, 70) }>
+						<div className="wideButtonContainer">
+							<span className="wideButtonFont wideActionButton"
+								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
+								{Localization.getLocalizedString("WebClipper.Action.Cancel") }
+							</span>
+						</div>
+					</a>
+				</div>
+			</div>
+		);
+	}
+}
+
+let component = RegionSelectingPanelClass.componentize();
+export {component as RegionSelectingPanel};

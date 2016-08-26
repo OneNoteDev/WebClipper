@@ -1,0 +1,698 @@
+/// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts" />
+/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
+
+import {AuthType, UpdateReason, UserInfo} from "../userInfo";
+import {ClientInfo} from "../clientInfo";
+import {ClientType} from "../clientType";
+import {Constants} from "../constants";
+import {PageInfo} from "../pageInfo";
+import {Polyfills} from "../polyfills";
+import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
+import {Settings} from "../settings";
+import {Utils} from "../utils";
+
+import {TooltipType} from "./tooltipType";
+
+import {Communicator} from "../communicator/communicator";
+import {IFrameMessageHandler} from "../communicator/iframeMessageHandler";
+import {InlineMessageHandler} from "../communicator/inlineMessageHandler";
+import {SmartValue} from "../communicator/smartValue";
+
+import {AugmentationHelper, AugmentationModel} from "../contentCapture/augmentationHelper";
+import {BookmarkError, BookmarkHelper, BookmarkResult} from "../contentCapture/bookmarkHelper";
+import {FullPageScreenshotHelper} from "../contentCapture/fullPageScreenshotHelper";
+import {PdfScreenshotHelper, PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
+
+import {DomUtils} from "../domParsers/domUtils";
+import {VideoUtils} from "../domParsers/videoUtils";
+
+import {ClipperInjectOptions} from "../extensions/clipperInject";
+import {InvokeOptions, InvokeMode} from "../extensions/invokeOptions";
+import {StorageBase, TimeStampedData} from "../extensions/storageBase";
+
+import {InlineExtension} from "../extensions/bookmarklet/inlineExtension";
+
+import {Localization} from "../localization/localization";
+
+import * as Log from "../logging/log";
+import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
+import {Logger} from "../logging/logger";
+
+import {ClipMode} from "./clipMode";
+import {Clipper} from "./frontEndGlobals";
+import {ClipperState, ClipperStateHelperFunctions} from "./clipperState";
+import {ComponentBase} from "./componentBase";
+import {MainController} from "./mainController";
+import {OneNoteApiUtils} from "./oneNoteApiUtils";
+import {PreviewViewer} from "./previewViewer";
+import {RegionSelector} from "./regionSelector";
+import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
+import {Status} from "./status";
+
+class ClipperClass extends ComponentBase<ClipperState, {}> {
+	private isFullScreen = new SmartValue<boolean>(false);
+
+	constructor(props: {}) {
+		super(props);
+
+		this.initializeCommunicators();
+		this.initializeSmartValues();
+	}
+
+	getInitialState(): ClipperState {
+		return {
+			uiExpanded: true,
+			currentMode: new SmartValue<ClipMode>(this.getDefaultClipMode()),
+
+			userResult: { status: Status.NotStarted } ,
+			fullPageResult: { status: Status.NotStarted },
+			pdfResult: { status: Status.NotStarted },
+			regionResult: { status: Status.NotStarted, data: [] },
+			augmentationResult: { status: Status.NotStarted },
+			oneNoteApiResult: { status: Status.NotStarted },
+			bookmarkResult: { status: Status.NotStarted },
+
+			setState: (partialState: ClipperState) => {
+				this.setState(partialState);
+				this.isFullScreen.set(ClipperClass.shouldShowPreviewViewer(this.state) || ClipperClass.shouldShowRegionSelector(this.state));
+			},
+
+			previewGlobalInfo: {
+				annotation: "",
+				fontSize: parseInt(Localization.getLocalizedString("WebClipper.FontSize.Preview.SansSerifDefault"), 10 /* radix */),
+				highlighterEnabled: false,
+				serif: false
+			},
+			augmentationPreviewInfo: {},
+			selectionPreviewInfo: {},
+
+			reset: () => {
+				this.state.setState(this.getResetState());
+			}
+		};
+	}
+
+	private getResetState(): ClipperState {
+		return {
+			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
+			oneNoteApiResult: { status: Status.NotStarted }
+		};
+	}
+
+	private initializeInjectCommunicator(pageInfo: SmartValue<PageInfo>, clientInfo: SmartValue<ClientInfo>) {
+		// Clear the inject no-op tracker
+		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.noOpTracker, (trackerStartTime: number) => {
+			let clearNoOpTrackerEvent = new Log.Event.BaseEvent(Log.Event.Label.ClearNoOpTracker);
+			clearNoOpTrackerEvent.setCustomProperty(Log.PropertyName.Custom.TimeToClearNoOpTracker, new Date().getTime() - trackerStartTime);
+			clearNoOpTrackerEvent.setCustomProperty(Log.PropertyName.Custom.Channel, Constants.CommunicationChannels.injectedAndUi);
+			Clipper.logger.logEvent(clearNoOpTrackerEvent);
+
+			return Promise.resolve();
+		});
+
+		// Register functions for Inject
+		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.showRefreshClipperMessage, (errorMessage: string) => {
+			if (!this.state.badState) {
+				Clipper.logger.logFailure(Log.Failure.Label.OrphanedWebClippersDueToExtensionRefresh, Log.Failure.Type.Expected,
+					{ error: errorMessage });
+				this.state.setState({
+					badState: true
+				});
+			}
+		});
+
+		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.toggleClipper, () => {
+			this.state.setState({ uiExpanded: !this.state.uiExpanded });
+		});
+
+		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.onSpaNavigate, () => {
+			// This could have been called when the UI is already toggled off
+			if (this.state.uiExpanded) {
+				let hideClipperDueToSpaNavigateEvent = new Log.Event.BaseEvent(Log.Event.Label.HideClipperDueToSpaNavigate);
+				Clipper.logger.logEvent(hideClipperDueToSpaNavigateEvent);
+				this.state.setState({ uiExpanded: false });
+			};
+		});
+
+		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.setInvokeOptions, (options: InvokeOptions) => {
+			this.setInvokeOptions(options);
+		});
+
+		// Register smartValues for Inject
+		Clipper.injectCommunicator.broadcastAcrossCommunicator(this.isFullScreen, Constants.SmartValueKeys.isFullScreen);
+
+		Clipper.injectCommunicator.subscribeAcrossCommunicator(pageInfo, Constants.SmartValueKeys.pageInfo, (updatedPageInfo: PageInfo) => {
+			if (updatedPageInfo) {
+				let newPreviewGlobalInfo = Utils.createUpdatedObject(this.state.previewGlobalInfo, {
+					previewTitleText: updatedPageInfo.contentTitle
+				} as PreviewGlobalInfo);
+
+				this.state.setState({
+					pageInfo: updatedPageInfo,
+					previewGlobalInfo: newPreviewGlobalInfo
+				});
+
+				this.captureFullScreenshotContent();
+				this.captureAugmentedContent();
+				this.captureBookmarkContent();
+
+				Clipper.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[updatedPageInfo.contentType]);
+				Clipper.logger.setContextProperty(Log.Context.Custom.InvokeHostname, Utils.getHostname(updatedPageInfo.rawUrl));
+				Clipper.logger.setContextProperty(Log.Context.Custom.PageLanguage, updatedPageInfo.contentLocale);
+			}
+		});
+
+		Clipper.injectCommunicator.setErrorHandler((e: Error) => {
+			Log.ErrorUtils.handleCommunicatorError(Constants.CommunicationChannels.injectedAndUi, e, clientInfo);
+		});
+	}
+
+	private captureFullScreenshotContent() {
+		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			this.capturePdfScreenshotContent();
+		} else {
+			this.captureFullPageScreenshotContent();
+		}
+	}
+
+	private capturePdfScreenshotContent() {
+		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
+			// The pdf is local, and therefore we cannot get its binary
+			this.state.setState({
+				pdfResult: {
+					data: new SmartValue<PdfScreenshotResult>({ failureMessage: Localization.getLocalizedString("WebClipper.Preview.UnableToClipLocalFile") }),
+					status: Status.Failed
+				}
+			});
+		} else {
+			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
+			PdfScreenshotHelper.getPdfData(this.state.pageInfo.rawUrl).then((result) => {
+				// We can't trigger subscribed callbacks using setState so we still have to call set()
+				this.state.pdfResult.data.set(result);
+				this.state.setState({
+					pdfResult: {
+						data: this.state.pdfResult.data,
+						status: Status.Succeeded
+					}
+				});
+			}, () => {
+				this.state.pdfResult.data.set({
+					failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+				});
+				this.state.setState({
+					pdfResult: {
+						data: this.state.pdfResult.data,
+						status: Status.Failed
+					}
+				});
+				// The clip action might be waiting on the result, so do this to consistently trigger its callback
+				this.state.pdfResult.data.forceUpdate();
+			});
+		}
+	}
+
+	private captureFullPageScreenshotContent() {
+		this.state.setState({ fullPageResult: { status: Status.InProgress } });
+
+		FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData).then((result) => {
+			this.state.setState({ fullPageResult: { data: result, status: Status.Succeeded } });
+		}, () => {
+			this.state.setState({
+				fullPageResult: {
+					data: {
+						failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+					},
+					status: Status.Failed
+				}
+			});
+		});
+	}
+
+	private captureAugmentedContent() {
+		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			this.state.setState({
+				augmentationResult: {
+					data: {
+						failureMessage: Localization.getLocalizedString("WebClipper.Preview.NoContentFound")
+					},
+					status: Status.Failed
+				}
+			});
+		} else {
+			this.state.setState({ augmentationResult: { status: Status.InProgress } });
+
+			let pageInfo = this.state.pageInfo;
+
+			let augmentationUrl = pageInfo.canonicalUrl;
+			if (pageInfo.rawUrl.indexOf("youtube.com") > -1 || pageInfo.rawUrl.indexOf("vimeo.com") > -1) {
+				augmentationUrl = pageInfo.rawUrl;
+			}
+
+			AugmentationHelper.augmentPage(augmentationUrl, pageInfo.contentLocale, pageInfo.contentData).then((result) => {
+				this.state.setState({
+					augmentationResult: { data: result, status: Status.Succeeded },
+					augmentationPreviewInfo: { previewBodyHtml: result.ContentInHtml }
+				});
+			}, () => {
+				this.state.setState({
+					augmentationResult: {
+						data: {
+							failureMessage: Localization.getLocalizedString("WebClipper.Preview.AugmentationModeGenericError")
+						},
+						status: Status.Failed
+					}
+				});
+			});
+		}
+	}
+
+	private captureBookmarkContent() {
+		this.state.setState({ bookmarkResult: { status: Status.InProgress } });
+
+		let pageInfo = this.state.pageInfo;
+		let pageUrl = pageInfo.rawUrl;
+		let pageTitle = pageInfo.contentTitle;
+
+		let doc = DomUtils.getDocumentFromDomString(pageInfo.contentData);
+
+		let metadataElements: Element[] = BookmarkHelper.getElementsByTagName(doc, BookmarkHelper.metadataTagNames);
+
+		let imageElements: HTMLImageElement[] = BookmarkHelper.getElementsByTagName(doc.body, [DomUtils.Tags.img]) as HTMLImageElement[];
+
+		// because we are cleaning the document in order to get the cleanest text possible in our description,
+		// make sure this is the last operation being performed on the document
+		let textElements: Text[] = [];
+		try {
+			textElements = BookmarkHelper.getNonWhiteSpaceTextElements(doc, true /* cleanDoc */);
+		} catch (e) {
+			// IE11 has a weird issue where walk.nextNode() returns a non-descript exception, so we can't use our fallback logic
+		}
+
+		BookmarkHelper.bookmarkPage(pageUrl, pageTitle, metadataElements, true /* allowFallback */, imageElements, textElements).then((result: BookmarkResult) => {
+			this.state.setState({
+				bookmarkResult: { data: result, status: Status.Succeeded }
+			});
+		}, (error: BookmarkError) => {
+			this.state.setState({
+				bookmarkResult: {
+					data: {
+						url: error.url,
+						title: pageTitle,
+						description: error.description,
+						thumbnailSrc: error.thumbnailSrc,
+						failureMessage: Localization.getLocalizedString("WebClipper.Preview.BookmarkModeGenericError")
+					},
+					status: Status.Failed
+				}
+			});
+		});
+	}
+
+	private setInvokeOptions(options: InvokeOptions) {
+		this.setState({	invokeOptions: options });
+
+		// This needs to happen after the invokeOptions set as it is reliant on that order
+		this.setState({	currentMode: this.state.currentMode.set(this.getDefaultClipMode()) });
+
+		// We assume that invokeDataForMode is always a non-undefined value where it makes sense
+		// and that it's the background's responsibility to ensure that is the case
+		switch (options.invokeMode) {
+			case InvokeMode.ContextImage:
+				// invokeDataForMode is the src url
+				this.setState({
+					regionResult: {
+						data: [options.invokeDataForMode],
+						status: Status.Succeeded
+					}
+				});
+				break;
+			case InvokeMode.ContextTextSelection:
+				// invokeDataForMode is scrubbed selected html as a string
+				this.state.setState({
+					selectionPreviewInfo: {
+						previewBodyHtml: options.invokeDataForMode,
+					}
+				});
+				break;
+			default:
+				break;
+		}
+	}
+
+	private initializeExtensionCommunicator(clientInfo: SmartValue<ClientInfo>) {
+		// Clear the extension no-op tracker
+		Clipper.extensionCommunicator.registerFunction(Constants.FunctionKeys.noOpTracker, (trackerStartTime: number) => {
+			let clearNoOpTrackerEvent = new Log.Event.BaseEvent(Log.Event.Label.ClearNoOpTracker);
+			clearNoOpTrackerEvent.setCustomProperty(Log.PropertyName.Custom.TimeToClearNoOpTracker, new Date().getTime() - trackerStartTime);
+			clearNoOpTrackerEvent.setCustomProperty(Log.PropertyName.Custom.Channel, Constants.CommunicationChannels.extensionAndUi);
+			Clipper.logger.logEvent(clearNoOpTrackerEvent);
+
+			return Promise.resolve();
+		});
+
+		Clipper.extensionCommunicator.registerFunction(Constants.FunctionKeys.createHiddenIFrame, (url: string) => {
+			Utils.appendHiddenIframeToDocument(url);
+		});
+
+		let userInfoUpdateCb = (updatedUser: UserInfo) => {
+			if (updatedUser) {
+				let userInfoUpdatedEvent = new Log.Event.BaseEvent(Log.Event.Label.UserInfoUpdated);
+				userInfoUpdatedEvent.setCustomProperty(Log.PropertyName.Custom.UserUpdateReason, UpdateReason[updatedUser.updateReason]);
+				userInfoUpdatedEvent.setCustomProperty(Log.PropertyName.Custom.LastUpdated, new Date(updatedUser.lastUpdated).toUTCString());
+				Clipper.logger.logEvent(userInfoUpdatedEvent);
+			}
+
+			if (updatedUser && updatedUser.user) {
+				let timeStampedData: TimeStampedData = {
+					data: updatedUser.user,
+					lastUpdated: updatedUser.lastUpdated
+				};
+
+				// The user SV should never be set with expired user information
+				let tokenHasExpiredForLoggedInUser = StorageBase.valueHasExpired(timeStampedData, (updatedUser.user.accessTokenExpiration * 1000) - 180000);
+				if (tokenHasExpiredForLoggedInUser) {
+					Clipper.logger.logFailure(Log.Failure.Label.UserSetWithInvalidExpiredData, Log.Failure.Type.Unexpected);
+				}
+
+				this.state.setState({ userResult: { status: Status.Succeeded, data: updatedUser } });
+				Clipper.logger.setContextProperty(Log.Context.Custom.AuthType, updatedUser.user.authType);
+				Clipper.logger.setContextProperty(Log.Context.Custom.UserInfoId, updatedUser.user.cid);
+			} else {
+				this.state.setState({ userResult: { status: Status.Failed, data: updatedUser } });
+			}
+		};
+
+		this.state.setState({ userResult: { status: Status.InProgress } });
+		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.getInitialUser, {
+			callback: (freshInitialUser: UserInfo) => {
+				if (freshInitialUser && freshInitialUser.user) {
+					Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthAlreadySignedIn);
+				} else if (!freshInitialUser) {
+					userInfoUpdateCb(freshInitialUser);
+				}
+				Clipper.extensionCommunicator.subscribeAcrossCommunicator(new SmartValue<UserInfo>(), Constants.SmartValueKeys.user, (updatedUser: UserInfo) => {
+					userInfoUpdateCb(updatedUser);
+				});
+			}
+		});
+
+		this.state.setState({ fetchLocStringStatus: Status.InProgress });
+		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.clipperStrings, {
+			callback: (data: Object) => {
+				if (data) {
+					Localization.setLocalizedStrings(data);
+				}
+				this.state.setState({ fetchLocStringStatus: Status.Succeeded });
+			}
+		});
+
+		Clipper.extensionCommunicator.subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {
+			if (updatedClientInfo) {
+				this.state.setState({
+					clientInfo: updatedClientInfo
+				});
+			}
+		});
+
+		Clipper.extensionCommunicator.setErrorHandler((e: Error) => {
+			Log.ErrorUtils.handleCommunicatorError(Constants.CommunicationChannels.extensionAndUi, e, clientInfo);
+		});
+	}
+
+	private initializeCommunicators() {
+		let pageInfo = new SmartValue<PageInfo>();
+		let clientInfo = new SmartValue<ClientInfo>();
+
+		Clipper.injectCommunicator = new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.injectedAndUi);
+
+		// Check the options passed in to determine what kind of Communicator we need to talk to the background task
+		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.setInjectOptions, (options: ClipperInjectOptions) => {
+			this.setState({ injectOptions: options });
+
+			if (this.state.injectOptions.useInlineBackgroundWorker) {
+				let background = new InlineExtension();
+				let backgroundMessageHandler = background.getInlineMessageHandler();
+				let uiMessageHandler = new InlineMessageHandler(backgroundMessageHandler);
+				backgroundMessageHandler.setOtherSide(uiMessageHandler);
+				Clipper.extensionCommunicator = new Communicator(uiMessageHandler, Constants.CommunicationChannels.extensionAndUi);
+			} else {
+				Clipper.extensionCommunicator = new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.extensionAndUi);
+			}
+			this.initializeExtensionCommunicator(clientInfo);
+			Clipper.extensionCommunicator.subscribeAcrossCommunicator(Clipper.sessionId, Constants.SmartValueKeys.sessionId);
+			Clipper.logger = new CommunicatorLoggerPure(Clipper.extensionCommunicator);
+		});
+
+		this.initializeInjectCommunicator(pageInfo, clientInfo);
+
+		// When tabbing from outside the iframe, we want to set focus to the lowest tabindex element in our iframe
+		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.tabToLowestIndexedElement, () => {
+			let tabbables = document.querySelectorAll("[tabindex]");
+			let lowestTabIndexElement: HTMLElement;
+			if (tabbables.length > 0) {
+				for (let i = 0; i < tabbables.length; i++) {
+					let tabbable = tabbables[i] as HTMLElement;
+					if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
+						lowestTabIndexElement = tabbable;
+					}
+				}
+
+				lowestTabIndexElement.focus();
+			}
+		});
+
+		clientInfo.subscribe((updatedClientInfo) => {
+			if (updatedClientInfo) {
+				// The default Clip mode now also depends on clientInfo, in addition to pageInfo
+				// TODO: Don't do this if they already have a mode chosen (once we are updating the pageInfo more object more often)
+				this.state.setState({ currentMode: this.state.currentMode.set(this.getDefaultClipMode()) });
+			}
+		});
+	}
+
+	private initializeSmartValues() {
+		this.state.currentMode.subscribe((newMode: ClipMode) => {
+			switch (newMode) {
+				case ClipMode.FullPage:
+				case ClipMode.Augmentation:
+					Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged);
+					break;
+				default:
+					break;
+			}
+		}, { callOnSubscribe: false });
+	}
+
+	private getDefaultClipMode(): ClipMode {
+		if (this.state && this.state.invokeOptions) {
+			switch (this.state.invokeOptions.invokeMode) {
+				case InvokeMode.ContextImage:
+					// We don't want to be stuck in region mode if there are 0 images
+					if (this.state.regionResult.data.length > 0) {
+						return ClipMode.Region;
+					}
+					break;
+				case InvokeMode.ContextTextSelection:
+					return ClipMode.Selection;
+				default:
+					break;
+			}
+		}
+
+		if (this.state && this.state.pageInfo && Utils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
+			return ClipMode.Augmentation;
+		} else {
+			return ClipMode.FullPage;
+		}
+	}
+
+	private updateFrameHeight(newContainerHeight: number) {
+		Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.updateFrameHeight, { param: newContainerHeight });
+	}
+
+	private handleSignIn(authType: AuthType) {
+		Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthAttempted);
+		let handleSignInEvent = new Log.Event.PromiseEvent(Log.Event.Label.HandleSignInEvent);
+
+		this.setState({ userResult: { status: Status.InProgress } });
+		type ErrorObject = { correlationId?: string, error: string, errorDescription: string };
+		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.signInUser, { param: authType, callback: (data: UserInfo | ErrorObject) => {
+			// For cleaner referencing
+			let updatedUser = data as UserInfo;
+			let errorObject = data as ErrorObject;
+
+			// Unexpected errors
+			let errorPrefix = AuthType[authType] + "; ";
+			let error: string;
+			if (!updatedUser) {
+				error = errorPrefix + "The " + Constants.FunctionKeys.signInUser + " remote function incorrectly returned an undefined object";
+			} else if (errorObject.error || errorObject.errorDescription) {
+				// Something went wrong on the auth server
+				error = errorPrefix + errorObject.error + ": " + errorObject.errorDescription;
+				handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, errorObject.correlationId);
+			}
+
+			if (error) {
+				handleSignInEvent.setStatus(Log.Status.Failed);
+				handleSignInEvent.setFailureInfo({ error: error });
+			}
+
+			let userInfoReturned = updatedUser && !!updatedUser.user;
+			if (userInfoReturned) {
+				// Sign in succeeded
+				Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInCompleted);
+			}
+			handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationReturned, userInfoReturned);
+			handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.SignInCancelled, !error && !userInfoReturned);
+			Clipper.logger.logEvent(handleSignInEvent);
+		}});
+	}
+
+	private handleSignOut(authType: string) {
+		this.state.setState(this.getSignOutState());
+		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.signOutUser, { param: AuthType[authType] });
+
+		Clipper.logger.logUserFunnel(Log.Funnel.Label.SignOut);
+		Clipper.logger.logSessionEnd(Log.Session.EndTrigger.SignOut);
+		Clipper.logger.logSessionStart();
+	}
+
+	private getSignOutState(): ClipperState {
+		let signOutState = this.getResetState();
+		signOutState.saveLocation = undefined;
+		return signOutState;
+	}
+
+	private handleStartClip() {
+		Clipper.logger.logUserFunnel(Log.Funnel.Label.ClipAttempted);
+
+		this.state.setState({ userResult: { status: Status.InProgress, data: this.state.userResult.data } });
+		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, { callback: (updatedUser: UserInfo) => {
+			if (updatedUser && updatedUser.user) {
+				if (this.state.currentMode.get() === ClipMode.FullPage) {
+					// A page info refresh needs to be triggered if the url has changed right before the clip action
+					Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged, {
+						callback: () => {
+							this.startClip();
+						}
+					});
+				} else if (this.state.currentMode.get() === ClipMode.Bookmark) {
+					// set the rendered bookmark preview HTML as the exact HTML to send to OneNote
+					let previewBodyHtml = document.getElementById("previewBody").innerHTML;
+					this.state.setState({
+						bookmarkPreviewInfo: { previewBodyHtml: previewBodyHtml }
+					});
+
+					this.startClip();
+				} else {
+					this.startClip();
+				}
+			}
+		}});
+	}
+
+	private startClip() {
+		Clipper.Storage.setValue(Constants.StorageKeys.lastClippedDate, Date.now().toString());
+
+		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
+
+		let mode = ClipMode[this.state.currentMode.get()];
+		if (this.state.currentMode.get() === ClipMode.FullPage && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			mode += ": " + OneNoteApi.ContentType[this.state.pageInfo.contentType];
+			Clipper.Storage.setValue(Constants.StorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
+		}
+		if (this.state.currentMode.get() === ClipMode.Augmentation) {
+			let styles = {
+				fontSize: this.state.previewGlobalInfo.fontSize,
+				serif: this.state.previewGlobalInfo.serif
+			};
+			// Record lastClippedDate for each different augmentationMode so we can upsell the augmentation mode
+			// to users who haven't Clipped this mode in a while
+			let augmentationTypeAsString = AugmentationHelper.getAugmentationType(this.state);
+			Clipper.Storage.setValue(Constants.StorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, augmentationTypeAsString);
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.Styles, JSON.stringify(styles));
+		}
+		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
+			Clipper.Storage.setValue(Constants.StorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
+		}
+		clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, mode);
+
+		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
+		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
+			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
+		}, (error: OneNoteApi.RequestError) => {
+			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
+
+			this.state.setState({ oneNoteApiResult: { data: error, status: Status.Failed } });
+		}).then(() => {
+			Clipper.logger.logEvent(clipEvent);
+		});
+	}
+
+	private static shouldShowOptions(state: ClipperState): boolean {
+		return (state.uiExpanded &&
+			ClipperStateHelperFunctions.isUserLoggedIn(state) &&
+			state.oneNoteApiResult.status === Status.NotStarted &&
+			!state.badState);
+	}
+
+	private static shouldShowPreviewViewer(state: ClipperState): boolean {
+		return (this.shouldShowOptions(state) &&
+			(state.currentMode.get() !== ClipMode.Region ||
+			state.regionResult.status === Status.Succeeded));
+	}
+
+	private static shouldShowRegionSelector(state: ClipperState): boolean {
+		return (this.shouldShowOptions(state) &&
+			state.currentMode.get() === ClipMode.Region &&
+			state.regionResult.status !== Status.Succeeded);
+	}
+
+	private static shouldShowMainController(state: ClipperState): boolean {
+		return state.regionResult.status !== Status.InProgress || state.badState;
+	}
+
+	render() {
+		let previewViewerItem = ClipperClass.shouldShowPreviewViewer(this.state) ?
+			<PreviewViewer clipperState={this.state} /> :
+			undefined;
+		let regionSelectorItem = ClipperClass.shouldShowRegionSelector(this.state) ? <RegionSelector clipperState={this.state} /> : undefined;
+		let mainControllerStyle = ClipperClass.shouldShowMainController(this.state) ? { } : { display: "none" };
+
+		return (
+			<div>
+				{previewViewerItem}
+				{regionSelectorItem}
+				<div style={mainControllerStyle} >
+					<MainController clipperState={this.state}
+						onSignInInvoked={this.handleSignIn.bind(this) }
+						onSignOutInvoked={this.handleSignOut.bind(this) }
+						updateFrameHeight={this.updateFrameHeight.bind(this) }
+						onStartClip={this.handleStartClip.bind(this) } />
+				</div>
+			</div>
+		);
+	}
+}
+
+Polyfills.init();
+
+// Catch any unhandled exceptions and log them
+let oldOnError = window.onerror;
+window.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?: Error) => {
+	let callStack = error ? Log.Failure.getStackTrace(error) : "[unknown stacktrace]";
+
+	Clipper.logger.logFailure(Log.Failure.Label.UnhandledExceptionThrown, Log.Failure.Type.Unexpected,
+		{ error: message + " (" + filename + ":" + lineno + ":" + colno + ") at " + callStack }, "ClipperUI");
+
+	if (oldOnError) {
+		oldOnError(message, filename, lineno, colno, error);
+	}
+};
+
+let component = ClipperClass.componentize();
+m.mount(document.getElementById("clipperUIPlaceholder"), component);
+export {component as Clipper}

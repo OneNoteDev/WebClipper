@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebClipper", "WebClipper.csproj", "{CEC9A52E-3052-4CB5-8644-9D0C1F346E35}"
+	ProjectSection(ProjectDependencies) = postProject
+		{523C9308-B7F5-4C53-8A33-FCA2F34F6AE3} = {523C9308-B7F5-4C53-8A33-FCA2F34F6AE3}
+		{0923A3FD-7F48-4E89-827B-2035750EB8E7} = {0923A3FD-7F48-4E89-827B-2035750EB8E7}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneNoteApi", "..\OneNoteApi\OneNoteApi.csproj", "{523C9308-B7F5-4C53-8A33-FCA2F34F6AE3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneNotePicker-JS", "..\OneNotePicker-JS\OneNotePicker-JS.csproj", "{0923A3FD-7F48-4E89-827B-2035750EB8E7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{523C9308-B7F5-4C53-8A33-FCA2F34F6AE3} = {523C9308-B7F5-4C53-8A33-FCA2F34F6AE3}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CEC9A52E-3052-4CB5-8644-9D0C1F346E35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEC9A52E-3052-4CB5-8644-9D0C1F346E35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{523C9308-B7F5-4C53-8A33-FCA2F34F6AE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{523C9308-B7F5-4C53-8A33-FCA2F34F6AE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0923A3FD-7F48-4E89-827B-2035750EB8E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0923A3FD-7F48-4E89-827B-2035750EB8E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

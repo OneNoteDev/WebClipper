@@ -1,0 +1,136 @@
+#pageNavAnimatedTooltip {
+	width: 100px;
+}
+
+.tooltip {
+	position: fixed;
+	top: @ClipperUITopRightOffset; // TODO replace with render strategy object
+	right: @ClipperUITopRightOffset; // TODO replace with render strategy object
+	background: @OneNotePurple;
+	background: @OneNotePurpleTransparent;
+	border-radius: @ClipperBorderRadius;
+	box-shadow: @ClipperBoxShadow;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+
+	.tooltip-title {
+		position: absolute;
+		left: 50%;
+		padding: 5px;
+		transform: translate(-50%);
+		color: @TooltipHeaderColor;
+		font-size: 15px;
+	}
+
+	.tooltip-corner-branding {
+		position: absolute;
+		padding-left: 10px;
+		font-size: 12px;
+		color: white;
+		font-family: 'Segoe UI Light', Tahoma, Geneva, Verdana, sans-serif
+	}
+
+	.tooltip-image {
+		margin-bottom: 20px;
+	}
+
+	.tooltip-content {
+		direction: ltr;
+		padding-top: @ClipperUIInnerPadding;
+		padding-left: @ClipperUIInnerPadding;
+		padding-right: @ClipperUIInnerPadding;
+		padding-bottom: @ClipperUIInnerPadding;
+		text-align: center;
+		width: @ClipperUIWidth - (@ClipperUIInnerPadding*2);
+
+		// We need special styling for the changelog so the scrollbar is positioned properly
+		&.changelog-content {
+			width: @ClipperUIWidth - (@ClipperUIInnerPadding*2) + @ClipperScrollbarOffsetRight;
+			padding-right: @ClipperUIInnerPadding - @ClipperScrollbarOffsetRight;
+		}
+
+		&.tooltip-upsell {
+			.dialogMessageFont {
+				font-size: 22px;
+				font-family: @SegoeUiLight;
+			}
+		}
+	}
+
+	::-webkit-scrollbar-thumb:vertical, ::-webkit-scrollbar-thumb:horizontal {
+		background: rgba(255, 255, 255, 0.5);
+		-moz-background-clip: padding-box;
+		-webkit-background-clip: padding-box;
+		background-clip: padding-box;
+		border: 2px solid rgba(0, 0, 0, 0);
+		min-height: 10px;
+	}
+}
+
+.changes {
+	text-align: left;
+	max-height: 300px;
+	overflow: auto;
+	padding-right: 20px;
+	margin-top: 28px;
+	margin-bottom: 20px;
+
+	.change {
+		display: -webkit-flex;
+		display: -ms-flex;
+		display: flex;
+		padding-bottom: 20px;
+
+		&:not(:first-child) {
+			padding-top: 20px;
+		}
+
+		&:not(:last-child) {
+			border-bottom: 1px solid #9e62bc;
+		}
+
+		.change-image {
+			vertical-align: top;
+			margin-top: 3px;
+			margin-right: 16px;
+
+			img {
+				width: 24px;
+			}
+		}
+
+		.change-body {
+			-webkit-flex: 1;
+			-ms-flex: 1;
+			flex: 1;
+
+			.change-image {
+				width: 150px;
+				margin-right: 20px;
+			}
+
+			.change-title {
+				span {
+					vertical-align: top;
+				}
+			}
+		}
+
+		&:not(:last-child) > .change-content > .change-description {
+			padding-bottom: 20px;
+			border-bottom: solid 1px white;
+		}
+	}
+}
+
+// We need special styling for the changelog so the scrollbar is positioned properly
+.changelog-button {
+	width: auto;
+	margin-right: @ClipperScrollbarOffsetRight;
+}

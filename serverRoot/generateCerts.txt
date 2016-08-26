@@ -1,0 +1,3 @@
+In order to run the HTTPS server locally you'll need to generate the proper SSL certificates.  To do that run the following command:
+
+bash make-certs.sh "site.onenote.com"

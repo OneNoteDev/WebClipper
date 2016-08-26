@@ -1,0 +1,445 @@
+/*---------------------------------------------------------*
+	Styles associated with the preview window
+*---------------------------------------------------------*/
+
+// Right now this is hard-coded because it is what is currently hard-coded in OneNote.
+@Calibri: Calibri, 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+
+@OneNoteHighlightColor: #fefe56;
+@PreviewHeaderContainerBackground: #f4f4f4;
+@PreviewHeaderInputHoverColor: gray;
+@PreviewHeaderInputFocusColor: gray;
+
+@OneNoteElementUnderlineColor: @OneNotePurple;
+@OneNotePageH2Color: rgb(46,117, 181);
+@OneNotePageH3Color: rgb(91, 155, 213);
+
+@OneNoteH1Size: 20px;
+@OneNoteH2Size: 18px;
+@OneNoteH3Size: 16px;
+@OneNoteH4Size: 16px;
+@OneNoteH5Size: 15px;
+@OneNoteH6Size: 15px;
+
+@OneNotePdfAttachmentWidth: 84px;
+@OneNotePdfAttachmentHeight: 96px;
+
+@HighlightControlMargin: 4px;
+@HighlightControlPadding: 8px;
+@ControlButtonHeight: 28px;
+@ControlButtonMinWidth: 91px;
+
+@HighlightControlHeight: 2*@HighlightControlMargin + 2*@HighlightControlPadding + @ControlButtonHeight;
+
+@PreviewOptionsContainerBuffer: 5px;
+@PreviewWindowMediaMaxWidth: `parseInt('@{ClipperUIWidth}') + parseInt('@{OneNotePageWidth}') + parseInt('@{ClipperUITopRightOffset}') + parseInt('@{ClipperUITopRightOffset}')`;
+
+#previewOuterContainer {
+	background-color: rgba(0,0,0,0.6);
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	left: 0px;
+
+	#previewInnerWrapper {
+		position: fixed;
+		width: @OneNotePageWidth;
+		top: @ClipperUITopRightOffset;
+		bottom: @ClipperUITopRightOffset;
+		right: @ClipperUIWidth + @ClipperUITopRightOffset + @ClipperUITopRightOffset;
+		left: initial;
+
+		#previewInnerContainer {
+			display: -webkit-flex;
+			display: -ms-flex;
+			display: flex;
+			-webkit-flex-direction: column;
+			-ms-flex-direction: column;
+			flex-direction: column;
+			background-color: @OneNotePurpleTransparent;
+			overflow: hidden;
+			max-width: @OneNotePageWidth;
+			min-width: 340px;
+			margin: auto;
+			height: 100%;
+			position: relative;
+			border: 1px;
+			border-style: solid;
+			border-color: @OneNotePurple;
+			border-radius: @ClipperBorderRadius;
+			box-shadow: @ClipperBoxShadow;
+
+			&.bookmarkPreviewInnerContainer {
+				height: auto;
+			}
+
+			h1, h2, h3, h4, h5, h6 {
+				font-family: @Calibri;
+				font-weight: normal;
+			}
+
+			#previewOptionsContainer {
+				height: 52px;
+				display: inline-block;
+				background: @OneNotePurpleTransparent;
+				margin-bottom: 0px;
+				direction: ltr;
+
+				* {
+					-webkit-user-select: none;
+					-moz-user-select: none;
+					-ms-user-select: none;
+					user-select: none;
+				}
+
+				// TODO: Remove when this is replaced with full page features
+				#fullPageControl, #bookmarkControl, #regionControl {
+					height: 32px;
+
+					#fullPageHeaderTitle, #bookmarkHeaderTitle, #regionHeaderTitle {
+						font-size: @OneNoteH3Size;
+						cursor: default;
+						line-height: 32px;
+					}
+				}
+
+				#addRegionControl {
+					#addAnotherRegionButton {
+						font-size: 14px;
+						min-width: @ControlButtonMinWidth;
+						padding: 0;
+
+						> * {
+							padding-left: 8px;
+
+							&:last-child {
+								padding-right: 8px;
+							}
+						}
+
+					}
+				}
+
+				#highlightControl {
+					height: @ControlButtonHeight;
+					vertical-align: middle;
+
+					#highlightButton {
+						border-radius: 4px;
+						cursor: pointer;
+
+						&:hover{
+							background-color: @DarkHoverColor;
+						}
+
+						&.active {
+							background-color: @DarkBackgroundColor;
+						}
+					}
+				}
+
+				#serifControl {
+					#sansSerif {
+						font-family: Verdana;
+						font-size: 14px;
+						min-width: @ControlButtonMinWidth;
+					}
+
+					#serif {
+						font-family: Georgia;
+						letter-spacing: 1px;
+						font-size: 14px;
+						min-width: @ControlButtonMinWidth;
+					}
+				}
+
+				#fontSizeControl {
+					img {
+						vertical-align: middle;
+					}
+				}
+
+				.control-button {
+					text-align: center;
+					vertical-align: middle;
+					background-color: @OneNotePurpleTransparent;
+					border: 1px solid white;
+					color: white;
+					cursor: pointer;
+					border-radius: 4px;
+					height: @ControlButtonHeight;
+
+					&.active {
+						background: @DarkBackgroundColor;
+					}
+
+					&:hover:not(.active) {
+						background: @DarkHoverColor;
+					}
+
+					:focus {
+						outline: 0;
+					}
+				}
+
+				.control-button-group {
+					margin-top: 12px;
+					margin-bottom: 12px;
+					margin-left: 24px;
+					display: inline-block;
+
+					> .control-button:first-child:not(:last-child) {
+						border-top-right-radius: 0;
+						border-bottom-right-radius: 0;
+					}
+
+					> .control-button:last-child:not(:first-child) {
+						border-top-left-radius: 0;
+						margin-left: -1px;
+						border-bottom-left-radius: 0;
+					}
+				}
+			}
+
+			#previewContentContainer {
+				background-color: white;
+				overflow: auto;
+				-webkit-flex: 2;
+				-ms-flex: 2;
+				flex: 2;
+
+				&.in-progress {
+					display: -webkit-flex;
+					display: -ms-flex;
+					display: flex;
+					-webkit-flex-direction: column;
+					-ms-flex-direction: column;
+					flex-direction: column;
+				}
+
+				&.bookmarkPreviewContentContainer {
+					background-color: @PreviewHeaderContainerBackground;
+
+					&.in-progress {
+						background-color: @PreviewHeaderContainerBackground;
+					}
+				}
+
+				#previewHeaderContainer {
+					direction: ltr;
+					background-color: @PreviewHeaderContainerBackground;
+					padding: 15px 20px 15px 20px;
+
+					#previewTitleContainer {
+						border-bottom: solid 1px @OneNoteElementUnderlineColor;
+						margin-bottom: 4px;
+						padding-bottom: 2px;
+						position: relative;
+						font-size: @OneNoteH1Size;
+						line-height: 32px;
+
+						#previewHeaderInput:not(.in-progress) {
+							&:hover {
+								border: 1px solid @PreviewHeaderInputHoverColor;
+							}
+
+							&:focus {
+								border: 1px solid @PreviewHeaderInputFocusColor;
+							}
+						}
+					}
+
+					#previewNotesContainer {
+						color: @OneNoteElementUnderlineColor;
+						font-size: @OneNoteH5Size;
+						padding: 10px 0 10px;
+					}
+
+					#previewUrlContainer {
+						margin-top: 6px;
+						padding-left: 3px;
+						color: @OneNoteElementUnderlineColor;
+						font-size: @OneNoteH5Size;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+					}
+				}
+
+				#previewBody {
+					direction: ltr;
+					vertical-align: baseline;
+					padding: 0px @OneNotePageRightPadding 0px @OneNotePageLeftPadding;
+
+					&.in-progress {
+						display: -webkit-flex;
+						display: -ms-flex;
+						display: flex;
+						-webkit-flex: 2;
+						-ms-flex: 2;
+						flex: 2;
+						justify-content: center;
+						align-items: center;
+						position: relative;
+						text-align: center;
+					}
+
+					a {
+						text-decoration: none;
+					}
+
+					figure {
+						margin-left: 0px;
+					}
+
+					h3, h4, h5, h6 {
+						color: @OneNotePageH3Color;
+						margin-top: 14pt;
+						margin-bottom: 14pt;
+					}
+
+					h2 {
+						font-size: @OneNoteH2Size;
+						color: @OneNotePageH2Color;
+					}
+
+					h3 {
+						font-size: @OneNoteH3Size;
+					}
+
+					h4 {
+						font-size: @OneNoteH4Size;
+						font-style: italic;
+					}
+
+					h5 {
+						font-size: @OneNoteH5Size;
+					}
+
+					h6 {
+						font-size: @OneNoteH6Size;
+						font-style: italic;
+					}
+
+					// Image tags sent to Augmentation Api do not have the inline css styling removed. We need this to override any conflicting inline css.
+					img {
+						&:not(.delete-highlight) {
+							display: block !important;
+							height: auto !important;
+							max-width: 100% !important;
+						}
+
+						// Highlight delete element
+						&.delete-highlight {
+							/*rtl:begin:ignore*/
+							position: absolute;
+							display: inline;
+							cursor: pointer;
+							padding: 3px;
+							margin: 0;
+							line-height: 0;
+							left: -12px;
+							top: -7px;
+							height: 14px;
+							width: 14px;
+							/*rtl:end:ignore*/
+						}
+					}
+
+					// By nature, pre tags preserve spacing and line breaks, so we need to enforce wrapping
+					pre {
+						white-space: pre-wrap;
+					}
+
+					// Prevent large-width content from stretching the table in IE
+					table {
+						table-layout: fixed;
+						width: 100%;
+					}
+
+					.centered-in-preview {
+						margin: 0;
+						top: 40%;
+						// Not 50% as there is a little bit of extra padding on the right in the preview body
+						left: 52%;
+						position: absolute;
+						width: 100%;
+						transform: translate(-50%, -50%);
+						word-wrap: break-word;
+
+						> * {
+							vertical-align: middle;
+						}
+					}
+
+					#spinnerText {
+						max-width: 500px;
+						margin-left: auto;
+						margin-right: auto;
+					}
+
+					span.highlighted {
+						position: relative;
+					}
+
+					&.highlightable {
+						// We need to adjust the 'hotspot' of the cursor to be aligned to middle of the "I" symbol
+						cursor: url('./images/editoroptions/highlight_cursor.cur'), text; // Hotspots are built into cur files, which IE/Edge interprets
+						cursor: url('./images/editoroptions/highlight_cursor.cur') 16 16, text; // Other browsers need you to specify the hotspot in the css file
+
+						* ::selection {
+							background: @OneNoteHighlightColor;
+						}
+					}
+
+					.region-selection {
+						position: relative;
+						display: inline-block;
+
+						.region-selection-remove-button {
+							position: absolute;
+							top: -5px;
+							left: -5px;
+						}
+					}
+
+					// Allows the same attachment styling as the WAC
+					.attachment-overlay {
+						width: @OneNotePdfAttachmentWidth;
+						height: @OneNotePdfAttachmentHeight;
+						margin: 0px;
+						padding: 0px;
+
+						img {
+							margin: 5px 18px 5px 18px;
+							width: 48px;
+							height: 48px;
+						}
+
+						.file-name {
+							overflow: hidden;
+							text-overflow: ellipsis;
+							max-width: @OneNotePdfAttachmentWidth;
+							padding: 0px;
+							font-size: 13px;
+							text-align: center;
+							word-wrap: normal;
+							line-height: 1.5em;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+@media (max-width: (0px + @PreviewWindowMediaMaxWidth))
+{
+	#previewOuterContainer {
+		#previewInnerWrapper {
+			right: initial;
+			left: 0px;
+		}
+	}
+}

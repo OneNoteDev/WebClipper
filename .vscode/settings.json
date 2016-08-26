@@ -1,0 +1,15 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "editor.formatOnType": true,
+    "editor.insertSpaces": false,
+    "editor.renderWhitespace": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "build/": true,
+        "serverRoot/root/": true,
+        "target/": true,
+        "node_modules/": true,
+        "**/*_internal.ts*": true
+    }
+}

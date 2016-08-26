@@ -1,0 +1,191 @@
+@import "globalStyles.less";
+@import "textAreaInputStyles.less";
+@import "annotationInputStyles.less";
+@import "mainClassDefinitions.less";
+@import "previewStyles.less";
+@import "sectionPickerOverrides.less";
+@import "animatorStyles.less";
+@import "tooltipStyles.less";
+
+/*---------------------------------------------------------*
+	Constant Sizes
+*---------------------------------------------------------*/
+@ClipperUIWidth: 322px;
+@ClipperUIInnerPadding: 24px;
+@ClipperUITopRightOffset: 20px;
+@ClipperUIDropShadowBuffer: 7px;
+@FooterOffset: 6px;
+@OneNotePageLeftPadding: 20px;
+@OneNotePageRightPadding: 40px;
+@OneNotePageWidth: 624px + @OneNotePageLeftPadding + @OneNotePageRightPadding;
+@ClipperBorderRadius: 8px;
+@ClipperScrollbarOffsetRight: 20px;
+
+/*---------------------------------------------------------*
+	Constant Colors
+*---------------------------------------------------------*/
+@OneNotePurple: #7321a6;
+@OneNotePurpleTransparent: rgba(128, 46, 179, 0.95);
+
+@WideButtonBackgroundColor: #ffffff;
+@WideButtonHoverColor: #e5d6ec;
+
+@DarkBackgroundColor: #56197c;
+@DarkHoverColor: #8f4db8;
+
+@ClipperDividerColor: #e6b3cf;
+@ClipperLightFontColor: #e5d6ec;
+
+@ClipperScrollbarDark: rgba(0, 0, 0, 0.5);
+
+@ClipperBoxShadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.5);
+
+/*---------------------------------------------------------*
+	Fonts
+*---------------------------------------------------------*/
+
+// CSS declarations for (Apple & Android) users who don't have Segoe UI
+@font-face {
+	font-family: 'Segoe UI';
+	src: url('segoeui.eot');
+	src: local("Segoe UI"), local("Segoe"), local("Segoe WP"), url('https://www.onenote.com/styles/segoeui.eot?#iefix') format('embedded-opentype'), url('https://www.onenote.com/styles/segoeui.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Segoe UI Light';
+	src: url('segoeuil.eot');
+	src: local("Segoe UI Light"), local("Segoe WP Light"), url('https://www.onenote.com/styles/segoeuil.eot?#iefix') format('embedded-opentype'), url('https://www.onenote.com/styles/segoeuil.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+/*---------------------------------------------------------*
+	ID Styles
+*---------------------------------------------------------*/
+
+#clipButtonContainer {
+	margin-top: 15px;
+}
+
+#clipperFooterContainer {
+	padding-top: 20px;
+	white-space: nowrap;
+}
+
+#closeButtonContainer {
+	position: absolute;
+	margin-left: -30px;
+	left: 100%;
+}
+
+#currentUserDetails {
+	overflow: hidden;
+	text-align: right;
+}
+
+#feedbackImage {
+	height: 13px;
+	width: 13px;
+	padding-right: 5px;
+	padding-top: 2px;
+	float: left;
+}
+
+#unsupportedBrowserContainer {
+	position: fixed;
+	top: @ClipperUITopRightOffset;
+	right: @ClipperUITopRightOffset;
+	height: 225px;
+	width: @ClipperUIWidth;
+	background: @OneNotePurple;
+	border-radius: @ClipperBorderRadius;
+	box-shadow: @ClipperBoxShadow;
+	text-align: center;
+	color: white;
+
+	// In older versions of IE, there is rendering issues with CSS classes, so we have to use ids instead
+	#unsupportedBrowserPanel {
+		padding-top: @ClipperUIInnerPadding;
+		padding-left: @ClipperUIInnerPadding;
+		padding-right: @ClipperUIInnerPadding;
+		padding-bottom: @ClipperUIInnerPadding - @FooterOffset;
+	}
+}
+
+#mainController {
+	position: fixed;
+	top: @ClipperUITopRightOffset;
+	right: @ClipperUITopRightOffset;
+	width: 100px;
+	background: @OneNotePurple;
+	background: @OneNotePurpleTransparent;
+	border-radius: @ClipperBorderRadius;
+	box-shadow: @ClipperBoxShadow;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+
+	.panelContent {
+		padding-top: @ClipperUIInnerPadding;
+		padding-left: @ClipperUIInnerPadding;
+		padding-right: @ClipperUIInnerPadding;
+		padding-bottom: @ClipperUIInnerPadding - @FooterOffset;
+		text-align: center;
+		width: @ClipperUIWidth - (@ClipperUIInnerPadding*2);
+	}
+}
+
+#regionSelectorContainer {
+	padding: 0;
+	margin: 0;
+	height: 100%;
+	width: 100%;
+	cursor: crosshair;
+	overflow: hidden;
+
+	#outerFrame {
+		opacity: 0.6;
+		position: absolute;
+		height: 100%;
+		width: 100%;
+		z-index: -1;
+	}
+
+	#innerFrame {
+		border: solid white 1px;
+		opacity: 1;
+		width: 0;
+		height: 0;
+		position: fixed;
+	}
+}
+
+#signInLogo {
+	display: block;
+	margin: auto;
+	height: 60px;
+	width: 60px;
+}
+
+#signInMessageLabelContainer {
+	color: white;
+	font-size: 34px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+#userDropdownArrow {
+	float: right;
+	height: auto;
+	width: 10px;
+	padding-top: 15px;
+	padding-left: 5px;
+}
+

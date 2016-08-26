@@ -1,0 +1,96 @@
+/// <reference path="../../../../typings/main/ambient/velocity-animate/velocity-animate.d.ts"/>
+declare var Velocity: jquery.velocity.VelocityStatic;
+
+import {AnimationHelper} from "./animationHelper";
+import {AnimationState} from "./animationState";
+import {AnimationStrategy} from "./animationStrategy";
+
+export interface TransitioningAnimationStrategyOptions {
+	extShouldAnimateIn: () => boolean;
+	extShouldAnimateOut: () => boolean;
+
+	onBeforeAnimateOut?: (el: HTMLElement) => void;
+	onBeforeAnimateIn?: (el: HTMLElement) => void;
+
+	onAfterAnimateOut?: (el: HTMLElement) => void;
+	onAfterAnimateIn?: (el: HTMLElement) => void;
+}
+
+/**
+ * Represents the family of animations where elements are able to toggle their visibility completely.
+ *
+ * Assumes that the decision to animate out vs animate in is relient on both external and internal
+ * factors. Implementing classes will implement the internal factors, but can leave room for external
+ * factors to weigh in on the decision as well.
+ */
+export abstract class TransitioningAnimationStrategy<TOptions extends TransitioningAnimationStrategyOptions> extends AnimationStrategy {
+	protected options: TOptions;
+
+	constructor(animationDuration: number, options: TOptions) {
+		super(animationDuration);
+		this.animationState = AnimationState.Out;
+		this.options = options;
+	}
+
+	protected abstract doAnimateIn(el: HTMLElement): Promise<void>;
+	protected abstract doAnimateOut(el: HTMLElement): Promise<void>;
+	protected abstract intShouldAnimateIn(el: HTMLElement): boolean;
+	protected abstract intShouldAnimateOut(el: HTMLElement): boolean;
+
+	// Override
+	public animate(el: HTMLElement) {
+		// We only stop animations when we actually animate, so we call stopAnimationsThen
+		// in the animateIn and animateOut functions instead of here
+		this.doAnimate(el);
+	}
+
+	protected doAnimate(el: HTMLElement): Promise<void> {
+		return new Promise<void>((resolve) => {
+			if (this.options.extShouldAnimateIn() && this.intShouldAnimateIn(el)) {
+				this.animateIn(el).then(() => {
+					resolve();
+				});
+			} else if (this.options.extShouldAnimateOut() && this.intShouldAnimateOut(el)) {
+				this.animateOut(el).then(() => {
+					resolve();
+				});
+			}
+		});
+	}
+
+	private animateIn(el: HTMLElement): Promise<void> {
+		return new Promise<void>((resolve) => {
+			AnimationHelper.stopAnimationsThen(el, () => {
+				if (this.options.onBeforeAnimateIn) {
+					this.options.onBeforeAnimateIn(el);
+				}
+				this.animationState = AnimationState.GoingIn;
+				this.doAnimateIn(el).then(() => {
+					this.animationState = AnimationState.In;
+					if (this.options.onAfterAnimateIn) {
+						this.options.onAfterAnimateIn(el);
+					}
+					resolve();
+				});
+			});
+		});
+	}
+
+	private animateOut(el: HTMLElement): Promise<void> {
+		return new Promise<void>((resolve) => {
+			AnimationHelper.stopAnimationsThen(el, () => {
+				if (this.options.onBeforeAnimateOut) {
+					this.options.onBeforeAnimateOut(el);
+				}
+				this.animationState = AnimationState.GoingOut;
+				this.doAnimateOut(el).then(() => {
+					this.animationState = AnimationState.Out;
+					if (this.options.onAfterAnimateOut) {
+						this.options.onAfterAnimateOut(el);
+					}
+					resolve();
+				});
+			});
+		});
+	}
+}

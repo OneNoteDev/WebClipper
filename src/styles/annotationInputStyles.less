@@ -1,0 +1,30 @@
+/*---------------------------------------------------------*
+	Styles used in the <annotationInput> control.
+*---------------------------------------------------------*/
+
+#annotationContainer {
+	margin-top: 8px;
+	position: relative;
+}
+
+#annotationField {
+	font-size: @OneNoteH3Size;
+}
+
+#annotationPlaceholder {
+	color: @OneNoteElementUnderlineColor;
+	display: block;
+	border: @TextAreaBorderThickness solid transparent;
+	margin: 0px;
+	outline: 0px;
+	padding: @TextAreaPadding;
+
+	&:hover {
+		border: @TextAreaBorderThickness solid @PreviewHeaderInputHoverColor;
+	}
+
+	> img {
+		padding-right: 8px;
+	}
+}
+

@@ -1,0 +1,15 @@
+{
+	"References": [
+		{
+			"Includes": [
+				"*/target/tests/libs/*"
+			]
+		}
+	],
+	"Tests": [
+		{
+			"Path": "target/tests/tests",
+			"Excludes": [ "*/target/tests/libs/*" ]
+		}
+	]
+}

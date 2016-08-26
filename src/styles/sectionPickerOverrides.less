@@ -1,0 +1,34 @@
+/*---------------------------------------------------------*
+	Styles we need to override/define for the section picker.
+*---------------------------------------------------------*/
+
+#locationPickerContainer {
+	margin-top: 15px;
+	text-align: left;
+}
+
+#saveToLocationContainer {
+	width: auto;
+}
+
+// Section Picker UI (we do not localize these as we cannot reliably predict the language used)
+@FontFamilyFallback: 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+@SegoeUi: 'Segoe UI', 'Segoe', 'Segoe WP', @FontFamilyFallback;
+@SegoeUiSemiBold: 'Segoe UI Semibold', @SegoeUi;
+@SegoeUiLight: 'Segoe UI Light', @SegoeUi;
+
+.SaveToLocationContainer {
+	border: 1px white solid;
+	font-family: @SegoeUi;
+	line-height: 30px;
+}
+
+.SectionPickerContainer {
+	font-family: @SegoeUiSemiBold;
+	color: #604a60;
+}
+
+.SectionPickerPopup * {
+	font-size: 14px;
+	line-height: 20px;
+}

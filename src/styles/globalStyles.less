@@ -1,0 +1,99 @@
+/*---------------------------------------------------------*
+	Constant Sizes
+*---------------------------------------------------------*/
+@ClipperUIWidth: 322px;
+@ClipperUIInnerPadding: 30px;
+@ClipperUITopRightOffset: 20px;
+@ClipperUIDropShadowBuffer: 7px;
+@FooterOffset: 10px;
+@OneNotePageLeftPadding: 20px;
+@OneNotePageRightPadding: 40px;
+@OneNotePageWidth: 624px + @OneNotePageLeftPadding + @OneNotePageRightPadding;
+@ClipperBorderRadius: 8px;
+
+/*---------------------------------------------------------*
+	Constant Colors
+*---------------------------------------------------------*/
+@OneNotePurple: #7321a6;
+@OneNotePurpleTransparent: rgba(128, 46, 179, 0.95);
+
+@WideButtonBackgroundColor: #ffffff;
+@WideButtonHoverColor: #e5d6ec;
+
+@DarkBackgroundColor: #56197c;
+@DarkHoverColor: #8f4db8;
+
+@ClipperDividerColor: #e6b3cf;
+@ClipperLightFontColor: #e5d6ec;
+
+@TooltipHeaderColor: #ffffff;
+
+@ClipperBoxShadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.5);
+
+/*---------------------------------------------------------*
+	Fonts
+*---------------------------------------------------------*/
+
+// CSS declarations for (Apple & Android) users who don't have Segoe UI
+@font-face {
+	font-family: 'Segoe UI';
+	src: url('segoeui.eot');
+	src: local("Segoe UI"), local("Segoe"), local("Segoe WP"), url('https://www.onenote.com/styles/segoeui.eot?#iefix') format('embedded-opentype'), url('https://www.onenote.com/styles/segoeui.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Segoe UI Light';
+	src: url('segoeuil.eot');
+	src: local("Segoe UI Light"), local("Segoe WP Light"), url('https://www.onenote.com/styles/segoeuil.eot?#iefix') format('embedded-opentype'), url('https://www.onenote.com/styles/segoeuil.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+/*---------------------------------------------------------*
+	Global Overrides
+*---------------------------------------------------------*/
+// Modified concept from https://gist.github.com/devinrhode2/2573411
+html {
+	::-webkit-scrollbar, ::-webkit-scrollbar-thumb:vertical, ::-webkit-scrollbar-thumb:horizontal {
+		-webkit-border-radius: @ClipperBorderRadius;
+		border-radius: @ClipperBorderRadius;
+	}
+
+	::-webkit-scrollbar {
+		// Corresponds to the vertical and horizontal scrollbars respectively
+		width: 10px;
+		height: 10px;
+	}
+
+	// The pointy ends of the scrollbar's bar
+	::-webkit-scrollbar-thumb:vertical, ::-webkit-scrollbar-thumb:horizontal {
+		background: @ClipperScrollbarDark;
+		-moz-background-clip: padding-box;
+		-webkit-background-clip: padding-box;
+		background-clip: padding-box;
+		border: 2px solid rgba(0, 0, 0, 0);
+		min-height: 10px;
+	}
+}
+
+body {
+	font-size: 100%;
+	margin: 0;
+}
+
+a {
+	text-decoration: none;
+	cursor: pointer;
+}
+
+@keyframes loading {
+	0% {
+		opacity: 0;
+	}
+
+	100% {
+		opacity: 0.5;
+	}
+}
