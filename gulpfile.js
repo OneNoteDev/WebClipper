@@ -594,6 +594,7 @@ function exportChromeJS() {
 
 	var chromeExtensionTask = gulp.src([
 		targetDir + "logManager.js",
+		targetDir + "oneNoteApi.js",
 		PATHS.BUNDLEROOT + "chromeExtension.js"
 	]).pipe(concat("chromeExtension.js")).pipe(gulp.dest(targetDir));
 
@@ -648,8 +649,9 @@ function exportEdgeJS() {
 	var commonTask = exportCommonJS(targetDir);
 
 	var edgeExtensionTask = gulp.src([
-			targetDir + "logManager.js",
-			PATHS.BUNDLEROOT + "edgeExtension.js"
+		targetDir + "logManager.js",
+		targetDir + "oneNoteApi.js",
+		PATHS.BUNDLEROOT + "edgeExtension.js"
 	]).pipe(concat("edgeExtension.js")).pipe(gulp.dest(targetDir));
 
 	var edgeDebugLoggingInjectTask = gulp.src([
@@ -726,6 +728,7 @@ function exportFirefoxJS() {
 
 	var firefoxExtensionTask = gulp.src([
 		targetDir + "logManager.js",
+		targetDir + "oneNoteApi.js",
 		PATHS.BUNDLEROOT + "firefoxExtension.js"
 	]).pipe(concat("firefoxExtension.js")).pipe(gulp.dest(targetDir));
 
@@ -780,8 +783,9 @@ function exportSafariJS() {
 	var commonTask = exportCommonJS(targetDir);
 
 	var safariExtensionTask = gulp.src([
-			targetDir + "logManager.js",
-			PATHS.BUNDLEROOT + "safariExtension.js"
+		targetDir + "logManager.js",
+		targetDir + "oneNoteApi.js",
+		PATHS.BUNDLEROOT + "safariExtension.js"
 	]).pipe(concat("safariExtension.js")).pipe(gulp.dest(targetDir));
 
 	var safariDebugLoggingInjectTask = gulp.src([
@@ -1067,22 +1071,6 @@ gulp.task("minify", function(callback) {
 ////////////////////////////////////////
 gulp.task("runTests", function() {
 	return qunit(PATHS.SERVERROOT + "tests/index.html");
-});
-
-gulp.task("run", function() {
-	return gulp.src("")
-		.pipe(open({ uri: "https://localhost:8043/" }));
-});
-
-////////////////////////////////////////
-// SERVER
-////////////////////////////////////////
-gulp.task("start", function() {
-	forever.startDaemon("serverRoot/server.js");
-});
-
-gulp.task("stop", function() {
-	forever.stopAll();
 });
 
 ////////////////////////////////////////
