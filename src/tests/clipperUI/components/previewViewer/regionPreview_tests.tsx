@@ -41,13 +41,13 @@ test("The tab order flow from the header to the preview title is correct in Regi
 	}
 });
 
-test("The tab order flow from the preview title through the region delete buttons is correct in Region mode", () => {
+test("The tab order flow from the preview title through the region delete buttons is correct in Region mode, and each tab index should not be less than 1", () => {
 	let mockClipperState = getMockRegionModeState();
 	let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
 	HelperFunctions.mountToFixture(defaultComponent);
 
 	let elementsInExpectedTabOrder = [
-		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) },
+		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
 	];
 
 	let removeButtons = document.getElementsByClassName(Constants.Classes.regionSelectionRemoveButton);
@@ -57,12 +57,16 @@ test("The tab order flow from the preview title through the region delete button
 
 	// Check the flow from the title to the first button
 	ok(elementsInExpectedTabOrder[1].elem.tabIndex > elementsInExpectedTabOrder[0].elem.tabIndex,
-			"Element " + elementsInExpectedTabOrder[1].name + " should have a greater or equal tabIndex than element " + elementsInExpectedTabOrder[0].name);
+		"Element " + elementsInExpectedTabOrder[1].name + " should have a greater or equal tabIndex than element " + elementsInExpectedTabOrder[0].name);
 
 	for (let i = 2 /* Check buttons */; i < elementsInExpectedTabOrder.length; i++) {
 		// Note the '>='
 		ok(elementsInExpectedTabOrder[i].elem.tabIndex >= elementsInExpectedTabOrder[i - 1].elem.tabIndex,
 			"Element " + elementsInExpectedTabOrder[i].name + " should have a greater or equal tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
+	}
+
+	for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
+		ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
 	}
 });
 

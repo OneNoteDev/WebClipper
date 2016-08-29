@@ -99,7 +99,7 @@ test("Given no buttons, no buttons should be rendered", () => {
 	strictEqual(renderedButtons.length, 0, "No buttons should render");
 });
 
-test("Given some buttons, they should have equal tab indexes", () => {
+test("Given some buttons, they should have equal tab indexes, and each tab index should not be less than 1", () => {
 	let expectedMessage = "hello world";
 	let buttons = [
 		{ id: "a", label: "a", handler: undefined },
@@ -118,5 +118,6 @@ test("Given some buttons, they should have equal tab indexes", () => {
 		} else {
 			strictEqual(element.tabIndex, expectedTabIndex, "Dialog button tabs should have the same tab indexes");
 		}
+		ok(element.tabIndex > 0);
 	}
 });
