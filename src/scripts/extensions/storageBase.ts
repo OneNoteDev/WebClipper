@@ -222,20 +222,4 @@ export class StorageBase {
 
 		return timeStampedValue;
 	}
-
-	/*
-	 * Helper function to determine if an object is empty or not
-	 */
-	protected isEmptyObject(obj: {}): boolean {
-		if (!obj) {
-			return false;
-		}
-
-		for (let property in obj) {
-			if (obj.hasOwnProperty(property)) {
-				return false;
-			}
-		}
-		return true;
-	}
 }
