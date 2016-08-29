@@ -94,7 +94,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						},
 						clientInfo: this.clientInfo
 					});
-					InjectHelper.alertUserOfUnclippablePage();
+					// In Firefox, alert() is not callable from the background, so it looks like we have to no-op here
+					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
+						InjectHelper.alertUserOfUnclippablePage();
+					}
 					resolve(false);
 				} else {
 					WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.webClipperInjectUrl });
