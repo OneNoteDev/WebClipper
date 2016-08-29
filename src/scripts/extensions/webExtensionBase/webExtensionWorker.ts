@@ -11,13 +11,14 @@ import {SmartValue} from "../../communicator/smartValue";
 
 import * as Log from "../../logging/log";
 
+import {StorageBase} from "../../storage/storageBase";
+
 import {ChangeLog} from "../../versioning/changeLog";
 
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InjectHelper} from "../injectHelper";
 import {InvokeSource} from "../invokeSource";
-import {StorageBase} from "../storageBase";
 
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";

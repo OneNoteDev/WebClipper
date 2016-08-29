@@ -20,6 +20,8 @@ import * as Log from "../logging/log";
 import {LogHelpers} from "../logging/logHelpers";
 import {SessionLogger} from "../logging/sessionLogger";
 
+import {StorageBase} from "../storage/storageBase";
+
 import {ChangeLog} from "../versioning/changeLog";
 
 import {AuthenticationHelper} from "./authenticationHelper";
@@ -27,7 +29,6 @@ import {ExtensionBase} from "./extensionBase";
 import {InvokeInfo} from "./invokeInfo";
 import {InvokeSource} from "./invokeSource";
 import {InvokeMode, InvokeOptions} from "./invokeOptions";
-import {StorageBase} from "./storageBase";
 
 /**
  * The abstract base class for all of the extension workers

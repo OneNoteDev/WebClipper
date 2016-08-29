@@ -9,12 +9,13 @@ import {SmartValue} from "../../communicator/smartValue";
 
 import * as Log from "../../logging/log";
 
+import {StorageBase} from "../../storage/storageBase";
+
 import {ChangeLog} from "../../versioning/changeLog";
 
 import {AuthenticationHelper} from "../authenticationHelper";
 import {InvokeSource} from "../invokeSource";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
-import {StorageBase} from "../storageBase";
 
 import {SafariBackgroundMessageHandler} from "./safariMessageHandler";
 import {SafariExtension} from "./safariExtension";

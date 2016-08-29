@@ -5,8 +5,11 @@ import {Communicator} from "../../communicator/communicator";
 import {IFrameMessageHandler} from "../../communicator/iframeMessageHandler";
 import {InlineMessageHandler} from "../../communicator/inlineMessageHandler";
 import {SmartValue} from "../../communicator/smartValue";
+
 import * as Log from "../../logging/log";
 import {Logger} from "../../logging/logger";
+
+import {StorageBase} from "../../storage/storageBase";
 
 import {Constants} from "../../constants";
 import {AuthType} from "../../userInfo";
@@ -18,7 +21,6 @@ import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InvokeMode} from "../invokeOptions";
 import {InvokeSource} from "../invokeSource";
-import {StorageBase} from "../storageBase";
 
 import {InlineExtension} from "./inlineExtension";
 

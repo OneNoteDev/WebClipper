@@ -10,13 +10,14 @@ import {VideoUtils} from "../../domParsers/videoUtils";
 
 import {Localization} from "../../localization/localization";
 
+import {StorageBase} from "../../storage/storageBase";
+
 import {Version} from "../../versioning/version";
 
 import {ExtensionBase} from "../extensionBase";
 import {InvokeInfo} from "../invokeInfo";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
 import {InvokeSource} from "../invokeSource";
-import {StorageBase} from "../storageBase";
 
 import {ContextItemParameter, ContextType} from "./safariContext";
 import {SafariWorker} from "./safariWorker";

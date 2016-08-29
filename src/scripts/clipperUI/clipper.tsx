@@ -28,7 +28,8 @@ import {VideoUtils} from "../domParsers/videoUtils";
 
 import {ClipperInjectOptions} from "../extensions/clipperInject";
 import {InvokeOptions, InvokeMode} from "../extensions/invokeOptions";
-import {StorageBase, TimeStampedData} from "../extensions/storageBase";
+
+import {StorageBase, TimeStampedData} from "../storage/storageBase";
 
 import {InlineExtension} from "../extensions/bookmarklet/inlineExtension";
 

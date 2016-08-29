@@ -4,7 +4,6 @@ import {Experiments} from "../experiments";
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
-import {StorageBase} from "./storageBase";
 import {Utils} from "../utils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
@@ -16,6 +15,8 @@ import {LocalizationHelper} from "../localization/localizationHelper";
 
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
+
+import {StorageBase} from "../storage/storageBase";
 
 import {ChangeLog} from "../versioning/changeLog";
 import {ChangeLogHelper} from "../versioning/changeLogHelper";

@@ -4,7 +4,7 @@ import {TooltipType} from "../../scripts/clipperUI/tooltipType";
 
 import {Constants} from "../../scripts/constants";
 
-import {MockStorageBase} from "./mockStorageBase";
+import {MockStorageBase} from "../storage/mockStorageBase";
 
 let tooltipHelper: TooltipHelper;
 let mockStorageBase: MockStorageBase;

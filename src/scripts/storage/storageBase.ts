@@ -1,8 +1,3 @@
-/*
- * Used to standardize the way we store data that needs to be time stamped. Useful for enforcing expiry
- * dates on data stored on the client.
- */
-
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
 import {Constants} from "../constants";
@@ -19,7 +14,6 @@ export interface TimeStampedData {
 
 /*
  * The base class for the code which downloads, stores and retrieves code from a URL.
- * Note: Since accessing the local storage is somewhat extension-specific, this class should be extended.
  */
 export class StorageBase {
 	public static defaultInterval = 12 * 60 * 60 * 1000; // Update after 12 hours.

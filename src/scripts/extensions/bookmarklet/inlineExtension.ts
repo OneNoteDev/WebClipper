@@ -4,8 +4,9 @@ import {TooltipType} from "../../clipperUI/tooltipType";
 
 import {InlineMessageHandler} from "../../communicator/inlineMessageHandler";
 
+import {StorageBase} from "../../storage/storageBase";
+
 import {ExtensionBase} from "../extensionBase";
-import {StorageBase} from "../storageBase";
 
 import {InlineWorker} from "./inlineWorker";
 

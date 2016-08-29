@@ -2,7 +2,7 @@
 
 import {ResponsePackage} from "../../scripts/responsePackage";
 
-import {StorageBase, TimeStampedData} from "../../scripts/extensions/storageBase";
+import {StorageBase, TimeStampedData} from "../../scripts/storage/storageBase";
 
 import * as Log from "../../scripts/logging/log";
 

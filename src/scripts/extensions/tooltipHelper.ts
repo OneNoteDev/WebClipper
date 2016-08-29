@@ -1,9 +1,9 @@
 import {Constants} from "../constants";
 import {Utils} from "../utils";
 
-import {StorageBase} from "./storageBase";
-
 import {TooltipType} from "../clipperUI/tooltipType";
+
+import {StorageBase} from "../storage/storageBase";
 
 export class TooltipHelper {
 	storage: StorageBase;

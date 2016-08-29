@@ -5,13 +5,13 @@ import {SmartValue} from "../communicator/smartValue";
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
+import {StorageBase, TimeStampedData} from "../storage/storageBase";
+
 import {Constants} from "../constants";
 import {ResponsePackage} from "../responsePackage";
 import {UserInfoData} from "../userInfo";
 import {AuthType, UserInfo, UpdateReason} from "../userInfo";
 import {Utils} from "../utils";
-
-import {StorageBase, TimeStampedData} from "./storageBase";
 
 declare var browser;
 

@@ -12,6 +12,8 @@ import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
 
+import {StorageBase} from "../../storage/storageBase";
+
 import {ChangeLog} from "../../versioning/changeLog";
 import {Version} from "../../versioning/version";
 
@@ -19,7 +21,6 @@ import {ExtensionBase} from "../extensionBase";
 import {InvokeInfo} from "../invokeInfo";
 import {InvokeSource} from "../invokeSource";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
-import {StorageBase} from "../storageBase";
 
 import {InjectUrls} from "./injectUrls";
 import {WebExtensionWorker} from "./webExtensionWorker";
