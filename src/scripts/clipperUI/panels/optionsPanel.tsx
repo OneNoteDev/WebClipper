@@ -30,7 +30,7 @@ class OptionsPanelClass extends ComponentBase<{ }, OptionsPanelProps> {
 
 				<div id={Constants.Ids.clipButtonContainer} className="wideButtonContainer">
 					{clipButtonEnabled
-					?	<a id={Constants.Ids.clipButton} className="wideActionButton" {...this.enableInvoke(this.props.onStartClip, 0) }>
+					?	<a id={Constants.Ids.clipButton} className="wideActionButton" {...this.enableInvoke(this.props.onStartClip, 1) }>
 							<span className="wideButtonFont"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 								{Localization.getLocalizedString("WebClipper.Action.Clip")}
