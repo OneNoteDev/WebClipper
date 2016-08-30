@@ -6,7 +6,8 @@ export module VideoUtils {
 
 	export enum SupportedVideoDomains {
 		YouTube,
-		Vimeo
+		Vimeo,
+		KhanAcademy
 	}
 
 	/**
@@ -21,7 +22,7 @@ export module VideoUtils {
 		let hostname = Utils.getHostname(pageUrl);
 
 		for (let domain in SupportedVideoDomains) {
-			if (typeof(domain) === "string" && hostname.indexOf(domain.toLowerCase() + ".") > -1) {
+			if (typeof (domain) === "string" && hostname.indexOf(domain.toLowerCase() + ".") > -1) {
 				return domain;
 			}
 		}
@@ -63,6 +64,31 @@ export module VideoUtils {
 		}
 
 		return values;
+	}
+
+	export function getKhanAcademyVideoSrcValue(doc: Document): string {
+		if (Utils.isNullOrUndefined(doc)) {
+			return;
+		}
+
+		let videoContainer = doc.getElementsByClassName("ka-video-player-container");
+		if (videoContainer.length === 0) {
+			return;
+		}	
+		
+		let container = videoContainer[0] as HTMLElement;
+
+		let children = container.children;
+		if (children.length === 0) {
+			return;
+		}
+
+		let video = children[0] as HTMLVideoElement;
+		let src = video.src; 
+
+		let cleanSrc = src.substring(0, src.indexOf("?"));
+
+		return cleanSrc;
 	}
 
 	/**

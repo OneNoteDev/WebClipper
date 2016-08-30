@@ -217,6 +217,9 @@ export module DomUtils {
 				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.YouTube) {
 					iframes.push(createEmbeddedYouTubeVideo(pageUrl));
 				}
+				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.KhanAcademy) {
+					iframes.push(createEmbeddedKhanAcademyVideo(document));
+				}
 			} catch (e) {
 				// if we end up here, we're unexpectedly broken
 				// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
@@ -270,6 +273,18 @@ export module DomUtils {
 		return iframe;
 	}
 
+	/**
+	 * Create iframe in correct format for KhanAcademy video (hosted on YouTube) embed in OneNote.
+	 * Supports a single video.
+	 */
+	function createEmbeddedKhanAcademyVideo(doc: Document): HTMLIFrameElement {
+		let iframe = createEmbedVideoIframe();
+		let youtubeSrcFromKhanAcademyPage = VideoUtils.getKhanAcademyVideoSrcValue(doc);
+
+		return createEmbeddedYouTubeVideo(youtubeSrcFromKhanAcademyPage);
+	}
+	
+	
 	/**
 	 * Create base iframe with reasonable style properties for video embed in OneNote.
 	 */
