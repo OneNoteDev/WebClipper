@@ -12,12 +12,8 @@ export interface TimeStampedData {
 	lastUpdated: number;
 }
 
-/*
- * The base class for the code which downloads, stores and retrieves code from a URL.
- */
 export class StorageBase {
 	public static defaultInterval = 12 * 60 * 60 * 1000; // Update after 12 hours.
-	public static longInterval = 14 * 24 * 60 * 60 * 1000; // Update after 14 days.
 
 	private logger: Logger;
 
