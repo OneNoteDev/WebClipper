@@ -96,7 +96,7 @@ test("The selection button should appear when invokeMode is set to selection", (
 	strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
 	strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
 	strictEqual(buttonElements[2].id, TestConstants.Ids.augmentationButton, "The third button should be the augmentation button");
-	strictEqual(buttonElements[3].id, TestConstants.Ids.selectionButton, "The fourth button should be the bookmark button");
+	strictEqual(buttonElements[3].id, TestConstants.Ids.selectionButton, "The fourth button should be the selection button");
 	strictEqual(buttonElements[4].id, TestConstants.Ids.bookmarkButton, "The fifth button should be the bookmark button");
 });
 
@@ -117,19 +117,23 @@ test("The selection button should appear when invokeMode is set to selection, an
 	strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
 });
 
-test("The tabbing should flow from full page to region to augmentation buttons", () => {
-	HelperFunctions.mountToFixture(defaultComponent);
+test("The tabbing should flow in element order, assuming they are all available, and each tab index should not be less than 1", () => {
+	let startingState = HelperFunctions.getMockClipperState();
+	startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;
+	HelperFunctions.mountToFixture(
+		<ModeButtonSelector clipperState={ startingState } />);
 
 	let modeButtonSelector = HelperFunctions.getFixture().firstElementChild;
 	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
-	let fullPageButton = buttonElements[0] as HTMLElement;
-	let regionButton = buttonElements[1] as HTMLElement;
-	let augmentationButton = buttonElements[2] as HTMLElement;
 
-	ok(fullPageButton.tabIndex < regionButton.tabIndex,
-		"The region button's tab index should be greater than the full page button's");
-	ok(regionButton.tabIndex < augmentationButton.tabIndex,
-		"The augmentation button's tab index should be greater than the region button's");
+	for (let i = 1; i < buttonElements.length; i++) {
+		ok((buttonElements[i] as HTMLElement).tabIndex > (buttonElements[i - 1] as HTMLElement).tabIndex,
+			"Elements tab indexes should be in ascending order");
+	}
+
+	for (let i = 0; i < buttonElements.length; i++) {
+		ok((buttonElements[0] as HTMLElement).tabIndex > 0);
+	}
 });
 
 test("The full page button should have the 'selected' class styling applied to it by default", () => {
