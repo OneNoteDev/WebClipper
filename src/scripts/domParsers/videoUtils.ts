@@ -66,29 +66,40 @@ export module VideoUtils {
 		return values;
 	}
 
-	export function getKhanAcademyVideoSrcValue(doc: Document): string {
-		if (Utils.isNullOrUndefined(doc)) {
+	export function getKhanAcademyVideoSrcValue(pageContent: string): string {
+		if (Utils.isNullOrUndefined(pageContent)) {
 			return;
 		}
 
-		let videoContainer = doc.getElementsByClassName("ka-video-player-container");
-		if (videoContainer.length === 0) {
+		let videoIds = getKhanAcademyVideoIds(pageContent);
+		if (Utils.isNullOrUndefined(videoIds)) {
 			return;
-		}	
+		}
+
+
+		return "https://www.youtube.com/embed/" + videoIds[0];
+		// if (Utils.isNullOrUndefined(doc)) {
+		// 	return;
+		// }
+
+		// let videoContainer = doc.getElementsByClassName("ka-video-player-container");
+		// if (videoContainer.length === 0) {
+		// 	return;
+		// }
 		
-		let container = videoContainer[0] as HTMLElement;
+		// let container = videoContainer[0] as HTMLElement;
 
-		let children = container.children;
-		if (children.length === 0) {
-			return;
-		}
+		// let children = container.children;
+		// if (children.length === 0) {
+		// 	return;
+		// }
 
-		let video = children[0] as HTMLVideoElement;
-		let src = video.src; 
+		// let video = children[0] as HTMLVideoElement;
+		// let src = video.src;
 
-		let cleanSrc = src.substring(0, src.indexOf("?"));
+		// let cleanSrc = src.substring(0, src.indexOf("?"));
 
-		return cleanSrc;
+		// return cleanSrc;
 	}
 
 	/**
@@ -146,5 +157,36 @@ export module VideoUtils {
 			return;
 		}
 		return matches.filter((element, index, array) => { return array.indexOf(element) === index; }); // unique values only
+	}
+
+	function matchRegexFromPageContent(pageContent: string, regex: RegExp): string[] {
+		if (Utils.isNullOrUndefined(pageContent)) {
+			return;
+		}
+
+		// looking for all matches in pageContent of the general format: id="clip_###"
+		// 		- where ### could be any number of digits
+		// 		- ignore casing
+		// 		- ignore possible whitespacing variations between characters
+		// 		- accept the use of either double- or single-quotes around clip_###
+		let m;
+		let matches = [];
+		while (m = regex.exec(pageContent)) {
+			if (m[2]) {
+				matches.push(m[2]);
+			} else {
+				matches.push(m[3]);
+			}
+		}
+
+		if (matches.length === 0) {
+			return;
+		}
+		return matches.filter((element, index, array) => { return array.indexOf(element) === index; }); // unique values only
+	}
+
+	export function getKhanAcademyVideoIds(pageContent: string): string[] {
+		let regex = /id\s*=\s*("\s*video_(.+)\s*"|'\s*video_(.+)\s*')|data-translatedyoutubeid\s*=\s*("\s*(.+)\s*"|'\s*(.+)\s*')/gi;
+		return matchRegexFromPageContent(pageContent, regex);
 	}
 }
