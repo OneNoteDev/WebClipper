@@ -196,3 +196,18 @@ test("The tabbing should flow from the feedback to dropdown to sign out buttons"
 	ok(dropdown.tabIndex < signOutButton.tabIndex,
 		"The sign out button's tab index should be greater than the dropdown button's");
 });
+
+test("Tab indexes should not be less than 1", () => {
+	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+
+	let feedbackButton = document.getElementById(Constants.Ids.feedbackButton);
+	let dropdown = document.getElementById(Constants.Ids.currentUserControl);
+	HelperFunctions.simulateAction(() => {
+		dropdown.click();
+	});
+	let signOutButton = document.getElementById(Constants.Ids.signOutButton);
+
+	ok(feedbackButton.tabIndex > 0);
+	ok(dropdown.tabIndex > 0);
+	ok(signOutButton.tabIndex > 0);
+});

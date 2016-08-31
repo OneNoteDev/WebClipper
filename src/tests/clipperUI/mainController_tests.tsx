@@ -52,7 +52,7 @@ MainControllerClass.prototype.getInitialState = function() {
  * We don't test tabbing within expanded elements as that is tested lower in the component hierarchy
  */
 
-test("On the sign in panel, the tab order is correct", () => {
+test("On the sign in panel, the tab order is correct, and each tab index should not be less than 1", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	HelperFunctions.simulateAction(() => {
@@ -69,9 +69,13 @@ test("On the sign in panel, the tab order is correct", () => {
 		ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
 			"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
 	}
+
+	for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
+		ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
+	}
 });
 
-test("On the clip options panel, the tab order is correct", () => {
+test("On the clip options panel, the tab order is correct, and each tab index should not be less than 1", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	HelperFunctions.simulateAction(() => {
@@ -93,9 +97,13 @@ test("On the clip options panel, the tab order is correct", () => {
 		ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
 			"Element " + elementsInExpectedTabOrder[i].name + " (" + elementsInExpectedTabOrder[i].elem.tabIndex + ") should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name + " (" + elementsInExpectedTabOrder[i - 1].elem.tabIndex + ")");
 	}
+
+	for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
+		ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
+	}
 });
 
-test("On the region instructions panel, the tab order is correct", () => {
+test("On the region instructions panel, the tab order is correct, and each tab index should not be less than 1", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	HelperFunctions.simulateAction(() => {
@@ -111,9 +119,13 @@ test("On the region instructions panel, the tab order is correct", () => {
 		ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
 			"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
 	}
+
+	for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
+		ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
+	}
 });
 
-test("On the clip success panel, the tab order is correct", () => {
+test("On the clip success panel, the tab order is correct, and each tab index should not be less than 1", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	HelperFunctions.simulateAction(() => {
@@ -131,9 +143,13 @@ test("On the clip success panel, the tab order is correct", () => {
 		ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
 			"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
 	}
+
+	for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
+		ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
+	}
 });
 
-test("On the clip failure panel, the tab order is correct", () => {
+test("On the clip failure panel, the tab order is correct, and each tab index should not be less than 1", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	HelperFunctions.simulateAction(() => {
@@ -163,6 +179,14 @@ test("On the clip failure panel, the tab order is correct", () => {
 		} else {
 			strictEqual(element.tabIndex, expectedTabIndex, "Dialog button tabs should have the same tab indexes");
 		}
+	}
+
+	for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
+		ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
+	}
+
+	for (let i = 0; i < dialogButtons.length; i++) {
+		ok((dialogButtons[i] as HTMLElement).tabIndex > 0);
 	}
 });
 

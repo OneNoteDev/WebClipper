@@ -65,7 +65,7 @@ test("The fontSizeControl's buttons should be visible", () => {
 	ok(!!document.getElementById(Constants.Ids.incrementFontSize));
 });
 
-test("The tabbing should flow from higlight to font family selectors to font size selectors", () => {
+test("The tabbing should flow from higlight to font family selectors to font size selectors, and each tab index should not be less than 1", () => {
 	HelperFunctions.mountToFixture(defaultComponent);
 
 	let elementsInExpectedTabOrder = [
@@ -79,6 +79,10 @@ test("The tabbing should flow from higlight to font family selectors to font siz
 	for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
 		ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
 			"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
+	}
+
+	for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
+		ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
 	}
 });
 
