@@ -21,8 +21,13 @@ export class RatingsHelper {
 
 		return new Promise<boolean>((resolve, reject) => {
 			Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDate) => {
-				Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numSuccessfulClips) => {
-					if (Utils.isNullOrUndefined(lastBadRatingDate) && Utils.isNullOrUndefined(numSuccessfulClips)) {
+				Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipsAsStr) => {
+					if (Utils.isNullOrUndefined(lastBadRatingDate) && Utils.isNullOrUndefined(numClipsAsStr)) {
+						resolve(false);
+					}
+
+					let numClips: number = parseInt(numClipsAsStr, 10);
+					if (numClips >= 0) {
 						resolve(true);
 					}
 				});
@@ -32,5 +37,24 @@ export class RatingsHelper {
 		// TODO cache boolean in clipper state after first fetch for the session
 
 		// TODO reject case?
+	}
+
+	public static incrementSuccessfulClipCount(): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipsAsStr: string) => {
+				let numClips: number = parseInt(numClipsAsStr, 10); // TODO could return NaN
+				if (Utils.isNullOrUndefined(numClips) || isNaN(numClips)) {
+					numClips = 0;
+				}
+
+				numClips++;
+
+				Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, numClips.toString());
+
+				resolve();
+
+				// TODO reject case?
+			});
+		});
 	}
 }
