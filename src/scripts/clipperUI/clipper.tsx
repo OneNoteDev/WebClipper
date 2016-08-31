@@ -626,7 +626,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
 			// TODO do I have to chain all of these promises?
 			RatingsHelper.incrementSuccessfulClipCount().then(() => {
-				RatingsHelper.shouldShowRatingsPrompt().then((shouldShowRatingsPrompt) => {
+				RatingsHelper.shouldShowRatingsPrompt(this.state).then((shouldShowRatingsPrompt) => {
 					this.state.setState({ shouldShowRatingsPrompt: shouldShowRatingsPrompt });
 				}, () => {
 					// TODO on shouldShowRatingsPrompt reject?
