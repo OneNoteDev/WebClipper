@@ -14,6 +14,7 @@ import {ClipperInjectOptions} from "../extensions/clipperInject";
 import {InvokeOptions} from "../extensions/invokeOptions";
 
 import {ClipMode} from "./clipMode";
+import {RatingsPromptStage} from "./ratingsPromptStage";
 import {Status} from "./status";
 
 export interface DataResult<T> {
@@ -62,6 +63,8 @@ export interface ClipperState {
 
 	// Should be set when the Web Clipper enters a state that can not be recovered this session
 	badState?: boolean;
+
+	ratingsPromptStage?: RatingsPromptStage;
 
 	setState?: (partialState: ClipperState) => void;
 	reset?: () => void;

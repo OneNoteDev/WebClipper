@@ -45,6 +45,7 @@ import {ComponentBase} from "./componentBase";
 import {MainController} from "./mainController";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {PreviewViewer} from "./previewViewer";
+import {RatingsPromptStage} from "./ratingsPromptStage";
 import {RegionSelector} from "./regionSelector";
 import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
 import {Status} from "./status";
@@ -69,7 +70,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			pdfResult: { status: Status.NotStarted },
 			regionResult: { status: Status.NotStarted, data: [] },
 			augmentationResult: { status: Status.NotStarted },
-			oneNoteApiResult: { status: Status.NotStarted },
+			oneNoteApiResult: { status: Status.Succeeded }, // TODO for development only
 			bookmarkResult: { status: Status.NotStarted },
 
 			setState: (partialState: ClipperState) => {
@@ -85,6 +86,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			},
 			augmentationPreviewInfo: {},
 			selectionPreviewInfo: {},
+			ratingsPromptStage: RatingsPromptStage.INIT,
 
 			reset: () => {
 				this.state.setState(this.getResetState());
@@ -95,7 +97,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private getResetState(): ClipperState {
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
-			oneNoteApiResult: { status: Status.NotStarted }
+			oneNoteApiResult: { status: Status.Succeeded }, // TODO for development only
+			ratingsPromptStage: RatingsPromptStage.INIT
 		};
 	}
 
@@ -623,6 +626,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
 			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
+
+			// TODO increment numSuccessfulClips in storage
 		}, (error: OneNoteApi.RequestError) => {
 			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
 
