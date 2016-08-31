@@ -158,6 +158,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.captureFullScreenshotContent();
 				this.captureAugmentedContent();
 				this.captureBookmarkContent();
+				this.startClip(); // TODO for development only
 
 				Clipper.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[updatedPageInfo.contentType]);
 				Clipper.logger.setContextProperty(Log.Context.Custom.InvokeHostname, Utils.getHostname(updatedPageInfo.rawUrl));
