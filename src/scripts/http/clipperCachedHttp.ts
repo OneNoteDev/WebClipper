@@ -25,7 +25,6 @@ export class ClipperCachedHttp extends CachedHttp {
 	}
 
 	// Override
-	// TODO: Use enum for the key? Then you'll likely have to use composition instead of inheritence
 	public getAndCacheFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval = CachedHttp.defaultExpiry): Promise<TimeStampedData> {
 		if (!key) {
 			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
