@@ -139,6 +139,9 @@ export module Constants {
 		export var bookmarkControl = "bookmarkControl";
 		export var bookmarkHeaderTitle = "bookmarkHeaderTitle";
 
+		// ratingsPrompt
+		export var ratingsPromptContainer = "ratingsPromptContainer";
+
 		// regionSelectingPanel
 		export var regionInstructionsContainer = "regionInstructionsContainer";
 		export var regionClipCancelButton = "regionClipCancelButton";

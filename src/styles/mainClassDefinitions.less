@@ -2,6 +2,8 @@
 	Main clipper UI class defines
 *---------------------------------------------------------*/
 
+@ResultPagePaddingTop: 25px;
+
 .actionLabelFont {
 	font-weight: normal;
 	font-size: 24px;
@@ -166,7 +168,7 @@
 }
 
 .resultPagePadding {
-	padding-top: 25px;
+	padding-top: @ResultPagePaddingTop;
 	padding-bottom: 15px;
 }
 
@@ -251,4 +253,13 @@
 	img {
 		display: block;
 	}
+}
+
+#ratingsPromptContainer {
+	background: @DarkBackgroundColorTransparent;
+	padding-left: @ClipperUIInnerPadding;
+	padding-right: @ClipperUIInnerPadding;
+	margin-left: @ClipperUIInnerPadding * -1;
+	margin-right: @ClipperUIInnerPadding * -1;
+	padding-bottom: @ResultPagePaddingTop;
 }

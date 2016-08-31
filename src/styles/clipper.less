@@ -25,13 +25,13 @@
 	Constant Colors
 *---------------------------------------------------------*/
 @OneNotePurple: #7321a6;
-@OneNotePurpleTransparent: rgba(128, 46, 179, 0.95);
+@OneNotePurpleTransparent: fade(@OneNotePurple, 95%); /* TODO either OneNotePurple or OneNotePurpleTransparent seems wrong... unless they are not meant to have the same rgb */
 
 @WideButtonBackgroundColor: #ffffff;
 @WideButtonHoverColor: #e5d6ec;
 
 @DarkBackgroundColor: #56197c;
-@DarkBackgroundColorTransparent: rgba(115,33,166, 0.95);
+@DarkBackgroundColorTransparent: fade(@DarkBackgroundColor, 95%);
 @DarkHoverColor: #8f4db8;
 
 @ClipperDividerColor: #e6b3cf;

@@ -39,7 +39,6 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 	}
 
 	private showRatingsPrompt(): any[] {
-		// TODO DialogPanel should accept classes
 		if (this.state.showRatingsPrompt) {
 			let message: string;
 			let buttons: DialogButton[] = [];
@@ -114,7 +113,8 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 			}
 
 			if (!Utils.isNullOrUndefined(message)) {
-				return <div style="background: rgba(115,33,166, 0.95);padding-left: 24px;padding-right: 24px;margin-left: -24px;margin-right: -24px;padding-bottom: 25px;">
+				// TODO DialogPanel should accept classes so we can remove this extra div
+				return <div id={Constants.Ids.ratingsPromptContainer}>
 					<DialogPanel message={message} buttons={buttons}/>
 				</div>;
 			}
