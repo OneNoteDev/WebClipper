@@ -14,7 +14,7 @@ import {ClipperInjectOptions} from "../extensions/clipperInject";
 import {InvokeOptions} from "../extensions/invokeOptions";
 
 import {ClipMode} from "./clipMode";
-import {RatingsPromptStage} from "./ratingsPromptStage";
+import {RatingsPromptStage} from "./ratingsHelper";
 import {Status} from "./status";
 
 export interface DataResult<T> {
@@ -65,6 +65,7 @@ export interface ClipperState {
 	badState?: boolean;
 
 	ratingsPromptStage?: RatingsPromptStage;
+	shouldShowRatingsPrompt?: boolean;
 
 	setState?: (partialState: ClipperState) => void;
 	reset?: () => void;

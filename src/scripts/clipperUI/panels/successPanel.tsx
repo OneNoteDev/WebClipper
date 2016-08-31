@@ -9,24 +9,14 @@ import {ClipMode} from "../clipMode";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {Clipper} from "../frontEndGlobals";
-import {RatingsPromptStage} from "../ratingsPromptStage";
+import {RatingsPromptStage} from "../ratingsHelper";
 import {Status} from "../status";
 
 import {SpriteAnimation} from "../components/spriteAnimation";
 
 import {DialogButton, DialogPanel} from "./dialogPanel";
 
-interface SuccessPanelState {
-	showRatingsPrompt: boolean;
-}
-
-class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStateProp> {
-	getInitialState(): SuccessPanelState {
-		return {
-			showRatingsPrompt: true
-		};
-	}
-
+class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 	onLaunchOneNoteButton() {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ViewInWac);
 		let data = this.props.clipperState.oneNoteApiResult.data as OneNoteApi.Page;
@@ -39,7 +29,8 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 	}
 
 	private showRatingsPrompt(): any[] {
-		if (this.state.showRatingsPrompt) {
+
+		if (this.props.clipperState.shouldShowRatingsPrompt) {
 			let message: string;
 			let buttons: DialogButton[] = [];
 
@@ -55,14 +46,14 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 							});
 						}
 					}, {
-						id: "",
-						label: "It could be better.",
-						handler: () => {
-							this.props.clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.FEEDBACK
-							});
-						}
-					});
+							id: "",
+							label: "It could be better.",
+							handler: () => {
+								this.props.clipperState.setState({
+									ratingsPromptStage: RatingsPromptStage.FEEDBACK
+								});
+							}
+						});
 					break;
 				case RatingsPromptStage.RATE:
 					message = "Rate us in the Store";
@@ -75,14 +66,14 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 							});
 						}
 					}, {
-						id: "",
-						label: "No thanks",
-						handler: () => {
-							this.props.clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.NONE
-							});
-						}
-					});
+							id: "",
+							label: "No thanks",
+							handler: () => {
+								this.props.clipperState.setState({
+									ratingsPromptStage: RatingsPromptStage.NONE
+								});
+							}
+						});
 					break;
 				case RatingsPromptStage.FEEDBACK:
 					message = "Help us improve!";
@@ -95,14 +86,14 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 							});
 						}
 					}, {
-						id: "",
-						label: "No thanks",
-						handler: () => {
-							this.props.clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.NONE
-							});
-						}
-					});
+							id: "",
+							label: "No thanks",
+							handler: () => {
+								this.props.clipperState.setState({
+									ratingsPromptStage: RatingsPromptStage.NONE
+								});
+							}
+						});
 					break;
 				case RatingsPromptStage.END:
 					message = "Thanks!";
@@ -114,9 +105,11 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 
 			if (!Utils.isNullOrUndefined(message)) {
 				// TODO DialogPanel should accept classes so we can remove this extra div
-				return <div id={Constants.Ids.ratingsPromptContainer}>
-					<DialogPanel message={message} buttons={buttons}/>
-				</div>;
+				return (
+					<div id={Constants.Ids.ratingsPromptContainer}>
+						<DialogPanel message={message} buttons={buttons}/>
+					</div>
+				);
 			}
 		}
 	}

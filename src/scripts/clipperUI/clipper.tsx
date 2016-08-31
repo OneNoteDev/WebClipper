@@ -45,7 +45,7 @@ import {ComponentBase} from "./componentBase";
 import {MainController} from "./mainController";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {PreviewViewer} from "./previewViewer";
-import {RatingsPromptStage} from "./ratingsPromptStage";
+import {RatingsHelper, RatingsPromptStage} from "./ratingsHelper";
 import {RegionSelector} from "./regionSelector";
 import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
 import {Status} from "./status";
@@ -623,11 +623,18 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
-			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
-
 			// TODO increment numSuccessfulClips in storage
+
+			RatingsHelper.shouldShowRatingsPrompt().then((shouldShowRatingsPrompt) => {
+				this.state.setState({ shouldShowRatingsPrompt: shouldShowRatingsPrompt });
+			}, () => {
+				// TODO on reject?
+			}).then(() => {
+				// regardless of success/failure of ratings prompt check, continue with clip success as usual
+				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
+				clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
+				this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
+			});
 		}, (error: OneNoteApi.RequestError) => {
 			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
 
