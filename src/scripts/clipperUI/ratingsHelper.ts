@@ -21,19 +21,26 @@ export class RatingsHelper {
 		}
 
 		return new Promise<boolean>((resolve, reject) => {
-			Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
-				Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
-					if (Utils.isNullOrUndefined(lastBadRatingDateAsStr) && Utils.isNullOrUndefined(numClipsAsStr)) {
-						resolve(false);
-					}
-
-					let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
-					if (RatingsHelper.badRatingDelayIsOver(lastBadRatingDate, Date.now())) {
-						let numClips: number = parseInt(numClipsAsStr, 10);
-						if (RatingsHelper.clipSuccessDelayIsOver(numClips)) {
-							resolve(true);
+			Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsStr) => {
+				Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
+					Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
+						if (Utils.isNullOrUndefined(lastBadRatingDateAsStr) && Utils.isNullOrUndefined(numClipsAsStr)) {
+							resolve(false); // TODO when does this happen?
 						}
-					}
+
+						let doNotPrompt: boolean = Boolean(doNotPromptRatingsStr);
+						if (doNotPrompt) {
+							resolve(false);
+						}
+
+						let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+						if (RatingsHelper.badRatingDelayIsOver(lastBadRatingDate, Date.now())) {
+							let numClips: number = parseInt(numClipsAsStr, 10);
+							if (RatingsHelper.clipSuccessDelayIsOver(numClips)) {
+								resolve(true);
+							}
+						}
+					});
 				});
 			});
 		});
@@ -60,22 +67,27 @@ export class RatingsHelper {
 		});
 	}
 
+	public static setDoNotPromptStatus(): void {
+		// TODO log this and how it got called
+
+		Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "true");
+	}
+
 	public static setLastBadRatingDate(): void {
-		// we are only going to allow one set of bad rating date by calling this method
-		// any additional sets will result in a set to the maximum date
+		// we are only going to allow two sets of bad rating date by calling this method
+		// any additional sets will result in a set of the do not prompt status
 		// - meaning a user will never see the ratings prompt again
 
 		// (?) # of bad ratings > p, where p is like 2
 
 		let badDateKey: string = Constants.StorageKeys.lastBadRatingDate;
 
+		Clipper.Storage.setValue(badDateKey, Date.now().toString());
+
 		Clipper.Storage.getValue(badDateKey, (lastBadRatingDateAsStr) => {
 			let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
-			if (isNaN(lastBadRatingDate)) {
-				Clipper.Storage.setValue(badDateKey, Date.now().toString());
-			} else {
-				// TODO log this case
-				Clipper.Storage.setValue(badDateKey, Constants.Settings.maximumTimeValue.toString());
+			if (!isNaN(lastBadRatingDate)) {
+				RatingsHelper.setDoNotPromptStatus();
 			}
 		});
 	}

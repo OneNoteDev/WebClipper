@@ -258,6 +258,7 @@ export module Constants {
 		export var cachedNotebooks = "notebooks";
 		export var currentSelectedSection = "curSection";
 		export var displayLanguageOverride = "displayLocaleOverride";
+		export var doNotPromptRatings = "doNotPromptRatings";
 		export var flightingInfo = "flightingInfo";
 		export var lastBadRatingDate = "lastBadRatingDate";
 		export var lastClippedDate = "lastClippedDate";

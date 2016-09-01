@@ -41,6 +41,8 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 						id: "",
 						label: "Yes, it's great!",
 						handler: () => {
+							RatingsHelper.setDoNotPromptStatus();
+
 							this.props.clipperState.setState({
 								ratingsPromptStage: RatingsPromptStage.RATE
 							});
@@ -71,6 +73,9 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 							id: "",
 							label: "No thanks",
 							handler: () => {
+								// TODO we could set a value that lets us know they got here
+								// so that we could put the Rate Us link in their footer
+
 								this.props.clipperState.setState({
 									ratingsPromptStage: RatingsPromptStage.NONE
 								});
@@ -91,6 +96,8 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 							id: "",
 							label: "No thanks",
 							handler: () => {
+								// TODO should we set doNotPromptStatus immediately here when they decide not to provide feedback?
+
 								this.props.clipperState.setState({
 									ratingsPromptStage: RatingsPromptStage.NONE
 								});
