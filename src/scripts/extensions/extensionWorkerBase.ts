@@ -23,6 +23,7 @@ import {LogHelpers} from "../logging/logHelpers";
 import {SessionLogger} from "../logging/sessionLogger";
 
 import {ClipperData} from "../storage/clipperData";
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ChangeLog} from "../versioning/changeLog";
 
@@ -269,7 +270,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected getLocalizedStrings(locale: string, callback?: Function) {
 		this.logger.setContextProperty(Log.Context.Custom.BrowserLanguage, locale);
 
-		let storedLocale = this.clipperData.getValue(Constants.StorageKeys.locale);
+		let storedLocale = this.clipperData.getValue(ClipperStorageKeys.locale);
 		let localeInStorageIsDifferent = !storedLocale || storedLocale !== locale;
 
 		let getLocaleEvent = new Log.Event.BaseEvent(Log.Event.Label.GetLocale);
@@ -281,8 +282,8 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 		let getLocalizedStringsEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetLocalizedStrings);
 		getLocalizedStringsEvent.setCustomProperty(Log.PropertyName.Custom.ForceRetrieveFreshLocStrings, localeInStorageIsDifferent);
-		this.clipperData.getAndCacheFreshValue(Constants.StorageKeys.locStrings, fetchStringDataFunction, updateInterval).then((response) => {
-			this.clipperData.setValue(Constants.StorageKeys.locale, locale);
+		this.clipperData.getAndCacheFreshValue(ClipperStorageKeys.locStrings, fetchStringDataFunction, updateInterval).then((response) => {
+			this.clipperData.setValue(ClipperStorageKeys.locale, locale);
 			if (callback) {
 				callback(response ? response.data : undefined);
 			}
@@ -299,7 +300,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	}
 
 	protected getLocalizedStringsForBrowser(callback: Function) {
-		let localeOverride = this.clipperData.getValue(Constants.StorageKeys.displayLanguageOverride);
+		let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 		let locale = localeOverride || navigator.language || navigator.userLanguage;
 		this.getLocalizedStrings(locale, callback);
 	}
@@ -502,9 +503,9 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			}
 
 			this.auth.user.set({ updateReason: UpdateReason.SignOutAction });
-			this.clipperData.setValue(Constants.StorageKeys.userInformation, undefined);
-			this.clipperData.setValue(Constants.StorageKeys.currentSelectedSection, undefined);
-			this.clipperData.setValue(Constants.StorageKeys.cachedNotebooks, undefined);
+			this.clipperData.setValue(ClipperStorageKeys.userInformation, undefined);
+			this.clipperData.setValue(ClipperStorageKeys.currentSelectedSection, undefined);
+			this.clipperData.setValue(ClipperStorageKeys.cachedNotebooks, undefined);
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.telemetry, (data: Log.LogDataPackage) => {

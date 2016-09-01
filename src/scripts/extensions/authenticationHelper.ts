@@ -8,6 +8,7 @@ import {Logger} from "../logging/logger";
 import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
 
 import {ClipperData} from "../storage/clipperData";
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {Constants} from "../constants";
 import {ResponsePackage} from "../responsePackage";
@@ -35,7 +36,7 @@ export class AuthenticationHelper {
 		return new Promise<UserInfo>((resolve) => {
 			let updateInterval = 0;
 
-			let storedUserInformation = this.clipperData.getValue(Constants.StorageKeys.userInformation);
+			let storedUserInformation = this.clipperData.getValue(ClipperStorageKeys.userInformation);
 			if (storedUserInformation) {
 				let currentInfo: any;
 				try {
@@ -64,7 +65,7 @@ export class AuthenticationHelper {
 
 			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
 			getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
-			this.clipperData.getAndCacheFreshValue(Constants.StorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
+			this.clipperData.getAndCacheFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, !!response);
 
 				if (response) {

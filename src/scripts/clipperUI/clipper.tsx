@@ -29,15 +29,17 @@ import {VideoUtils} from "../domParsers/videoUtils";
 import {ClipperInjectOptions} from "../extensions/clipperInject";
 import {InvokeOptions, InvokeMode} from "../extensions/invokeOptions";
 
-import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
-
 import {InlineExtension} from "../extensions/bookmarklet/inlineExtension";
+
+import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
 
 import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
 import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
 import {Logger} from "../logging/logger";
+
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
@@ -593,14 +595,14 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private startClip() {
-		Clipper.Storage.setValue(Constants.StorageKeys.lastClippedDate, Date.now().toString());
+		Clipper.Storage.setValue(ClipperStorageKeys.lastClippedDate, Date.now().toString());
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
 		let mode = ClipMode[this.state.currentMode.get()];
 		if (this.state.currentMode.get() === ClipMode.FullPage && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			mode += ": " + OneNoteApi.ContentType[this.state.pageInfo.contentType];
-			Clipper.Storage.setValue(Constants.StorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
+			Clipper.Storage.setValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
 		}
 		if (this.state.currentMode.get() === ClipMode.Augmentation) {
 			let styles = {
@@ -610,12 +612,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			// Record lastClippedDate for each different augmentationMode so we can upsell the augmentation mode
 			// to users who haven't Clipped this mode in a while
 			let augmentationTypeAsString = AugmentationHelper.getAugmentationType(this.state);
-			Clipper.Storage.setValue(Constants.StorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
+			Clipper.Storage.setValue(ClipperStorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, augmentationTypeAsString);
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.Styles, JSON.stringify(styles));
 		}
 		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
-			Clipper.Storage.setValue(Constants.StorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
+			Clipper.Storage.setValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
 		}
 		clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, mode);
 

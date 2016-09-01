@@ -8,13 +8,13 @@ import {Constants} from "../constants";
 import {RemoteStorage} from "../storage/remoteStorage";
 import {StorageAsync} from "../storage/storageAsync";
 
+// TODO consider making this a class rather than a module to make it safer to use, e.g., when setting communicator, sets up storage
 export module Clipper {
 	export let injectCommunicator: Communicator;
 	export let extensionCommunicator: Communicator;
 	export let logger: Logger;
 	export let sessionId: SmartValue<string> = new SmartValue<string>();
 
-	// TODO make Clipper a class or something else?
 	export let storage: StorageAsync;
 
 	export function getUserSessionId(): string {

@@ -3,6 +3,7 @@ import {Utils} from "../utils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
 
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 import {Storage} from "../storage/storage";
 
 export class TooltipHelper {
@@ -37,8 +38,8 @@ export class TooltipHelper {
 			throw new Error("Invalid argument passed to tooltipDelayIsOver");
 		}
 
-		let lastSeenTooltipTime = this.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, tooltipType);
-		let lastSeenClipTime = this.getTooltipInformation(Constants.StorageKeys.lastClippedTooltipTimeBase, tooltipType);
+		let lastSeenTooltipTime = this.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);
+		let lastSeenClipTime = this.getTooltipInformation(ClipperStorageKeys.lastClippedTooltipTimeBase, tooltipType);
 
 		let timeBetweenTooltips = Constants.Settings.timeBetweenTooltips;
 
