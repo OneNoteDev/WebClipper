@@ -13,6 +13,8 @@ import {CachedHttp, GetResponseAsync, TimeStampedData} from "./cachedHttp";
  * result. Also logs attempts to get values from these endpoints.
  */
 export class ClipperCachedHttp extends CachedHttp {
+	private static defaultExpiry = 12 * 60 * 60 * 1000; // 12 hours
+
 	private logger: Logger;
 
 	constructor(cache: Storage, logger?: Logger) {
@@ -25,7 +27,7 @@ export class ClipperCachedHttp extends CachedHttp {
 	}
 
 	// Override
-	public getAndCacheFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval = CachedHttp.defaultExpiry): Promise<TimeStampedData> {
+	public getAndCacheFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval = ClipperCachedHttp.defaultExpiry): Promise<TimeStampedData> {
 		if (!key) {
 			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
 				{ error: "getAndCacheFreshValue key parameter should be passed a non-empty string" }, "" + key);

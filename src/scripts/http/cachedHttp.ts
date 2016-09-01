@@ -13,23 +13,17 @@ export type GetResponseAsync = () => Promise<ResponsePackage<string>>;
  * Allows the creation of HTTP GET requests to retrieve data, as well as caching of the result.
  */
 export class CachedHttp {
-	protected static defaultExpiry = 12 * 60 * 60 * 1000; // 12 hours
-
 	private cache: Storage;
 
 	constructor(cache: Storage) {
 		this.cache = cache;
 	}
 
-	public getDefaultExpiry(): number {
-		return CachedHttp.defaultExpiry;
-	}
-
 	/**
 	 * Given a key, checks the cache for a fresh copy of that value. If the cached value does
 	 * not exist, or is not fresh, fetches a fresh copy of the data from the specified endpoint.
 	 */
-	public getAndCacheFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval = CachedHttp.defaultExpiry): Promise<TimeStampedData> {
+	public getAndCacheFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval: number): Promise<TimeStampedData> {
 		if (!key) {
 			throw new Error("key must be a non-empty string, but was: " + key);
 		} else if (updateInterval < 0) {
@@ -88,7 +82,7 @@ export class CachedHttp {
 	/**
 	 * Returns true if the timestamped data is older than the expiry time; false otherwise.
 	 */
-	public static valueHasExpired(value: TimeStampedData, expiryTime = CachedHttp.defaultExpiry): boolean {
+	public static valueHasExpired(value: TimeStampedData, expiryTime: number): boolean {
 		let lastUpdated = value && value.lastUpdated ? value.lastUpdated : 0;
 		return (Date.now() - lastUpdated >= expiryTime);
 	}
