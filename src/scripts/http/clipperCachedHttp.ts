@@ -26,6 +26,10 @@ export class ClipperCachedHttp extends CachedHttp {
 		this.logger = logger;
 	}
 
+	public static getDefaultExpiry(): number {
+		return ClipperCachedHttp.defaultExpiry;
+	}
+
 	// Override
 	public getAndCacheFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval = ClipperCachedHttp.defaultExpiry): Promise<TimeStampedData> {
 		if (!key) {

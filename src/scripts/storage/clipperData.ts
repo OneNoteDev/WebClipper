@@ -3,6 +3,7 @@ import {ClipperCachedHttp} from "../http/clipperCachedHttp";
 
 import {Logger} from "../logging/logger";
 
+import {ClipperStorageGateStrategy} from "./clipperStorageGateStrategy";
 import {Storage} from "./storage";
 import {StorageGateStrategy} from "./StorageGateStrategy";
 
@@ -11,9 +12,10 @@ export class ClipperData implements Storage {
 	private storageGateStrategy: StorageGateStrategy;
 	private cachedHttp: ClipperCachedHttp;
 
-	constructor(storage: Storage, storageGateStrategy: StorageGateStrategy, logger: Logger) {
+	// TODO created a gated data store class?
+	constructor(storage: Storage, logger?: Logger) {
 		this.storage = storage;
-		this.storageGateStrategy = storageGateStrategy;
+		this.storageGateStrategy = new ClipperStorageGateStrategy(storage);
 		// We pass 'this' as the Storage object as it handles all the sanity-check gating in the setValue
 		this.cachedHttp = new ClipperCachedHttp(this, logger);
 	}

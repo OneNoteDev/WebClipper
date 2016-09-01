@@ -11,7 +11,8 @@ import {SmartValue} from "../../communicator/smartValue";
 
 import * as Log from "../../logging/log";
 
-import {StorageBase} from "../../storage/storageBase";
+import {ClipperData} from "../../storage/clipperData";
+import {LocalStorage} from "../../storage/LocalStorage";
 
 import {ChangeLog} from "../../versioning/changeLog";
 
@@ -35,7 +36,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
 		let messageHandlerThunk = () => { return new WebExtensionBackgroundMessageHandler(tab.id); };
-		super(clientInfo, auth, new StorageBase(), messageHandlerThunk, messageHandlerThunk);
+		super(clientInfo, auth, new ClipperData(new LocalStorage()), messageHandlerThunk, messageHandlerThunk);
 
 		this.injectUrls = injectUrls;
 		this.tab = tab;

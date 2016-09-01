@@ -4,7 +4,8 @@ import {TooltipType} from "../../clipperUI/tooltipType";
 
 import {InlineMessageHandler} from "../../communicator/inlineMessageHandler";
 
-import {StorageBase} from "../../storage/storageBase";
+import {ClipperData} from "../../storage/clipperData";
+import {LocalStorage} from "../../storage/localStorage";
 
 import {ExtensionBase} from "../extensionBase";
 
@@ -26,7 +27,7 @@ export class InlineExtension extends ExtensionBase<InlineWorker, any, any> {
 	private worker: InlineWorker;
 
 	constructor() {
-		super(ClientType.Bookmarklet, new StorageBase());
+		super(ClientType.Bookmarklet, new ClipperData(new LocalStorage()));
 
 		this.worker = new InlineWorker(this.clientInfo, this.auth);
 		this.addWorker(this.worker);

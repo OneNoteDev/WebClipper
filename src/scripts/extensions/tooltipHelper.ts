@@ -3,12 +3,12 @@ import {Utils} from "../utils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
 
-import {StorageBase} from "../storage/storageBase";
+import {Storage} from "../storage/storage";
 
 export class TooltipHelper {
-	storage: StorageBase;
+	private storage: Storage;
 
-	constructor(storage: StorageBase) {
+	constructor(storage: Storage) {
 		this.storage = storage;
 	}
 

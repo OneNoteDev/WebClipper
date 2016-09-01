@@ -29,7 +29,7 @@ import {VideoUtils} from "../domParsers/videoUtils";
 import {ClipperInjectOptions} from "../extensions/clipperInject";
 import {InvokeOptions, InvokeMode} from "../extensions/invokeOptions";
 
-import {StorageBase, TimeStampedData} from "../storage/storageBase";
+import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
 
 import {InlineExtension} from "../extensions/bookmarklet/inlineExtension";
 
@@ -370,7 +370,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				};
 
 				// The user SV should never be set with expired user information
-				let tokenHasExpiredForLoggedInUser = StorageBase.valueHasExpired(timeStampedData, (updatedUser.user.accessTokenExpiration * 1000) - 180000);
+				let tokenHasExpiredForLoggedInUser = CachedHttp.valueHasExpired(timeStampedData, (updatedUser.user.accessTokenExpiration * 1000) - 180000);
 				if (tokenHasExpiredForLoggedInUser) {
 					Clipper.logger.logFailure(Log.Failure.Label.UserSetWithInvalidExpiredData, Log.Failure.Type.Unexpected);
 				}

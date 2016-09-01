@@ -1,20 +1,22 @@
-import {TooltipHelper} from "../../scripts/extensions/tooltipHelper";
+import {Constants} from "../../scripts/constants";
 
 import {TooltipType} from "../../scripts/clipperUI/tooltipType";
 
-import {Constants} from "../../scripts/constants";
+import {TooltipHelper} from "../../scripts/extensions/tooltipHelper";
 
-import {MockStorageBase} from "../storage/mockStorageBase";
+import {Storage} from "../../scripts/storage/storage";
+
+import {MockStorage} from "../storage/mockStorage";
 
 let tooltipHelper: TooltipHelper;
-let mockStorageBase: MockStorageBase;
+let mockStorage: Storage;
 let testType = TooltipType.Pdf;
 let baseDate = new Date("09/27/1993 09:27:00 PM");
 
 QUnit.module("tooltipHelper", {
 	beforeEach: () => {
-		mockStorageBase = new MockStorageBase();
-		tooltipHelper = new TooltipHelper(mockStorageBase);
+		mockStorage = new MockStorage();
+		tooltipHelper = new TooltipHelper(mockStorage);
 	}
 });
 
@@ -51,7 +53,7 @@ test("getTooltipInformation should return 0 for a value that is not in storage",
 test("getTooltipInformation should return 0 for an invalid value", () => {
 	let storageKey = TooltipHelper.getStorageKeyForTooltip(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
 	let expected = "blah";
-	mockStorageBase.setValue(storageKey, expected);
+	mockStorage.setValue(storageKey, expected);
 	let value = tooltipHelper.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
 	strictEqual(value, 0);
 });
@@ -59,7 +61,7 @@ test("getTooltipInformation should return 0 for an invalid value", () => {
 test("getTooltipInformation should return correct information for a value that is in storage", () => {
 	let storageKey = TooltipHelper.getStorageKeyForTooltip(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
 	let expected = 1234;
-	mockStorageBase.setValue(storageKey, expected.toString());
+	mockStorage.setValue(storageKey, expected.toString());
 	let value = tooltipHelper.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
 	strictEqual(value, expected);
 });

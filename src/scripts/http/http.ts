@@ -1,5 +1,10 @@
 import {RequestError} from "./requestError";
 
+interface ResponsePackage {
+	parsedResponse: string;
+	request: XMLHttpRequest;
+}
+
 interface RejectPackage {
 	response: XMLHttpRequest;
 	requestError: RequestError;
@@ -12,15 +17,15 @@ interface RejectPackage {
 export class Http {
 	private static defaultTimeout = 30000;
 
-	public static get(url: string, headers?: any, timeout = Http.defaultTimeout): Promise<XMLHttpRequest> {
-		return new Promise<XMLHttpRequest>((resolve, reject) => {
+	public static get(url: string, headers?: any, timeout = Http.defaultTimeout): Promise<ResponsePackage> {
+		return new Promise<ResponsePackage>((resolve, reject) => {
 			let request = new XMLHttpRequest();
 			request.open("GET", url);
 
 			request.timeout = timeout;
 
 			request.onload = () => {
-				resolve(request);
+				resolve({ parsedResponse: request.responseText, request: request });
 			};
 
 			request.onerror = () => {

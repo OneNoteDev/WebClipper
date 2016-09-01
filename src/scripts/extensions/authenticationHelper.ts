@@ -5,7 +5,9 @@ import {SmartValue} from "../communicator/smartValue";
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
-import {StorageBase, TimeStampedData} from "../storage/storageBase";
+import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
+
+import {ClipperData} from "../storage/clipperData";
 
 import {Constants} from "../constants";
 import {ResponsePackage} from "../responsePackage";
@@ -18,12 +20,12 @@ declare var browser;
 export class AuthenticationHelper {
 	public user: SmartValue<UserInfo>;
 	private logger: Logger;
-	private storage: StorageBase;
+	private clipperData: ClipperData;
 
-	constructor(storage: StorageBase, logger: Logger) {
+	constructor(storage: ClipperData, logger: Logger) {
 		this.user = new SmartValue<UserInfo>();
 		this.logger = logger;
-		this.storage = storage;
+		this.clipperData = storage;
 	}
 
 	/**
@@ -33,7 +35,7 @@ export class AuthenticationHelper {
 		return new Promise<UserInfo>((resolve) => {
 			let updateInterval = 0;
 
-			let storedUserInformation = this.storage.getValue(Constants.StorageKeys.userInformation);
+			let storedUserInformation = this.clipperData.getValue(Constants.StorageKeys.userInformation);
 			if (storedUserInformation) {
 				let currentInfo: any;
 				try {
@@ -62,7 +64,7 @@ export class AuthenticationHelper {
 
 			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
 			getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
-			this.storage.getFreshValue(Constants.StorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
+			this.clipperData.getAndCacheFreshValue(Constants.StorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, !!response);
 
 				if (response) {

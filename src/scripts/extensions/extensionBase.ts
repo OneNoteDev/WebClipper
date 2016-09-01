@@ -10,13 +10,15 @@ import {TooltipType} from "../clipperUI/tooltipType";
 
 import {SmartValue} from "../communicator/smartValue";
 
+import {Http} from "../http/http";
+
 import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
 
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
-import {StorageBase} from "../storage/storageBase";
+import {ClipperData} from "../storage/clipperData";
 
 import {ChangeLog} from "../versioning/changeLog";
 import {ChangeLogHelper} from "../versioning/changeLogHelper";
@@ -33,27 +35,27 @@ import {WorkerPassthroughLogger} from "./workerPassthroughLogger";
 export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TTabIdentifier>, TTab, TTabIdentifier> {
 	private workers: TWorker[];
 	private logger: Logger;
-	protected storage: StorageBase;
+	protected clipperData: ClipperData;
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
 	protected static version = "3.2.5";
 
-	constructor(clipperType: ClientType, storage: StorageBase) {
+	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
 
 		this.workers = [];
 		this.logger = new WorkerPassthroughLogger(this.workers);
-		this.storage = storage;
-		this.storage.setLogger(this.logger);
-		this.auth = new AuthenticationHelper(this.storage, this.logger);
-		this.tooltip = new TooltipHelper(this.storage);
+		this.clipperData = clipperData;
+		this.clipperData.setLogger(this.logger);
+		this.auth = new AuthenticationHelper(this.clipperData, this.logger);
+		this.tooltip = new TooltipHelper(this.clipperData);
 
-		let clipperId = this.storage.getValue(Constants.StorageKeys.clipperId);
+		let clipperId = this.clipperData.getValue(Constants.StorageKeys.clipperId);
 		if (!clipperId) {
 			// New install
 			clipperId = ExtensionBase.generateClipperId();
-			this.storage.setValue(Constants.StorageKeys.clipperId, clipperId);
+			this.clipperData.setValue(Constants.StorageKeys.clipperId, clipperId);
 
 			// Ensure fresh installs don't trigger thats What's New experience
 			this.updateLastSeenVersionInStorageToCurrent();
@@ -119,8 +121,8 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				try {
 					let locStringsDict = JSON.parse(responsePackage.parsedResponse);
 					if (locStringsDict) {
-						this.storage.setValue(Constants.StorageKeys.locale, locale);
-						this.storage.setValue(Constants.StorageKeys.locStrings, responsePackage.parsedResponse);
+						this.clipperData.setValue(Constants.StorageKeys.locale, locale);
+						this.clipperData.setValue(Constants.StorageKeys.locStrings, responsePackage.parsedResponse);
 						Localization.setLocalizedStrings(locStringsDict);
 					}
 					resolve(locStringsDict);
@@ -165,11 +167,11 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected getFlightingAssignments(clipperId: string): Promise<any> {
 		let fetchNonLocalData = () => {
 			let userFlightUrl = Utils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
-			return this.storage.httpGet(userFlightUrl);
+			return Http.get(userFlightUrl);
 		};
 
 		return new Promise((resolve: (formattedFlights: string[]) => void, reject: (error: OneNoteApi.GenericError) => void) => {
-			this.storage.getFreshValue(Constants.StorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
+			this.clipperData.getAndCacheFreshValue(Constants.StorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
 				// The response comes as a string array in the form [flight1, flight2, flight3],
 				// needs to be in CSV format for ODIN cooker, so we rejoin w/o spaces
 				let parsedResponse: string[] = successfulResponse.data.Features ? successfulResponse.data.Features : [];
@@ -184,16 +186,16 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	 * Gets the last seen version from storage, and returns undefined if there is none in storage
 	 */
 	protected getLastSeenVersion(): Version {
-		let lastSeenVersionStr = this.storage.getValue(Constants.StorageKeys.lastSeenVersion);
+		let lastSeenVersionStr = this.clipperData.getValue(Constants.StorageKeys.lastSeenVersion);
 		return lastSeenVersionStr ? new Version(lastSeenVersionStr) : undefined;
 	}
 
 	protected getNewUpdates(lastSeenVersion: Version, currentVersion: Version): Promise<ChangeLog.Update[]> {
 		return new Promise<ChangeLog.Update[]>((resolve, reject) => {
-			let localeOverride = this.storage.getValue(Constants.StorageKeys.displayLanguageOverride);
+			let localeOverride = this.clipperData.getValue(Constants.StorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || navigator.userLanguage;
 			let changelogUrl = Utils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
-			this.storage.httpGet(changelogUrl).then((responsePackage) => {
+			Http.get(changelogUrl).then((responsePackage) => {
 				if (responsePackage.request.status === 200) {
 					try {
 						let schemas: ChangeLog.Schema[] = JSON.parse(responsePackage.parsedResponse);
@@ -410,6 +412,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	private updateLastSeenVersionInStorageToCurrent() {
-		this.storage.setValue(Constants.StorageKeys.lastSeenVersion, ExtensionBase.getExtensionVersion());
+		this.clipperData.setValue(Constants.StorageKeys.lastSeenVersion, ExtensionBase.getExtensionVersion());
 	}
 }

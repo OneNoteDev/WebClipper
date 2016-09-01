@@ -10,7 +10,8 @@ import {VideoUtils} from "../../domParsers/videoUtils";
 
 import {Localization} from "../../localization/localization";
 
-import {StorageBase} from "../../storage/storageBase";
+import {ClipperData} from "../../storage/clipperData";
+import {LocalStorage} from "../../storage/LocalStorage";
 
 import {Version} from "../../versioning/version";
 
@@ -27,7 +28,7 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 	private currentContextItemParameter: ContextItemParameter;
 
 	constructor() {
-		super(ClientType.SafariExtension, new StorageBase());
+		super(ClientType.SafariExtension, new ClipperData(new LocalStorage()));
 
 		// Listen for the Toolbar button it be invoked
 		safari.application.addEventListener("command", (event: SafariValidateEvent) => {

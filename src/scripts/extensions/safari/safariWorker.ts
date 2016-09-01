@@ -9,7 +9,8 @@ import {SmartValue} from "../../communicator/smartValue";
 
 import * as Log from "../../logging/log";
 
-import {StorageBase} from "../../storage/storageBase";
+import {ClipperData} from "../../storage/clipperData";
+import {LocalStorage} from "../../storage/localStorage";
 
 import {ChangeLog} from "../../versioning/changeLog";
 
@@ -27,7 +28,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 
 	constructor(tab: any, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
 		let messageHandlerThunk = () => { return new SafariBackgroundMessageHandler(tab); };
-		super(clientInfo, auth, new StorageBase(), messageHandlerThunk, messageHandlerThunk);
+		super(clientInfo, auth, new ClipperData(new LocalStorage()), messageHandlerThunk, messageHandlerThunk);
 
 		// The safari browser tab does not have an id so we use the object itself
 		this.tab = tab;
