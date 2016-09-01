@@ -67,6 +67,23 @@ export class RatingsHelper {
 		});
 	}
 
+	public static setLastBadRatingDate(): void {
+		// we are only going to allow one set of bad rating date by calling this method
+		// any additional sets will result in a set to the maximum date
+		// - meaning a user will never see the ratings prompt again
+
+		let badDateKey: string = Constants.StorageKeys.lastBadRatingDate;
+
+		Clipper.Storage.getValue(badDateKey, (lastBadRatingDateAsStr) => {
+			let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+			if (isNaN(lastBadRatingDate)) {
+				Clipper.Storage.setValue(badDateKey, Date.now().toString());
+			} else {
+				Clipper.Storage.setValue(badDateKey, Constants.Settings.maximumTimeValue.toString());
+			}
+		});
+	}
+
 	public static badRatingDelayIsOver(badRatingsDate: number, currentDate: number): boolean {
 		if (isNaN(badRatingsDate)) {
 			// value has never been set, no bad rating given

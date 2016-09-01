@@ -9,7 +9,7 @@ import {ClipMode} from "../clipMode";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {Clipper} from "../frontEndGlobals";
-import {RatingsPromptStage} from "../ratingsHelper";
+import {RatingsHelper, RatingsPromptStage} from "../ratingsHelper";
 import {Status} from "../status";
 
 import {SpriteAnimation} from "../components/spriteAnimation";
@@ -49,7 +49,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 							id: "",
 							label: "It could be better.",
 							handler: () => {
-								Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, Date.now().toString());
+								RatingsHelper.setLastBadRatingDate();
 
 								this.props.clipperState.setState({
 									ratingsPromptStage: RatingsPromptStage.FEEDBACK

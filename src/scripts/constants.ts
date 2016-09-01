@@ -344,11 +344,12 @@ export module Constants {
 	}
 
 	export module Settings {
-		export var timeBetweenBadRatings = 1000 * 60; // 60 seconds // TODO 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
-		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
-		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
+		export var fontSizeStep = 2;
+		export var maximumTimeValue = 8640000000000000; // http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
 		export var maximumFontSize = 72;
 		export var minimumFontSize = 8;
-		export var fontSizeStep = 2;
+		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
+		export var timeBetweenBadRatings = 1000 * 60; // 60 seconds // TODO 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
+		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
 	}
 }
