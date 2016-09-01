@@ -6,7 +6,7 @@ import {Logger} from "../logging/logger";
 import {Constants} from "../constants";
 
 import {RemoteStorage} from "../storage/remoteStorage";
-import {Storage} from "../storage/storage";
+import {StorageAsync} from "../storage/storageAsync";
 
 export module Clipper {
 	export let injectCommunicator: Communicator;
@@ -15,7 +15,7 @@ export module Clipper {
 	export let sessionId: SmartValue<string> = new SmartValue<string>();
 
 	// TODO make Clipper a class or something else?
-	export let storage: Storage;
+	export let storage: StorageAsync;
 
 	export function getUserSessionId(): string {
 		return this.sessionId.get();

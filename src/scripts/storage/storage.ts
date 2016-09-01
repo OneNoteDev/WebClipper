@@ -1,5 +1,5 @@
 export interface Storage {
-	getValue(key: string, callback: (value: string) => void): void;
-	setValue(key: string, value: string, callback?: (value: string) => void): void;
-	removeKey(key: string, callback?: (successful: boolean) => void): void;
+	getValue(key: string): string;
+	setValue(key: string, value: string): void;
+	removeKey(key: string): boolean;
 }

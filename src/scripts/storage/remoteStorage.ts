@@ -2,9 +2,9 @@ import {Constants} from "../constants";
 
 import {Communicator} from "../communicator/communicator";
 
-import {Storage} from "./storage";
+import {StorageAsync} from "./storageAsync";
 
-export class RemoteStorage implements Storage {
+export class RemoteStorage implements StorageAsync {
 	private extensionCommunicator: Communicator;
 
 	constructor(extCommunicator: Communicator) {

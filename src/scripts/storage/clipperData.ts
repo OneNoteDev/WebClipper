@@ -26,21 +26,17 @@ export class ClipperData implements Storage {
 		return this.cachedHttp.getAndCacheFreshValue(key, getRemoteValue, updateInterval);
 	}
 
-	public getValue(key: string, callback: (value: string) => void): void {
-		this.storage.getValue(key, callback);
+	public getValue(key: string): string {
+		return this.storage.getValue(key);
 	}
 
-	public setValue(key: string, value: string, callback?: (value: string) => void): void {
-		this.storageGateStrategy.shouldSet(key, value, (shouldSet) => {
-			if (shouldSet) {
-				this.storage.setValue(key, value, callback);
-			} else {
-				callback(value);
-			}
-		});
+	public setValue(key: string, value: string): void {
+		if (this.storageGateStrategy.shouldSet(key, value)) {
+			this.storage.setValue(key, value);
+		}
 	}
 
-	public removeKey(key: string, callback?: (successful: boolean) => void): void {
-		this.storage.removeKey(key, callback);
+	public removeKey(key: string): boolean {
+		return this.storage.removeKey(key);
 	}
 }

@@ -1,3 +1,3 @@
 export interface StorageGateStrategy {
-	shouldSet(key: string, value: string, callback: (shouldSet: boolean) => void): void;
+	shouldSet(key: string, value: string): boolean;
 }

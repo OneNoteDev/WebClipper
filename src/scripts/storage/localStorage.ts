@@ -1,7 +1,7 @@
 import {Storage} from "./storage";
 
 export class LocalStorage implements Storage {
-	public getValue(key: string, callback: (value: string) => void): void {
+	public getValue(key: string): string {
 		let result: string;
 		if (window.localStorage) {
 			result = window.localStorage.getItem(key);
@@ -10,10 +10,10 @@ export class LocalStorage implements Storage {
 				this.removeKey(key);
 			}
 		}
-		callback(result);
+		return result;
 	}
 
-	public setValue(key: string, value: string, callback?: (value: string) => void): void {
+	public setValue(key: string, value: string): void {
 		if (window.localStorage) {
 			if (!value) {
 				window.localStorage.removeItem(key);
@@ -21,19 +21,13 @@ export class LocalStorage implements Storage {
 				window.localStorage.setItem(key, value);
 			}
 		}
-
-		if (callback) {
-			callback(value);
-		}
 	}
 
-	public removeKey(key: string, callback?: (successful: boolean) => void): void {
+	public removeKey(key: string): boolean {
 		if (window.localStorage) {
 			window.localStorage.removeItem(key);
 		}
 
-		if (callback) {
-			callback(true);
-		}
+		return true;
 	}
 }

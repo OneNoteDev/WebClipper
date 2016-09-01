@@ -31,29 +31,28 @@ export class CachedHttp {
 		}
 
 		return new Promise<TimeStampedData>((resolve, reject) => {
-			this.cache.getValue(key, (value) => {
-				let keyIsPresent = !!value;
-				if (keyIsPresent) {
-					let valueAsJson: TimeStampedData;
-					try {
-						valueAsJson = JSON.parse(value);
-					} catch (e) {
-						reject({ error: e });
-					}
-
-					let valueHasExpired = CachedHttp.valueHasExpired(valueAsJson, updateInterval);
-
-					if (!valueHasExpired) {
-						resolve(valueAsJson);
-						return;
-					}
-
-					this.getAndCacheRemoteValue(key, getRemoteValue).then((timestampedData) => {
-						resolve(timestampedData);
-					}, (error) => {
-						reject(error);
-					});
+			let value = this.cache.getValue(key);
+			let keyIsPresent = !!value;
+			if (keyIsPresent) {
+				let valueAsJson: TimeStampedData;
+				try {
+					valueAsJson = JSON.parse(value);
+				} catch (e) {
+					reject({ error: e });
 				}
+
+				let valueHasExpired = CachedHttp.valueHasExpired(valueAsJson, updateInterval);
+
+				if (!valueHasExpired) {
+					resolve(valueAsJson);
+					return;
+				}
+			}
+
+			this.getAndCacheRemoteValue(key, getRemoteValue).then((timestampedData) => {
+				resolve(timestampedData);
+			}, (error) => {
+				reject(error);
 			});
 		});
 	}

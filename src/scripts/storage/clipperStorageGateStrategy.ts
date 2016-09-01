@@ -15,17 +15,11 @@ export class ClipperStorageGateStrategy implements StorageGateStrategy {
 		this.storage = storage;
 	}
 
-	public shouldSet(key: string, value: string, callback: (shouldSet: boolean) => void): void {
+	public shouldSet(key: string, value: string): boolean {
 		if (this.keysThatRequireUserInfo.indexOf(key) > -1) {
-			this.storage.getValue(ClipperStorageKeys.userInformation, (userInformation) => {
-				if (userInformation) {
-					callback(true);
-				} else {
-					callback(false);
-				}
-			});
-		} else {
-			callback(true);
+			let userInfo = this.storage.getValue(ClipperStorageKeys.userInformation);
+			return !!userInfo;
 		}
+		return true;
 	}
 }
