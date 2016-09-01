@@ -95,9 +95,6 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 				let getNotebooksEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetNotebooks);
 
 				this.fetchFreshNotebooks(Clipper.getUserSessionId()).then((responsePackage) => {
-					// The user may have signed out while waiting for the response. We don't want to populate notebooks in storage in this case.
-					let userSignedOut = !ClipperStateHelperFunctions.isUserLoggedIn(this.props.clipperState);
-
 					let correlationId = responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId);
 					getNotebooksEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
@@ -115,9 +112,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 					getNotebooksEvent.setCustomProperty(Log.PropertyName.Custom.MaxDepth, OneNoteApi.NotebookUtils.getDepthOfNotebooks(freshNotebooks));
 
-					if (!userSignedOut) {
-						Clipper.Storage.setValue(Constants.StorageKeys.cachedNotebooks, JSON.stringify(freshNotebooks));
-					}
+					Clipper.Storage.setValue(Constants.StorageKeys.cachedNotebooks, JSON.stringify(freshNotebooks));
 
 					// The curSection property is the default section found in the notebook list
 					let freshNotebooksAsState = SectionPickerClass.convertNotebookListToState(freshNotebooks);
@@ -136,10 +131,8 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 					if (shouldOverrideCurSectionWithDefault) {
 						// A default section was found, so we set it as currently selected since the user has not made a valid selection yet
-						if (!userSignedOut) {
-							// curSection can be undefined if there's no default found, which is fine
-							Clipper.Storage.setValue(Constants.StorageKeys.currentSelectedSection, JSON.stringify(freshNotebooksAsState.curSection));
-						}
+						// curSection can be undefined if there's no default found, which is fine
+						Clipper.Storage.setValue(Constants.StorageKeys.currentSelectedSection, JSON.stringify(freshNotebooksAsState.curSection));
 						this.props.clipperState.setState({ saveLocation: freshNotebooksAsState.curSection ? freshNotebooksAsState.curSection.section.id : undefined });
 					}
 
