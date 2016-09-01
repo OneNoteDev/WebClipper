@@ -33,8 +33,7 @@ export class ClipperData implements Storage {
 	}
 
 	public setValue(key: string, value: string): void {
-		// An undefined value is the same thing as removing a key, so we allow it regardless
-		if (!value || this.storageGateStrategy.shouldSet(key, value)) {
+		if (this.storageGateStrategy.shouldSet(key, value)) {
 			this.storage.setValue(key, value);
 		}
 	}

@@ -16,11 +16,9 @@ export class ClipperStorageGateStrategy implements StorageGateStrategy {
 	}
 
 	public shouldSet(key: string, value: string): boolean {
-		if (this.keysThatRequireUserInfo.indexOf(key) > -1) {
+		// An undefined value is the same thing as removing a key, so we allow it regardless
+		if (value && this.keysThatRequireUserInfo.indexOf(key) > -1) {
 			let userInfo = this.storage.getValue(ClipperStorageKeys.userInformation);
-			if (!userInfo) {
-				console.log("Gated: " + key);
-			}
 			return !!userInfo;
 		}
 		return true;
