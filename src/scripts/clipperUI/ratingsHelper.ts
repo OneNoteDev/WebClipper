@@ -19,6 +19,7 @@ export class RatingsHelper {
 		// (?) # successful clips % m === 0, where m is the gap between successful clips that we'd like to display the prompt
 		// (?) # of successful clips < nMax
 			// MVP+: collapse panel into a Rate Us hyperlink in the footer that is always available
+		// (?) # of bad ratings > p, where p is like 2
 
 		if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
 			// return cache in clipper state if it exists
@@ -27,15 +28,18 @@ export class RatingsHelper {
 		}
 
 		return new Promise<boolean>((resolve, reject) => {
-			Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDate) => {
+			Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
 				Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipsAsStr) => {
-					if (Utils.isNullOrUndefined(lastBadRatingDate) && Utils.isNullOrUndefined(numClipsAsStr)) {
+					if (Utils.isNullOrUndefined(lastBadRatingDateAsStr) && Utils.isNullOrUndefined(numClipsAsStr)) {
 						resolve(false);
 					}
 
-					let numClips: number = parseInt(numClipsAsStr, 10);
-					if (numClips >= 0) {
-						resolve(true);
+					let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+					if (RatingsHelper.badRatingDelayIsOver(lastBadRatingDate, Date.now())) {
+						let numClips: number = parseInt(numClipsAsStr, 10);
+						if (numClips >= 0) {
+							resolve(true);
+						}
 					}
 				});
 			});
@@ -61,5 +65,13 @@ export class RatingsHelper {
 				// TODO reject case?
 			});
 		});
+	}
+
+	public static badRatingDelayIsOver(badRatingsDate: number, currentDate: number): boolean {
+		if (isNaN(badRatingsDate)) {
+			// value has never been set, no bad rating given
+			return true;
+		}
+		return (currentDate - badRatingsDate) >= Constants.Settings.timeBetweenBadRatings;
 	}
 }

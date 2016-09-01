@@ -49,6 +49,8 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 							id: "",
 							label: "It could be better.",
 							handler: () => {
+								Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, Date.now().toString());
+
 								this.props.clipperState.setState({
 									ratingsPromptStage: RatingsPromptStage.FEEDBACK
 								});
