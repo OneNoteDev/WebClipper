@@ -625,14 +625,14 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
 			// TODO do I have to chain all of these promises?
-			RatingsHelper.incrementSuccessfulClipCount().then(() => {
+			RatingsHelper.incrementClipSuccessCount().then(() => {
 				RatingsHelper.shouldShowRatingsPrompt(this.state).then((shouldShowRatingsPrompt) => {
 					this.state.setState({ shouldShowRatingsPrompt: shouldShowRatingsPrompt });
 				}, () => {
 					// TODO on shouldShowRatingsPrompt reject?
 				});
 			}, () => {
-				// TODO on incrementSuccessfulClipCount reject?
+				// TODO on incrementClipSuccessCount reject?
 			}).then(() => {
 				// regardless of success/failure of RatingsHelper matters, continue with clip success flow
 				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));

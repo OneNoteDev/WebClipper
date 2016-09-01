@@ -14,13 +14,6 @@ export enum RatingsPromptStage {
 
 export class RatingsHelper {
 	public static shouldShowRatingsPrompt(clipperState: ClipperState): Promise<boolean> {
-		// last bad rating time > k weeks OR undefined
-		// # successful clips > n
-		// (?) # successful clips % m === 0, where m is the gap between successful clips that we'd like to display the prompt
-		// (?) # of successful clips < nMax
-			// MVP+: collapse panel into a Rate Us hyperlink in the footer that is always available
-		// (?) # of bad ratings > p, where p is like 2
-
 		if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
 			// return cache in clipper state if it exists
 			// TODO is this useful?
@@ -29,7 +22,7 @@ export class RatingsHelper {
 
 		return new Promise<boolean>((resolve, reject) => {
 			Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
-				Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipsAsStr) => {
+				Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
 					if (Utils.isNullOrUndefined(lastBadRatingDateAsStr) && Utils.isNullOrUndefined(numClipsAsStr)) {
 						resolve(false);
 					}
@@ -37,7 +30,7 @@ export class RatingsHelper {
 					let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
 					if (RatingsHelper.badRatingDelayIsOver(lastBadRatingDate, Date.now())) {
 						let numClips: number = parseInt(numClipsAsStr, 10);
-						if (numClips >= 0) {
+						if (RatingsHelper.clipSuccessDelayIsOver(numClips)) {
 							resolve(true);
 						}
 					}
@@ -48,9 +41,9 @@ export class RatingsHelper {
 		// TODO reject case?
 	}
 
-	public static incrementSuccessfulClipCount(): Promise<void> {
+	public static incrementClipSuccessCount(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipsAsStr: string) => {
+			Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr: string) => {
 				let numClips: number = parseInt(numClipsAsStr, 10); // TODO could return NaN
 				if (Utils.isNullOrUndefined(numClips) || isNaN(numClips)) {
 					numClips = 0;
@@ -58,7 +51,7 @@ export class RatingsHelper {
 
 				numClips++;
 
-				Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, numClips.toString());
+				Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, numClips.toString());
 
 				resolve();
 
@@ -72,6 +65,8 @@ export class RatingsHelper {
 		// any additional sets will result in a set to the maximum date
 		// - meaning a user will never see the ratings prompt again
 
+		// (?) # of bad ratings > p, where p is like 2
+
 		let badDateKey: string = Constants.StorageKeys.lastBadRatingDate;
 
 		Clipper.Storage.getValue(badDateKey, (lastBadRatingDateAsStr) => {
@@ -79,16 +74,28 @@ export class RatingsHelper {
 			if (isNaN(lastBadRatingDate)) {
 				Clipper.Storage.setValue(badDateKey, Date.now().toString());
 			} else {
+				// TODO log this case
 				Clipper.Storage.setValue(badDateKey, Constants.Settings.maximumTimeValue.toString());
 			}
 		});
 	}
 
 	public static badRatingDelayIsOver(badRatingsDate: number, currentDate: number): boolean {
+		// last bad rating time > k weeks OR undefined
+
 		if (isNaN(badRatingsDate)) {
 			// value has never been set, no bad rating given
 			return true;
 		}
 		return (currentDate - badRatingsDate) >= Constants.Settings.timeBetweenBadRatings;
+	}
+
+	public static clipSuccessDelayIsOver(numClips: number): boolean {
+		// # successful clips > n
+		// (?) # successful clips % m === 0, where m is the gap between successful clips that we'd like to display the prompt
+		// (?) # of successful clips < nMax
+			// MVP+: collapse panel into a Rate Us hyperlink in the footer that is always available
+
+		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt;
 	}
 }

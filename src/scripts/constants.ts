@@ -267,7 +267,7 @@ export module Constants {
 		export var lastClippedTooltipTimeBase = "lastClippedTooltipTime";
 		export var locale = "locale";
 		export var locStrings = "locStrings";
-		export var numSuccessfulClips = "numSuccessfulClips";
+		export var numClipSuccess = "numClipSuccess";
 		export var numTimesTooltipHasBeenSeenBase = "numTimesTooltipHasBeenSeen";
 		export var userInformation = "userInformation";
 	}
@@ -349,6 +349,7 @@ export module Constants {
 		export var maximumFontSize = 72;
 		export var minimumFontSize = 8;
 		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
+		export var minClipSuccessForRatingsPrompt = 0; // TODO 5 (or something)
 		export var timeBetweenBadRatings = 1000 * 60; // 60 seconds // TODO 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
 		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
 	}
