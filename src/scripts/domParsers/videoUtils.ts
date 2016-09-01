@@ -42,6 +42,7 @@ export module VideoUtils {
 		if (Utils.isNullOrUndefined(youTubeVideoId)) {
 			return;
 		}
+
 		return "https://www.youtube.com/embed/" + youTubeVideoId;
 	}
 
@@ -76,30 +77,11 @@ export module VideoUtils {
 			return;
 		}
 
+		if (videoIds.length === 0) {
+			return;
+		}
 
 		return "https://www.youtube.com/embed/" + videoIds[0];
-		// if (Utils.isNullOrUndefined(doc)) {
-		// 	return;
-		// }
-
-		// let videoContainer = doc.getElementsByClassName("ka-video-player-container");
-		// if (videoContainer.length === 0) {
-		// 	return;
-		// }
-		
-		// let container = videoContainer[0] as HTMLElement;
-
-		// let children = container.children;
-		// if (children.length === 0) {
-		// 	return;
-		// }
-
-		// let video = children[0] as HTMLVideoElement;
-		// let src = video.src;
-
-		// let cleanSrc = src.substring(0, src.indexOf("?"));
-
-		// return cleanSrc;
 	}
 
 	/**
@@ -119,7 +101,7 @@ export module VideoUtils {
 		}
 
 		if (Utils.getPathname(youTubeUrl).indexOf("/embed") === 0) {
-			let youTubeIdMatch = youTubeUrl.match(/youtube\.com\/embed\/(\w+)/);
+			let youTubeIdMatch = youTubeUrl.match(/youtube\.com\/embed\/(\S+)/);
 			if (Utils.isNullOrUndefined(youTubeIdMatch) || Utils.isNullOrUndefined(youTubeIdMatch[1])) {
 				return;
 			}
@@ -130,7 +112,7 @@ export module VideoUtils {
 	}
 
 	/**
-	 * Retrun id for a video on Vimeo.com
+	 * Return id for a video on Vimeo.com
 	 */
 	export function getVimeoVideoIds(pageContent: string): string[] {
 		if (Utils.isNullOrUndefined(pageContent)) {
@@ -143,23 +125,17 @@ export module VideoUtils {
 		// 		- ignore possible whitespacing variations between characters
 		// 		- accept the use of either double- or single-quotes around clip_###
 		let regex = /id\s*=\s*("\s*clip_(\d+)\s*"|'\s*clip_(\d+)\s*')/gi;
-		let m;
-		let matches = [];
-		while (m = regex.exec(pageContent)) {
-			if (m[2]) {
-				matches.push(m[2]);
-			} else {
-				matches.push(m[3]);
-			}
-		}
-
-		if (matches.length === 0) {
-			return;
-		}
-		return matches.filter((element, index, array) => { return array.indexOf(element) === index; }); // unique values only
+		return matchRegexFromPageContent(pageContent, [regex]);
 	}
 
-	function matchRegexFromPageContent(pageContent: string, regex: RegExp): string[] {
+	export function getKhanAcademyVideoIds(pageContent: string): string[] {
+		let regex = /id\s*=\s*("\s*video_(\S+)\s*"|'\s*video_(\S+)\s*')/gi;
+		let regexTwo = /data-youtubeid\s*=\s*("\s*(\S+)\s*"|'\s*(\S+)\s*')/gi;
+		let regexes = [regex, regexTwo];
+		return matchRegexFromPageContent(pageContent, regexes);
+	}
+
+	function matchRegexFromPageContent(pageContent: string, regexes: RegExp[]): string[] {
 		if (Utils.isNullOrUndefined(pageContent)) {
 			return;
 		}
@@ -171,13 +147,15 @@ export module VideoUtils {
 		// 		- accept the use of either double- or single-quotes around clip_###
 		let m;
 		let matches = [];
-		while (m = regex.exec(pageContent)) {
-			if (m[2]) {
-				matches.push(m[2]);
-			} else {
-				matches.push(m[3]);
+		regexes.forEach((regex) => {
+			while (m = regex.exec(pageContent)) {
+				if (m[2]) {
+					matches.push(m[2]);
+				} else {
+					matches.push(m[3]);
+				}
 			}
-		}
+		});
 
 		if (matches.length === 0) {
 			return;
@@ -185,8 +163,4 @@ export module VideoUtils {
 		return matches.filter((element, index, array) => { return array.indexOf(element) === index; }); // unique values only
 	}
 
-	export function getKhanAcademyVideoIds(pageContent: string): string[] {
-		let regex = /id\s*=\s*("\s*video_(.+)\s*"|'\s*video_(.+)\s*')|data-translatedyoutubeid\s*=\s*("\s*(.+)\s*"|'\s*(.+)\s*')/gi;
-		return matchRegexFromPageContent(pageContent, regex);
-	}
 }

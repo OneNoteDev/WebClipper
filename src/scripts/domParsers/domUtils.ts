@@ -283,8 +283,7 @@ export module DomUtils {
 
 		return createEmbeddedYouTubeVideo(youtubeSrcFromKhanAcademyPage);
 	}
-	
-	
+
 	/**
 	 * Create base iframe with reasonable style properties for video embed in OneNote.
 	 */
