@@ -1,6 +1,7 @@
 import {ComponentBase} from "../componentBase";
 
 import {Constants} from "../../constants";
+import {Utils} from "../../utils";
 
 import {Localization} from "../../localization/localization";
 
@@ -15,6 +16,7 @@ export interface DialogPanelProps {
 	content: HTMLElement[];
 	buttons: DialogButton[];
 	fontFamily?: Localization.FontFamily;
+	divId?: string;
 }
 
 export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProps> {
@@ -23,10 +25,10 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 	}
 
 	render() {
-		let fontFamily = this.props.fontFamily ? this.props.fontFamily : Localization.FontFamily.Semibold;
+		let fontFamily = !Utils.isNullOrUndefined(this.props.fontFamily) ? this.props.fontFamily : Localization.FontFamily.Semibold;
 
 		return (
-			<div>
+			<div id={this.props.divId}>
 				<div id={Constants.Ids.dialogMessageContainer} className="resultPagePadding">
 					<div className="messageLabelContainer" style={Localization.getFontFamilyAsStyle(fontFamily)}>
 						<div id={Constants.Ids.dialogMessage} className="dialogMessageFont messageLabel">

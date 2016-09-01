@@ -106,11 +106,12 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 			}
 
 			if (!Utils.isNullOrUndefined(message)) {
-				// TODO DialogPanel should accept classes so we can remove this extra div
 				return (
-					<div id={Constants.Ids.ratingsPromptContainer}>
-						<DialogPanel message={message} buttons={buttons}/>
-					</div>
+					<DialogPanel
+						message={message}
+						buttons={buttons}
+						fontFamily={Localization.FontFamily.Regular}
+						divId={Constants.Ids.ratingsPromptContainer}/>
 				);
 			}
 		}
