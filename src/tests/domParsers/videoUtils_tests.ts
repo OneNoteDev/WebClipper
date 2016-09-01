@@ -22,7 +22,6 @@ let supportedVimeoUrls = [
 	"https://vimeo.com/album/45196609/video/45196609",
 	"https://vimeo.com/ondemand/45196609"
 ];
-
 let unsupportedYouTubeUrls = [
 	"https://www.youtube.com/",
 	"https://www.youtube.com/channel/UC38IQsAvIsxxjztdMZQtwHA"
@@ -44,7 +43,6 @@ let unsupportedOtherUrls = [
 let pageContentHtmlWrapperPrepend = "<html lang='en'> <body>";
 let pageContentHtmlWrapperAppend = "</body> </html>";
 
-// Vimeo
 let pageContentWithOneClipId = [
 	"<div id='clip_45196609'> </div>", // standard
 	"<div id = ' clip_45196609 ' > </div> ", // weird whitespace

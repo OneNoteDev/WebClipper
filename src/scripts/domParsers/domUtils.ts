@@ -278,7 +278,6 @@ export module DomUtils {
 	 * Supports a single video.
 	 */
 	function createEmbeddedKhanAcademyVideo(pageContent: string): HTMLIFrameElement {
-		let iframe = createEmbedVideoIframe();
 		let youtubeSrcFromKhanAcademyPage = VideoUtils.getKhanAcademyVideoSrcValue(pageContent);
 
 		return createEmbeddedYouTubeVideo(youtubeSrcFromKhanAcademyPage);

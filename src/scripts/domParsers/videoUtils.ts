@@ -22,7 +22,7 @@ export module VideoUtils {
 		let hostname = Utils.getHostname(pageUrl);
 
 		for (let domain in SupportedVideoDomains) {
-			if (typeof (domain) === "string" && hostname.indexOf(domain.toLowerCase() + ".") > -1) {
+			if (typeof(domain) === "string" && hostname.indexOf(domain.toLowerCase() + ".") > -1) {
 				return domain;
 			}
 		}
