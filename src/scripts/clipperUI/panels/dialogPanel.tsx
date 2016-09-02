@@ -1,4 +1,5 @@
 import {ComponentBase} from "../componentBase";
+import {AnimationStrategy} from "../animations/animationStrategy";
 
 import {Constants} from "../../constants";
 import {Utils} from "../../utils";
@@ -17,6 +18,7 @@ export interface DialogPanelProps {
 	buttons: DialogButton[];
 	fontFamily?: Localization.FontFamily;
 	divId?: string;
+	animationStrategy?: AnimationStrategy;
 }
 
 export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProps> {
@@ -24,35 +26,43 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 		return undefined;
 	}
 
+	private onPanelAnimatorDraw(heightAnimator: HTMLElement) {
+		if (this.props.animationStrategy) {
+			this.props.animationStrategy.animate(heightAnimator);
+		}
+	}
+
 	render() {
 		let fontFamily = !Utils.isNullOrUndefined(this.props.fontFamily) ? this.props.fontFamily : Localization.FontFamily.Semibold;
 
 		return (
 			<div id={this.props.divId}>
-				<div id={Constants.Ids.dialogMessageContainer} className="resultPagePadding">
-					<div className="messageLabelContainer" style={Localization.getFontFamilyAsStyle(fontFamily)}>
-						<div id={Constants.Ids.dialogMessage} className="dialogMessageFont messageLabel">
-							{this.props.message}
+				<div className={Constants.Classes.panelAnimator} {...this.onElementDraw(this.onPanelAnimatorDraw)}>
+					<div id={Constants.Ids.dialogMessageContainer} className="resultPagePadding">
+						<div className="messageLabelContainer" style={Localization.getFontFamilyAsStyle(fontFamily)}>
+							<div id={Constants.Ids.dialogMessage} className="dialogMessageFont messageLabel">
+								{this.props.message}
+							</div>
+							{this.getExtraMessages()}
 						</div>
-						{this.getExtraMessages()}
 					</div>
-				</div>
-				<div id={Constants.Ids.dialogContentContainer} className="">
-					{this.props.content}
-				</div>
-				<div id={Constants.Ids.dialogButtonContainer}>
-					{this.props.buttons.map((button, i) => {
-						return (
-							<a id={button.id} className="dialogButton" {...this.enableInvoke(button.handler, 70) }>
-								<div className="wideButtonContainer">
-									<span className="wideButtonFont wideActionButton"
-										style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
-										{ button.label }
-									</span>
-								</div>
-							</a>
-						);
-					}) }
+					<div id={Constants.Ids.dialogContentContainer} className="">
+						{this.props.content}
+					</div>
+					<div id={Constants.Ids.dialogButtonContainer}>
+						{this.props.buttons.map((button, i) => {
+							return (
+								<a id={button.id} className="dialogButton" {...this.enableInvoke(button.handler, 70) }>
+									<div className="wideButtonContainer">
+										<span className="wideButtonFont wideActionButton"
+											style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
+											{ button.label }
+										</span>
+									</div>
+								</a>
+							);
+						}) }
+					</div>
 				</div>
 			</div>
 		);

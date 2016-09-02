@@ -12,11 +12,24 @@ import {Clipper} from "../frontEndGlobals";
 import {RatingsHelper, RatingsPromptStage} from "../ratingsHelper";
 import {Status} from "../status";
 
+import {AnimationStrategy} from "../animations/animationStrategy";
+import {SlideFromRightAnimationStrategy} from "../animations/slideFromRightAnimationStrategy";
+
 import {SpriteAnimation} from "../components/spriteAnimation";
 
 import {DialogButton, DialogPanel} from "./dialogPanel";
 
-class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
+interface SuccessPanelState {
+	currentRatingsPromptStage: RatingsPromptStage;
+}
+
+class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStateProp> {
+	getInitialState(): SuccessPanelState {
+		return {
+			currentRatingsPromptStage: RatingsPromptStage.INIT
+		};
+	}
+
 	onLaunchOneNoteButton() {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ViewInWac);
 		let data = this.props.clipperState.oneNoteApiResult.data as OneNoteApi.Page;
@@ -126,12 +139,21 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 			}
 
 			if (!Utils.isNullOrUndefined(message)) {
+				let animationStrategy: AnimationStrategy = new SlideFromRightAnimationStrategy({
+					extShouldAnimateIn: () => {	return this.props.clipperState.ratingsPromptStage !== this.state.currentRatingsPromptStage; },
+					extShouldAnimateOut: () => { return false; },
+					onAfterAnimateIn: () => { this.setState({ currentRatingsPromptStage: this.props.clipperState.ratingsPromptStage }); }
+				});
+
+				console.log(RatingsPromptStage[this.props.clipperState.ratingsPromptStage], RatingsPromptStage[this.state.currentRatingsPromptStage]);
+
 				return (
 					<DialogPanel
 						message={message}
 						buttons={buttons}
 						fontFamily={Localization.FontFamily.Regular}
-						divId={Constants.Ids.ratingsPromptContainer}/>
+						divId={Constants.Ids.ratingsPromptContainer}
+						animationStrategy={animationStrategy} />
 				);
 			}
 		}
