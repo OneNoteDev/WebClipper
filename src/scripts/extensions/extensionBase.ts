@@ -48,15 +48,17 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		this.auth = new AuthenticationHelper(this.storage, this.logger);
 		this.tooltip = new TooltipHelper(this.storage);
 
+		let clipperFirstRun = false;
+
 		let clipperId = this.storage.getValue(Constants.StorageKeys.clipperId);
 		if (!clipperId) {
 			// New install
+			clipperFirstRun = true;
 			clipperId = ExtensionBase.generateClipperId();
 			this.storage.setValue(Constants.StorageKeys.clipperId, clipperId);
 
 			// Ensure fresh installs don't trigger thats What's New experience
 			this.updateLastSeenVersionInStorageToCurrent();
-			this.onFirstRun();
 		}
 
 		this.clientInfo = new SmartValue<ClientInfo>({
@@ -64,6 +66,10 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			clipperVersion: ExtensionBase.getExtensionVersion(),
 			clipperId: clipperId
 		});
+
+		if (clipperFirstRun) {
+			this.onFirstRun();
+		}
 
 		this.initializeUserFlighting();
 
