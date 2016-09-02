@@ -9,8 +9,7 @@ import {Storage} from "../storage/storage";
 import {CachedHttp, GetResponseAsync, TimeStampedData} from "./cachedHttp";
 
 /**
- * Allows the creation of HTTP GET requests to Clipper-specific endpoints, as well as caching of the
- * result. Also logs attempts to get values from these endpoints.
+ * Adds Clipper-specific logging functionality to the CachedHttp.
  */
 export class ClipperCachedHttp extends CachedHttp {
 	private static defaultExpiry = 12 * 60 * 60 * 1000; // 12 hours

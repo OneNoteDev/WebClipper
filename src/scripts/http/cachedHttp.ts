@@ -26,6 +26,8 @@ export class CachedHttp {
 	public getAndCacheFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval: number): Promise<TimeStampedData> {
 		if (!key) {
 			throw new Error("key must be a non-empty string, but was: " + key);
+		} else if (!getRemoteValue) {
+			throw new Error("getRemoteValue must be non-undefined");
 		} else if (updateInterval < 0) {
 			updateInterval = 0;
 		}
@@ -60,6 +62,10 @@ export class CachedHttp {
 	public getAndCacheRemoteValue(key: string, getRemoteValue: GetResponseAsync): Promise<TimeStampedData> {
 		if (!key) {
 			throw new Error("key must be a non-empty string, but was: " + key);
+		}
+
+		if (!getRemoteValue) {
+			throw new Error("getRemoteValue must be non-undefined");
 		}
 
 		return new Promise<TimeStampedData>((resolve, reject) => {
