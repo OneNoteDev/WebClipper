@@ -1,18 +1,14 @@
-import {RequestError} from "./requestError";
+/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
 interface ResponsePackage {
 	parsedResponse: string;
 	request: XMLHttpRequest;
 }
 
-interface RejectPackage {
-	response: XMLHttpRequest;
-	requestError: RequestError;
-}
-
 /**
  * Helper class for performing http requests. This is a WIP and has barebones functionality, but
  * can be added to as necessary.
+ * TODO: Wean this off OneNoteApi.ErrorUtils once we move the general http logic into its own package.
  */
 export class Http {
 	private static defaultTimeout = 30000;
@@ -29,11 +25,11 @@ export class Http {
 			};
 
 			request.onerror = () => {
-				reject(Http.createRejectPackage(request, RequestError.NetworkError));
+				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.NETWORK_ERROR));
 			};
 
 			request.ontimeout = () => {
-				reject(Http.createRejectPackage(request, RequestError.RequestTimedOut));
+				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT));
 			};
 
 			for (let key in headers) {
@@ -42,12 +38,5 @@ export class Http {
 
 			request.send();
 		});
-	}
-
-	private static createRejectPackage(request: XMLHttpRequest, requestError: RequestError) {
-		return {
-			request: request,
-			requestError: RequestError
-		};
 	}
 }
