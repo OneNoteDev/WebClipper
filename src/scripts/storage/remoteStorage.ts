@@ -25,8 +25,4 @@ export class RemoteStorage implements StorageAsync {
 				}
 		}});
 	}
-
-	public removeKey(key: string, callback?: (successful: boolean) => void): void {
-		// TODO
-	}
 }

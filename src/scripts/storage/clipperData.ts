@@ -7,12 +7,17 @@ import {ClipperStorageGateStrategy} from "./clipperStorageGateStrategy";
 import {Storage} from "./storage";
 import {StorageGateStrategy} from "./StorageGateStrategy";
 
+/**
+ * The data-access-like object that handles the fetching and caching of data
+ * from Clipper-specific endpoints (TODO: a factory class that is responsible for
+ * providing getRemoteValue objects?). Also provides a gating mechanism as a
+ * sanity-check for what information gets stored locally.
+ */
 export class ClipperData implements Storage {
 	private storage: Storage;
 	private storageGateStrategy: StorageGateStrategy;
 	private cachedHttp: ClipperCachedHttp;
 
-	// TODO created a gated data store class?
 	constructor(storage: Storage, logger?: Logger) {
 		this.storage = storage;
 		this.storageGateStrategy = new ClipperStorageGateStrategy(storage);
