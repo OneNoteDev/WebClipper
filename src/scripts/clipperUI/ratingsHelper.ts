@@ -22,6 +22,11 @@ export class RatingsHelper {
 			return Promise.resolve(clipperState.shouldShowRatingsPrompt);
 		}
 
+		let ratingsPromptEnabled: boolean = RatingsHelper.ratingsPromptEnabledForClient(clipperState.clientInfo.clipperType);
+		if (!ratingsPromptEnabled) {
+			return Promise.resolve(false);
+		}
+
 		return new Promise<boolean>((resolve, reject) => {
 			Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsStr) => {
 				Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
@@ -30,8 +35,7 @@ export class RatingsHelper {
 							resolve(false); // TODO when does this happen?
 						}
 
-						let doNotPrompt: boolean = Boolean(doNotPromptRatingsStr);
-						if (doNotPrompt) {
+						if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
 							resolve(false);
 						}
 
@@ -90,8 +94,16 @@ export class RatingsHelper {
 			let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
 			if (!isNaN(lastBadRatingDate)) {
 				RatingsHelper.setDoNotPromptStatus();
+				// TODO consider immediately setting this if we feel overwhelmed by feedback received through this channel
 			}
 		});
+	}
+
+	// TODO public for testing
+	public static ratingsPromptEnabledForClient(clientType: ClientType): boolean {
+		let settingName: string = RatingsHelper.getRatingsPromptEnabledSettingNameForClient(clientType);
+		let isEnabledAsStr: string = Settings.getSetting(settingName);
+		return !Utils.isNullOrUndefined(isEnabledAsStr) && isEnabledAsStr.toLowerCase() === "true";
 	}
 
 	public static getRateUrlIfExists(clientType: ClientType): string {
@@ -122,7 +134,15 @@ export class RatingsHelper {
 
 	// TODO public for testing
 	public static getRateUrlSettingNameForClient(clientType: ClientType): string {
-		let nameSuffix = "_RatingUrl";
-		return ClientType[clientType] + nameSuffix;
+		return RatingsHelper.combineClientTypeAndSuffix(clientType, "_RatingUrl");
+	}
+
+	// TODO public for testing
+	public static getRatingsPromptEnabledSettingNameForClient(clientType: ClientType): string {
+		return RatingsHelper.combineClientTypeAndSuffix(clientType, "_RatingsEnabled");
+	}
+
+	private static combineClientTypeAndSuffix(clientType: ClientType, suffix: string): string {
+		return ClientType[clientType] + suffix;
 	}
 }
