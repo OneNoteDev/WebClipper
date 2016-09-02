@@ -8,33 +8,52 @@ import {Constants} from "../constants";
 import {RemoteStorage} from "../storage/remoteStorage";
 import {StorageAsync} from "../storage/storageAsync";
 
-// TODO consider making this a class rather than a module to make it safer to use, e.g., when setting communicator, sets up storage
-export module Clipper {
-	export let injectCommunicator: Communicator;
-	export let extensionCommunicator: Communicator;
-	export let logger: Logger;
-	export let sessionId: SmartValue<string> = new SmartValue<string>();
+export class Clipper {
+	private static injectCommunicator: Communicator;
+	private static extensionCommunicator: Communicator;
 
-	export let storage: StorageAsync;
+	private static storage: StorageAsync;
 
-	export function getUserSessionId(): string {
-		return this.sessionId.get();
+	// Public for convenience?
+	public static logger: Logger;
+	public static sessionId: SmartValue<string> = new SmartValue<string>();
+
+	public static getUserSessionId(): string {
+		return Clipper.sessionId.get();
 	}
 
-	export module Storage {
-		export function getValue(key: string, callback: (value: string) => void): void {
-			// TODO this could be made much safer if this was a class
-			if (!Clipper.storage) {
-				Clipper.storage = new RemoteStorage(Clipper.extensionCommunicator);
-			}
-			Clipper.storage.getValue(key, callback);
-		}
+	public static getInjectCommunicator(): Communicator {
+		return Clipper.injectCommunicator;
+	}
 
-		export function setValue(key: string, value: string): void {
-			if (!Clipper.storage) {
-				Clipper.storage = new RemoteStorage(Clipper.extensionCommunicator);
-			}
-			Clipper.storage.setValue(key, value, undefined);
+	public static setInjectCommunicator(injectCommunicator: Communicator) {
+		Clipper.injectCommunicator = injectCommunicator;
+	}
+
+	public static getExtensionCommunicator(): Communicator {
+		return Clipper.extensionCommunicator;
+	}
+
+	public static setExtensionCommunicator(extensionCommunicator: Communicator) {
+		Clipper.extensionCommunicator = extensionCommunicator;
+		Clipper.setUpRemoteStorage(extensionCommunicator);
+	}
+
+	public static getValue(key: string, callback: (value: string) => void): void {
+		if (!Clipper.storage) {
+			throw new Error("The remote storage needs to be set up with the extension communicator first");
 		}
+		Clipper.storage.getValue(key, callback);
+	}
+
+	public static setValue(key: string, value: string): void {
+		if (!Clipper.storage) {
+			throw new Error("The remote storage needs to be set up with the extension communicator first");
+		}
+		Clipper.storage.setValue(key, value, undefined);
+	}
+
+	private static setUpRemoteStorage(extensionCommunicator: Communicator) {
+		Clipper.storage = new RemoteStorage(Clipper.getExtensionCommunicator());
 	}
 }

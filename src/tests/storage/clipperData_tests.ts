@@ -1,3 +1,5 @@
+import {TimeStampedData} from "../../scripts/http/cachedHttp";
+
 import {ClipperData} from "../../scripts/storage/clipperData";
 import {ClipperStorageKeys} from "../../scripts/storage/clipperStorageKeys";
 
@@ -15,11 +17,13 @@ test("getAndCacheFreshValue should not store anything if it's retrieving noteboo
 	let done = assert.async();
 
 	let key = ClipperStorageKeys.cachedNotebooks;
+	let parsedResponse = {};
+	let expectedTimeStampedData = {
+		parsedResponse: JSON.stringify(parsedResponse),
+		request: undefined
+	};
 	let getRemoteValue = () => {
-		return Promise.resolve({
-			parsedResponse: "{ notebooks: {} }",
-			request: undefined
-		});
+		return Promise.resolve(expectedTimeStampedData);
 	};
 
 	let clipperData = new ClipperData(mockStorage);
@@ -37,19 +41,21 @@ test("getAndCacheFreshValue should store notebooks if it's retrieving notebooks 
 	let done = assert.async();
 
 	let key = ClipperStorageKeys.cachedNotebooks;
+	let parsedResponse = {};
 	let expectedTimeStampedData = {
-		parsedResponse: "{ notebooks: {} }",
+		parsedResponse: JSON.stringify(parsedResponse),
 		request: undefined
 	};
 	let getRemoteValue = () => {
 		return Promise.resolve(expectedTimeStampedData);
 	};
 
-	mockStorage.setValue(ClipperStorageKeys.userInformation, "{ name: Leeroy Jenkins }");
+	mockStorage.setValue(ClipperStorageKeys.userInformation, "{ name: Leeeeeroy }");
 
 	let clipperData = new ClipperData(mockStorage);
 	clipperData.getAndCacheFreshValue(key, getRemoteValue, 0).then((timeStampedData) => {
-		strictEqual(mockStorage.getValue(key), JSON.stringify(expectedTimeStampedData),
+		let actualStored: TimeStampedData = JSON.parse(mockStorage.getValue(key));
+		deepEqual(actualStored.data, {},
 			"Notebooks should be cached if userInformation exists in storage");
 	}, (error) => {
 		ok(false, "reject should not be called");
@@ -78,7 +84,7 @@ test("getAndCacheFreshValue should store notebooks if it's setting notebooks and
 		request: undefined
 	});
 
-	mockStorage.setValue(ClipperStorageKeys.userInformation, "{ name: Leeroy Jenkins }");
+	mockStorage.setValue(ClipperStorageKeys.userInformation, "{ name: Leeeeeroy }");
 
 	let clipperData = new ClipperData(mockStorage);
 	clipperData.setValue(key, expectedTimeStampedData);
@@ -106,7 +112,7 @@ test("getAndCacheFreshValue should store notebooks if it's setting current secti
 		request: undefined
 	});
 
-	mockStorage.setValue(ClipperStorageKeys.userInformation, "{ name: Leeroy Jenkins }");
+	mockStorage.setValue(ClipperStorageKeys.userInformation, "{ name: Leeeeeroy }");
 
 	let clipperData = new ClipperData(mockStorage);
 	clipperData.setValue(key, expectedTimeStampedData);

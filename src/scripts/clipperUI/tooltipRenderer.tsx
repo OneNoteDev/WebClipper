@@ -39,7 +39,7 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 	getChangeLogPanel() {
 		let whatsNewProps = this.props.tooltipProps as TooltipProps.WhatsNew;
 		let handleProceedToWebClipperButton = () => {
-			Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.invokeClipperFromPageNav, {
+			Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.invokeClipperFromPageNav, {
 				param: InvokeSource.WhatsNewTooltip
 			});
 		};
@@ -96,7 +96,7 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 
 	getTooltipPanel(tooltipType: TooltipType) {
 		let handleProceedToWebClipperButton = () => {
-			Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.invokeClipperFromPageNav, {
+			Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.invokeClipperFromPageNav, {
 				param: TooltipTypeUtils.toInvokeSource(tooltipType)
 			});
 		};

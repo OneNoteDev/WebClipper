@@ -51,8 +51,8 @@ export class CachedHttp {
 				}
 			}
 
-			this.getAndCacheRemoteValue(key, getRemoteValue).then((timestampedData) => {
-				resolve(timestampedData);
+			this.getAndCacheRemoteValue(key, getRemoteValue).then((timeStampedData) => {
+				resolve(timeStampedData);
 			}, (error) => {
 				reject(error);
 			});

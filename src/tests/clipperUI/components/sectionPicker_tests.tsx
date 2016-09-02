@@ -33,18 +33,18 @@ let defaultUserInfoAsJsonString = JSON.stringify({
 
 // Mock out the Clipper.Storage functionality
 let mockStorage: { [key: string]: string } = {};
-Clipper.Storage.getValue = (key: string, callback: (value: string) => void) => {
+Clipper.getValue = (key: string, callback: (value: string) => void) => {
 	callback(mockStorage[key]);
 };
-Clipper.Storage.setValue = (key: string, value: string) => {
+Clipper.setValue = (key: string, value: string) => {
 	mockStorage[key] = value;
 };
 
 function initializeClipperStorage(notebooks: string, curSection: string, userInfo?: string) {
 	mockStorage = { };
-	Clipper.Storage.setValue(ClipperStorageKeys.cachedNotebooks, notebooks);
-	Clipper.Storage.setValue(ClipperStorageKeys.currentSelectedSection, curSection);
-	Clipper.Storage.setValue(ClipperStorageKeys.userInformation, userInfo);
+	Clipper.setValue(ClipperStorageKeys.cachedNotebooks, notebooks);
+	Clipper.setValue(ClipperStorageKeys.currentSelectedSection, curSection);
+	Clipper.setValue(ClipperStorageKeys.userInformation, userInfo);
 }
 
 let createNotebook = (id: string, isDefault?: boolean, sectionGroups?: OneNoteApi.SectionGroup[], sections?: OneNoteApi.Section[]): OneNoteApi.Notebook => {
@@ -241,8 +241,8 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	server.respondWith([200, {}, JSON.stringify(responseJson)]);
 
 	retrievePromise.then((response) => {
-		Clipper.Storage.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
-			Clipper.Storage.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
+		Clipper.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
+			Clipper.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
 				strictEqual(notebooks, JSON.stringify(freshNotebooks),
 					"After fresh notebooks have been retrieved, the storage should be updated with them. In this case, nothing should have changed.");
 				strictEqual(curSection, JSON.stringify(mockSection),
@@ -297,8 +297,8 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	server.respondWith([200, {}, JSON.stringify(responseJson)]);
 
 	retrievePromise.then((response: SectionPickerState) => {
-		Clipper.Storage.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
-			Clipper.Storage.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
+		Clipper.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
+			Clipper.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
 				strictEqual(notebooks, JSON.stringify(freshNotebooks),
 					"After fresh notebooks have been retrieved, the storage should be updated with them. In this case, nothing should have changed.");
 				strictEqual(curSection, JSON.stringify(mockSection),
@@ -355,8 +355,8 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	};
 
 	retrievePromise.then((response: SectionPickerState) => {
-		Clipper.Storage.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
-			Clipper.Storage.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
+		Clipper.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
+			Clipper.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
 				strictEqual(notebooks, JSON.stringify(freshNotebooks),
 					"After fresh notebooks have been retrieved, the storage should be updated with them. In this case, nothing should have changed.");
 				strictEqual(curSection, JSON.stringify(defaultSection),
@@ -421,7 +421,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		parentId: "a-bc!d"
 	};
 
-	Clipper.Storage.getValue(ClipperStorageKeys.currentSelectedSection, (curSection1) => {
+	Clipper.getValue(ClipperStorageKeys.currentSelectedSection, (curSection1) => {
 		strictEqual(curSection1, JSON.stringify(selectedSection),
 			"The current selected section in storage should have been updated with the selected section");
 		strictEqual(JSON.stringify(controllerInstance.state.curSection), JSON.stringify(selectedSection),
@@ -437,8 +437,8 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		server.respondWith([200, {}, JSON.stringify(responseJson)]);
 
 		retrievePromise.then((response: SectionPickerState) => {
-			Clipper.Storage.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
-				Clipper.Storage.getValue(ClipperStorageKeys.currentSelectedSection, (curSection2) => {
+			Clipper.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
+				Clipper.getValue(ClipperStorageKeys.currentSelectedSection, (curSection2) => {
 					strictEqual(notebooks, JSON.stringify(freshNotebooks),
 						"After fresh notebooks have been retrieved, the storage should be updated with them. In this case, nothing should have changed.");
 					strictEqual(curSection2, JSON.stringify(selectedSection),
@@ -493,8 +493,8 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	server.respondWith([200, {}, JSON.stringify(responseJson)]);
 
 	retrievePromise.then((response: SectionPickerState) => {
-		Clipper.Storage.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
-			Clipper.Storage.getValue(ClipperStorageKeys.currentSelectedSection, (curSection2) => {
+		Clipper.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
+			Clipper.getValue(ClipperStorageKeys.currentSelectedSection, (curSection2) => {
 				strictEqual(notebooks, JSON.stringify(freshNotebooks),
 					"After fresh notebooks have been retrieved, the storage should be updated with them.");
 				strictEqual(curSection2, undefined,
@@ -549,9 +549,9 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		ok(false, "resolve should not be called");
 	},
 	(error) => {
-		Clipper.Storage.getValue(ClipperStorageKeys.cachedNotebooks,
+		Clipper.getValue(ClipperStorageKeys.cachedNotebooks,
 		(notebooks) => {
-			Clipper.Storage.getValue(ClipperStorageKeys.currentSelectedSection,
+			Clipper.getValue(ClipperStorageKeys.currentSelectedSection,
 			(curSection) => {
 				strictEqual(notebooks,
 					JSON.stringify(mockNotebooks),
@@ -605,8 +605,8 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	retrievePromise.then((response: SectionPickerState) => {
 		ok(false, "resolve should not be called");
 	}, (error) => {
-		Clipper.Storage.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
-			Clipper.Storage.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
+		Clipper.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
+			Clipper.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
 				strictEqual(notebooks, JSON.stringify(mockNotebooks),
 					"After undefined notebooks have been retrieved, the storage should not be updated with them.");
 				strictEqual(curSection, JSON.stringify(mockSection),
@@ -649,8 +649,8 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	retrievePromise.then((response: SectionPickerState) => {
 		ok(false, "resolve should not be called");
 	}, (error) => {
-		Clipper.Storage.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
-			Clipper.Storage.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
+		Clipper.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
+			Clipper.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
 				strictEqual(notebooks, undefined,
 					"After undefined notebooks have been retrieved, the storage notebook value should still be undefined");
 				strictEqual(curSection, undefined,
