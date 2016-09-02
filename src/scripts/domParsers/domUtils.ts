@@ -244,7 +244,7 @@ export module DomUtils {
 				}
 				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.KhanAcademy) {
 					let extractor = VideoUtils.createExtractor(supportedDomain);
-					extractor.createEmbeddedVideo(pageUrl, pageContent);
+					iframes = iframes.concat(extractor.createEmbeddedVideo(pageUrl, pageContent));
 					// iframes.push(createEmbeddedKhanAcademyVideo(pageContent));
 				}
 			} catch (e) {
