@@ -1,5 +1,7 @@
+import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {Utils} from "../utils";
+import {Settings} from "../settings";
 
 import {ClipperState} from "./clipperState";
 import {Clipper} from "./frontEndGlobals";
@@ -92,6 +94,12 @@ export class RatingsHelper {
 		});
 	}
 
+	public static getRateUrlIfExists(clientType: ClientType): string {
+		let settingName: string = RatingsHelper.getRateUrlSettingNameForClient(clientType);
+		return Settings.getSetting(settingName);
+	}
+
+	// TODO public for testing
 	public static badRatingDelayIsOver(badRatingsDate: number, currentDate: number): boolean {
 		// last bad rating time > k weeks OR undefined
 
@@ -102,6 +110,7 @@ export class RatingsHelper {
 		return (currentDate - badRatingsDate) >= Constants.Settings.timeBetweenBadRatings;
 	}
 
+	// TODO public for testing
 	public static clipSuccessDelayIsOver(numClips: number): boolean {
 		// # successful clips > n
 		// (?) # successful clips % m === 0, where m is the gap between successful clips that we'd like to display the prompt
@@ -109,5 +118,11 @@ export class RatingsHelper {
 			// MVP+: collapse panel into a Rate Us hyperlink in the footer that is always available
 
 		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt;
+	}
+
+	// TODO public for testing
+	public static getRateUrlSettingNameForClient(clientType: ClientType): string {
+		let nameSuffix = "_RatingUrl";
+		return ClientType[clientType] + nameSuffix;
 	}
 }

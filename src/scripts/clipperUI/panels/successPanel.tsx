@@ -43,9 +43,16 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 						handler: () => {
 							RatingsHelper.setDoNotPromptStatus();
 
-							this.props.clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.RATE
-							});
+							let rateUrl: string = RatingsHelper.getRateUrlIfExists(this.props.clipperState.clientInfo.clipperType);
+							if (!Utils.isNullOrUndefined(rateUrl)) {
+								this.props.clipperState.setState({
+									ratingsPromptStage: RatingsPromptStage.RATE
+								});
+							} else {
+								this.props.clipperState.setState({
+									ratingsPromptStage: RatingsPromptStage.END
+								});
+							}
 						}
 					}, {
 							id: "",
@@ -53,6 +60,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 							handler: () => {
 								RatingsHelper.setLastBadRatingDate();
 
+								// TODO check if feedback link exists
 								this.props.clipperState.setState({
 									ratingsPromptStage: RatingsPromptStage.FEEDBACK
 								});
@@ -65,6 +73,11 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 						id: "",
 						label: "Rate Web Clipper",
 						handler: () => {
+							let rateUrl: string = RatingsHelper.getRateUrlIfExists(this.props.clipperState.clientInfo.clipperType);
+							if (!Utils.isNullOrUndefined(rateUrl)) {
+								window.open(rateUrl, "_blank");
+							}
+
 							this.props.clipperState.setState({
 								ratingsPromptStage: RatingsPromptStage.END
 							});
@@ -105,7 +118,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 						});
 					break;
 				case RatingsPromptStage.END:
-					message = "Thanks!";
+					message = "Thanks for your feedback!";
 					break;
 				default:
 				case RatingsPromptStage.NONE:
