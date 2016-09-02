@@ -14,6 +14,10 @@ export class Http {
 	private static defaultTimeout = 30000;
 
 	public static get(url: string, headers?: any, timeout = Http.defaultTimeout): Promise<ResponsePackage> {
+		if (!url) {
+			throw new Error("url must be a non-empty string, but was: " + url);
+		}
+
 		return new Promise<ResponsePackage>((resolve, reject) => {
 			let request = new XMLHttpRequest();
 			request.open("GET", url);
@@ -21,7 +25,11 @@ export class Http {
 			request.timeout = timeout;
 
 			request.onload = () => {
-				resolve({ parsedResponse: request.responseText, request: request });
+				if (request.status === 200) {
+					resolve({ parsedResponse: request.responseText, request: request });
+				} else {
+					reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
+				}
 			};
 
 			request.onerror = () => {
