@@ -74,7 +74,11 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	protected onFirstRun() {
-		// Don't do anything since we're using the onInstalled functionality instead
+		// Don't do anything since we're using the onInstalled functionality instead, unless it's not available
+		// then we use our 'missing-clipperId' heuristic
+		if (!this.onInstalledSupported()) {
+			this.onInstalled();
+		}
 	}
 
 	protected checkIfTabMatchesATooltipType(tab: W3CTab, tooltipType: TooltipType): boolean {
@@ -158,7 +162,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 
 	private registerInstallListener() {
 		// onInstalled is undefined as of Firefox 48
-		if (WebExtension.browser.runtime.onInstalled) {
+		if (this.onInstalledSupported()) {
 			WebExtension.browser.runtime.onInstalled.addListener(details => {
 				if (details.reason === "install") {
 					this.onInstalled();
@@ -174,5 +178,9 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 				this.removeWorker(worker);
 			}
 		});
+	}
+
+	private onInstalledSupported(): boolean {
+		return !!WebExtension.browser.runtime.onInstalled;
 	}
 }
