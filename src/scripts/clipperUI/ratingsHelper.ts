@@ -88,14 +88,14 @@ export class RatingsHelper {
 
 		let badDateKey: string = Constants.StorageKeys.lastBadRatingDate;
 
-		Clipper.Storage.setValue(badDateKey, Date.now().toString());
-
 		Clipper.Storage.getValue(badDateKey, (lastBadRatingDateAsStr) => {
 			let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
 			if (!isNaN(lastBadRatingDate)) {
 				RatingsHelper.setDoNotPromptStatus();
 				// TODO consider immediately setting this if we feel overwhelmed by feedback received through this channel
 			}
+
+			Clipper.Storage.setValue(badDateKey, Date.now().toString());
 		});
 	}
 
