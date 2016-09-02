@@ -209,6 +209,31 @@ export module DomUtils {
 				resolve();
 			}
 
+			// interface VideoExtractor {
+			// 	getVideoIds(pageUrl: string, pageContent: string): string[];
+			// 	getVideoSrcValues(pageUrl: string, pageContent: string): string[];
+			// 	createEmbeddedVideo(pageUrl: string, pageContent: string): HTMLIFrameElement[];
+			// };
+
+			// class VideoExtractorFactory {
+			// 	public static createExtractor(domain: string): VideoExtractor {
+			// 		let domainAsEnum = VideoUtils.SupportedVideoDomains[domain];
+			// 		switch (domainAsEnum) {
+			// 			case VideoUtils.SupportedVideoDomains.Vimeo:
+			// 				return new VimeoExtractor();
+			// 			case VideoUtils.SupportedVideoDomains.YouTube:
+			// 				return new YouTubeExtractor();
+			// 			case VideoUtils.SupportedVideoDomains.KhanAcademy:
+			// 				return new KhanAcademyExtractor();
+			// 			default:
+			// 				return 	
+			// 		}
+			// 	}
+			// }
+
+			// use a factory to create the correct class, then call the appropriate method on it
+			// VideoExtractorFactory.createExtractor(supportedDomain);
+
 			let iframes: HTMLIFrameElement[] = [];
 			try {
 				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.Vimeo) {
@@ -218,7 +243,9 @@ export module DomUtils {
 					iframes.push(createEmbeddedYouTubeVideo(pageUrl));
 				}
 				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.KhanAcademy) {
-					iframes.push(createEmbeddedKhanAcademyVideo(pageContent));
+					let extractor = VideoUtils.createExtractor(supportedDomain);
+					extractor.createEmbeddedVideo(pageUrl, pageContent);
+					// iframes.push(createEmbeddedKhanAcademyVideo(pageContent));
 				}
 			} catch (e) {
 				// if we end up here, we're unexpectedly broken
@@ -274,19 +301,9 @@ export module DomUtils {
 	}
 
 	/**
-	 * Create iframe in correct format for KhanAcademy video (hosted on YouTube) embed in OneNote.
-	 * Supports a single video.
-	 */
-	function createEmbeddedKhanAcademyVideo(pageContent: string): HTMLIFrameElement {
-		let youtubeSrcFromKhanAcademyPage = VideoUtils.getKhanAcademyVideoSrcValue(pageContent);
-
-		return createEmbeddedYouTubeVideo(youtubeSrcFromKhanAcademyPage);
-	}
-
-	/**
 	 * Create base iframe with reasonable style properties for video embed in OneNote.
 	 */
-	function createEmbedVideoIframe(): HTMLIFrameElement {
+	export function createEmbedVideoIframe(): HTMLIFrameElement {
 		let iframe = document.createElement("iframe");
 		// these values must be set inline, else the embed in OneNote won't respect them
 		// width and height set to preserve a 16:9 aspect ratio

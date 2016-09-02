@@ -1,5 +1,8 @@
 import {Utils} from "../utils";
 
+import {VideoExtractor} from "./VideoExtractor";
+import {KhanAcademyVideoExtractor} from "./khanAcademyVideoExtractor";
+
 export module VideoUtils {
 	export const youTubeWatchVideoBaseUrl = "https://www.youtube.com/watch";
 	export const youTubeVideoIdQueryKey = "v";
@@ -10,6 +13,16 @@ export module VideoUtils {
 		KhanAcademy
 	}
 
+	export function createExtractor(domain: string): VideoExtractor {
+		let domainAsEnum = VideoUtils.SupportedVideoDomains[domain];
+		switch (domainAsEnum) {
+			case VideoUtils.SupportedVideoDomains.KhanAcademy:
+				return new KhanAcademyVideoExtractor();
+			default:
+				return null;
+		}
+	}
+	
 	/**
 	 * Returns a string from the SupportedVideoDomains enum iff
 	 * the pageUrl's hostname contains the enum string
@@ -67,23 +80,6 @@ export module VideoUtils {
 		return values;
 	}
 
-	export function getKhanAcademyVideoSrcValue(pageContent: string): string {
-		if (Utils.isNullOrUndefined(pageContent)) {
-			return;
-		}
-
-		let videoIds = getKhanAcademyVideoIds(pageContent);
-		if (Utils.isNullOrUndefined(videoIds)) {
-			return;
-		}
-
-		if (videoIds.length === 0) {
-			return;
-		}
-
-		return "https://www.youtube.com/embed/" + videoIds[0];
-	}
-
 	/**
 	 * Return id for a video on YouTube.com
 	 */
@@ -128,14 +124,7 @@ export module VideoUtils {
 		return matchRegexFromPageContent(pageContent, [regex]);
 	}
 
-	export function getKhanAcademyVideoIds(pageContent: string): string[] {
-		let regex = /id\s*=\s*("\s*video_(\S+)\s*"|'\s*video_(\S+)\s*')/gi;
-		let regexTwo = /data-youtubeid\s*=\s*("\s*(\S+)\s*"|'\s*(\S+)\s*')/gi;
-		let regexes = [regex, regexTwo];
-		return matchRegexFromPageContent(pageContent, regexes);
-	}
-
-	function matchRegexFromPageContent(pageContent: string, regexes: RegExp[]): string[] {
+	export function matchRegexFromPageContent(pageContent: string, regexes: RegExp[]): string[] {
 		if (Utils.isNullOrUndefined(pageContent)) {
 			return;
 		}
@@ -162,5 +151,4 @@ export module VideoUtils {
 		}
 		return matches.filter((element, index, array) => { return array.indexOf(element) === index; }); // unique values only
 	}
-
 }

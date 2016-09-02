@@ -1,6 +1,6 @@
 /// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
 
-import {VideoUtils} from "../../scripts/domParsers/videoUtils";
+import {KhanAcademyVideoExtractor} from "../../scripts/domParsers/khanAcademyVideoExtractor";
 
 let supportedKhanAcademyUrls = [
 	"https://www.khanacademy.org/humanities/art-1010/beginners-guide-20-21/v/representation-abstraction-looking-at-millais-and-newman",
@@ -42,61 +42,51 @@ let pageContentWithMultipleHyphenatedVideoIds = [
 	"<div id='video_8-5DTsl1V5k'></div> <DIV ID='video_8-53sl1V5k'></DIV> <div id='video_4ba196611'> </div>",
 ];
 
-QUnit.module("videoUtils");
+let khanAcademyVideoExtractor = new KhanAcademyVideoExtractor();
+let pageUrl = "";
 
-test("videoDomainIfSupported", () => {
-	for (let pageUrl of unsupportedKhanAcademyUrls) {
-		let domain = VideoUtils.videoDomainIfSupported(pageUrl);
-		strictEqual(domain, undefined, pageUrl + " should NOT be supported");
-	}
+QUnit.module("khanAcademyVideoExtractor");
 
-	for (let pageUrl of supportedKhanAcademyUrls) {
-		let domain = VideoUtils.videoDomainIfSupported(pageUrl);
-		strictEqual(domain, VideoUtils.SupportedVideoDomains[VideoUtils.SupportedVideoDomains.KhanAcademy],
-			pageUrl + " should be supported");
-	}
-});
-
-test("getKhanAcademyVideoSrcValue should return undefined when provided unsupported parameters for the KhanAcademy domain", () => {
+test("getVideoSrcValues should return undefined when provided unsupported parameters for the KhanAcademy domain", () => {
 	for (let pageContentSnippet of pageContentWithNoClipId) {
 		let pageContent = pageContentHtmlWrapperPrepend + pageContentSnippet + pageContentHtmlWrapperAppend;
-		let videoSrcUrl = VideoUtils.getKhanAcademyVideoSrcValue(pageContent);
+		let videoSrcUrl = khanAcademyVideoExtractor.getVideoSrcValues(pageUrl, pageContent);
 		deepEqual(videoSrcUrl, undefined, "pageContentSnippet: " + pageContentSnippet);
 	}
 });
 
-test("getKhanAcademyVideoSrcValue should return a url on supported KhanAcademy domain urls", () => {
+test("getVideoSrcValues should return a url on supported KhanAcademy domain urls", () => {
 	for (let pageContentSnippet of pageContentWithHyphenatedVideoIds) {
 		let pageContent = pageContentHtmlWrapperPrepend + pageContentSnippet + pageContentHtmlWrapperAppend;
-		let videoSrcUrl = VideoUtils.getKhanAcademyVideoSrcValue(pageContent);
-		strictEqual(videoSrcUrl, "https://www.youtube.com/embed/8-5DTsl1V5k", "pageContentSnippet: " + pageContentSnippet);
+		let videoSrcUrl = khanAcademyVideoExtractor.getVideoSrcValues(pageUrl, pageContent);
+		deepEqual(videoSrcUrl, ["https://www.youtube.com/embed/8-5DTsl1V5k"], "pageContentSnippet: " + pageContentSnippet);
 	}
 
 	for (let pageContentSnippet of pageContentWithMultipleHyphenatedVideoIds) {
 		let pageContent = pageContentHtmlWrapperPrepend + pageContentSnippet + pageContentHtmlWrapperAppend;
-		let videoSrcUrl = VideoUtils.getKhanAcademyVideoSrcValue(pageContent);
-		strictEqual(videoSrcUrl, "https://www.youtube.com/embed/8-5DTsl1V5k", "pageContentSnippet: " + pageContentSnippet);
+		let videoSrcUrl = khanAcademyVideoExtractor.getVideoSrcValues(pageUrl, pageContent);
+		deepEqual(videoSrcUrl, ["https://www.youtube.com/embed/8-5DTsl1V5k"], "pageContentSnippet: " + pageContentSnippet);
 	}
 });
 
-test("getKhanAcademyVideoIds should return undefined for unsupported urls", () => {
+test("getVideoIds should return undefined for unsupported urls", () => {
 	for (let pageContentSnippet of pageContentWithNoClipId) {
 		let pageContent = pageContentHtmlWrapperPrepend + pageContentSnippet + pageContentHtmlWrapperAppend;
-		let videoSrcUrls = VideoUtils.getKhanAcademyVideoIds(pageContent);
+		let videoSrcUrls = khanAcademyVideoExtractor.getVideoIds(pageUrl, pageContent);
 		deepEqual(videoSrcUrls, undefined, "pageContentSnippet: " + pageContentSnippet);
 	}
 });
 
-test("getKhanAcademyVideoIds should return id for supported KhanAcademy video url", () => {
+test("getVideoIds should return id for supported KhanAcademy video url", () => {
 	for (let pageContentSnippet of pageContentWithHyphenatedVideoIds) {
 		let pageContent = pageContentHtmlWrapperPrepend + pageContentSnippet + pageContentHtmlWrapperAppend;
-		let videoSrcUrls = VideoUtils.getKhanAcademyVideoIds(pageContent);
+		let videoSrcUrls = khanAcademyVideoExtractor.getVideoIds(pageUrl, pageContent);
 		deepEqual(videoSrcUrls, ["8-5DTsl1V5k"], "pageContentSnippet: " + pageContentSnippet);
 	}
 
 	for (let pageContentSnippet of pageContentWithMultipleHyphenatedVideoIds) {
 		let pageContent = pageContentHtmlWrapperPrepend + pageContentSnippet + pageContentHtmlWrapperAppend;
-		let videoSrcUrls = VideoUtils.getKhanAcademyVideoIds(pageContent);
+		let videoSrcUrls = khanAcademyVideoExtractor.getVideoIds(pageUrl, pageContent);
 		deepEqual(videoSrcUrls, ["8-5DTsl1V5k", "8-53sl1V5k", "4ba196611"], "pageContentSnippet: " + pageContentSnippet);
 	}
 });
