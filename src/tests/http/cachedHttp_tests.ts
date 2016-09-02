@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/sinon/sinon.d.ts" />
-
 import {ResponsePackage} from "../../scripts/responsePackage";
 
 import {CachedHttp, TimeStampedData} from "../../scripts/http/cachedHttp";

@@ -35,6 +35,10 @@ export class ClipperCachedHttp extends CachedHttp {
 			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
 				{ error: "getAndCacheFreshValue key parameter should be passed a non-empty string" }, "" + key);
 			return Promise.resolve(undefined);
+		} else if (!getRemoteValue) {
+			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
+				{ error: "getAndCacheFreshValue getRemoteValue parameter should be passed a non-undefined function" }, "" + getRemoteValue);
+			return Promise.resolve(undefined);
 		} else if (updateInterval < 0) {
 			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
 				{ error: "getAndCacheFreshValue updateInterval parameter should be passed a number >= 0" }, "" + updateInterval);
