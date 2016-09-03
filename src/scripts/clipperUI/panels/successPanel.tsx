@@ -42,101 +42,9 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 	}
 
 	private showRatingsPrompt(): any[] {
-
 		if (this.props.clipperState.shouldShowRatingsPrompt) {
-			let message: string;
-			let buttons: DialogButton[] = [];
-
-			switch (this.props.clipperState.ratingsPromptStage) {
-				case RatingsPromptStage.INIT:
-					message = "Enjoying the Web Clipper?";
-					buttons.push({
-						id: "",
-						label: "Yes, it's great!",
-						handler: () => {
-							RatingsHelper.setDoNotPromptStatus();
-
-							let rateUrl: string = RatingsHelper.getRateUrlIfExists(this.props.clipperState.clientInfo.clipperType);
-							if (!Utils.isNullOrUndefined(rateUrl)) {
-								this.props.clipperState.setState({
-									ratingsPromptStage: RatingsPromptStage.RATE
-								});
-							} else {
-								this.props.clipperState.setState({
-									ratingsPromptStage: RatingsPromptStage.END
-								});
-							}
-						}
-					}, {
-							id: "",
-							label: "It could be better.",
-							handler: () => {
-								RatingsHelper.setLastBadRatingDate();
-
-								// TODO check if feedback link exists
-								this.props.clipperState.setState({
-									ratingsPromptStage: RatingsPromptStage.FEEDBACK
-								});
-							}
-						});
-					break;
-				case RatingsPromptStage.RATE:
-					message = "Rate us in the Store";
-					buttons.push({
-						id: "",
-						label: "Rate Web Clipper",
-						handler: () => {
-							let rateUrl: string = RatingsHelper.getRateUrlIfExists(this.props.clipperState.clientInfo.clipperType);
-							if (!Utils.isNullOrUndefined(rateUrl)) {
-								window.open(rateUrl, "_blank");
-							}
-
-							this.props.clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.END
-							});
-						}
-					}, {
-							id: "",
-							label: "No thanks",
-							handler: () => {
-								// TODO we could set a value that lets us know they got here
-								// so that we could put the Rate Us link in their footer
-
-								this.props.clipperState.setState({
-									ratingsPromptStage: RatingsPromptStage.NONE
-								});
-							}
-						});
-					break;
-				case RatingsPromptStage.FEEDBACK:
-					message = "Help us improve!";
-					buttons.push({
-						id: "",
-						label: "Provide feedback",
-						handler: () => {
-							this.props.clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.END
-							});
-						}
-					}, {
-							id: "",
-							label: "No thanks",
-							handler: () => {
-								// TODO should we set doNotPromptStatus immediately here when they decide not to provide feedback?
-
-								this.props.clipperState.setState({
-									ratingsPromptStage: RatingsPromptStage.NONE
-								});
-							}
-						});
-					break;
-				case RatingsPromptStage.END:
-					message = "Thanks for your feedback!";
-					break;
-				default:
-				case RatingsPromptStage.NONE:
-					break;
-			}
+			let message: string = RatingsHelper.getMessage(this.props.clipperState.ratingsPromptStage);
+			let buttons: DialogButton[] = RatingsHelper.getDialogButtons(this.props.clipperState.ratingsPromptStage, this.props.clipperState);
 
 			if (!Utils.isNullOrUndefined(message)) {
 				let animationStrategy: AnimationStrategy = new SlideFromRightAnimationStrategy({
@@ -144,8 +52,6 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 					extShouldAnimateOut: () => { return false; },
 					onAfterAnimateIn: () => { this.setState({ currentRatingsPromptStage: this.props.clipperState.ratingsPromptStage }); }
 				});
-
-				console.log(RatingsPromptStage[this.props.clipperState.ratingsPromptStage], RatingsPromptStage[this.state.currentRatingsPromptStage]);
 
 				return (
 					<DialogPanel

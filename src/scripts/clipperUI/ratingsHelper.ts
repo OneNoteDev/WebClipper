@@ -4,6 +4,7 @@ import {Utils} from "../utils";
 import {Settings} from "../settings";
 
 import {ClipperState} from "./clipperState";
+import {DialogButton} from "./panels/dialogPanel";
 import {Clipper} from "./frontEndGlobals";
 
 export enum RatingsPromptStage {
@@ -15,6 +16,114 @@ export enum RatingsPromptStage {
 }
 
 export class RatingsHelper {
+	public static getMessage(stage: RatingsPromptStage): string {
+		switch (stage) {
+			case RatingsPromptStage.INIT:
+				return "Enjoying the Web Clipper?";
+			case RatingsPromptStage.RATE:
+				return "Rate us in the Store";
+			case RatingsPromptStage.FEEDBACK:
+				return "Help us improve!";
+			case RatingsPromptStage.END:
+				return "Thanks for your feedback!";
+			default:
+			case RatingsPromptStage.NONE:
+				break;
+		}
+	}
+
+	public static getDialogButtons(stage: RatingsPromptStage, clipperState: ClipperState): DialogButton[] {
+		let buttons: DialogButton[] = [];
+
+		switch (stage) {
+			case RatingsPromptStage.INIT:
+				buttons.push({
+					id: "",
+					label: "Yes, it's great!",
+					handler: () => {
+						RatingsHelper.setDoNotPromptStatus();
+
+						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clipperState.clientInfo.clipperType);
+						if (!Utils.isNullOrUndefined(rateUrl)) {
+							clipperState.setState({
+								ratingsPromptStage: RatingsPromptStage.RATE
+							});
+						} else {
+							clipperState.setState({
+								ratingsPromptStage: RatingsPromptStage.END
+							});
+						}
+					}
+				}, {
+						id: "",
+						label: "It could be better.",
+						handler: () => {
+							RatingsHelper.setLastBadRatingDate();
+
+							// TODO check if feedback link exists
+							clipperState.setState({
+								ratingsPromptStage: RatingsPromptStage.FEEDBACK
+							});
+						}
+					});
+				break;
+			case RatingsPromptStage.RATE:
+				buttons.push({
+					id: "",
+					label: "Rate Web Clipper",
+					handler: () => {
+						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clipperState.clientInfo.clipperType);
+						if (!Utils.isNullOrUndefined(rateUrl)) {
+							window.open(rateUrl, "_blank");
+						}
+
+						clipperState.setState({
+							ratingsPromptStage: RatingsPromptStage.END
+						});
+					}
+				}, {
+						id: "",
+						label: "No thanks",
+						handler: () => {
+							// TODO we could set a value that lets us know they got here
+							// so that we could put the Rate Us link in their footer
+
+							clipperState.setState({
+								ratingsPromptStage: RatingsPromptStage.NONE
+							});
+						}
+					});
+				break;
+			case RatingsPromptStage.FEEDBACK:
+				buttons.push({
+					id: "",
+					label: "Provide feedback",
+					handler: () => {
+						clipperState.setState({
+							ratingsPromptStage: RatingsPromptStage.END
+						});
+					}
+				}, {
+						id: "",
+						label: "No thanks",
+						handler: () => {
+							// TODO should we set doNotPromptStatus immediately here when they decide not to provide feedback?
+
+							clipperState.setState({
+								ratingsPromptStage: RatingsPromptStage.NONE
+							});
+						}
+					});
+				break;
+			default:
+			case RatingsPromptStage.END:
+			case RatingsPromptStage.NONE:
+				break;
+		}
+
+		return buttons;
+	}
+
 	public static shouldShowRatingsPrompt(clipperState: ClipperState): Promise<boolean> {
 		if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
 			// return cache in clipper state if it exists
@@ -31,10 +140,6 @@ export class RatingsHelper {
 			Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsStr) => {
 				Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
 					Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
-						if (Utils.isNullOrUndefined(lastBadRatingDateAsStr) && Utils.isNullOrUndefined(numClipsAsStr)) {
-							resolve(false); // TODO when does this happen?
-						}
-
 						if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
 							resolve(false);
 						}
@@ -73,12 +178,13 @@ export class RatingsHelper {
 		});
 	}
 
+	// TODO public for testing
 	public static setDoNotPromptStatus(): void {
 		// TODO log this and how it got called
-
 		Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "true");
 	}
 
+	// TODO public for testing
 	public static setLastBadRatingDate(): void {
 		// we are only going to allow two sets of bad rating date by calling this method
 		// any additional sets will result in a set of the do not prompt status
@@ -106,6 +212,7 @@ export class RatingsHelper {
 		return !Utils.isNullOrUndefined(isEnabledAsStr) && isEnabledAsStr.toLowerCase() === "true";
 	}
 
+	// TODO public for testing
 	public static getRateUrlIfExists(clientType: ClientType): string {
 		let settingName: string = RatingsHelper.getRateUrlSettingNameForClient(clientType);
 		return Settings.getSetting(settingName);
@@ -128,6 +235,11 @@ export class RatingsHelper {
 		// (?) # successful clips % m === 0, where m is the gap between successful clips that we'd like to display the prompt
 		// (?) # of successful clips < nMax
 			// MVP+: collapse panel into a Rate Us hyperlink in the footer that is always available
+
+		if (isNaN(numClips)) {
+			// this should never happen
+			return false;
+		}
 
 		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt;
 	}
