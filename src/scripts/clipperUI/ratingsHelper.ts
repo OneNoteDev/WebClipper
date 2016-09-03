@@ -1,3 +1,5 @@
+import {Localization} from "../localization/localization";
+
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {Utils} from "../utils";
@@ -19,13 +21,13 @@ export class RatingsHelper {
 	public static getMessage(stage: RatingsPromptStage): string {
 		switch (stage) {
 			case RatingsPromptStage.INIT:
-				return "Enjoying the Web Clipper?";
+				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.Init");
 			case RatingsPromptStage.RATE:
-				return "Rate us in the Store";
+				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.Rate");
 			case RatingsPromptStage.FEEDBACK:
-				return "Help us improve!";
+				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.Feedback");
 			case RatingsPromptStage.END:
-				return "Thanks for your feedback!";
+				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.End");
 			default:
 			case RatingsPromptStage.NONE:
 				break;
@@ -39,7 +41,7 @@ export class RatingsHelper {
 			case RatingsPromptStage.INIT:
 				buttons.push({
 					id: "",
-					label: "Yes, it's great!",
+					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Positive"),
 					handler: () => {
 						RatingsHelper.setDoNotPromptStatus();
 
@@ -56,7 +58,7 @@ export class RatingsHelper {
 					}
 				}, {
 						id: "",
-						label: "It could be better.",
+						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Negative"),
 						handler: () => {
 							RatingsHelper.setLastBadRatingDate();
 
@@ -70,7 +72,7 @@ export class RatingsHelper {
 			case RatingsPromptStage.RATE:
 				buttons.push({
 					id: "",
-					label: "Rate Web Clipper",
+					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Rate"),
 					handler: () => {
 						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clipperState.clientInfo.clipperType);
 						if (!Utils.isNullOrUndefined(rateUrl)) {
@@ -83,7 +85,7 @@ export class RatingsHelper {
 					}
 				}, {
 						id: "",
-						label: "No thanks",
+						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
 						handler: () => {
 							// TODO we could set a value that lets us know they got here
 							// so that we could put the Rate Us link in their footer
@@ -97,7 +99,7 @@ export class RatingsHelper {
 			case RatingsPromptStage.FEEDBACK:
 				buttons.push({
 					id: "",
-					label: "Provide feedback",
+					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Feedback"),
 					handler: () => {
 						clipperState.setState({
 							ratingsPromptStage: RatingsPromptStage.END
@@ -105,7 +107,7 @@ export class RatingsHelper {
 					}
 				}, {
 						id: "",
-						label: "No thanks",
+						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
 						handler: () => {
 							// TODO should we set doNotPromptStatus immediately here when they decide not to provide feedback?
 
