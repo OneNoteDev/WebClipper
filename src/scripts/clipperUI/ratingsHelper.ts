@@ -40,7 +40,7 @@ export class RatingsHelper {
 		switch (stage) {
 			case RatingsPromptStage.INIT:
 				buttons.push({
-					id: "",
+					id: Constants.Ids.ratingsButtonInitYes,
 					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Positive"),
 					handler: () => {
 						RatingsHelper.setDoNotPromptStatus();
@@ -57,7 +57,7 @@ export class RatingsHelper {
 						}
 					}
 				}, {
-						id: "",
+						id: Constants.Ids.ratingsButtonInitNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Negative"),
 						handler: () => {
 							RatingsHelper.setLastBadRatingDate();
@@ -71,7 +71,7 @@ export class RatingsHelper {
 				break;
 			case RatingsPromptStage.RATE:
 				buttons.push({
-					id: "",
+					id: Constants.Ids.ratingsButtonRateYes,
 					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Rate"),
 					handler: () => {
 						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clipperState.clientInfo.clipperType);
@@ -84,7 +84,7 @@ export class RatingsHelper {
 						});
 					}
 				}, {
-						id: "",
+						id: Constants.Ids.ratingsButtonRateNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
 						handler: () => {
 							// TODO we could set a value that lets us know they got here
@@ -98,7 +98,7 @@ export class RatingsHelper {
 				break;
 			case RatingsPromptStage.FEEDBACK:
 				buttons.push({
-					id: "",
+					id: Constants.Ids.ratingsButtonFeedbackYes,
 					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Feedback"),
 					handler: () => {
 						clipperState.setState({
@@ -106,7 +106,7 @@ export class RatingsHelper {
 						});
 					}
 				}, {
-						id: "",
+						id: Constants.Ids.ratingsButtonFeedbackNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
 						handler: () => {
 							// TODO should we set doNotPromptStatus immediately here when they decide not to provide feedback?

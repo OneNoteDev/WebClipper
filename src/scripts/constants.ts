@@ -140,6 +140,12 @@ export module Constants {
 		export var bookmarkHeaderTitle = "bookmarkHeaderTitle";
 
 		// ratingsPrompt
+		export var ratingsButtonFeedbackNo = "ratingsButtonFeedbackNo";
+		export var ratingsButtonFeedbackYes = "ratingsButtonFeedbackYes";
+		export var ratingsButtonInitNo = "ratingsButtonInitNo";
+		export var ratingsButtonInitYes = "ratingsButtonInitYes";
+		export var ratingsButtonRateNo = "ratingsButtonRateNo";
+		export var ratingsButtonRateYes = "ratingsButtonRateYes";
 		export var ratingsPromptContainer = "ratingsPromptContainer";
 
 		// regionSelectingPanel
