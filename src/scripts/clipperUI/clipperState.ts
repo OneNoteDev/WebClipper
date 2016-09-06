@@ -64,7 +64,7 @@ export interface ClipperState {
 	// Should be set when the Web Clipper enters a state that can not be recovered this session
 	badState?: boolean;
 
-	ratingsPromptStage?: RatingsPromptStage;
+	ratingsPromptStage?: RatingsPromptStage; // TODO move to successPanel state if possible
 	shouldShowRatingsPrompt?: boolean;
 
 	setState?: (partialState: ClipperState) => void;

@@ -637,7 +637,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				// regardless of success/failure of RatingsHelper matters, continue with clip success flow
 				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
 				clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
-				this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } }); // TODO make sure this always happens ~after~ shouldShowRatingsPrompt returns
+				// TODO make sure this always happens ~after~ shouldShowRatingsPrompt returns
+				this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
 			});
 		}, (error: OneNoteApi.RequestError) => {
 			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);

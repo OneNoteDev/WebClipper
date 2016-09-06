@@ -26,17 +26,18 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 		return undefined;
 	}
 
-	private onPanelAnimatorDraw(heightAnimator: HTMLElement) {
+	private onPanelAnimatorDraw(panelAnimator: HTMLElement) {
 		if (this.props.animationStrategy) {
-			this.props.animationStrategy.animate(heightAnimator);
+			this.props.animationStrategy.animate(panelAnimator);
 		}
 	}
 
 	render() {
 		let fontFamily = !Utils.isNullOrUndefined(this.props.fontFamily) ? this.props.fontFamily : Localization.FontFamily.Semibold;
+		let divId = this.props.divId ? this.props.divId : "";
 
 		return (
-			<div id={this.props.divId}>
+			<div id={divId}>
 				<div className={Constants.Classes.panelAnimator} {...this.onElementDraw(this.onPanelAnimatorDraw)}>
 					<div id={Constants.Ids.dialogMessageContainer} className="resultPagePadding">
 						<div className="messageLabelContainer" style={Localization.getFontFamilyAsStyle(fontFamily)}>

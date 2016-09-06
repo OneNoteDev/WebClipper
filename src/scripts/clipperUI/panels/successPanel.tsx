@@ -12,9 +12,6 @@ import {Clipper} from "../frontEndGlobals";
 import {RatingsHelper, RatingsPromptStage} from "../ratingsHelper";
 import {Status} from "../status";
 
-import {AnimationStrategy} from "../animations/animationStrategy";
-import {SlideFromRightAnimationStrategy} from "../animations/slideFromRightAnimationStrategy";
-
 import {SpriteAnimation} from "../components/spriteAnimation";
 
 import {DialogButton, DialogPanel} from "./dialogPanel";
@@ -23,7 +20,7 @@ interface SuccessPanelState {
 	currentRatingsPromptStage: RatingsPromptStage;
 }
 
-class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStateProp> {
+export class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStateProp> {
 	getInitialState(): SuccessPanelState {
 		return {
 			currentRatingsPromptStage: RatingsPromptStage.INIT
@@ -47,11 +44,7 @@ class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStatePro
 			let buttons: DialogButton[] = RatingsHelper.getDialogButtons(this.props.clipperState.ratingsPromptStage, this.props.clipperState);
 
 			if (!Utils.isNullOrUndefined(message)) {
-				let animationStrategy: AnimationStrategy = new SlideFromRightAnimationStrategy({
-					extShouldAnimateIn: () => {	return this.props.clipperState.ratingsPromptStage !== this.state.currentRatingsPromptStage; },
-					extShouldAnimateOut: () => { return false; },
-					onAfterAnimateIn: () => { this.setState({ currentRatingsPromptStage: this.props.clipperState.ratingsPromptStage }); }
-				});
+				let animationStrategy = RatingsHelper.getAnimationStategy(this);
 
 				return (
 					<DialogPanel

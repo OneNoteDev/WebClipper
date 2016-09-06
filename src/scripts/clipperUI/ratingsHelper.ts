@@ -5,6 +5,11 @@ import {Constants} from "../constants";
 import {Utils} from "../utils";
 import {Settings} from "../settings";
 
+import {AnimationStrategy} from "./animations/animationStrategy";
+import {SlideFromRightAnimationStrategy} from "./animations/slideFromRightAnimationStrategy";
+
+import {SuccessPanelClass} from "./panels/successPanel";
+
 import {ClipperState} from "./clipperState";
 import {DialogButton} from "./panels/dialogPanel";
 import {Clipper} from "./frontEndGlobals";
@@ -18,6 +23,10 @@ export enum RatingsPromptStage {
 }
 
 export class RatingsHelper {
+
+	/**
+	 * Get appropriate dialog panel message for the ratings prompt stage provided
+	 */
 	public static getMessage(stage: RatingsPromptStage): string {
 		switch (stage) {
 			case RatingsPromptStage.INIT:
@@ -34,6 +43,9 @@ export class RatingsHelper {
 		}
 	}
 
+	/**
+	 * Get appropriate dialog panel buttons for the ratings prompt stage provided
+	 */
 	public static getDialogButtons(stage: RatingsPromptStage, clipperState: ClipperState): DialogButton[] {
 		let buttons: DialogButton[] = [];
 
@@ -60,7 +72,15 @@ export class RatingsHelper {
 						id: Constants.Ids.ratingsButtonInitNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Negative"),
 						handler: () => {
-							RatingsHelper.setLastBadRatingDate();
+							// TODO should we wait for this Promise before continuing?
+							RatingsHelper.setLastBadRatingDate().then((badRatingAlreadyOccurred) => {
+								if (badRatingAlreadyOccurred) {
+									// setting this to prevent additional ratings prompts after the second bad rating
+									RatingsHelper.setDoNotPromptStatus();
+								}
+							}, () => {
+								// TODO reject case
+							});
 
 							let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
 							if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
@@ -137,10 +157,17 @@ export class RatingsHelper {
 		return buttons;
 	}
 
+	/**
+	 * We will show the ratings prompt if ALL of the below applies:
+	 *   * Ratings prompt is enabled for the ClientType/ClipperType
+	 *   * If StorageKeys.doNotPromptRatings is not "true"
+	 *   * If RatingsHelper.badRatingDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingDate
+	 *   * If RatingsHelper.clipSuccessDelayIsOver(...) returns true when provided StorageKeys.numClipSuccess
+	 */
 	public static shouldShowRatingsPrompt(clipperState: ClipperState): Promise<boolean> {
 		if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
-			// return cache in clipper state if it exists
-			// TODO is this useful?
+			// return cached value in clipper state if it exists
+			// TODO ensure this resets with every distinct session
 			return Promise.resolve(clipperState.shouldShowRatingsPrompt);
 		}
 
@@ -164,6 +191,8 @@ export class RatingsHelper {
 								resolve(true);
 							}
 						}
+
+						resolve(false);
 					});
 				});
 			});
@@ -172,10 +201,22 @@ export class RatingsHelper {
 		// TODO reject case?
 	}
 
+	public static getAnimationStategy(panel: SuccessPanelClass): AnimationStrategy {
+		return new SlideFromRightAnimationStrategy({
+			extShouldAnimateIn: () => {	return panel.props.clipperState.ratingsPromptStage !== panel.state.currentRatingsPromptStage; },
+			extShouldAnimateOut: () => { return false; },
+			onAfterAnimateIn: () => { panel.setState({ currentRatingsPromptStage: panel.props.clipperState.ratingsPromptStage }); }
+		});
+	}
+
+	/**
+	 * Adds 1 to the value in StorageKeys.numClipSuccess.
+	 * If the value does not exist yet, we initialize it to 1.
+	 */
 	public static incrementClipSuccessCount(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr: string) => {
-				let numClips: number = parseInt(numClipsAsStr, 10); // TODO could return NaN
+				let numClips: number = parseInt(numClipsAsStr, 10);
 				if (Utils.isNullOrUndefined(numClips) || isNaN(numClips)) {
 					numClips = 0;
 				}
@@ -192,33 +233,39 @@ export class RatingsHelper {
 	}
 
 	// TODO public for testing
-	public static setDoNotPromptStatus(): void {
-		// TODO log this and how it got called
-		Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "true");
-	}
-
-	// TODO public for testing
-	public static setLastBadRatingDate(): void {
-		// we are only going to allow two sets of bad rating date by calling this method
-		// any additional sets will result in a set of the do not prompt status
-		// - meaning a user will never see the ratings prompt again
-
-		// (?) # of bad ratings > p, where p is like 2
-
+	/**
+	 * Sets StorageKeys.lastBadRatingDate to the current time.
+	 * Returns true if StorageKeys.lastBadRating already contained a value before this set
+	 * (meaning the user had already rated us negatively)
+	 */
+	public static setLastBadRatingDate(): Promise<boolean> {
 		let badDateKey: string = Constants.StorageKeys.lastBadRatingDate;
+		let badRatingAlreadyOccurred = false;
 
-		Clipper.Storage.getValue(badDateKey, (lastBadRatingDateAsStr) => {
-			let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
-			if (!isNaN(lastBadRatingDate)) {
-				RatingsHelper.setDoNotPromptStatus();
-				// TODO consider immediately setting this if we feel overwhelmed by feedback received through this channel
-			}
+		return new Promise<boolean>((resolve, reject) => {
+			Clipper.Storage.getValue(badDateKey, (lastBadRatingDateAsStr) => {
+				let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+				if (!isNaN(lastBadRatingDate)) {
+					badRatingAlreadyOccurred = true;
+					//
+					// TODO consider immediately setting this if we feel overwhelmed by feedback received through this channel
+				}
 
-			Clipper.Storage.setValue(badDateKey, Date.now().toString());
+				if (!badRatingAlreadyOccurred) {
+					Clipper.Storage.setValue(badDateKey, Date.now().toString());
+				}
+
+				resolve(badRatingAlreadyOccurred);
+			});
+
+			// TODO reject?
 		});
 	}
 
 	// TODO public for testing
+	/**
+	 * Returns true if the ratings prompt is enabled for ClientType/ClipperType provided
+	 */
 	public static ratingsPromptEnabledForClient(clientType: ClientType): boolean {
 		let settingName: string = RatingsHelper.getRatingsPromptEnabledSettingNameForClient(clientType);
 		let isEnabledAsStr: string = Settings.getSetting(settingName);
@@ -226,12 +273,18 @@ export class RatingsHelper {
 	}
 
 	// TODO public for testing
+	/**
+	 * Get ratings/reviews URL for the provided ClientType/ClipperType, if it exists
+	 */
 	public static getRateUrlIfExists(clientType: ClientType): string {
 		let settingName: string = RatingsHelper.getRateUrlSettingNameForClient(clientType);
 		return Settings.getSetting(settingName);
 	}
 
 	// TODO public for testing
+	/**
+	 * Get the feedback URL with the special ratings prompt log category, if it exists
+	 */
 	public static getFeedbackUrlIfExists(clipperState: ClipperState): string {
 		let ratingsPromptLogCategory: string = Settings.getSetting("LogCategory_RatingsPrompt");
 		if (!Utils.isNullOrUndefined(ratingsPromptLogCategory) && ratingsPromptLogCategory.length > 0) {
@@ -240,9 +293,12 @@ export class RatingsHelper {
 	}
 
 	// TODO public for testing
+	/**
+	 * Returns true if ONE of the below applies:
+	 *   1) A bad rating has never been given by the user, OR
+	 *   2) Bad rating date provided occurred more than {Constants.Settings.timeBetweenBadRatings} ago
+	 */
 	public static badRatingDelayIsOver(badRatingsDate: number, currentDate: number): boolean {
-		// last bad rating time > k weeks OR undefined
-
 		if (isNaN(badRatingsDate)) {
 			// value has never been set, no bad rating given
 			return true;
@@ -251,31 +307,37 @@ export class RatingsHelper {
 	}
 
 	// TODO public for testing
+	/**
+	 * Returns true if ALL of the below applies:
+	 *   * Number of successful clips >= {Constants.Settings.minClipSuccessForRatingsPrompt}
+	 *   * TODO?
+	 */
 	public static clipSuccessDelayIsOver(numClips: number): boolean {
-		// # successful clips > n
-		// (?) # successful clips % m === 0, where m is the gap between successful clips that we'd like to display the prompt
-		// (?) # of successful clips < nMax
+		// TODO # successful clips % m === 0, where m is the gap between successful clips that we'd like to display the prompt
+		// TODO # of successful clips < nMax
 			// MVP+: collapse panel into a Rate Us hyperlink in the footer that is always available
 
 		if (isNaN(numClips)) {
-			// this should never happen
 			return false;
 		}
 
 		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt;
 	}
 
-	// TODO public for testing
-	public static getRateUrlSettingNameForClient(clientType: ClientType): string {
+	private static combineClientTypeAndSuffix(clientType: ClientType, suffix: string): string {
+		return ClientType[clientType] + suffix;
+	}
+
+	private static getRateUrlSettingNameForClient(clientType: ClientType): string {
 		return RatingsHelper.combineClientTypeAndSuffix(clientType, "_RatingUrl");
 	}
 
-	// TODO public for testing
-	public static getRatingsPromptEnabledSettingNameForClient(clientType: ClientType): string {
+	private static getRatingsPromptEnabledSettingNameForClient(clientType: ClientType): string {
 		return RatingsHelper.combineClientTypeAndSuffix(clientType, "_RatingsEnabled");
 	}
 
-	private static combineClientTypeAndSuffix(clientType: ClientType, suffix: string): string {
-		return ClientType[clientType] + suffix;
+	private static setDoNotPromptStatus(): void {
+		// TODO log this and how it got called
+		Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "true");
 	}
 }
