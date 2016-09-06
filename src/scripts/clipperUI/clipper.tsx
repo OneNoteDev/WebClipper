@@ -45,7 +45,7 @@ import {ComponentBase} from "./componentBase";
 import {MainController} from "./mainController";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {PreviewViewer} from "./previewViewer";
-import {RatingsHelper, RatingsPromptStage} from "./ratingsHelper";
+import {RatingsHelper} from "./ratingsHelper";
 import {RegionSelector} from "./regionSelector";
 import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
 import {Status} from "./status";
@@ -86,7 +86,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			},
 			augmentationPreviewInfo: {},
 			selectionPreviewInfo: {},
-			ratingsPromptStage: RatingsPromptStage.INIT,
 
 			reset: () => {
 				this.state.setState(this.getResetState());
@@ -97,8 +96,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private getResetState(): ClipperState {
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
-			oneNoteApiResult: { status: Status.Succeeded }, // TODO for development only
-			ratingsPromptStage: RatingsPromptStage.INIT
+			oneNoteApiResult: { status: Status.Succeeded } // TODO for development only
 		};
 	}
 

@@ -8,7 +8,7 @@ import {Settings} from "../settings";
 import {AnimationStrategy} from "./animations/animationStrategy";
 import {SlideFromRightAnimationStrategy} from "./animations/slideFromRightAnimationStrategy";
 
-import {SuccessPanelClass} from "./panels/successPanel";
+import {SuccessPanelClass, SuccessPanelState} from "./panels/successPanel";
 
 import {ClipperState} from "./clipperState";
 import {DialogButton} from "./panels/dialogPanel";
@@ -46,7 +46,11 @@ export class RatingsHelper {
 	/**
 	 * Get appropriate dialog panel buttons for the ratings prompt stage provided
 	 */
-	public static getDialogButtons(stage: RatingsPromptStage, clipperState: ClipperState): DialogButton[] {
+	public static getDialogButtons(panel: SuccessPanelClass): DialogButton[] {
+		let stage: RatingsPromptStage = panel.state.userSelectedRatingsPromptStage;
+		let clientType: ClientType = panel.props.clipperState.clientInfo.clipperType;
+		let clipperState: ClipperState = panel.props.clipperState;
+
 		let buttons: DialogButton[] = [];
 
 		switch (stage) {
@@ -57,14 +61,14 @@ export class RatingsHelper {
 					handler: () => {
 						RatingsHelper.setDoNotPromptStatus();
 
-						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clipperState.clientInfo.clipperType);
+						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
 						if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
-							clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.RATE
+							panel.setState({
+								userSelectedRatingsPromptStage: RatingsPromptStage.RATE
 							});
 						} else {
-							clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.END
+							panel.setState({
+								userSelectedRatingsPromptStage: RatingsPromptStage.END
 							});
 						}
 					}
@@ -84,12 +88,12 @@ export class RatingsHelper {
 
 							let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
 							if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
-								clipperState.setState({
-									ratingsPromptStage: RatingsPromptStage.FEEDBACK
+								panel.setState({
+									userSelectedRatingsPromptStage: RatingsPromptStage.FEEDBACK
 								});
 							} else {
-								clipperState.setState({
-									ratingsPromptStage: RatingsPromptStage.END
+								panel.setState({
+									userSelectedRatingsPromptStage: RatingsPromptStage.END
 								});
 							}
 						}
@@ -100,13 +104,13 @@ export class RatingsHelper {
 					id: Constants.Ids.ratingsButtonRateYes,
 					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Rate"),
 					handler: () => {
-						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clipperState.clientInfo.clipperType);
+						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
 						if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
 							window.open(rateUrl, "_blank");
 						}
 
-						clipperState.setState({
-							ratingsPromptStage: RatingsPromptStage.END
+						panel.setState({
+							userSelectedRatingsPromptStage: RatingsPromptStage.END
 						});
 					}
 				}, {
@@ -116,8 +120,8 @@ export class RatingsHelper {
 							// TODO we could set a value that lets us know they got here
 							// so that we could put the Rate Us link in their footer
 
-							clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.NONE
+							panel.setState({
+								userSelectedRatingsPromptStage: RatingsPromptStage.NONE
 							});
 						}
 					});
@@ -132,8 +136,8 @@ export class RatingsHelper {
 							window.open(feedbackUrl, "_blank");
 						}
 
-						clipperState.setState({
-							ratingsPromptStage: RatingsPromptStage.END
+						panel.setState({
+							userSelectedRatingsPromptStage: RatingsPromptStage.END
 						});
 					}
 				}, {
@@ -142,8 +146,8 @@ export class RatingsHelper {
 						handler: () => {
 							// TODO should we set doNotPromptStatus immediately here when they decide not to provide feedback?
 
-							clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.NONE
+							panel.setState({
+								userSelectedRatingsPromptStage: RatingsPromptStage.NONE
 							});
 						}
 					});
@@ -203,9 +207,9 @@ export class RatingsHelper {
 
 	public static getAnimationStategy(panel: SuccessPanelClass): AnimationStrategy {
 		return new SlideFromRightAnimationStrategy({
-			extShouldAnimateIn: () => {	return panel.props.clipperState.ratingsPromptStage !== panel.state.currentRatingsPromptStage; },
+			extShouldAnimateIn: () => {	return panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage; },
 			extShouldAnimateOut: () => { return false; },
-			onAfterAnimateIn: () => { panel.setState({ currentRatingsPromptStage: panel.props.clipperState.ratingsPromptStage }); }
+			onAfterAnimateIn: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage }); }
 		});
 	}
 

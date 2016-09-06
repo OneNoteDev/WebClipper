@@ -16,14 +16,16 @@ import {SpriteAnimation} from "../components/spriteAnimation";
 
 import {DialogButton, DialogPanel} from "./dialogPanel";
 
-interface SuccessPanelState {
-	currentRatingsPromptStage: RatingsPromptStage;
+export interface SuccessPanelState {
+	currentRatingsPromptStage?: RatingsPromptStage;
+	userSelectedRatingsPromptStage?: RatingsPromptStage;
 }
 
 export class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperStateProp> {
 	getInitialState(): SuccessPanelState {
 		return {
-			currentRatingsPromptStage: RatingsPromptStage.INIT
+			currentRatingsPromptStage: RatingsPromptStage.INIT,
+			userSelectedRatingsPromptStage: RatingsPromptStage.INIT
 		};
 	}
 
@@ -40,8 +42,8 @@ export class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperS
 
 	private showRatingsPrompt(): any[] {
 		if (this.props.clipperState.shouldShowRatingsPrompt) {
-			let message: string = RatingsHelper.getMessage(this.props.clipperState.ratingsPromptStage);
-			let buttons: DialogButton[] = RatingsHelper.getDialogButtons(this.props.clipperState.ratingsPromptStage, this.props.clipperState);
+			let message: string = RatingsHelper.getMessage(this.state.userSelectedRatingsPromptStage);
+			let buttons: DialogButton[] = RatingsHelper.getDialogButtons(this);
 
 			if (!Utils.isNullOrUndefined(message)) {
 				let animationStrategy = RatingsHelper.getAnimationStategy(this);
