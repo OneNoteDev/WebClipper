@@ -46,7 +46,7 @@ export class RatingsHelper {
 						RatingsHelper.setDoNotPromptStatus();
 
 						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clipperState.clientInfo.clipperType);
-						if (!Utils.isNullOrUndefined(rateUrl)) {
+						if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
 							clipperState.setState({
 								ratingsPromptStage: RatingsPromptStage.RATE
 							});
@@ -62,10 +62,16 @@ export class RatingsHelper {
 						handler: () => {
 							RatingsHelper.setLastBadRatingDate();
 
-							// TODO check if feedback link exists
-							clipperState.setState({
-								ratingsPromptStage: RatingsPromptStage.FEEDBACK
-							});
+							let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
+							if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
+								clipperState.setState({
+									ratingsPromptStage: RatingsPromptStage.FEEDBACK
+								});
+							} else {
+								clipperState.setState({
+									ratingsPromptStage: RatingsPromptStage.END
+								});
+							}
 						}
 					});
 				break;
@@ -75,7 +81,7 @@ export class RatingsHelper {
 					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Rate"),
 					handler: () => {
 						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clipperState.clientInfo.clipperType);
-						if (!Utils.isNullOrUndefined(rateUrl)) {
+						if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
 							window.open(rateUrl, "_blank");
 						}
 
@@ -101,6 +107,11 @@ export class RatingsHelper {
 					id: Constants.Ids.ratingsButtonFeedbackYes,
 					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Feedback"),
 					handler: () => {
+						let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
+						if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
+							window.open(feedbackUrl, "_blank");
+						}
+
 						clipperState.setState({
 							ratingsPromptStage: RatingsPromptStage.END
 						});
@@ -218,6 +229,14 @@ export class RatingsHelper {
 	public static getRateUrlIfExists(clientType: ClientType): string {
 		let settingName: string = RatingsHelper.getRateUrlSettingNameForClient(clientType);
 		return Settings.getSetting(settingName);
+	}
+
+	// TODO public for testing
+	public static getFeedbackUrlIfExists(clipperState: ClipperState): string {
+		let ratingsPromptLogCategory: string = Settings.getSetting("LogCategory_RatingsPrompt");
+		if (!Utils.isNullOrUndefined(ratingsPromptLogCategory) && ratingsPromptLogCategory.length > 0) {
+			return Utils.generateFeedbackUrl(clipperState, Clipper.getUserSessionId(), ratingsPromptLogCategory);
+		}
 	}
 
 	// TODO public for testing
