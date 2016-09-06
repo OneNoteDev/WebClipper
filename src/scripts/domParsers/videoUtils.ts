@@ -19,10 +19,10 @@ export module VideoUtils {
 			case VideoUtils.SupportedVideoDomains.KhanAcademy:
 				return new KhanAcademyVideoExtractor();
 			default:
-				return null;
+				return;
 		}
 	}
-	
+
 	/**
 	 * Returns a string from the SupportedVideoDomains enum iff
 	 * the pageUrl's hostname contains the enum string
