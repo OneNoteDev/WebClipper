@@ -33,6 +33,7 @@ export module DomUtils {
 		export const noscript = "noscript";
 		export const progress = "progress";
 		export const script = "script";
+		export const source = "source";
 		export const style = "style";
 		export const svg = "svg";
 		export const video = "video";
@@ -54,7 +55,9 @@ export module DomUtils {
 		Tags.noscript,
 		Tags.progress,
 		Tags.script,
+		Tags.source,
 		Tags.style,
+		Tags.svg,
 		Tags.video
 	];
 
