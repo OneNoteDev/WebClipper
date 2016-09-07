@@ -267,6 +267,7 @@ export module Constants {
 		export var doNotPromptRatings = "doNotPromptRatings";
 		export var flightingInfo = "flightingInfo";
 		export var lastBadRatingDate = "lastBadRatingDate";
+		export var lastBadRatingVersion = "lastBadRatingVersion";
 		export var lastClippedDate = "lastClippedDate";
 		export var lastSeenVersion = "lastSeenVersion";
 		export var lastInvokedDate = "lastInvokedDate";

@@ -77,7 +77,7 @@ export class RatingsHelper {
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Negative"),
 						handler: () => {
 							// TODO should we wait for this Promise before continuing?
-							RatingsHelper.setLastBadRatingDate().then((badRatingAlreadyOccurred) => {
+							RatingsHelper.setLastBadRating().then((badRatingAlreadyOccurred) => {
 								if (badRatingAlreadyOccurred) {
 									// setting this to prevent additional ratings prompts after the second bad rating
 									RatingsHelper.setDoNotPromptStatus();
@@ -183,20 +183,24 @@ export class RatingsHelper {
 		return new Promise<boolean>((resolve, reject) => {
 			Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsStr) => {
 				Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
-					Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
-						if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
-							resolve(false);
-						}
+					Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (lastBadRatingVersion) => {
+						Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
+							Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
+								if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
+									resolve(false);
+								}
 
-						let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
-						if (RatingsHelper.badRatingDelayIsOver(lastBadRatingDate, Date.now())) {
-							let numClips: number = parseInt(numClipsAsStr, 10);
-							if (RatingsHelper.clipSuccessDelayIsOver(numClips)) {
-								resolve(true);
-							}
-						}
+								let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+								let numClips: number = parseInt(numClipsAsStr, 10);
+								if (RatingsHelper.badRatingTimingDelayIsOver(lastBadRatingDate, Date.now())
+									&& RatingsHelper.badRatingVersionDelayIsOver(lastBadRatingVersion, lastSeenVersion)
+									&& RatingsHelper.clipSuccessDelayIsOver(numClips)) {
+									resolve(true);
+								}
 
-						resolve(false);
+								resolve(false);
+							});
+						});
 					});
 				});
 			});
@@ -242,24 +246,24 @@ export class RatingsHelper {
 	 * Returns true if StorageKeys.lastBadRating already contained a value before this set
 	 * (meaning the user had already rated us negatively)
 	 */
-	public static setLastBadRatingDate(): Promise<boolean> {
+	public static setLastBadRating(): Promise<boolean> {
 		let badDateKey: string = Constants.StorageKeys.lastBadRatingDate;
 		let badRatingAlreadyOccurred = false;
 
 		return new Promise<boolean>((resolve, reject) => {
 			Clipper.Storage.getValue(badDateKey, (lastBadRatingDateAsStr) => {
-				let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
-				if (!isNaN(lastBadRatingDate)) {
-					badRatingAlreadyOccurred = true;
-					//
-					// TODO consider immediately setting this if we feel overwhelmed by feedback received through this channel
-				}
+				Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
+					let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+					if (!isNaN(lastBadRatingDate)) {
+						badRatingAlreadyOccurred = true;
+						// TODO consider immediately setting this if we feel overwhelmed by feedback received through this channel
+					}
 
-				if (!badRatingAlreadyOccurred) {
 					Clipper.Storage.setValue(badDateKey, Date.now().toString());
-				}
+					Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastSeenVersion);
 
-				resolve(badRatingAlreadyOccurred);
+					resolve(badRatingAlreadyOccurred);
+				});
 			});
 
 			// TODO reject?
@@ -302,12 +306,42 @@ export class RatingsHelper {
 	 *   1) A bad rating has never been given by the user, OR
 	 *   2) Bad rating date provided occurred more than {Constants.Settings.timeBetweenBadRatings} ago
 	 */
-	public static badRatingDelayIsOver(badRatingsDate: number, currentDate: number): boolean {
-		if (isNaN(badRatingsDate)) {
+	public static badRatingTimingDelayIsOver(badRatingDate: number, currentDate: number): boolean {
+		if (isNaN(badRatingDate)) {
 			// value has never been set, no bad rating given
 			return true;
 		}
-		return (currentDate - badRatingsDate) >= Constants.Settings.timeBetweenBadRatings;
+		return (currentDate - badRatingDate) >= Constants.Settings.timeBetweenBadRatings;
+	}
+
+	// TODO public for testing
+	/**
+	 * Returns true if ONE of the below applies:
+	 *   1) A bad rating has never been given by the user, OR
+	 *   2) The major version at the time of the last bad rating is less than the major version last seen by the user, OR
+	 *   3) The minor version at the time of the last bad rating is less than the minor version last seen by the user
+	 */
+	public static badRatingVersionDelayIsOver(badRatingVersion: string, lastSeenVersion: string): boolean {
+		if (Utils.isNullOrUndefined(badRatingVersion)) {
+			// value has never been set, no bad rating given
+			return true;
+		}
+
+		let badRatingMajor: number = RatingsHelper.getMajorVersion(badRatingVersion);
+		let lastSeenMajor: number = RatingsHelper.getMajorVersion(lastSeenVersion);
+
+		if (badRatingMajor < lastSeenMajor) {
+			return true;
+		}
+
+		let badRatingMinor: number = RatingsHelper.getMinorVersion(badRatingVersion);
+		let lastSeenMinor: number = RatingsHelper.getMinorVersion(lastSeenVersion);
+
+		if (badRatingMinor < lastSeenMinor) {
+			return true;
+		}
+
+		return false;
 	}
 
 	// TODO public for testing
@@ -330,6 +364,40 @@ export class RatingsHelper {
 
 	private static combineClientTypeAndSuffix(clientType: ClientType, suffix: string): string {
 		return ClientType[clientType] + suffix;
+	}
+
+	/**
+	 * Based on the three-part version number convention "X.Y.Z", where:
+	 *   * X = major version
+	 *   * Y = minor version
+	 *   * Z = patch
+	 * Returns the major version, X
+	 */
+	private static getMajorVersion(versionNum: string): number {
+		if (!Utils.isNullOrUndefined(versionNum)) {
+			let versionSplit: string[] = versionNum.split(".");
+
+			if (!Utils.isNullOrUndefined(versionSplit)) {
+				return parseInt(versionSplit[0], 10);
+			}
+		}
+	}
+
+	/**
+	 * Based on the three-part version number convention "X.Y.Z", where:
+	 *   * X = major version
+	 *   * Y = minor version
+	 *   * Z = patch
+	 * Returns the minor version, Y
+	 */
+	private static getMinorVersion(versionNum: string): number {
+		if (!Utils.isNullOrUndefined(versionNum)) {
+			let versionSplit: string[] = versionNum.split(".");
+
+			if (!Utils.isNullOrUndefined(versionSplit)) {
+				return parseInt(versionSplit[1], 10);
+			}
+		}
 	}
 
 	private static getRateUrlSettingNameForClient(clientType: ClientType): string {
