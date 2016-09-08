@@ -6,6 +6,8 @@ import {PageInfo} from "../pageInfo";
 import {Utils} from "../utils";
 import {VideoUtils} from "./videoUtils";
 
+import {VideoExtractorFactory} from "./VideoExtractorFactory";
+
 /**
  * Dom specific Helper utility methods
  */
@@ -212,43 +214,16 @@ export module DomUtils {
 				resolve();
 			}
 
-			// interface VideoExtractor {
-			// 	getVideoIds(pageUrl: string, pageContent: string): string[];
-			// 	getVideoSrcValues(pageUrl: string, pageContent: string): string[];
-			// 	createEmbeddedVideo(pageUrl: string, pageContent: string): HTMLIFrameElement[];
-			// };
-
-			// class VideoExtractorFactory {
-			// 	public static createExtractor(domain: string): VideoExtractor {
-			// 		let domainAsEnum = VideoUtils.SupportedVideoDomains[domain];
-			// 		switch (domainAsEnum) {
-			// 			case VideoUtils.SupportedVideoDomains.Vimeo:
-			// 				return new VimeoExtractor();
-			// 			case VideoUtils.SupportedVideoDomains.YouTube:
-			// 				return new YouTubeExtractor();
-			// 			case VideoUtils.SupportedVideoDomains.KhanAcademy:
-			// 				return new KhanAcademyExtractor();
-			// 			default:
-			// 				return 	
-			// 		}
-			// 	}
-			// }
-
-			// use a factory to create the correct class, then call the appropriate method on it
-			// VideoExtractorFactory.createExtractor(supportedDomain);
-
 			let iframes: HTMLIFrameElement[] = [];
 			try {
-				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.Vimeo) {
-					iframes = iframes.concat(createEmbeddedVimeoVideos(pageContent));
-				}
-				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.YouTube) {
-					iframes.push(createEmbeddedYouTubeVideo(pageUrl));
-				}
-				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.KhanAcademy) {
-					let extractor = VideoUtils.createExtractor(supportedDomain);
-					iframes = iframes.concat(extractor.createEmbeddedVideo(pageUrl, pageContent));
-					// iframes.push(createEmbeddedKhanAcademyVideo(pageContent));
+				// Construct the appropriate videoExtractor based on the Domain we are on
+				let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
+				let extractor = VideoExtractorFactory.createVideoExtractor(domain);
+				
+				// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
+				// to render them later
+				if (extractor) {
+					iframes = iframes.concat(extractor.createEmbeddedVideos(pageUrl, pageContent));
 				}
 			} catch (e) {
 				// if we end up here, we're unexpectedly broken

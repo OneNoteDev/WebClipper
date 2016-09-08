@@ -12,7 +12,7 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 	 * Create iframe in correct format for YouTube video embed in OneNote.
 	 * Supports a single video.
 	 */
-	createEmbeddedVideo(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
+	createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
 		let iframe = DomUtils.createEmbedVideoIframe();
 		let srcValue = this.getVideoSrcValues(pageUrl, pageContent);
 		let videoId = this.getVideoIds(pageUrl, pageContent)[0];
@@ -43,7 +43,7 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 	}
 
 	/**
-	 * Return id for a video on YouTube.com
+	 * Return the ID of the video in the YouTube URL as an array
 	 */
 	getVideoIds(youTubeUrl: string, pageContent: string): string[] {
 		if (Utils.isNullOrUndefined(youTubeUrl)) {
@@ -64,6 +64,10 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 				return;
 			}
 			youTubeId = youTubeIdMatch[1];
+		}
+
+		if (Utils.isNullOrUndefined(youTubeId)) {
+			return;
 		}
 
 		return [youTubeId];

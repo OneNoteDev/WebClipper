@@ -13,12 +13,14 @@ export class KhanAcademyVideoExtractor implements VideoExtractor {
 
 	/**
 	 * Create iframe in correct format for KhanAcademy video (hosted on YouTube) embed in OneNote.
-	 * Supports a single video.
 	 */
-	public createEmbeddedVideo(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
+	public createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
 		let youtubeSrcFromKhanAcademyPage = this.getVideoSrcValues(pageUrl, pageContent);
+		if (youtubeSrcFromKhanAcademyPage.length === 0) {
+			return [];
+		}
 		let firstSource = youtubeSrcFromKhanAcademyPage[0];
-		return this.youtubeExtractor.createEmbeddedVideo(firstSource, pageContent);
+		return this.youtubeExtractor.createEmbeddedVideos(firstSource, pageContent);
 	}
 
 	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {

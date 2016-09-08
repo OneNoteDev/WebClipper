@@ -11,7 +11,7 @@ export class VimeoVideoExtractor implements VideoExtractor {
 	 * Create iframes in correct format for Vimeo video embed in OneNote.
 	 * Supports multiple videos.
 	 */
-	createEmbeddedVideo(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
+	createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
 		let vimeoSrcs = this.getVideoSrcValues(pageUrl, pageContent);
 
 		if (Utils.isNullOrUndefined(vimeoSrcs)) {
