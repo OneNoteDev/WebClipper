@@ -14,4 +14,13 @@ export module Settings {
 
 		return localResult.Value;
 	}
+
+	export function setSettingsJsonForTesting(jsonObject?: {}): void {
+		if (jsonObject) {
+			settings = jsonObject;
+		} else {
+			// revert to default
+			settings = require("../settings.json");
+		}
+	}
 }

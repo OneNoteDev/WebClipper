@@ -23,6 +23,8 @@ export enum RatingsPromptStage {
 }
 
 export class RatingsHelper {
+	public static rateUrlSettingNameSuffix = "_RatingUrl";
+	public static ratingsPromptEnabledSettingNameSuffix = "_RatingsEnabled";
 
 	/**
 	 * Get appropriate dialog panel message for the ratings prompt stage provided
@@ -48,8 +50,8 @@ export class RatingsHelper {
 	 */
 	public static getDialogButtons(panel: SuccessPanelClass): DialogButton[] {
 		let stage: RatingsPromptStage = panel.state.userSelectedRatingsPromptStage;
-		let clientType: ClientType = panel.props.clipperState.clientInfo.clipperType;
 		let clipperState: ClipperState = panel.props.clipperState;
+		let clientType: ClientType = clipperState.clientInfo.clipperType;
 
 		let buttons: DialogButton[] = [];
 
@@ -76,44 +78,45 @@ export class RatingsHelper {
 						id: Constants.Ids.ratingsButtonInitNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Negative"),
 						handler: () => {
-							// TODO should we wait for this Promise before continuing?
-							RatingsHelper.setLastBadRating().then((badRatingAlreadyOccurred) => {
-								if (badRatingAlreadyOccurred) {
-									// setting this to prevent additional ratings prompts after the second bad rating
+							Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
+								RatingsHelper.setLastBadRating(Date.now().toString(), lastSeenVersion).then((badRatingAlreadyOccurred) => {
+									if (badRatingAlreadyOccurred) {
+										// setting this to prevent additional ratings prompts after the second bad rating
+										RatingsHelper.setDoNotPromptStatus();
+									}
+								}, () => {
+									// values to set were invalid: be cautious and always set do not prompt status
 									RatingsHelper.setDoNotPromptStatus();
-								}
-							}, () => {
-								// TODO reject case
+								}).then(() => {
+									let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
+									if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
+										panel.setState({
+											userSelectedRatingsPromptStage: RatingsPromptStage.FEEDBACK
+										});
+									} else {
+										panel.setState({
+											userSelectedRatingsPromptStage: RatingsPromptStage.END
+										});
+									}
+								});
 							});
-
-							let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
-							if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
-								panel.setState({
-									userSelectedRatingsPromptStage: RatingsPromptStage.FEEDBACK
-								});
-							} else {
-								panel.setState({
-									userSelectedRatingsPromptStage: RatingsPromptStage.END
-								});
-							}
 						}
 					});
 				break;
 			case RatingsPromptStage.RATE:
-				buttons.push({
-					id: Constants.Ids.ratingsButtonRateYes,
-					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Rate"),
-					handler: () => {
-						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
-						if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
+				let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
+				if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
+					buttons.push({
+						id: Constants.Ids.ratingsButtonRateYes,
+						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Rate"),
+						handler: () => {
 							window.open(rateUrl, "_blank");
-						}
 
-						panel.setState({
-							userSelectedRatingsPromptStage: RatingsPromptStage.END
-						});
-					}
-				}, {
+							panel.setState({
+								userSelectedRatingsPromptStage: RatingsPromptStage.END
+							});
+						}
+					}, {
 						id: Constants.Ids.ratingsButtonRateNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
 						handler: () => {
@@ -125,32 +128,41 @@ export class RatingsHelper {
 							});
 						}
 					});
+				} else {
+					// this shouldn't happen
+					panel.setState({
+						userSelectedRatingsPromptStage: RatingsPromptStage.NONE
+					});
+				}
 				break;
 			case RatingsPromptStage.FEEDBACK:
-				buttons.push({
-					id: Constants.Ids.ratingsButtonFeedbackYes,
-					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Feedback"),
-					handler: () => {
-						let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
-						if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
+				let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
+				if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
+					buttons.push({
+						id: Constants.Ids.ratingsButtonFeedbackYes,
+						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Feedback"),
+						handler: () => {
 							window.open(feedbackUrl, "_blank");
-						}
 
-						panel.setState({
-							userSelectedRatingsPromptStage: RatingsPromptStage.END
-						});
-					}
-				}, {
+							panel.setState({
+								userSelectedRatingsPromptStage: RatingsPromptStage.END
+							});
+						}
+					}, {
 						id: Constants.Ids.ratingsButtonFeedbackNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
 						handler: () => {
-							// TODO should we set doNotPromptStatus immediately here when they decide not to provide feedback?
-
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.NONE
 							});
 						}
 					});
+				} else {
+					// this shouldn't happen
+					panel.setState({
+						userSelectedRatingsPromptStage: RatingsPromptStage.NONE
+					});
+				}
 				break;
 			default:
 			case RatingsPromptStage.END:
@@ -187,7 +199,7 @@ export class RatingsHelper {
 						Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
 							Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
 								if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
-									resolve(false);
+									return resolve(false);
 								}
 
 								let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
@@ -195,10 +207,10 @@ export class RatingsHelper {
 								if (RatingsHelper.badRatingTimingDelayIsOver(lastBadRatingDate, Date.now())
 									&& RatingsHelper.badRatingVersionDelayIsOver(lastBadRatingVersion, lastSeenVersion)
 									&& RatingsHelper.clipSuccessDelayIsOver(numClips)) {
-									resolve(true);
+									return resolve(true);
 								}
 
-								resolve(false);
+								return resolve(false);
 							});
 						});
 					});
@@ -233,46 +245,55 @@ export class RatingsHelper {
 
 				Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, numClips.toString());
 
-				resolve();
+				return resolve();
 
 				// TODO reject case?
 			});
 		});
 	}
 
-	// TODO public for testing
 	/**
 	 * Sets StorageKeys.lastBadRatingDate to the current time.
 	 * Returns true if StorageKeys.lastBadRating already contained a value before this set
 	 * (meaning the user had already rated us negatively)
+	 *
+	 * Public for testing
 	 */
-	public static setLastBadRating(): Promise<boolean> {
+	public static setLastBadRating(badRatingDateToSetAsStr: string, badRatingVersionToSet: string): Promise<boolean> {
 		let badDateKey: string = Constants.StorageKeys.lastBadRatingDate;
 		let badRatingAlreadyOccurred = false;
 
+		let badRatingDateToSet: number = parseInt(badRatingDateToSetAsStr, 10);
+		if (!RatingsHelper.isValidDate(badRatingDateToSet)) {
+			return Promise.reject(undefined);
+		}
+
+		if (!RatingsHelper.versionHasCorrectFormat(badRatingVersionToSet)) {
+			return Promise.reject(undefined);
+		}
+
 		return new Promise<boolean>((resolve, reject) => {
 			Clipper.Storage.getValue(badDateKey, (lastBadRatingDateAsStr) => {
-				Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
-					let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
-					if (!isNaN(lastBadRatingDate)) {
-						badRatingAlreadyOccurred = true;
-						// TODO consider immediately setting this if we feel overwhelmed by feedback received through this channel
-					}
+				let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+				if (!isNaN(lastBadRatingDate) && RatingsHelper.isValidDate(lastBadRatingDate)) {
+					badRatingAlreadyOccurred = true;
+					// TODO consider immediately setting this if we feel overwhelmed by feedback received through this channel
+				}
 
-					Clipper.Storage.setValue(badDateKey, Date.now().toString());
-					Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastSeenVersion);
+				Clipper.Storage.setValue(badDateKey, badRatingDateToSetAsStr);
+				Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, badRatingVersionToSet);
 
-					resolve(badRatingAlreadyOccurred);
-				});
+				return resolve(badRatingAlreadyOccurred);
 			});
 
 			// TODO reject?
 		});
 	}
 
-	// TODO public for testing
 	/**
 	 * Returns true if the ratings prompt is enabled for ClientType/ClipperType provided
+	 *
+	 * Public for testing
 	 */
 	public static ratingsPromptEnabledForClient(clientType: ClientType): boolean {
 		let settingName: string = RatingsHelper.getRatingsPromptEnabledSettingNameForClient(clientType);
@@ -280,18 +301,20 @@ export class RatingsHelper {
 		return !Utils.isNullOrUndefined(isEnabledAsStr) && isEnabledAsStr.toLowerCase() === "true";
 	}
 
-	// TODO public for testing
 	/**
 	 * Get ratings/reviews URL for the provided ClientType/ClipperType, if it exists
+	 *
+	 * Public for testing
 	 */
 	public static getRateUrlIfExists(clientType: ClientType): string {
 		let settingName: string = RatingsHelper.getRateUrlSettingNameForClient(clientType);
 		return Settings.getSetting(settingName);
 	}
 
-	// TODO public for testing
 	/**
 	 * Get the feedback URL with the special ratings prompt log category, if it exists
+	 *
+	 * Public for testing
 	 */
 	public static getFeedbackUrlIfExists(clipperState: ClipperState): string {
 		let ratingsPromptLogCategory: string = Settings.getSetting("LogCategory_RatingsPrompt");
@@ -300,26 +323,36 @@ export class RatingsHelper {
 		}
 	}
 
-	// TODO public for testing
 	/**
 	 * Returns true if ONE of the below applies:
 	 *   1) A bad rating has never been given by the user, OR
 	 *   2) Bad rating date provided occurred more than {Constants.Settings.timeBetweenBadRatings} ago
+	 *   3) Date parameters are not in the valid date range
+	 *
+	 * Public for testing
 	 */
 	public static badRatingTimingDelayIsOver(badRatingDate: number, currentDate: number): boolean {
 		if (isNaN(badRatingDate)) {
 			// value has never been set, no bad rating given
 			return true;
 		}
-		return (currentDate - badRatingDate) >= Constants.Settings.timeBetweenBadRatings;
+
+		if (!RatingsHelper.isValidDate(badRatingDate) || !RatingsHelper.isValidDate(currentDate)) {
+			return false;
+		}
+
+		return (currentDate - badRatingDate) >= Constants.Settings.minTimeBetweenBadRatings;
 	}
 
-	// TODO public for testing
 	/**
 	 * Returns true if ONE of the below applies:
 	 *   1) A bad rating has never been given by the user, OR
-	 *   2) The major version at the time of the last bad rating is less than the major version last seen by the user, OR
-	 *   3) The minor version at the time of the last bad rating is less than the minor version last seen by the user
+	 *   2) There has not been a non-patch version update since the bad rating, i.e.,
+	 *      a) The major version at the time of the last bad rating is less than the major version last seen by the user, OR
+	 *      b) The major version remained the same, but the minor version at the time of the last bad rating is less than
+	 *         the minor version last seen by the user
+	 *
+	 * Public for testing
 	 */
 	public static badRatingVersionDelayIsOver(badRatingVersion: string, lastSeenVersion: string): boolean {
 		if (Utils.isNullOrUndefined(badRatingVersion)) {
@@ -327,39 +360,46 @@ export class RatingsHelper {
 			return true;
 		}
 
-		let badRatingMajor: number = RatingsHelper.getMajorVersion(badRatingVersion);
-		let lastSeenMajor: number = RatingsHelper.getMajorVersion(lastSeenVersion);
+		if (!RatingsHelper.versionHasCorrectFormat(lastSeenVersion) || !RatingsHelper.versionHasCorrectFormat(badRatingVersion)) {
+			return false;
+		}
 
-		if (badRatingMajor < lastSeenMajor) {
+		let lastSeenMajor: number = RatingsHelper.getMajorVersion(lastSeenVersion);
+		let badRatingMajor: number = RatingsHelper.getMajorVersion(badRatingVersion);
+
+		if (lastSeenMajor > badRatingMajor) {
 			return true;
 		}
 
-		let badRatingMinor: number = RatingsHelper.getMinorVersion(badRatingVersion);
 		let lastSeenMinor: number = RatingsHelper.getMinorVersion(lastSeenVersion);
+		let badRatingMinor: number = RatingsHelper.getMinorVersion(badRatingVersion);
 
-		if (badRatingMinor < lastSeenMinor) {
+		if (lastSeenMajor === badRatingMajor && lastSeenMinor > badRatingMinor) {
 			return true;
 		}
 
 		return false;
 	}
 
-	// TODO public for testing
 	/**
 	 * Returns true if ALL of the below applies:
 	 *   * Number of successful clips >= {Constants.Settings.minClipSuccessForRatingsPrompt}
-	 *   * TODO?
+	 *   * Number of successful clips <= {Constants.Settings.maxClipSuccessForRatingsPrompt}
+	 *   * TODO Number of successful clips is on the "gap between prompts" boundary
+	 *
+	 * Public for testing
 	 */
 	public static clipSuccessDelayIsOver(numClips: number): boolean {
-		// TODO # successful clips % m === 0, where m is the gap between successful clips that we'd like to display the prompt
-		// TODO # of successful clips < nMax
-			// MVP+: collapse panel into a Rate Us hyperlink in the footer that is always available
+		// MVP+: when # of successful clips > nMax, collapse panel into a Rate Us hyperlink in the footer that is always available
+		// TODO gap boundary exponential backoff? do we need it at all?
 
 		if (isNaN(numClips)) {
 			return false;
 		}
 
-		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt;
+		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt &&
+			numClips <= Constants.Settings.maxClipSuccessForRatingsPrompt; /*&&
+			numClips % Constants.Settings.gapBetweenClipSuccessForRatingsPrompt === 0;*/
 	}
 
 	private static combineClientTypeAndSuffix(clientType: ClientType, suffix: string): string {
@@ -401,15 +441,37 @@ export class RatingsHelper {
 	}
 
 	private static getRateUrlSettingNameForClient(clientType: ClientType): string {
-		return RatingsHelper.combineClientTypeAndSuffix(clientType, "_RatingUrl");
+		return RatingsHelper.combineClientTypeAndSuffix(clientType, RatingsHelper.rateUrlSettingNameSuffix);
 	}
 
 	private static getRatingsPromptEnabledSettingNameForClient(clientType: ClientType): string {
-		return RatingsHelper.combineClientTypeAndSuffix(clientType, "_RatingsEnabled");
+		return RatingsHelper.combineClientTypeAndSuffix(clientType, RatingsHelper.ratingsPromptEnabledSettingNameSuffix);
+	}
+
+	private static isValidDate(date: number): boolean {
+		let minimumTimeValue: number = (Constants.Settings.maximumTimeValue * -1);
+		return date >= minimumTimeValue && date <= Constants.Settings.maximumTimeValue;
 	}
 
 	private static setDoNotPromptStatus(): void {
 		// TODO log this and how it got called
 		Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "true");
+	}
+
+	private static versionHasCorrectFormat(version: string): boolean {
+		if (!Utils.isNullOrUndefined(version)) {
+			let versionSplit: string[] = version.split(".");
+
+			if (Utils.isNullOrUndefined(versionSplit) ||
+				versionSplit.length !== 3 ||
+				isNaN(parseInt(versionSplit[0], 10)) ||
+				isNaN(parseInt(versionSplit[1], 10)) ||
+				isNaN(parseInt(versionSplit[2], 10))) {
+
+				return false;
+			}
+
+			return true;
+		}
 	}
 }
