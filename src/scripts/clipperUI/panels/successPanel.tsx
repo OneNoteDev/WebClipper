@@ -52,7 +52,7 @@ export class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperS
 					<DialogPanel
 						message={message}
 						buttons={buttons}
-						fontFamily={Localization.FontFamily.Regular}
+						buttonFontFamily={Localization.FontFamily.Regular}
 						divId={Constants.Ids.ratingsPromptContainer}
 						animationStrategy={animationStrategy} />
 				);
@@ -62,19 +62,19 @@ export class SuccessPanelClass extends ComponentBase<SuccessPanelState, ClipperS
 
 	render() {
 		return (
-			<div id={Constants.Ids.clipperSuccessContainer} className="resultPagePadding">
+			<div id={Constants.Ids.clipperSuccessContainer}>
 				<div>
 					<div className="messageLabelContainer successPagePadding">
 						<SpriteAnimation spriteUrl={Utils.getImageResourceUrl("checkmark.png")} imageHeight={28} totalFrameCount={30} loop={false}/>
 						<span className="actionLabelFont messageLabel"
-							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 							{Localization.getLocalizedString("WebClipper.Label.ClipSuccessful")}
 						</span>
 					</div>
 					<a id={Constants.Ids.launchOneNoteButton} {...this.enableInvoke(this.onLaunchOneNoteButton, 70) }>
 						<div className="wideButtonContainer">
 							<span className="wideButtonFont wideActionButton"
-								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
+								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 								{Localization.getLocalizedString("WebClipper.Action.ViewInOneNote")}
 							</span>
 						</div>

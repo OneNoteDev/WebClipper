@@ -17,6 +17,7 @@ export interface DialogPanelProps {
 	content: HTMLElement[];
 	buttons: DialogButton[];
 	fontFamily?: Localization.FontFamily;
+	buttonFontFamily?: Localization.FontFamily;
 	divId?: string;
 	animationStrategy?: AnimationStrategy;
 }
@@ -34,6 +35,7 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 
 	render() {
 		let fontFamily = !Utils.isNullOrUndefined(this.props.fontFamily) ? this.props.fontFamily : Localization.FontFamily.Semibold;
+		let buttonFontFamily = !Utils.isNullOrUndefined(this.props.buttonFontFamily) ? this.props.buttonFontFamily : Localization.FontFamily.Semibold;
 		let divId = this.props.divId ? this.props.divId : "";
 
 		return (
@@ -56,7 +58,7 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 								<a id={button.id} className="dialogButton" {...this.enableInvoke(button.handler, 70) }>
 									<div className="wideButtonContainer">
 										<span className="wideButtonFont wideActionButton"
-											style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
+											style={Localization.getFontFamilyAsStyle(buttonFontFamily)}>
 											{ button.label }
 										</span>
 									</div>
