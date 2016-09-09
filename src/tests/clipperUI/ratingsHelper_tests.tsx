@@ -121,7 +121,7 @@ test("badRatingVersionDelayIsOver returns true when there has been a version upd
 // badRatingTimingDelayIsOver
 
 test("badRatingTimingDelayIsOver returns false when date string params are invalid", () => {
-	let invalidParams: number[] = [undefined, NaN, Constants.Settings.maximumTimeValue + 1, (Constants.Settings.maximumTimeValue * -1) - 1];
+	let invalidParams: number[] = [undefined, NaN, Constants.Settings.maximumJSTimeValue + 1, (Constants.Settings.maximumJSTimeValue * -1) - 1];
 
 	for (let badRatingDate of invalidParams) {
 		if (badRatingDate === undefined || isNaN(badRatingDate)) {
@@ -400,7 +400,7 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns false when 
 test("setLastBadRating sets lastBadRatingDate in storage and returns false when lastBadRatingDate is a number out of date range", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Constants.Settings.maximumTimeValue + 1).toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Constants.Settings.maximumJSTimeValue + 1).toString());
 
 	let badRatingDateToSet: string = Date.now().toString();
 	let badRatingVersionToSet = "3.0.0";
@@ -446,7 +446,7 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns true when l
 test("setLastBadRating rejects when badRatingDateToSet is not a valid date", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	let badRatingDateToSet: string = (Constants.Settings.maximumTimeValue + 1).toString();
+	let badRatingDateToSet: string = (Constants.Settings.maximumJSTimeValue + 1).toString();
 	let badRatingVersionToSet = "3.0.0";
 
 	RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet).then((alreadyRatedBad: boolean) => {
@@ -544,6 +544,18 @@ test("incrementClipSuccessCount sets numClipSuccess in storage to (numClipSucces
 });
 
 // shouldShowRatingsPrompt
+
+test("shouldShowRatingsPrompt rejects when clipperState is undefined", (assert: QUnitAssert) => {
+	let done = assert.async();
+
+	RatingsHelper.shouldShowRatingsPrompt(undefined).then((shouldShowRatingsPrompt: boolean) => {
+		ok(false, "shouldShowRatingsPrompt should not resolve");
+	}, () => {
+		ok(true, "shouldShowRatingsPrompt should reject");
+	}).then(() => {
+		done();
+	});
+});
 
 test("shouldShowRatingsPrompt returns cached false when shouldShowRatingsPrompt is already set to false", (assert: QUnitAssert) => {
 	let done = assert.async();

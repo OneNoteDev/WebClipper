@@ -622,21 +622,21 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
-			// TODO do I have to chain all of these promises?
 			RatingsHelper.incrementClipSuccessCount().then(() => {
+				// TODO on incrementClipSuccessCount resolve?
+			}).then(() => {
+				// will happen regardless of success/failure of incrementClipSuccessCount
 				RatingsHelper.shouldShowRatingsPrompt(this.state).then((shouldShowRatingsPrompt) => {
 					this.state.setState({ shouldShowRatingsPrompt: shouldShowRatingsPrompt });
 				}, () => {
-					// TODO on shouldShowRatingsPrompt reject?
+					// err on the side of caution on reject
+					this.state.setState({ shouldShowRatingsPrompt: false });
+				}).then(() => {
+					// will happen regardless of success/failure of shouldShowRatingsPrompt
+					clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
+					clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
+					this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
 				});
-			}, () => {
-				// TODO on incrementClipSuccessCount reject?
-			}).then(() => {
-				// regardless of success/failure of RatingsHelper matters, continue with clip success flow
-				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
-				clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
-				// TODO make sure this always happens ~after~ shouldShowRatingsPrompt returns
-				this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
 			});
 		}, (error: OneNoteApi.RequestError) => {
 			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);

@@ -85,7 +85,7 @@ export class RatingsHelper {
 										RatingsHelper.setDoNotPromptStatus();
 									}
 								}, () => {
-									// values to set were invalid: be cautious and always set do not prompt status
+									// values to set were invalid: err on the side of caution and always set do not prompt status
 									RatingsHelper.setDoNotPromptStatus();
 								}).then(() => {
 									let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
@@ -120,9 +120,6 @@ export class RatingsHelper {
 						id: Constants.Ids.ratingsButtonRateNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
 						handler: () => {
-							// TODO we could set a value that lets us know they got here
-							// so that we could put the Rate Us link in their footer
-
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.NONE
 							});
@@ -181,9 +178,12 @@ export class RatingsHelper {
 	 *   * If RatingsHelper.clipSuccessDelayIsOver(...) returns true when provided StorageKeys.numClipSuccess
 	 */
 	public static shouldShowRatingsPrompt(clipperState: ClipperState): Promise<boolean> {
+		if (Utils.isNullOrUndefined(clipperState)) {
+			return Promise.reject(undefined);
+		}
+
 		if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
-			// return cached value in clipper state if it exists
-			// TODO ensure this resets with every distinct session
+			// return cached value in clipper state since it already exists
 			return Promise.resolve(clipperState.shouldShowRatingsPrompt);
 		}
 
@@ -198,12 +198,14 @@ export class RatingsHelper {
 					Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (lastBadRatingVersion) => {
 						Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
 							Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
+
 								if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
 									return resolve(false);
 								}
 
 								let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
 								let numClips: number = parseInt(numClipsAsStr, 10);
+
 								if (RatingsHelper.badRatingTimingDelayIsOver(lastBadRatingDate, Date.now())
 									&& RatingsHelper.badRatingVersionDelayIsOver(lastBadRatingVersion, lastSeenVersion)
 									&& RatingsHelper.clipSuccessDelayIsOver(numClips)) {
@@ -217,8 +219,6 @@ export class RatingsHelper {
 				});
 			});
 		});
-
-		// TODO reject case?
 	}
 
 	public static getAnimationStategy(panel: SuccessPanelClass): AnimationStrategy {
@@ -246,8 +246,6 @@ export class RatingsHelper {
 				Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, numClips.toString());
 
 				return resolve();
-
-				// TODO reject case?
 			});
 		});
 	}
@@ -277,7 +275,6 @@ export class RatingsHelper {
 				let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
 				if (!isNaN(lastBadRatingDate) && RatingsHelper.isValidDate(lastBadRatingDate)) {
 					badRatingAlreadyOccurred = true;
-					// TODO consider immediately setting this if we feel overwhelmed by feedback received through this channel
 				}
 
 				Clipper.Storage.setValue(badDateKey, badRatingDateToSetAsStr);
@@ -285,8 +282,6 @@ export class RatingsHelper {
 
 				return resolve(badRatingAlreadyOccurred);
 			});
-
-			// TODO reject?
 		});
 	}
 
@@ -449,8 +444,8 @@ export class RatingsHelper {
 	}
 
 	private static isValidDate(date: number): boolean {
-		let minimumTimeValue: number = (Constants.Settings.maximumTimeValue * -1);
-		return date >= minimumTimeValue && date <= Constants.Settings.maximumTimeValue;
+		let minimumTimeValue: number = (Constants.Settings.maximumJSTimeValue * -1);
+		return date >= minimumTimeValue && date <= Constants.Settings.maximumJSTimeValue;
 	}
 
 	private static setDoNotPromptStatus(): void {
@@ -473,5 +468,7 @@ export class RatingsHelper {
 
 			return true;
 		}
+
+		return false;
 	}
 }
