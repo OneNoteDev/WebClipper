@@ -4,6 +4,8 @@ import {SuccessPanel} from "../../scripts/clipperUI/panels/successPanel";
 import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
 import {RatingsHelper, RatingsPromptStage} from "../../scripts/clipperUI/ratingsHelper";
 
+import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
+
 import {Constants} from "../../scripts/constants";
 import {ClientType} from "../../scripts/clientType";
 import {Settings} from "../../scripts/settings";
@@ -25,6 +27,7 @@ Clipper.Storage.setValue = (key: string, value: string) => {
 
 QUnit.module("ratingsHelper", {
 	beforeEach: () => {
+		Clipper.logger = new StubSessionLogger();
 		Settings.setSettingsJsonForTesting();
 		mockStorage = {};
 	}

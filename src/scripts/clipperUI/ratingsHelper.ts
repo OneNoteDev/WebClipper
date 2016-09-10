@@ -14,12 +14,28 @@ import {ClipperState} from "./clipperState";
 import {DialogButton} from "./panels/dialogPanel";
 import {Clipper} from "./frontEndGlobals";
 
+import * as Log from "../logging/log";
+
 export enum RatingsPromptStage {
 	NONE,
 	INIT,
 	RATE,
 	FEEDBACK,
 	END
+}
+
+interface RatingsLoggingInfo {
+	shouldShowRatingsPrompt: boolean;
+	badRatingTimingDelayIsOver?: boolean;
+	badRatingVersionDelayIsOver?: boolean;
+	clipSuccessDelayIsOver?: boolean;
+	doNotPromptRatings?: boolean;
+	lastBadRatingDate?: string;
+	lastBadRatingVersion?: string;
+	lastSeenVersion?: string;
+	numSuccessfulClips?: number;
+	ratingsPromptEnabledForClient?: boolean;
+	usedCachedValue?: boolean;
 }
 
 export class RatingsHelper {
@@ -178,45 +194,19 @@ export class RatingsHelper {
 	 *   * If RatingsHelper.clipSuccessDelayIsOver(...) returns true when provided StorageKeys.numClipSuccess
 	 */
 	public static shouldShowRatingsPrompt(clipperState: ClipperState): Promise<boolean> {
-		if (Utils.isNullOrUndefined(clipperState)) {
-			return Promise.reject(undefined);
-		}
+		return new Promise<boolean>((loggingResolve, loggingReject) => {
+			let shouldShowRatingsPromptEvent = new Log.Event.PromiseEvent(Log.Event.Label.ShouldShowRatingsPrompt);
+			let shouldShowRatingsPromptInfo: RatingsLoggingInfo = { shouldShowRatingsPrompt: undefined };
 
-		if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
-			// return cached value in clipper state since it already exists
-			return Promise.resolve(clipperState.shouldShowRatingsPrompt);
-		}
-
-		let ratingsPromptEnabled: boolean = RatingsHelper.ratingsPromptEnabledForClient(clipperState.clientInfo.clipperType);
-		if (!ratingsPromptEnabled) {
-			return Promise.resolve(false);
-		}
-
-		return new Promise<boolean>((resolve, reject) => {
-			Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsStr) => {
-				Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
-					Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (lastBadRatingVersion) => {
-						Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
-							Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
-
-								if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
-									return resolve(false);
-								}
-
-								let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
-								let numClips: number = parseInt(numClipsAsStr, 10);
-
-								if (RatingsHelper.badRatingTimingDelayIsOver(lastBadRatingDate, Date.now())
-									&& RatingsHelper.badRatingVersionDelayIsOver(lastBadRatingVersion, lastSeenVersion)
-									&& RatingsHelper.clipSuccessDelayIsOver(numClips)) {
-									return resolve(true);
-								}
-
-								return resolve(false);
-							});
-						});
-					});
-				});
+			RatingsHelper.shouldShowRatingsPromptInternal(clipperState, shouldShowRatingsPromptEvent, shouldShowRatingsPromptInfo).then((shouldShowRatingsPrompt: boolean) => {
+				shouldShowRatingsPromptInfo.shouldShowRatingsPrompt = shouldShowRatingsPrompt;
+				loggingResolve(shouldShowRatingsPrompt);
+			}, () => {
+				shouldShowRatingsPromptInfo.shouldShowRatingsPrompt = false;
+				loggingReject(undefined);
+			}).then(() => {
+				shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.RatingsInfo, JSON.stringify(shouldShowRatingsPromptInfo));
+				Clipper.logger.logEvent(shouldShowRatingsPromptEvent);
 			});
 		});
 	}
@@ -246,6 +236,69 @@ export class RatingsHelper {
 				Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, numClips.toString());
 
 				return resolve();
+			});
+		});
+	}
+
+	public static shouldShowRatingsPromptInternal(clipperState: ClipperState, event: Log.Event.PromiseEvent, logEventInfo: RatingsLoggingInfo): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			if (Utils.isNullOrUndefined(clipperState)) {
+				event.setStatus(Log.Status.Failed);
+				event.setFailureInfo({ error: "Clipper state is null or undefined" });
+				return reject(undefined);
+			}
+
+			if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
+				// return cached value in clipper state since it already exists
+				logEventInfo.usedCachedValue = true;
+				return resolve(clipperState.shouldShowRatingsPrompt);
+			}
+
+			let ratingsPromptEnabled: boolean = RatingsHelper.ratingsPromptEnabledForClient(clipperState.clientInfo.clipperType);
+			logEventInfo.ratingsPromptEnabledForClient = ratingsPromptEnabled;
+			if (!ratingsPromptEnabled) {
+				return resolve(false);
+			}
+
+			Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsStr) => {
+				Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
+					Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (lastBadRatingVersion) => {
+						Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
+							Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
+
+								if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
+									logEventInfo.doNotPromptRatings = true;
+									return resolve(false);
+								}
+
+								let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+								let numClips: number = parseInt(numClipsAsStr, 10);
+
+								/* tslint:disable:no-null-keyword */
+									// null is the value storage gives back; also, setting to undefined will keep this kvp from being logged at all
+								logEventInfo.lastBadRatingDate = lastBadRatingDate ? new Date(lastBadRatingDate).toString() : null;
+								/* tslint:enable:no-null-keyword */
+								logEventInfo.lastBadRatingVersion = lastBadRatingVersion;
+								logEventInfo.lastSeenVersion = lastSeenVersion;
+								logEventInfo.numSuccessfulClips = numClips;
+
+								let badRatingTimingDelayIsOver: boolean = RatingsHelper.badRatingTimingDelayIsOver(lastBadRatingDate, Date.now());
+								let badRatingVersionDelayIsOver: boolean = RatingsHelper.badRatingVersionDelayIsOver(lastBadRatingVersion, lastSeenVersion);
+								let clipSuccessDelayIsOver: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips);
+
+								logEventInfo.badRatingTimingDelayIsOver = badRatingTimingDelayIsOver;
+								logEventInfo.badRatingVersionDelayIsOver = badRatingVersionDelayIsOver;
+								logEventInfo.clipSuccessDelayIsOver = clipSuccessDelayIsOver;
+
+								if (badRatingTimingDelayIsOver && badRatingVersionDelayIsOver && clipSuccessDelayIsOver) {
+									return resolve(true);
+								}
+
+								return resolve(false);
+							});
+						});
+					});
+				});
 			});
 		});
 	}
