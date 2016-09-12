@@ -28,7 +28,6 @@ export class SaveToOneNote {
 	private static maxMimeSizeLimit = 24900000;
 
 	public static startClip(clipperState: ClipperState): Promise<StartClipPackage | OneNoteApi.RequestError> {
-		/* TODO for development only
 		this.logPageModifications(clipperState);
 
 		return new Promise<StartClipPackage | OneNoteApi.RequestError>((resolve, reject) => {
@@ -51,28 +50,7 @@ export class SaveToOneNote {
 					reject(error);
 				});
 			});
-		});*/
-
-		let mockParsedResponse = {
-			"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/sections('0-50B446BDCC8197B6%21143')/pages/$entity",
-			"title": "Promise · TypeScript Deep Dive",
-			"createdByAppId": "WLID-000000004818A175",
-			"links": {
-				"oneNoteClientUrl": {
-					"href": "onenote:https://d.docs.live.net/50b446bdcc8197b6/Documents/narhodes1@gmail.com's%20…3a-473b-a543-fcd2b2727a00&page-id=c013c07a-272f-4bcb-ba62-837bd344ff78&end"
-				},
-				"oneNoteWebUrl": {
-					"href": "https://onedrive.live.com/redir.aspx?cid=50b446bdcc8197b6&page=edit&resid=5…B7%20TypeScript%20Deep%20Dive%7Cc013c07a-272f-4bcb-ba62-837bd344ff78%2F%29"
-				}
-			},
-			"contentUrl": "https://www.onenote.com/api/v1.0/me/notes/pages/0-c9fcfadde1a84fce9dc0d8fc2df448d1!192-50B446BDCC8197B6!143/content",
-			"lastModifiedTime": "2016-08-31T22:52:03.3878474Z",
-			"createdTime": "2016-08-31T15:52:02.0128938Z",
-			"id": "0-c9fcfadde1a84fce9dc0d8fc2df448d1!192-50B446BDCC8197B6!143",
-			"self": "https://www.onenote.com/api/v1.0/me/notes/pages/0-c9fcfadde1a84fce9dc0d8fc2df448d1!192-50B446BDCC8197B6!143"
-		};
-
-		return Promise.resolve({ responsePackage: {parsedResponse: mockParsedResponse, request: new XMLHttpRequest()}, annotationAdded: false});
+		});
 	}
 
 	private static logPageModifications(clipperState: ClipperState) {

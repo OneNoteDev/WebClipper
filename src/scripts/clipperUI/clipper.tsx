@@ -70,7 +70,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			pdfResult: { status: Status.NotStarted },
 			regionResult: { status: Status.NotStarted, data: [] },
 			augmentationResult: { status: Status.NotStarted },
-			oneNoteApiResult: { status: Status.Succeeded }, // TODO for development only
+			oneNoteApiResult: { status: Status.NotStarted },
 			bookmarkResult: { status: Status.NotStarted },
 
 			setState: (partialState: ClipperState) => {
@@ -96,7 +96,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private getResetState(): ClipperState {
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
-			oneNoteApiResult: { status: Status.Succeeded } // TODO for development only
+			oneNoteApiResult: { status: Status.NotStarted }
 		};
 	}
 
@@ -156,7 +156,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.captureFullScreenshotContent();
 				this.captureAugmentedContent();
 				this.captureBookmarkContent();
-				this.startClip(); // TODO for development only
 
 				Clipper.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[updatedPageInfo.contentType]);
 				Clipper.logger.setContextProperty(Log.Context.Custom.InvokeHostname, Utils.getHostname(updatedPageInfo.rawUrl));
@@ -623,13 +622,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
 			RatingsHelper.incrementClipSuccessCount().then(() => {
-				// TODO on incrementClipSuccessCount resolve?
+				// do nothing special on incrementClipSuccessCount resolve
 			}).then(() => {
 				// will happen regardless of success/failure of incrementClipSuccessCount
 				RatingsHelper.shouldShowRatingsPrompt(this.state).then((shouldShowRatingsPrompt) => {
 					this.state.setState({ shouldShowRatingsPrompt: shouldShowRatingsPrompt });
 				}, () => {
-					// err on the side of caution on reject
+					// err on the side of caution on shouldShowRatingsPrompt reject, do not show ratings prompt
 					this.state.setState({ shouldShowRatingsPrompt: false });
 				}).then(() => {
 					// will happen regardless of success/failure of shouldShowRatingsPrompt

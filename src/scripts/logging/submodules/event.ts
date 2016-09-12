@@ -39,6 +39,7 @@ export module Event {
 		RegionSelectionLoading,
 		RegionSelectionProcessing,
 		SetContextProperty,
+		SetDoNotPromptRatings,
 		ShouldShowRatingsPrompt,
 		PageModifications,
 		PostToOneNoteApi,

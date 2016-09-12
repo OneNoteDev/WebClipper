@@ -16,7 +16,7 @@ import {SpriteAnimation} from "../components/spriteAnimation";
 
 import {DialogButton, DialogPanel} from "./dialogPanel";
 
-export interface SuccessPanelState {
+interface SuccessPanelState {
 	currentRatingsPromptStage?: RatingsPromptStage;
 	userSelectedRatingsPromptStage?: RatingsPromptStage;
 }

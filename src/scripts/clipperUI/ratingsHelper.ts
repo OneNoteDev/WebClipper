@@ -8,7 +8,7 @@ import {Settings} from "../settings";
 import {AnimationStrategy} from "./animations/animationStrategy";
 import {SlideFromRightAnimationStrategy} from "./animations/slideFromRightAnimationStrategy";
 
-import {SuccessPanelClass, SuccessPanelState} from "./panels/successPanel";
+import {SuccessPanelClass} from "./panels/successPanel";
 
 import {ClipperState} from "./clipperState";
 import {DialogButton} from "./panels/dialogPanel";
@@ -62,7 +62,7 @@ export class RatingsHelper {
 	}
 
 	/**
-	 * Get appropriate dialog panel buttons for the ratings prompt stage provided
+	 * Get appropriate dialog panel buttons for the panel (with its internal states) provided
 	 */
 	public static getDialogButtons(panel: SuccessPanelClass): DialogButton[] {
 		let stage: RatingsPromptStage = panel.state.userSelectedRatingsPromptStage;
@@ -101,7 +101,7 @@ export class RatingsHelper {
 										RatingsHelper.setDoNotPromptStatus();
 									}
 								}, () => {
-									// values to set were invalid: err on the side of caution and always set do not prompt status
+									// values to set were invalid: err on the side of caution, always set do not prompt status
 									RatingsHelper.setDoNotPromptStatus();
 								}).then(() => {
 									let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
@@ -190,7 +190,8 @@ export class RatingsHelper {
 	 * We will show the ratings prompt if ALL of the below applies:
 	 *   * Ratings prompt is enabled for the ClientType/ClipperType
 	 *   * If StorageKeys.doNotPromptRatings is not "true"
-	 *   * If RatingsHelper.badRatingDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingDate
+	 *   * If RatingsHelper.badRatingTimingDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingDate
+	 *   * If RatingsHelper.badRatingVersionDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingVersion and StorageKeys.lastSeenVersion
 	 *   * If RatingsHelper.clipSuccessDelayIsOver(...) returns true when provided StorageKeys.numClipSuccess
 	 */
 	public static shouldShowRatingsPrompt(clipperState: ClipperState): Promise<boolean> {
@@ -211,6 +212,9 @@ export class RatingsHelper {
 		});
 	}
 
+	/**
+	 * Get the animation strategy for the ratings subpanel of the success panel provided
+	 */
 	public static getAnimationStategy(panel: SuccessPanelClass): AnimationStrategy {
 		return new SlideFromRightAnimationStrategy({
 			extShouldAnimateIn: () => {	return panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage; },
@@ -221,7 +225,7 @@ export class RatingsHelper {
 
 	/**
 	 * Adds 1 to the value in StorageKeys.numClipSuccess.
-	 * If the value does not exist yet, we initialize it to 1.
+	 * If the value does not exist yet or is invalid, we (re)initialize it to 1.
 	 */
 	public static incrementClipSuccessCount(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
@@ -240,72 +244,10 @@ export class RatingsHelper {
 		});
 	}
 
-	public static shouldShowRatingsPromptInternal(clipperState: ClipperState, event: Log.Event.PromiseEvent, logEventInfo: RatingsLoggingInfo): Promise<boolean> {
-		return new Promise<boolean>((resolve, reject) => {
-			if (Utils.isNullOrUndefined(clipperState)) {
-				event.setStatus(Log.Status.Failed);
-				event.setFailureInfo({ error: "Clipper state is null or undefined" });
-				return reject(undefined);
-			}
-
-			if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
-				// return cached value in clipper state since it already exists
-				logEventInfo.usedCachedValue = true;
-				return resolve(clipperState.shouldShowRatingsPrompt);
-			}
-
-			let ratingsPromptEnabled: boolean = RatingsHelper.ratingsPromptEnabledForClient(clipperState.clientInfo.clipperType);
-			logEventInfo.ratingsPromptEnabledForClient = ratingsPromptEnabled;
-			if (!ratingsPromptEnabled) {
-				return resolve(false);
-			}
-
-			Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsStr) => {
-				Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
-					Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (lastBadRatingVersion) => {
-						Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
-							Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
-
-								if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
-									logEventInfo.doNotPromptRatings = true;
-									return resolve(false);
-								}
-
-								let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
-								let numClips: number = parseInt(numClipsAsStr, 10);
-
-								/* tslint:disable:no-null-keyword */
-									// null is the value storage gives back; also, setting to undefined will keep this kvp from being logged at all
-								logEventInfo.lastBadRatingDate = lastBadRatingDate ? new Date(lastBadRatingDate).toString() : null;
-								/* tslint:enable:no-null-keyword */
-								logEventInfo.lastBadRatingVersion = lastBadRatingVersion;
-								logEventInfo.lastSeenVersion = lastSeenVersion;
-								logEventInfo.numSuccessfulClips = numClips;
-
-								let badRatingTimingDelayIsOver: boolean = RatingsHelper.badRatingTimingDelayIsOver(lastBadRatingDate, Date.now());
-								let badRatingVersionDelayIsOver: boolean = RatingsHelper.badRatingVersionDelayIsOver(lastBadRatingVersion, lastSeenVersion);
-								let clipSuccessDelayIsOver: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips);
-
-								logEventInfo.badRatingTimingDelayIsOver = badRatingTimingDelayIsOver;
-								logEventInfo.badRatingVersionDelayIsOver = badRatingVersionDelayIsOver;
-								logEventInfo.clipSuccessDelayIsOver = clipSuccessDelayIsOver;
-
-								if (badRatingTimingDelayIsOver && badRatingVersionDelayIsOver && clipSuccessDelayIsOver) {
-									return resolve(true);
-								}
-
-								return resolve(false);
-							});
-						});
-					});
-				});
-			});
-		});
-	}
-
 	/**
-	 * Sets StorageKeys.lastBadRatingDate to the current time.
-	 * Returns true if StorageKeys.lastBadRating already contained a value before this set
+	 * Sets StorageKeys.lastBadRatingDate to the time provided (if valid),
+	 * and StorageKeys.lastBadRatingVersion to the version provided (if in accepted format).
+	 * Returns true if StorageKeys.lastBadRatingDate already contained a value before this set
 	 * (meaning the user had already rated us negatively)
 	 *
 	 * Public for testing
@@ -374,31 +316,31 @@ export class RatingsHelper {
 	/**
 	 * Returns true if ONE of the below applies:
 	 *   1) A bad rating has never been given by the user, OR
-	 *   2) Bad rating date provided occurred more than {Constants.Settings.timeBetweenBadRatings} ago
-	 *   3) Date parameters are not in the valid date range
+	 *   2) Bad rating date provided is valid and occurred more than {Constants.Settings.minTimeBetweenBadRatings} ago
+	 *      from the valid comparison date (e.g., the current date) provided
 	 *
 	 * Public for testing
 	 */
-	public static badRatingTimingDelayIsOver(badRatingDate: number, currentDate: number): boolean {
+	public static badRatingTimingDelayIsOver(badRatingDate: number, comparisonDate: number): boolean {
 		if (isNaN(badRatingDate)) {
 			// value has never been set, no bad rating given
 			return true;
 		}
 
-		if (!RatingsHelper.isValidDate(badRatingDate) || !RatingsHelper.isValidDate(currentDate)) {
+		if (!RatingsHelper.isValidDate(badRatingDate) || !RatingsHelper.isValidDate(comparisonDate)) {
 			return false;
 		}
 
-		return (currentDate - badRatingDate) >= Constants.Settings.minTimeBetweenBadRatings;
+		return (comparisonDate - badRatingDate) >= Constants.Settings.minTimeBetweenBadRatings;
 	}
 
 	/**
 	 * Returns true if ONE of the below applies:
 	 *   1) A bad rating has never been given by the user, OR
-	 *   2) There has not been a non-patch version update since the bad rating, i.e.,
-	 *      a) The major version at the time of the last bad rating is less than the major version last seen by the user, OR
-	 *      b) The major version remained the same, but the minor version at the time of the last bad rating is less than
-	 *         the minor version last seen by the user
+	 *   2) There has been a non-patch version update since the bad rating, i.e.,
+	 *      a) The major version last seen by the user is greater than the major version at the time of the last bad rating, OR
+	 *      b) The major version remained the same, while the minor version last seen by the user is greater than
+	 *          the minor version at the time of the last bad rating
 	 *
 	 * Public for testing
 	 */
@@ -438,8 +380,10 @@ export class RatingsHelper {
 	 * Public for testing
 	 */
 	public static clipSuccessDelayIsOver(numClips: number): boolean {
-		// MVP+: when # of successful clips > nMax, collapse panel into a Rate Us hyperlink in the footer that is always available
-		// TODO gap boundary exponential backoff? do we need it at all?
+		// TODO Waiting for consensus on how should we handle users who never interact with the ratings prompt
+			// (keep showing the prompt forever, stop after max # of successful clips, slowly increase "gap between prompts")
+
+		// TODO MVP+? when # of successful clips > nMax, collapse panel into a Rate Us hyperlink in the footer that is always available
 
 		if (isNaN(numClips)) {
 			return false;
@@ -448,6 +392,72 @@ export class RatingsHelper {
 		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt &&
 			numClips <= Constants.Settings.maxClipSuccessForRatingsPrompt; /*&&
 			numClips % Constants.Settings.gapBetweenClipSuccessForRatingsPrompt === 0;*/
+	}
+
+	/**
+	 * Implementation of the logic described in the shouldShowRatingsPrompt(...) description
+	 */
+	private static shouldShowRatingsPromptInternal(clipperState: ClipperState, event: Log.Event.PromiseEvent, logEventInfo: RatingsLoggingInfo): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			if (Utils.isNullOrUndefined(clipperState)) {
+				event.setStatus(Log.Status.Failed);
+				event.setFailureInfo({ error: "Clipper state is null or undefined" });
+				return reject(undefined);
+			}
+
+			if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
+				// return cached value in clipper state since it already exists
+				logEventInfo.usedCachedValue = true;
+				return resolve(clipperState.shouldShowRatingsPrompt);
+			}
+
+			let ratingsPromptEnabled: boolean = RatingsHelper.ratingsPromptEnabledForClient(clipperState.clientInfo.clipperType);
+			logEventInfo.ratingsPromptEnabledForClient = ratingsPromptEnabled;
+			if (!ratingsPromptEnabled) {
+				return resolve(false);
+			}
+
+			Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsStr) => {
+				Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
+					Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (lastBadRatingVersion) => {
+						Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
+							Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
+
+								if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
+									logEventInfo.doNotPromptRatings = true;
+									return resolve(false);
+								}
+
+								let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+								let numClips: number = parseInt(numClipsAsStr, 10);
+
+								/* tslint:disable:no-null-keyword */
+									// null is the value storage gives back; also, setting to undefined will keep this kvp from being logged at all
+								logEventInfo.lastBadRatingDate = lastBadRatingDate ? new Date(lastBadRatingDate).toString() : null;
+								/* tslint:enable:no-null-keyword */
+								logEventInfo.lastBadRatingVersion = lastBadRatingVersion;
+								logEventInfo.lastSeenVersion = lastSeenVersion;
+								logEventInfo.numSuccessfulClips = numClips;
+
+								let badRatingTimingDelayIsOver: boolean = RatingsHelper.badRatingTimingDelayIsOver(lastBadRatingDate, Date.now());
+								let badRatingVersionDelayIsOver: boolean = RatingsHelper.badRatingVersionDelayIsOver(lastBadRatingVersion, lastSeenVersion);
+								let clipSuccessDelayIsOver: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips);
+
+								logEventInfo.badRatingTimingDelayIsOver = badRatingTimingDelayIsOver;
+								logEventInfo.badRatingVersionDelayIsOver = badRatingVersionDelayIsOver;
+								logEventInfo.clipSuccessDelayIsOver = clipSuccessDelayIsOver;
+
+								if (badRatingTimingDelayIsOver && badRatingVersionDelayIsOver && clipSuccessDelayIsOver) {
+									return resolve(true);
+								}
+
+								return resolve(false);
+							});
+						});
+					});
+				});
+			});
+		});
 	}
 
 	private static combineClientTypeAndSuffix(clientType: ClientType, suffix: string): string {
@@ -502,8 +512,9 @@ export class RatingsHelper {
 	}
 
 	private static setDoNotPromptStatus(): void {
-		// TODO log this and how it got called
 		Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "true");
+
+		Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.SetDoNotPromptRatings));
 	}
 
 	private static versionHasCorrectFormat(version: string): boolean {
