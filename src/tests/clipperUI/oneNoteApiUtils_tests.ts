@@ -223,28 +223,10 @@ test("For unknown error codes in the get notebooks scenario, the generic get not
 });
 
 test("addLinkToActionableErrorMessage should replace text within curly braces with a hyperlinked version of itself", () => {
-	let subString = "OneNote";
 	let url = "https://www.onenote.com";
-	let result = OneNoteApiUtils.addLinkToActionableErrorMessage("Hi {" + subString + "}", url, "This should not be displayed");
+	let result = OneNoteApiUtils.addLinkToActionableErrorMessage("Hi {OneNote}", url, "This should not be displayed");
 
-	let expectedAnchor = document.createElement("A") as HTMLAnchorElement;
-	expectedAnchor.innerText = subString;
-	expectedAnchor.href = url;
-
-	strictEqual(result, "Hi {OneNote}".replace("{OneNote}", expectedAnchor.outerHTML),
-		"The text in curly braces should be replaced with a link to the given url");
-});
-
-test("addLinkToActionableErrorMessage should replace text within curly braces with a hyperlinked version of itself", () => {
-	let subString = "OneNote";
-	let url = "https://www.onenote.com";
-	let result = OneNoteApiUtils.addLinkToActionableErrorMessage("Hi {" + subString + "}", url, "This should not be displayed");
-
-	let expectedAnchor = document.createElement("A") as HTMLAnchorElement;
-	expectedAnchor.innerText = subString;
-	expectedAnchor.href = url;
-
-	strictEqual(result, "Hi {OneNote}".replace("{OneNote}", expectedAnchor.outerHTML),
+	strictEqual(result, "Hi <a href=\"https://www.onenote.com\">OneNote</a>",
 		"The text in curly braces should be replaced with a link to the given url");
 });
 
