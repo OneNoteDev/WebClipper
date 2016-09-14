@@ -28,7 +28,6 @@ let unsupportedYouTubeUrls = [
 	"https://www.youtube.com/channel/UC38IQsAvIsxxjztdMZQtwHA"
 ];
 
-
 let supportedYouTubeUrls = [
 	"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 	"https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be&t=30s",
@@ -75,7 +74,6 @@ test("getVideoSrcValues should return undefined when provided unsupported parame
 		deepEqual(videoSrcUrl, undefined, youTubeUrl + " is in incorrect format for the pageUrl");
 	}
 });
-
 
 test("getVideoIds should return undefined for unsupported urls", () => {
 	for (let pageUrl of unsupportedOtherUrls) {

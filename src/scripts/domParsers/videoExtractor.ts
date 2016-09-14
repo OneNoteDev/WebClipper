@@ -4,6 +4,6 @@ export interface VideoExtractor {
 
 	// We can use the video ideas to generate or retrieve src values that we can embed into our article preview
 	getVideoSrcValues(pageUrl: string, pageContent: string): string[];
-	
+
 	createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[];
 };

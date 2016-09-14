@@ -36,7 +36,6 @@ let unsupportedVimeoUrls = [
 	"https://vimeo.com/45196609/collections/channels"
 ];
 
-
 let unsupportedOtherUrls = [
 	"https://www.hulu.com/",
 	"https://www.google.com/",

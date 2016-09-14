@@ -12,14 +12,14 @@ import {YoutubeVideoExtractor} from "./YoutubeVideoExtractor";
 export module VideoExtractorFactory {
 	export function createVideoExtractor(domain: VideoUtils.SupportedVideoDomains): VideoExtractor {
 		// shorter typename
-		let Domains = VideoUtils.SupportedVideoDomains;
+		let domains = VideoUtils.SupportedVideoDomains;
 		switch (domain) {
-			case Domains.KhanAcademy:
-				return new KhanAcademyVideoExtractor();	
-			case Domains.Vimeo:
-				return new VimeoVideoExtractor();	
-			case Domains.YouTube:
-				return new YoutubeVideoExtractor();	
+			case domains.KhanAcademy:
+				return new KhanAcademyVideoExtractor();
+			case domains.Vimeo:
+				return new VimeoVideoExtractor();
+			case domains.YouTube:
+				return new YoutubeVideoExtractor();
 			default:
 				return;
 		}

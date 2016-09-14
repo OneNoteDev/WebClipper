@@ -16,8 +16,8 @@ export class KhanAcademyVideoExtractor implements VideoExtractor {
 		let regexTwo = /data-youtubeid\s*=\s*("\s*(\S+)\s*"|'\s*(\S+)\s*')/gi;
 		let regexes = [regex, regexTwo];
 		return VideoUtils.matchRegexFromPageContent(pageContent, regexes);
-	}	
-	
+	}
+
 	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
 		if (Utils.isNullOrUndefined(pageContent)) {
 			return;
@@ -34,7 +34,7 @@ export class KhanAcademyVideoExtractor implements VideoExtractor {
 
 		return ["https://www.youtube.com/embed/" + videoIds[0]];
 	}
-	
+
 	/**
 	 * Create iframe in correct format for KhanAcademy video (hosted on YouTube) embed in OneNote.
 	 */

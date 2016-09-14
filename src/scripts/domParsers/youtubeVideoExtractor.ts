@@ -38,7 +38,7 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 
 		return [youTubeId];
 	}
-	
+
 	/**
 	 * Return valid iframe src attribute value for the supported YouTube domain
 	 */

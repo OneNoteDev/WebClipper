@@ -219,7 +219,7 @@ export module DomUtils {
 				// Construct the appropriate videoExtractor based on the Domain we are on
 				let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
 				let extractor = VideoExtractorFactory.createVideoExtractor(domain);
-				
+
 				// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
 				// to render them later
 				if (extractor) {

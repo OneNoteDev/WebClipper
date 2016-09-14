@@ -44,7 +44,7 @@ export class VimeoVideoExtractor implements VideoExtractor {
 
 		return values;
 	}
-	
+
 	/**
 	 * Create iframes in correct format for Vimeo video embed in OneNote.
 	 * Supports multiple videos.
