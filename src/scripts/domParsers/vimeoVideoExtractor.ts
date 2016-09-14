@@ -8,31 +8,6 @@ export class VimeoVideoExtractor implements VideoExtractor {
 	private dataOriginalSrcAttribute = "data-original-src";
 
 	/**
-	 * Create iframes in correct format for Vimeo video embed in OneNote.
-	 * Supports multiple videos.
-	 */
-	createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
-		let vimeoSrcs = this.getVideoSrcValues(pageUrl, pageContent);
-
-		if (Utils.isNullOrUndefined(vimeoSrcs)) {
-			// fast fail: we expect all pages passed into this function in prod to contain clip ids
-			throw new Error("Vimeo page content does not contain clip ids");
-		}
-
-		let iframes: HTMLIFrameElement[] = [];
-
-		for (let vimeoSrc of vimeoSrcs) {
-			let iframe = DomUtils.createEmbedVideoIframe();
-			iframe.src = vimeoSrc;
-			iframe.setAttribute(this.dataOriginalSrcAttribute, vimeoSrc);
-
-			iframes.push(iframe);
-		}
-
-		return iframes;
-	}
-
-	/**
 	 * Return id for a video on Vimeo.com
 	 */
 	getVideoIds(pageUrl: string, pageContent: string): string[] {
@@ -68,5 +43,30 @@ export class VimeoVideoExtractor implements VideoExtractor {
 		}
 
 		return values;
+	}
+	
+	/**
+	 * Create iframes in correct format for Vimeo video embed in OneNote.
+	 * Supports multiple videos.
+	 */
+	createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
+		let vimeoSrcs = this.getVideoSrcValues(pageUrl, pageContent);
+
+		if (Utils.isNullOrUndefined(vimeoSrcs)) {
+			// fast fail: we expect all pages passed into this function in prod to contain clip ids
+			throw new Error("Vimeo page content does not contain clip ids");
+		}
+
+		let iframes: HTMLIFrameElement[] = [];
+
+		for (let vimeoSrc of vimeoSrcs) {
+			let iframe = DomUtils.createEmbedVideoIframe();
+			iframe.src = vimeoSrc;
+			iframe.setAttribute(this.dataOriginalSrcAttribute, vimeoSrc);
+
+			iframes.push(iframe);
+		}
+
+		return iframes;
 	}
 }

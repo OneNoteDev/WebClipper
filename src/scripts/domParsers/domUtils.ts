@@ -236,49 +236,6 @@ export module DomUtils {
 	}
 
 	/**
-	 * Create iframes in correct format for Vimeo video embed in OneNote.
-	 * Supports multiple videos.
-	 */
-	function createEmbeddedVimeoVideos(pageContent: string): HTMLIFrameElement[] {
-		let vimeoSrcs = VideoUtils.getVimeoVideoSrcValues(pageContent);
-
-		if (Utils.isNullOrUndefined(vimeoSrcs)) {
-			// fast fail: we expect all pages passed into this function in prod to contain clip ids
-			throw new Error("Vimeo page content does not contain clip ids");
-		}
-
-		let iframes: HTMLIFrameElement[] = [];
-
-		for (let vimeoSrc of vimeoSrcs) {
-			let iframe = createEmbedVideoIframe();
-			iframe.src = vimeoSrc;
-			iframe.setAttribute(dataOriginalSrcAttribute, vimeoSrc);
-
-			iframes.push(iframe);
-		}
-
-		return iframes;
-	}
-
-	/**
-	 * Create iframe in correct format for YouTube video embed in OneNote.
-	 * Supports a single video.
-	 */
-	function createEmbeddedYouTubeVideo(pageUrl: string): HTMLIFrameElement {
-		let iframe = createEmbedVideoIframe();
-		let srcValue = VideoUtils.getYouTubeVideoSrcValue(pageUrl);
-		let videoId = VideoUtils.getYouTubeVideoId(pageUrl);
-		if (Utils.isNullOrUndefined(srcValue) || Utils.isNullOrUndefined(videoId)) {
-			// fast fail: we expect all page urls passed into this function in prod to contain a video id
-			throw new Error("YouTube page url does not contain video id");
-		}
-		iframe.src = srcValue;
-		iframe.setAttribute(dataOriginalSrcAttribute, Utils.addUrlQueryValue(VideoUtils.youTubeWatchVideoBaseUrl, VideoUtils.youTubeVideoIdQueryKey, videoId));
-
-		return iframe;
-	}
-
-	/**
 	 * Create base iframe with reasonable style properties for video embed in OneNote.
 	 */
 	export function createEmbedVideoIframe(): HTMLIFrameElement {

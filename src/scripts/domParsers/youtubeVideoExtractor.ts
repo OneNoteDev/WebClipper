@@ -9,40 +9,6 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 	private dataOriginalSrcAttribute = "data-original-src";
 
 	/**
-	 * Create iframe in correct format for YouTube video embed in OneNote.
-	 * Supports a single video.
-	 */
-	createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
-		let iframe = DomUtils.createEmbedVideoIframe();
-		let srcValue = this.getVideoSrcValues(pageUrl, pageContent);
-		let videoId = this.getVideoIds(pageUrl, pageContent)[0];
-		if (Utils.isNullOrUndefined(srcValue) || Utils.isNullOrUndefined(videoId)) {
-			// fast fail: we expect all page urls passed into this function in prod to contain a video id
-			throw new Error("YouTube page url does not contain video id");
-		}
-		iframe.src = srcValue[0];
-		iframe.setAttribute(this.dataOriginalSrcAttribute, Utils.addUrlQueryValue(this.youTubeWatchVideoBaseUrl, this.youTubeVideoIdQueryKey, videoId));
-
-		return [iframe];
-	}
-
-	/**
-	 * Return valid iframe src attribute value for the supported YouTube domain
-	 */
-	getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
-		if (Utils.isNullOrUndefined(pageUrl)) {
-			return;
-		}
-
-		let youTubeVideoId = this.getVideoIds(pageUrl, pageContent);
-		if (Utils.isNullOrUndefined(youTubeVideoId)) {
-			return;
-		}
-
-		return ["https://www.youtube.com/embed/" + youTubeVideoId];
-	}
-
-	/**
 	 * Return the ID of the video in the YouTube URL as an array
 	 */
 	getVideoIds(youTubeUrl: string, pageContent: string): string[] {
@@ -71,5 +37,39 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 		}
 
 		return [youTubeId];
+	}
+	
+	/**
+	 * Return valid iframe src attribute value for the supported YouTube domain
+	 */
+	getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
+		if (Utils.isNullOrUndefined(pageUrl)) {
+			return;
+		}
+
+		let youTubeVideoId = this.getVideoIds(pageUrl, pageContent);
+		if (Utils.isNullOrUndefined(youTubeVideoId)) {
+			return;
+		}
+
+		return ["https://www.youtube.com/embed/" + youTubeVideoId];
+	}
+
+	/**
+	 * Create iframe in correct format for YouTube video embed in OneNote.
+	 * Supports a single video.
+	 */
+	createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
+		let iframe = DomUtils.createEmbedVideoIframe();
+		let srcValue = this.getVideoSrcValues(pageUrl, pageContent);
+		let videoId = this.getVideoIds(pageUrl, pageContent)[0];
+		if (Utils.isNullOrUndefined(srcValue) || Utils.isNullOrUndefined(videoId)) {
+			// fast fail: we expect all page urls passed into this function in prod to contain a video id
+			throw new Error("YouTube page url does not contain video id");
+		}
+		iframe.src = srcValue[0];
+		iframe.setAttribute(this.dataOriginalSrcAttribute, Utils.addUrlQueryValue(this.youTubeWatchVideoBaseUrl, this.youTubeVideoIdQueryKey, videoId));
+
+		return [iframe];
 	}
 }

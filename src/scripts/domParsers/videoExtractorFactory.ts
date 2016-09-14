@@ -20,8 +20,8 @@ export module VideoExtractorFactory {
 				return new VimeoVideoExtractor();	
 			case Domains.YouTube:
 				return new YoutubeVideoExtractor();	
-			default: 
-				return	
+			default:
+				return;
 		}
 	}
 }
