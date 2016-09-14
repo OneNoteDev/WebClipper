@@ -11,8 +11,12 @@ import {SmartValue} from "../../../scripts/communicator/smartValue";
 
 import {InvokeMode} from "../../../scripts/extensions/invokeOptions";
 
+import {ClientType} from "../../../scripts/clientType";
+
 import {HelperFunctions} from "../../helperFunctions";
 
+// These are not available in constants.ts as we currently dynamically generate them
+// at runtime
 export module TestConstants {
 	export module Classes {
 		export var icon = "icon";
@@ -29,6 +33,9 @@ export module TestConstants {
 		export var bookmarkButton = "bookmarkButton";
 	}
 }
+
+declare function require(name: string);
+let stringsJson = require("../../../strings.json");
 
 let defaultComponent;
 QUnit.module("modeButtonSelector", {
@@ -81,6 +88,53 @@ test("The region clipping button should appear when enableRegionClipping is inje
 	strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
 	strictEqual(buttonElements[2].id, TestConstants.Ids.augmentationButton, "The third button should be the augmentation button");
 	strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
+});
+
+test("The region button should be labeled 'Region' in non-Edge browsers", () => {
+	let startingState = HelperFunctions.getMockClipperState();
+	startingState.clientInfo.clipperType = ClientType.ChromeExtension;
+	HelperFunctions.mountToFixture(
+		<ModeButtonSelector clipperState={ startingState } />);
+
+	let modeButtonSelector = HelperFunctions.getFixture().firstElementChild;
+	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
+	let regionButton = buttonElements[1];
+	let label = regionButton.getElementsByClassName(TestConstants.Classes.label)[0] as Node;
+	strictEqual(label.textContent, stringsJson["WebClipper.ClipType.Region.Button"]);
+});
+
+test("The region button should be labeled 'Region' in non-Edge browsers and an image was selected", () => {
+	let startingState = HelperFunctions.getMockClipperState();
+	startingState.clientInfo.clipperType = ClientType.FirefoxExtension;
+	startingState.invokeOptions = {
+		invokeMode: InvokeMode.ContextImage,
+		invokeDataForMode: "dummy-img"
+	};
+	HelperFunctions.mountToFixture(
+		<ModeButtonSelector clipperState={ startingState } />);
+
+	let modeButtonSelector = HelperFunctions.getFixture().firstElementChild;
+	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
+	let regionButton = buttonElements[1];
+	let label = regionButton.getElementsByClassName(TestConstants.Classes.label)[0] as Node;
+	strictEqual(label.textContent, stringsJson["WebClipper.ClipType.Region.Button"]);
+});
+
+test("The region button should be labeled 'Image' in Edge and an image was selected", () => {
+	let startingState = HelperFunctions.getMockClipperState();
+	startingState.clientInfo.clipperType = ClientType.EdgeExtension;
+	startingState.invokeOptions = {
+		invokeMode: InvokeMode.ContextImage,
+		invokeDataForMode: "dummy-img"
+	};
+	HelperFunctions.mountToFixture(
+		<ModeButtonSelector clipperState={ startingState } />);
+
+	let modeButtonSelector = HelperFunctions.getFixture().firstElementChild;
+	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
+	let imageButton = buttonElements[1];
+	let label = imageButton.getElementsByClassName(TestConstants.Classes.label)[0] as Node;
+	strictEqual(label.textContent, stringsJson["WebClipper.ClipType.Image.Button"]);
 });
 
 test("The selection button should appear when invokeMode is set to selection", () => {
@@ -245,7 +299,7 @@ test("The augmentation button should be labeled as 'Article' by default", () => 
 	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 	let augmentationButton = buttonElements[2];
 	let label = augmentationButton.getElementsByClassName(TestConstants.Classes.label)[0] as Node;
-	strictEqual(label.textContent, "Article");
+	strictEqual(label.textContent, stringsJson["WebClipper.ClipType.Article.Button"]);
 });
 
 test("The augmentation button should be labeled according to the content model of the augmentation result", () => {
@@ -269,7 +323,7 @@ test("The augmentation button should be labeled according to the content model o
 	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 	let augmentationButton = buttonElements[2];
 	let label = augmentationButton.getElementsByClassName(TestConstants.Classes.label)[0] as Node;
-	strictEqual(label.textContent, "Recipe");
+	strictEqual(label.textContent, stringsJson["WebClipper.ClipType.Recipe.Button"]);
 });
 
 test("The augmentation button should have its image set to the article icon by default", () => {
