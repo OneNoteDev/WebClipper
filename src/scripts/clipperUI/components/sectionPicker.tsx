@@ -288,10 +288,9 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			}
 		}
 
-		// Display an un-retryable message if API responds with a code that is not retryable
-		// Note that if this is an unhandled api response code, we assume it is not retryable
-		if (this.state.apiResponseCode && !OneNoteApiUtils.isRetryable(this.state.apiResponseCode)) {
-			localizedStrings.notebookLoadFailureMessage = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage");
+		// If we can show a better message, especially an actionable one, we do
+		if (this.state.apiResponseCode && OneNoteApiUtils.getLocalizedErrorMessage(this.state.apiResponseCode)) {
+			localizedStrings.notebookLoadFailureMessage = OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(this.state.apiResponseCode);
 		}
 
 		return (
