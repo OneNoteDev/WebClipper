@@ -1,17 +1,9 @@
-import {Localization} from "../localization/localization";
-
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {Utils} from "../utils";
 import {Settings} from "../settings";
 
-import {AnimationStrategy} from "./animations/animationStrategy";
-import {SlideFromRightAnimationStrategy} from "./animations/slideFromRightAnimationStrategy";
-
-import {SuccessPanelClass} from "./panels/successPanel";
-
 import {ClipperState} from "./clipperState";
-import {DialogButton} from "./panels/dialogPanel";
 import {Clipper} from "./frontEndGlobals";
 
 import * as Log from "../logging/log";
@@ -25,7 +17,7 @@ export enum RatingsPromptStage {
 }
 
 interface RatingsLoggingInfo {
-	shouldShowRatingsPrompt: boolean;
+	shouldShowRatingsPrompt: boolean; // TODO move to custom property
 	badRatingTimingDelayIsOver?: boolean;
 	badRatingVersionDelayIsOver?: boolean;
 	clipSuccessDelayIsOver?: boolean;
@@ -41,150 +33,6 @@ interface RatingsLoggingInfo {
 export class RatingsHelper {
 	public static rateUrlSettingNameSuffix = "_RatingUrl";
 	public static ratingsPromptEnabledSettingNameSuffix = "_RatingsEnabled";
-
-	/**
-	 * Get appropriate dialog panel message for the ratings prompt stage provided
-	 */
-	public static getMessage(stage: RatingsPromptStage): string {
-		switch (stage) {
-			case RatingsPromptStage.INIT:
-				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.Init");
-			case RatingsPromptStage.RATE:
-				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.Rate");
-			case RatingsPromptStage.FEEDBACK:
-				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.Feedback");
-			case RatingsPromptStage.END:
-				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.End");
-			default:
-			case RatingsPromptStage.NONE:
-				break;
-		}
-	}
-
-	/**
-	 * Get appropriate dialog panel buttons for the panel (with its internal states) provided
-	 */
-	public static getDialogButtons(panel: SuccessPanelClass): DialogButton[] {
-		let stage: RatingsPromptStage = panel.state.userSelectedRatingsPromptStage;
-		let clipperState: ClipperState = panel.props.clipperState;
-		let clientType: ClientType = clipperState.clientInfo.clipperType;
-
-		let buttons: DialogButton[] = [];
-
-		switch (stage) {
-			case RatingsPromptStage.INIT:
-				buttons.push({
-					id: Constants.Ids.ratingsButtonInitYes,
-					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Positive"),
-					handler: () => {
-						RatingsHelper.setDoNotPromptStatus();
-
-						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
-						if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
-							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.RATE
-							});
-						} else {
-							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.END
-							});
-						}
-					}
-				}, {
-						id: Constants.Ids.ratingsButtonInitNo,
-						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Negative"),
-						handler: () => {
-							Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
-								RatingsHelper.setLastBadRating(Date.now().toString(), lastSeenVersion).then((badRatingAlreadyOccurred) => {
-									if (badRatingAlreadyOccurred) {
-										// setting this to prevent additional ratings prompts after the second bad rating
-										RatingsHelper.setDoNotPromptStatus();
-									}
-								}, () => {
-									// values to set were invalid: err on the side of caution, always set do not prompt status
-									RatingsHelper.setDoNotPromptStatus();
-								}).then(() => {
-									let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
-									if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
-										panel.setState({
-											userSelectedRatingsPromptStage: RatingsPromptStage.FEEDBACK
-										});
-									} else {
-										panel.setState({
-											userSelectedRatingsPromptStage: RatingsPromptStage.END
-										});
-									}
-								});
-							});
-						}
-					});
-				break;
-			case RatingsPromptStage.RATE:
-				let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
-				if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
-					buttons.push({
-						id: Constants.Ids.ratingsButtonRateYes,
-						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Rate"),
-						handler: () => {
-							window.open(rateUrl, "_blank");
-
-							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.END
-							});
-						}
-					}, {
-						id: Constants.Ids.ratingsButtonRateNo,
-						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
-						handler: () => {
-							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.NONE
-							});
-						}
-					});
-				} else {
-					// this shouldn't happen
-					panel.setState({
-						userSelectedRatingsPromptStage: RatingsPromptStage.NONE
-					});
-				}
-				break;
-			case RatingsPromptStage.FEEDBACK:
-				let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
-				if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
-					buttons.push({
-						id: Constants.Ids.ratingsButtonFeedbackYes,
-						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Feedback"),
-						handler: () => {
-							window.open(feedbackUrl, "_blank");
-
-							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.END
-							});
-						}
-					}, {
-						id: Constants.Ids.ratingsButtonFeedbackNo,
-						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
-						handler: () => {
-							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.NONE
-							});
-						}
-					});
-				} else {
-					// this shouldn't happen
-					panel.setState({
-						userSelectedRatingsPromptStage: RatingsPromptStage.NONE
-					});
-				}
-				break;
-			default:
-			case RatingsPromptStage.END:
-			case RatingsPromptStage.NONE:
-				break;
-		}
-
-		return buttons;
-	}
 
 	/**
 	 * We will show the ratings prompt if ALL of the below applies:
@@ -209,17 +57,6 @@ export class RatingsHelper {
 				shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.RatingsInfo, JSON.stringify(shouldShowRatingsPromptInfo));
 				Clipper.logger.logEvent(shouldShowRatingsPromptEvent);
 			});
-		});
-	}
-
-	/**
-	 * Get the animation strategy for the ratings subpanel of the success panel provided
-	 */
-	public static getAnimationStategy(panel: SuccessPanelClass): AnimationStrategy {
-		return new SlideFromRightAnimationStrategy({
-			extShouldAnimateIn: () => {	return panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage; },
-			extShouldAnimateOut: () => { return false; },
-			onAfterAnimateIn: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage }); }
 		});
 	}
 
@@ -511,7 +348,8 @@ export class RatingsHelper {
 		return date >= minimumTimeValue && date <= Constants.Settings.maximumJSTimeValue;
 	}
 
-	private static setDoNotPromptStatus(): void {
+	// TODO make private again
+	public static setDoNotPromptStatus(): void {
 		Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "true");
 
 		Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.SetDoNotPromptRatings));
