@@ -87,6 +87,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			augmentationPreviewInfo: {},
 			selectionPreviewInfo: {},
 
+			shouldShowRatingsPrompt: new SmartValue<boolean>(),
+
 			reset: () => {
 				this.state.setState(this.getResetState());
 			}
@@ -442,6 +444,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			this.initializeExtensionCommunicator(clientInfo);
 			Clipper.extensionCommunicator.subscribeAcrossCommunicator(Clipper.sessionId, Constants.SmartValueKeys.sessionId);
 			Clipper.logger = new CommunicatorLoggerPure(Clipper.extensionCommunicator);
+
+			// initialize here since it depends on storage in the extension
+			this.initializeNumSuccessfulClips();
 		});
 
 		this.initializeInjectCommunicator(pageInfo, clientInfo);
@@ -482,6 +487,32 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					break;
 			}
 		}, { callOnSubscribe: false });
+	}
+
+	private initializeNumSuccessfulClips(): void {
+		new Promise<string>((resolve, reject) => {
+			Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipsAsStr: string) => {
+				resolve(numClipsAsStr);
+			});
+		}).then((numClipsAsStr: string) => {
+			let numClips: number = parseInt(numClipsAsStr, 10);
+			if (Utils.isNullOrUndefined(numClips) || isNaN(numClips)) {
+				// when the value does not exist yet or is invalid, we initialize it to 0
+				numClips = 0;
+			}
+
+			this.state.numSuccessfulClips = new SmartValue<number>(numClips);
+
+			// subscribe after initial set to storage value
+			this.state.numSuccessfulClips.subscribe(() => {
+				RatingsHelper.shouldShowRatingsPrompt(this.state).then((shouldShowRatingsPrompt) => {
+					this.state.shouldShowRatingsPrompt.set(shouldShowRatingsPrompt);
+				}, () => {
+					// err on the side of caution on shouldShowRatingsPrompt reject, do not show ratings prompt
+					this.state.shouldShowRatingsPrompt.set(false);
+				});
+			}, { callOnSubscribe: false });
+		});
 	}
 
 	private getDefaultClipMode(): ClipMode {
@@ -621,22 +652,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
-			RatingsHelper.incrementClipSuccessCount().then(() => {
-				// do nothing special on incrementClipSuccessCount resolve
-			}).then(() => {
-				// will happen regardless of success/failure of incrementClipSuccessCount
-				RatingsHelper.shouldShowRatingsPrompt(this.state).then((shouldShowRatingsPrompt) => {
-					this.state.setState({ shouldShowRatingsPrompt: shouldShowRatingsPrompt });
-				}, () => {
-					// err on the side of caution on shouldShowRatingsPrompt reject, do not show ratings prompt
-					this.state.setState({ shouldShowRatingsPrompt: false });
-				}).then(() => {
-					// will happen regardless of success/failure of shouldShowRatingsPrompt
-					clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
-					clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
-					this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
-				});
-			});
+			// wait for state.shouldShowRatingsPrompt to be defined before setting state.oneNoteApiResult.status
+			this.state.shouldShowRatingsPrompt.subscribe((shouldShow: boolean) => {
+				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
+				clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
+				this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
+			}, { callOnSubscribe: false });
 		}, (error: OneNoteApi.RequestError) => {
 			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
 

@@ -43,6 +43,7 @@ export module PropertyName {
 		QualityStepDownCount,
 		RatingsInfo,
 		RequestCorrelationId,
+		ShouldShowRatingsPrompt,
 		SignInCancelled,
 		StoredLocaleDifferentThanRequested,
 		Styles,

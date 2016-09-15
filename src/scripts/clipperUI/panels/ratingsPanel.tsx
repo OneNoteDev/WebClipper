@@ -63,7 +63,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 		}
 	}
 
-	// TODO move button handlers back to RatingsHelper and test there
+	// TODO consolidate as much storage access as possible
 
 	/**
 	 * Get appropriate dialog panel buttons for the panel (with its internal states) provided
@@ -193,7 +193,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 	}
 
 	render() {
-		if (!this.props.clipperState.shouldShowRatingsPrompt) {
+		if (!this.props.clipperState.shouldShowRatingsPrompt.get()) {
 			return;
 		}
 

@@ -285,7 +285,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			case PanelType.ClippingSuccess:
 				let panels: any[] = [<SuccessPanel clipperState={this.props.clipperState} />];
 
-				if (this.props.clipperState.shouldShowRatingsPrompt) {
+				if (this.props.clipperState.shouldShowRatingsPrompt.get()) {
 					panels.push(<RatingsPanel clipperState={this.props.clipperState} />);
 				}
 

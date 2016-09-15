@@ -45,6 +45,7 @@ export class SaveToOneNote {
 
 			this.addPrimaryContentToPage(page, clipperState.currentMode.get()).then(() => {
 				this.createNewPage(page).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+					this.incrementClipSuccessCount(clipperState);
 					resolve({ responsePackage: responsePackage, annotationAdded: annotationAdded });
 				}, (error: OneNoteApi.RequestError) => {
 					reject(error);
@@ -172,6 +173,16 @@ export class SaveToOneNote {
 
 		this.stripUnwantedUIElements(newPreviewBody);
 		return newPreviewBody;
+	}
+
+	// Adds 1 to the value stored in StorageKeys.numSuccessfulClips and clipperState.numSuccessfulClips
+	private static incrementClipSuccessCount(clipperState: ClipperState): void {
+		let numSuccessfulClips: number = clipperState.numSuccessfulClips.get();
+
+		numSuccessfulClips++;
+
+		Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, numSuccessfulClips.toString());
+		clipperState.numSuccessfulClips.set(numSuccessfulClips);
 	}
 
 	// Strips out UI elements that we don't wish to persist to the API

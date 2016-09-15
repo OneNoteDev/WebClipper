@@ -275,7 +275,7 @@ export module Constants {
 		export var lastClippedTooltipTimeBase = "lastClippedTooltipTime";
 		export var locale = "locale";
 		export var locStrings = "locStrings";
-		export var numClipSuccess = "numClipSuccess";
+		export var numSuccessfulClips = "numSuccessfulClips";
 		export var numTimesTooltipHasBeenSeenBase = "numTimesTooltipHasBeenSeen";
 		export var userInformation = "userInformation";
 	}

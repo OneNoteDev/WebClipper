@@ -60,27 +60,6 @@ export class RatingsHelper {
 	}
 
 	/**
-	 * Adds 1 to the value in StorageKeys.numClipSuccess.
-	 * If the value does not exist yet or is invalid, we (re)initialize it to 1.
-	 */
-	public static incrementClipSuccessCount(): Promise<void> {
-		return new Promise<void>((resolve, reject) => {
-			Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr: string) => {
-				let numClips: number = parseInt(numClipsAsStr, 10);
-				if (Utils.isNullOrUndefined(numClips) || isNaN(numClips)) {
-					numClips = 0;
-				}
-
-				numClips++;
-
-				Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, numClips.toString());
-
-				return resolve();
-			});
-		});
-	}
-
-	/**
 	 * Sets StorageKeys.lastBadRatingDate to the time provided (if valid),
 	 * and StorageKeys.lastBadRatingVersion to the version provided (if in accepted format).
 	 * Returns true if StorageKeys.lastBadRatingDate already contained a value before this set
@@ -241,10 +220,10 @@ export class RatingsHelper {
 				return reject(undefined);
 			}
 
-			if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt)) {
+			if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt.get())) {
 				// return cached value in clipper state since it already exists
 				logEventInfo.usedCachedValue = true;
-				return resolve(clipperState.shouldShowRatingsPrompt);
+				return resolve(clipperState.shouldShowRatingsPrompt.get());
 			}
 
 			let ratingsPromptEnabled: boolean = RatingsHelper.ratingsPromptEnabledForClient(clipperState.clientInfo.clipperType);
@@ -257,7 +236,7 @@ export class RatingsHelper {
 				Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (lastBadRatingDateAsStr) => {
 					Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (lastBadRatingVersion) => {
 						Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
-							Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipsAsStr) => {
+							Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipsAsStr) => {
 
 								if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
 									logEventInfo.doNotPromptRatings = true;

@@ -486,7 +486,7 @@ test("incrementClipSuccessCount sets numClipSuccess in storage to 1 if value is 
 	}, () => {
 		ok(false, "incrementClipSuccessCount should not reject");
 	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipSuccessAsStr: string) => {
+		Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipSuccessAsStr: string) => {
 			strictEqual(parseInt(numClipSuccessAsStr, 10), 1, "number of successful clips is incorrect");
 			done();
 		});
@@ -496,14 +496,14 @@ test("incrementClipSuccessCount sets numClipSuccess in storage to 1 if value is 
 test("incrementClipSuccessCount sets numClipSuccess in storage to 1 if value is NaN at call", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, "not a number");
+	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, "not a number");
 
 	RatingsHelper.incrementClipSuccessCount().then(() => {
 		ok(true, "incrementClipSuccessCount should resolve");
 	}, () => {
 		ok(false, "incrementClipSuccessCount should not reject");
 	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipSuccessAsStr: string) => {
+		Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipSuccessAsStr: string) => {
 			strictEqual(parseInt(numClipSuccessAsStr, 10), 1, "number of successful clips is incorrect");
 			done();
 		});
@@ -513,14 +513,14 @@ test("incrementClipSuccessCount sets numClipSuccess in storage to 1 if value is 
 test("incrementClipSuccessCount sets numClipSuccess in storage to 1 if value is 0 at call", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, "0");
+	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, "0");
 
 	RatingsHelper.incrementClipSuccessCount().then(() => {
 		ok(true, "incrementClipSuccessCount should resolve");
 	}, () => {
 		ok(false, "incrementClipSuccessCount should not reject");
 	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipSuccessAsStr: string) => {
+		Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipSuccessAsStr: string) => {
 			strictEqual(parseInt(numClipSuccessAsStr, 10), 1, "number of successful clips is incorrect");
 			done();
 		});
@@ -532,14 +532,14 @@ test("incrementClipSuccessCount sets numClipSuccess in storage to (numClipSucces
 
 	let originalNumClipSuccess = 999;
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, originalNumClipSuccess.toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, originalNumClipSuccess.toString());
 
 	RatingsHelper.incrementClipSuccessCount().then(() => {
 		ok(true, "incrementClipSuccessCount should resolve");
 	}, () => {
 		ok(false, "incrementClipSuccessCount should not reject");
 	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.numClipSuccess, (numClipSuccessAsStr: string) => {
+		Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipSuccessAsStr: string) => {
 			strictEqual(parseInt(numClipSuccessAsStr, 10), originalNumClipSuccess + 1, "number of successful clips is incorrect");
 			done();
 		});
@@ -563,7 +563,10 @@ test("shouldShowRatingsPrompt rejects when clipperState is undefined", (assert: 
 test("shouldShowRatingsPrompt returns cached false when shouldShowRatingsPrompt is already set to false", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	RatingsHelper.shouldShowRatingsPrompt({ shouldShowRatingsPrompt: false }).then((shouldShowRatingsPrompt: boolean) => {
+	let clipperState = HelperFunctions.getMockClipperState();
+	clipperState.shouldShowRatingsPrompt.set(false);
+
+	RatingsHelper.shouldShowRatingsPrompt(clipperState).then((shouldShowRatingsPrompt: boolean) => {
 		strictEqual(shouldShowRatingsPrompt, false);
 	}, () => {
 		ok(false, "shouldShowRatingsPrompt should not reject");
@@ -575,7 +578,10 @@ test("shouldShowRatingsPrompt returns cached false when shouldShowRatingsPrompt 
 test("shouldShowRatingsPrompt returns cached true when shouldShowRatingsPrompt is already set to true", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	RatingsHelper.shouldShowRatingsPrompt({ shouldShowRatingsPrompt: true }).then((shouldShowRatingsPrompt: boolean) => {
+	let clipperState = HelperFunctions.getMockClipperState();
+	clipperState.shouldShowRatingsPrompt.set(true);
+
+	RatingsHelper.shouldShowRatingsPrompt(clipperState).then((shouldShowRatingsPrompt: boolean) => {
 		strictEqual(shouldShowRatingsPrompt, true);
 	}, () => {
 		ok(false, "shouldShowRatingsPrompt should not reject");
@@ -636,7 +642,7 @@ test("shouldShowRatingsPrompt returns true when do not prompt ratings is set in 
 	});
 
 	Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "invalid");
-	Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
 
 	let clipperState = HelperFunctions.getMockClipperState();
 
@@ -662,7 +668,7 @@ test("shouldShowRatingsPrompt returns true when a valid configuration is provide
 	let lastBadRatingVersion = "3.0.9";
 	let lastSeenVersion = "3.1.0";
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, lastBadRatingDate.toString());
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastBadRatingVersion);
 	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, lastSeenVersion);
@@ -691,7 +697,7 @@ test("shouldShowRatingsPrompt returns false when number of successful clips is b
 	let lastBadRatingVersion = "3.0.9";
 	let lastSeenVersion = "3.1.0";
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, (Constants.Settings.minClipSuccessForRatingsPrompt - 1).toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, (Constants.Settings.minClipSuccessForRatingsPrompt - 1).toString());
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, lastBadRatingDate.toString());
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastBadRatingVersion);
 	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, lastSeenVersion);
@@ -721,7 +727,7 @@ test("shouldShowRatingsPrompt returns false when last bad rating date is too rec
 	let lastBadRatingVersion = "3.0.9";
 	let lastSeenVersion = "3.1.0";
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, lastBadRatingDate.toString());
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastBadRatingVersion);
 	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, lastSeenVersion);
@@ -750,7 +756,7 @@ test("shouldShowRatingsPrompt returns false when there has not been a significan
 	let lastBadRatingVersion = "3.0.9";
 	let lastSeenVersion = "3.0.999";
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numClipSuccess, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, lastBadRatingDate.toString());
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastBadRatingVersion);
 	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, lastSeenVersion);
@@ -778,7 +784,7 @@ test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to Rati
 	});
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.shouldShowRatingsPrompt.set(true);
 
 	let successPanel = <SuccessPanel clipperState={clipperState} />;
 
@@ -803,7 +809,7 @@ test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to Rati
 	Settings.setSettingsJsonForTesting({});
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.shouldShowRatingsPrompt.set(true);
 
 	let successPanel = <SuccessPanel clipperState={clipperState} />;
 
@@ -842,15 +848,20 @@ test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to Rati
 
 	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
 	HelperFunctions.simulateAction(() => {
+		console.log("Init.Negative click");
 		initNegative.click();
 	});
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.FEEDBACK]);
+	setTimeout(() => {
+		console.log("strictEqual", RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.FEEDBACK]);
+		strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.FEEDBACK]);
 
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, undefined);
-		done();
-	});
+		Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+			console.log("strictEqual", doNotPromptRatingsAsStr, "undefined");
+			strictEqual(doNotPromptRatingsAsStr, undefined);
+			done();
+		});
+	}, 500);
 });
 
 test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT without a prior bad rating goes to RatingsPromptStage.END when feedback url does not exist (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
@@ -944,7 +955,7 @@ test("getDialogButtons: 'Rate' click at RatingsPromptStage.RATE goes to RatingsP
 	});
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.shouldShowRatingsPrompt.set(true);
 
 	let successPanel = <SuccessPanel clipperState={clipperState} />;
 
@@ -966,7 +977,7 @@ test("getDialogButtons: 'Rate' click at RatingsPromptStage.RATE goes to RatingsP
 
 test("getDialogButtons: 'Rate' click at RatingsPromptStage.RATE not available when rate url does not exist", () => {
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.shouldShowRatingsPrompt.set(true);
 
 	let successPanel = <SuccessPanel clipperState={clipperState} />;
 
@@ -995,7 +1006,7 @@ test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.RATE goes to Rat
 	});
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.shouldShowRatingsPrompt.set(true);
 
 	let successPanel = <SuccessPanel clipperState={clipperState} />;
 
@@ -1017,7 +1028,7 @@ test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.RATE goes to Rat
 
 test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.RATE not available when rate url does not exist", () => {
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.shouldShowRatingsPrompt.set(true);
 
 	let successPanel = <SuccessPanel clipperState={clipperState} />;
 
