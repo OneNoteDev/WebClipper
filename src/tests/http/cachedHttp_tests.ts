@@ -51,6 +51,76 @@ test("valueHasExpired should return true if value is undefined", () => {
 		"A timestamped value with an undefined value should return true");
 });
 
+test("getAndCacheFreshValue where the value in storage is still fresh should not return or retrieve the value from the specified remote call", (assert: QUnitAssert) => {
+	let done = assert.async();
+
+	let expected = "expected";
+	let timeOfStorage = Date.now();
+	let valueInStorage = {
+		data: expected,
+		lastUpdated: timeOfStorage
+	};
+
+	let key = "k";
+	mockStorage.setValue(key, JSON.stringify(valueInStorage));
+	let cachedHttp = new CachedHttp(mockStorage);
+
+	let getRemoteValue = () => {
+		return Promise.resolve({
+			parsedResponse: JSON.stringify("notexpected"),
+			request: undefined // We don't care about the request in the test
+		} as ResponsePackage<string>);
+	};
+
+	cachedHttp.getAndCacheFreshValue(key, getRemoteValue, 9999999999).then((timeStampedData) => {
+		strictEqual(timeStampedData.data, expected, "The storage item should be returned");
+		strictEqual(timeStampedData.lastUpdated, timeOfStorage, "The returned item should have its lastUpdated value be preserved");
+
+		let newStoredValue = JSON.parse(mockStorage.getValue(key)) as TimeStampedData;
+		strictEqual(newStoredValue.data, expected, "The storage item should be preserved");
+		strictEqual(newStoredValue.lastUpdated, timeOfStorage, "The storage item's lastUpdated should be preserved");
+	}, (error) => {
+		ok(false, "reject should not be called");
+	}).then(() => {
+		done();
+	});
+});
+
+test("Given that lastUpdated is a small non-0 value, getAndCacheFreshValue where the value in storage is too old should return the value from the specified remote call", (assert: QUnitAssert) => {
+	let done = assert.async();
+
+	let timeOfStorage = Date.now() - 9999999999;
+	let valueInStorage = {
+		data: "notexpected",
+		lastUpdated: timeOfStorage
+	};
+
+	let key = "k";
+	mockStorage.setValue(key, JSON.stringify(valueInStorage));
+	let cachedHttp = new CachedHttp(mockStorage);
+
+	let expected = "expected";
+	let getRemoteValue = () => {
+		return Promise.resolve({
+			parsedResponse: JSON.stringify(expected),
+			request: undefined // We don't care about the request in the test
+		} as ResponsePackage<string>);
+	};
+
+	cachedHttp.getAndCacheFreshValue(key, getRemoteValue, 9999999999).then((timeStampedData) => {
+		strictEqual(timeStampedData.data, expected, "The remote item should be returned");
+		ok(timeStampedData.lastUpdated > timeOfStorage, "The returned item's lastUpdated should be greater than that of the stale value's one");
+
+		let newStoredValue = JSON.parse(mockStorage.getValue(key)) as TimeStampedData;
+		strictEqual(newStoredValue.data, expected, "The storage item should be updated to the remote value");
+		ok(newStoredValue.lastUpdated > timeOfStorage, "The storage item's lastUpdated should be updated to be greater than the old value");
+	}, (error) => {
+		ok(false, "reject should not be called");
+	}).then(() => {
+		done();
+	});
+});
+
 test("getAndCacheFreshValue with a forced remote call should set the timestamped value in storage when it is retrieved from the remote", (assert: QUnitAssert) => {
 	let done = assert.async();
 
