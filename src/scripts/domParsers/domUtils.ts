@@ -6,8 +6,6 @@ import {PageInfo} from "../pageInfo";
 import {Utils} from "../utils";
 import {VideoUtils} from "./videoUtils";
 
-import {VideoExtractorFactory} from "./VideoExtractorFactory";
-
 /**
  * Dom specific Helper utility methods
  */
@@ -216,14 +214,11 @@ export module DomUtils {
 
 			let iframes: HTMLIFrameElement[] = [];
 			try {
-				// Construct the appropriate videoExtractor based on the Domain we are on
-				let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
-				let extractor = VideoExtractorFactory.createVideoExtractor(domain);
-
-				// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
-				// to render them later
-				if (extractor) {
-					iframes = iframes.concat(extractor.createEmbeddedVideos(pageUrl, pageContent));
+				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.Vimeo) {
+					iframes = iframes.concat(createEmbeddedVimeoVideos(pageContent));
+				}
+				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.YouTube) {
+					iframes.push(createEmbeddedYouTubeVideo(pageUrl));
 				}
 			} catch (e) {
 				// if we end up here, we're unexpectedly broken
@@ -236,9 +231,52 @@ export module DomUtils {
 	}
 
 	/**
+	 * Create iframes in correct format for Vimeo video embed in OneNote.
+	 * Supports multiple videos.
+	 */
+	function createEmbeddedVimeoVideos(pageContent: string): HTMLIFrameElement[] {
+		let vimeoSrcs = VideoUtils.getVimeoVideoSrcValues(pageContent);
+
+		if (Utils.isNullOrUndefined(vimeoSrcs)) {
+			// fast fail: we expect all pages passed into this function in prod to contain clip ids
+			throw new Error("Vimeo page content does not contain clip ids");
+		}
+
+		let iframes: HTMLIFrameElement[] = [];
+
+		for (let vimeoSrc of vimeoSrcs) {
+			let iframe = createEmbedVideoIframe();
+			iframe.src = vimeoSrc;
+			iframe.setAttribute(dataOriginalSrcAttribute, vimeoSrc);
+
+			iframes.push(iframe);
+		}
+
+		return iframes;
+	}
+
+	/**
+	 * Create iframe in correct format for YouTube video embed in OneNote.
+	 * Supports a single video.
+	 */
+	function createEmbeddedYouTubeVideo(pageUrl: string): HTMLIFrameElement {
+		let iframe = createEmbedVideoIframe();
+		let srcValue = VideoUtils.getYouTubeVideoSrcValue(pageUrl);
+		let videoId = VideoUtils.getYouTubeVideoId(pageUrl);
+		if (Utils.isNullOrUndefined(srcValue) || Utils.isNullOrUndefined(videoId)) {
+			// fast fail: we expect all page urls passed into this function in prod to contain a video id
+			throw new Error("YouTube page url does not contain video id");
+		}
+		iframe.src = srcValue;
+		iframe.setAttribute(dataOriginalSrcAttribute, Utils.addUrlQueryValue(VideoUtils.youTubeWatchVideoBaseUrl, VideoUtils.youTubeVideoIdQueryKey, videoId));
+
+		return iframe;
+	}
+
+	/**
 	 * Create base iframe with reasonable style properties for video embed in OneNote.
 	 */
-	export function createEmbedVideoIframe(): HTMLIFrameElement {
+	function createEmbedVideoIframe(): HTMLIFrameElement {
 		let iframe = document.createElement("iframe");
 		// these values must be set inline, else the embed in OneNote won't respect them
 		// width and height set to preserve a 16:9 aspect ratio
