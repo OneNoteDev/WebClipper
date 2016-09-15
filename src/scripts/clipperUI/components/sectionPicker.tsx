@@ -48,7 +48,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		this.setState({
 			curSection: curSection
 		});
-		Clipper.setValue(ClipperStorageKeys.currentSelectedSection, JSON.stringify(curSection));
+		Clipper.storeValue(ClipperStorageKeys.currentSelectedSection, JSON.stringify(curSection));
 		Clipper.logger.logClickEvent(Log.Click.Label.sectionComponent);
 	}
 
@@ -114,7 +114,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 					getNotebooksEvent.setCustomProperty(Log.PropertyName.Custom.MaxDepth, OneNoteApi.NotebookUtils.getDepthOfNotebooks(freshNotebooks));
 
-					Clipper.setValue(ClipperStorageKeys.cachedNotebooks, JSON.stringify(freshNotebooks));
+					Clipper.storeValue(ClipperStorageKeys.cachedNotebooks, JSON.stringify(freshNotebooks));
 
 					// The curSection property is the default section found in the notebook list
 					let freshNotebooksAsState = SectionPickerClass.convertNotebookListToState(freshNotebooks);
@@ -134,7 +134,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 					if (shouldOverrideCurSectionWithDefault) {
 						// A default section was found, so we set it as currently selected since the user has not made a valid selection yet
 						// curSection can be undefined if there's no default found, which is fine
-						Clipper.setValue(ClipperStorageKeys.currentSelectedSection, JSON.stringify(freshNotebooksAsState.curSection));
+						Clipper.storeValue(ClipperStorageKeys.currentSelectedSection, JSON.stringify(freshNotebooksAsState.curSection));
 						this.props.clipperState.setState({ saveLocation: freshNotebooksAsState.curSection ? freshNotebooksAsState.curSection.section.id : undefined });
 					}
 
@@ -170,8 +170,8 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 	// Retrieves the cached notebook list and last selected section from local storage in state form
 	fetchCachedNotebookAndSectionInfoAsState(callback: (state: SectionPickerState) => void): void {
-		Clipper.getValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
-			Clipper.getValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
+		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
+			Clipper.getStoredValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
 				if (notebooks) {
 					let parsedNotebooks: any;
 					try {
