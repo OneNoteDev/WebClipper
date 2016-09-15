@@ -59,7 +59,7 @@ export class CachedHttp {
 		});
 	}
 
-	public getAndCacheRemoteValue(key: string, getRemoteValue: GetResponseAsync): Promise<TimeStampedData> {
+	protected getAndCacheRemoteValue(key: string, getRemoteValue: GetResponseAsync): Promise<TimeStampedData> {
 		if (!key) {
 			throw new Error("key must be a non-empty string, but was: " + key);
 		}
