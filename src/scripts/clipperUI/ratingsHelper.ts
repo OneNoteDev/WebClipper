@@ -17,7 +17,6 @@ export enum RatingsPromptStage {
 }
 
 interface RatingsLoggingInfo {
-	shouldShowRatingsPrompt: boolean; // TODO move to custom property
 	badRatingTimingDelayIsOver?: boolean;
 	badRatingVersionDelayIsOver?: boolean;
 	clipSuccessDelayIsOver?: boolean;
@@ -45,13 +44,13 @@ export class RatingsHelper {
 	public static shouldShowRatingsPrompt(clipperState: ClipperState): Promise<boolean> {
 		return new Promise<boolean>((loggingResolve, loggingReject) => {
 			let shouldShowRatingsPromptEvent = new Log.Event.PromiseEvent(Log.Event.Label.ShouldShowRatingsPrompt);
-			let shouldShowRatingsPromptInfo: RatingsLoggingInfo = { shouldShowRatingsPrompt: undefined };
+			let shouldShowRatingsPromptInfo: RatingsLoggingInfo = { };
 
 			RatingsHelper.shouldShowRatingsPromptInternal(clipperState, shouldShowRatingsPromptEvent, shouldShowRatingsPromptInfo).then((shouldShowRatingsPrompt: boolean) => {
-				shouldShowRatingsPromptInfo.shouldShowRatingsPrompt = shouldShowRatingsPrompt;
+				shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.ShouldShowRatingsPrompt, shouldShowRatingsPrompt);
 				loggingResolve(shouldShowRatingsPrompt);
 			}, () => {
-				shouldShowRatingsPromptInfo.shouldShowRatingsPrompt = false;
+				shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.ShouldShowRatingsPrompt, false);
 				loggingReject(undefined);
 			}).then(() => {
 				shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.RatingsInfo, JSON.stringify(shouldShowRatingsPromptInfo));
