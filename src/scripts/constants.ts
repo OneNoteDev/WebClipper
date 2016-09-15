@@ -189,6 +189,7 @@ export module Constants {
 	}
 
 	export module HeaderValues {
+		export var accept = "Accept";
 		export var appIdKey = "MS-Int-AppId";
 		export var correlationId = "X-CorrelationId";
 		export var noAuthKey = "X-NoAuth";

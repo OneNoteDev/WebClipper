@@ -6,6 +6,7 @@ import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
 import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
+import {Http} from "../http/http";
 
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
@@ -139,27 +140,8 @@ export class AuthenticationHelper {
 		return new Promise<ResponsePackage<string>>((resolve, reject: (error: OneNoteApi.RequestError) => void) => {
 			let userInfoUrl = Utils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
 
-			let request = new XMLHttpRequest();
-			request.open("POST", userInfoUrl);
-
-			request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			request.timeout = 30000;
-
-			request.onload = () => {
-				if (request.status === 200) {
-					let response = request.response;
-					// The false case is expected behavior if the user has not signed in or credentials have expired
-					resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });
-				} else {
-					reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
-				}
-			};
-			request.ontimeout = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT));
-			};
-			request.onerror = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.NETWORK_ERROR));
-			};
+			let headers = {};
+			headers["Content-type"] = "application/x-www-form-urlencoded";
 
 			let postData = "";
 			if (!Utils.isNullOrUndefined(cookie)) {
@@ -167,7 +149,13 @@ export class AuthenticationHelper {
 				postData = cookie.replace(/\+/g, "%2B");
 			}
 
-			request.send(postData);
+			Http.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
+				let response = request.response;
+				// The false case is expected behavior if the user has not signed in or credentials have expired
+				resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });
+			}, (error: OneNoteApi.RequestError) => {
+				reject(error);
+			});
 		});
 	}
 

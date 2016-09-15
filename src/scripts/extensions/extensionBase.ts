@@ -1,9 +1,10 @@
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
-import {Experiments} from "../experiments";
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
+import {Experiments} from "../experiments";
+import {ResponsePackage} from "../responsePackage";
 import {Utils} from "../utils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
@@ -173,8 +174,17 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	 */
 	protected getFlightingAssignments(clipperId: string): Promise<any> {
 		let fetchNonLocalData = () => {
-			let userFlightUrl = Utils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
-			return Http.get(userFlightUrl);
+			return new Promise<ResponsePackage<string>>((resolve, reject) => {
+				let userFlightUrl = Utils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
+				Http.get(userFlightUrl).then((request) => {
+					resolve({
+						request: request,
+						parsedResponse: request.responseText
+					});
+				}, (error) => {
+					reject(error);
+				});
+			});
 		};
 
 		return new Promise((resolve: (formattedFlights: string[]) => void, reject: (error: OneNoteApi.GenericError) => void) => {
@@ -202,29 +212,25 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || navigator.userLanguage;
 			let changelogUrl = Utils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
-			Http.get(changelogUrl).then((responsePackage) => {
-				if (responsePackage.request.status === 200) {
-					try {
-						let schemas: ChangeLog.Schema[] = JSON.parse(responsePackage.parsedResponse);
-						let allUpdates: ChangeLog.Update[];
-						for (let i = 0; i < schemas.length; i++) {
-							if (schemas[i].schemaVersion === ChangeLog.schemaVersionSupported) {
-								allUpdates = schemas[i].updates;
-								break;
-							}
+			Http.get(changelogUrl).then((request: XMLHttpRequest) => {
+				try {
+					let schemas: ChangeLog.Schema[] = JSON.parse(request.responseText);
+					let allUpdates: ChangeLog.Update[];
+					for (let i = 0; i < schemas.length; i++) {
+						if (schemas[i].schemaVersion === ChangeLog.schemaVersionSupported) {
+							allUpdates = schemas[i].updates;
+							break;
 						}
-
-						if (allUpdates) {
-							let updatesSinceLastVersion = ChangeLogHelper.getUpdatesBetweenVersions(allUpdates, lastSeenVersion, currentVersion);
-							resolve(updatesSinceLastVersion);
-						} else {
-							throw new Error("No matching schemas were found.");
-						}
-					} catch (error) {
-						reject(error);
 					}
-				} else {
-					reject(OneNoteApi.ErrorUtils.createRequestErrorObject(responsePackage.request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
+
+					if (allUpdates) {
+						let updatesSinceLastVersion = ChangeLogHelper.getUpdatesBetweenVersions(allUpdates, lastSeenVersion, currentVersion);
+						resolve(updatesSinceLastVersion);
+					} else {
+						throw new Error("No matching schemas were found.");
+					}
+				} catch (error) {
+					reject(error);
 				}
 			}, (error) => {
 				reject(error);
