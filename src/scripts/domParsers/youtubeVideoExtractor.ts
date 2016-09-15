@@ -11,7 +11,7 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 	/**
 	 * Return the ID of the video in the YouTube URL as an array
 	 */
-	getVideoIds(youTubeUrl: string, pageContent: string): string[] {
+	public getVideoIds(youTubeUrl: string, pageContent: string): string[] {
 		if (Utils.isNullOrUndefined(youTubeUrl)) {
 			return;
 		}
@@ -42,7 +42,7 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 	/**
 	 * Return valid iframe src attribute value for the supported YouTube domain
 	 */
-	getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
+	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
 		if (Utils.isNullOrUndefined(pageUrl)) {
 			return;
 		}
@@ -59,7 +59,7 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 	 * Create iframe in correct format for YouTube video embed in OneNote.
 	 * Supports a single video.
 	 */
-	createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
+	public createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
 		let iframe = DomUtils.createEmbedVideoIframe();
 		let srcValue = this.getVideoSrcValues(pageUrl, pageContent);
 		let videoId = this.getVideoIds(pageUrl, pageContent)[0];

@@ -2,7 +2,6 @@
 /// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts"/>
 
 import {Constants} from "../constants";
-import {PageInfo} from "../pageInfo";
 import {Utils} from "../utils";
 import {VideoUtils} from "./videoUtils";
 

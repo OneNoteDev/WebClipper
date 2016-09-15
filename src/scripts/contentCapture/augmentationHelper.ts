@@ -2,7 +2,6 @@
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
 import {Constants} from "../constants";
-import {PageInfo} from "../pageInfo";
 import {Settings} from "../settings";
 import {Utils} from "../utils";
 

@@ -10,7 +10,7 @@ export class VimeoVideoExtractor implements VideoExtractor {
 	/**
 	 * Return id for a video on Vimeo.com
 	 */
-	getVideoIds(pageUrl: string, pageContent: string): string[] {
+	public getVideoIds(pageUrl: string, pageContent: string): string[] {
 		if (Utils.isNullOrUndefined(pageContent)) {
 			return;
 		}
@@ -27,7 +27,7 @@ export class VimeoVideoExtractor implements VideoExtractor {
 	/**
 	 * Return valid iframe src attribute value for the supported Vimeo domain
 	 */
-	getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
+	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
 		if (Utils.isNullOrUndefined(pageContent)) {
 			return;
 		}
@@ -49,7 +49,7 @@ export class VimeoVideoExtractor implements VideoExtractor {
 	 * Create iframes in correct format for Vimeo video embed in OneNote.
 	 * Supports multiple videos.
 	 */
-	createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
+	public createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
 		let vimeoSrcs = this.getVideoSrcValues(pageUrl, pageContent);
 
 		if (Utils.isNullOrUndefined(vimeoSrcs)) {
