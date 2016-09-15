@@ -23,10 +23,10 @@ export class AuthenticationHelper {
 	private logger: Logger;
 	private clipperData: ClipperData;
 
-	constructor(storage: ClipperData, logger: Logger) {
+	constructor(clipperData: ClipperData, logger: Logger) {
 		this.user = new SmartValue<UserInfo>();
 		this.logger = logger;
-		this.clipperData = storage;
+		this.clipperData = clipperData;
 	}
 
 	/**
