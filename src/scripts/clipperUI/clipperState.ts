@@ -65,7 +65,7 @@ export interface ClipperState {
 	// Should be set when the Web Clipper enters a state that can not be recovered this session
 	badState?: boolean;
 
-	shouldShowRatingsPrompt?: SmartValue<boolean>;
+	showRatingsPrompt?: SmartValue<boolean>;
 
 	setState?: (partialState: ClipperState) => void;
 	reset?: () => void;

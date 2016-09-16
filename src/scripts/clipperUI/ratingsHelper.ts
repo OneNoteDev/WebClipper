@@ -33,6 +33,8 @@ export class RatingsHelper {
 	public static rateUrlSettingNameSuffix = "_RatingUrl";
 	public static ratingsPromptEnabledSettingNameSuffix = "_RatingsEnabled";
 
+	// TODO better name for setShowRatingsPromptState
+
 	/**
 	 * We will show the ratings prompt if ALL of the below applies:
 	 *   * Ratings prompt is enabled for the ClientType/ClipperType
@@ -41,21 +43,19 @@ export class RatingsHelper {
 	 *   * If RatingsHelper.badRatingVersionDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingVersion and StorageKeys.lastSeenVersion
 	 *   * If RatingsHelper.clipSuccessDelayIsOver(...) returns true when provided StorageKeys.numClipSuccess
 	 */
-	public static shouldShowRatingsPrompt(clipperState: ClipperState): Promise<boolean> {
-		return new Promise<boolean>((loggingResolve, loggingReject) => {
-			let shouldShowRatingsPromptEvent = new Log.Event.PromiseEvent(Log.Event.Label.ShouldShowRatingsPrompt);
-			let shouldShowRatingsPromptInfo: RatingsLoggingInfo = { };
+	public static setShowRatingsPromptState(clipperState: ClipperState): void {
+		let shouldShowRatingsPromptEvent = new Log.Event.PromiseEvent(Log.Event.Label.ShouldShowRatingsPrompt);
+		let shouldShowRatingsPromptInfo: RatingsLoggingInfo = { };
 
-			RatingsHelper.shouldShowRatingsPromptInternal(clipperState, shouldShowRatingsPromptEvent, shouldShowRatingsPromptInfo).then((shouldShowRatingsPrompt: boolean) => {
-				shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.ShouldShowRatingsPrompt, shouldShowRatingsPrompt);
-				loggingResolve(shouldShowRatingsPrompt);
-			}, () => {
-				shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.ShouldShowRatingsPrompt, false);
-				loggingReject(undefined);
-			}).then(() => {
-				shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.RatingsInfo, JSON.stringify(shouldShowRatingsPromptInfo));
-				Clipper.logger.logEvent(shouldShowRatingsPromptEvent);
-			});
+		RatingsHelper.shouldShowRatingsPrompt(clipperState, shouldShowRatingsPromptEvent, shouldShowRatingsPromptInfo).then((shouldShowRatingsPrompt: boolean) => {
+			shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.ShouldShowRatingsPrompt, shouldShowRatingsPrompt);
+			clipperState.showRatingsPrompt.set(shouldShowRatingsPrompt);
+		}, () => {
+			let shouldShowRatingsPrompt = false;
+			shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.ShouldShowRatingsPrompt, shouldShowRatingsPrompt);
+		}).then(() => {
+			shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.RatingsInfo, JSON.stringify(shouldShowRatingsPromptInfo));
+			Clipper.logger.logEvent(shouldShowRatingsPromptEvent);
 		});
 	}
 
@@ -210,9 +210,9 @@ export class RatingsHelper {
 	}
 
 	/**
-	 * Implementation of the logic described in the shouldShowRatingsPrompt(...) description
+	 * Implementation of the logic described in the setShowRatingsPromptState(...) description
 	 */
-	private static shouldShowRatingsPromptInternal(clipperState: ClipperState, event: Log.Event.PromiseEvent, logEventInfo: RatingsLoggingInfo): Promise<boolean> {
+	private static shouldShowRatingsPrompt(clipperState: ClipperState, event: Log.Event.PromiseEvent, logEventInfo: RatingsLoggingInfo): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
 			if (Utils.isNullOrUndefined(clipperState)) {
 				event.setStatus(Log.Status.Failed);
@@ -220,10 +220,10 @@ export class RatingsHelper {
 				return reject(undefined);
 			}
 
-			if (!Utils.isNullOrUndefined(clipperState.shouldShowRatingsPrompt.get())) {
+			if (!Utils.isNullOrUndefined(clipperState.showRatingsPrompt.get())) {
 				// return cached value in clipper state since it already exists
 				logEventInfo.usedCachedValue = true;
-				return resolve(clipperState.shouldShowRatingsPrompt.get());
+				return resolve(clipperState.showRatingsPrompt.get());
 			}
 
 			let ratingsPromptEnabled: boolean = RatingsHelper.ratingsPromptEnabledForClient(clipperState.clientInfo.clipperType);

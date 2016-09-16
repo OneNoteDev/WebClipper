@@ -87,7 +87,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			augmentationPreviewInfo: {},
 			selectionPreviewInfo: {},
 
-			shouldShowRatingsPrompt: new SmartValue<boolean>(),
+			showRatingsPrompt: new SmartValue<boolean>(),
 
 			reset: () => {
 				this.state.setState(this.getResetState());
@@ -505,12 +505,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 			// subscribe after initial set to storage value
 			this.state.numSuccessfulClips.subscribe(() => {
-				RatingsHelper.shouldShowRatingsPrompt(this.state).then((shouldShowRatingsPrompt) => {
-					this.state.shouldShowRatingsPrompt.set(shouldShowRatingsPrompt);
-				}, () => {
-					// err on the side of caution on shouldShowRatingsPrompt reject, do not show ratings prompt
-					this.state.shouldShowRatingsPrompt.set(false);
-				});
+				RatingsHelper.setShowRatingsPromptState(this.state);
 			}, { callOnSubscribe: false });
 		});
 	}
@@ -653,7 +648,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
 			// wait for state.shouldShowRatingsPrompt to be defined before setting state.oneNoteApiResult.status
-			this.state.shouldShowRatingsPrompt.subscribe((shouldShow: boolean) => {
+			this.state.showRatingsPrompt.subscribe((shouldShow: boolean) => {
 				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
 				clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
 				this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
