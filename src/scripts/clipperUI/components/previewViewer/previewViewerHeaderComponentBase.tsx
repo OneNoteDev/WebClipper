@@ -12,12 +12,14 @@ export module HeaderClasses {
 	export module Button {
 		export let active = " active";
 		export let controlButton = " control-button";
+		export let relatedButtons = " related-buttons";
 		export let activeControlButton = active + controlButton;
 	}
 }
 
 export interface ControlGroup {
 	id?: string;
+	className?: string;
 	innerElements: any[];
 }
 
@@ -39,8 +41,10 @@ export abstract class PreviewViewerHeaderComponentBase<T, P> extends ComponentBa
 		let buttonGroups = this.getControlGroups();
 
 		for (let i = 0; i < buttonGroups.length; i++) {
+			let id = buttonGroups[i].id;
+			let className = buttonGroups[i].className;
 			renderables.push(
-				<div id={buttonGroups[i].id ? buttonGroups[i].id : ""} className={controlButtonGroup}>
+				<div id={id ? id : ""} className={className ? className : controlButtonGroup}>
 					{buttonGroups[i].innerElements}
 				</div >);
 		}

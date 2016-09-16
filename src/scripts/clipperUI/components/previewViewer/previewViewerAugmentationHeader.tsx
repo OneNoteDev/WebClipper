@@ -15,7 +15,7 @@ export interface PreviewViewerAugmentationHeaderProp {
 
 class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentBase<{}, PreviewViewerAugmentationHeaderProp> {
 	getControlGroups(): ControlGroup[] {
-		return [this.getHighlightGroup(), this.getSerifGroup(), this.getFontDownGroup(), this.getFontUpGroup()];
+		return [this.getHighlightGroup(), this.getSerifGroup(), this.getFontDownGroup()];
 	}
 
 	private getHighlightGroup(): ControlGroup {
@@ -54,19 +54,13 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 
 	private getFontDownGroup(): ControlGroup {
 		return {
+			className: HeaderClasses.Button.relatedButtons,
 			innerElements: [
 				<button className={HeaderClasses.Button.controlButton}
 					type="button" {...this.enableInvoke(this.props.changeFontSize, 103, false) }
 					id={Constants.Ids.decrementFontSize}>
 					<img src={Utils.getImageResourceUrl("editorOptions/font_down.png") } />
-				</button>
-			]
-		};
-	}
-
-	private getFontUpGroup(): ControlGroup {
-		return {
-			innerElements: [
+				</button>,
 				<button className={HeaderClasses.Button.controlButton}
 					type="button" {...this.enableInvoke(this.props.changeFontSize, 104, true) }
 					id={Constants.Ids.incrementFontSize}>
@@ -75,6 +69,14 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			]
 		};
 	}
+
+	// private getFontUpGroup(): ControlGroup {
+	// 	return {
+	// 		innerElements: [
+
+	// 		]
+	// 	};
+	// }
 }
 
 let component = PreviewViewerAugmentationHeaderClass.componentize();
