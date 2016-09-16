@@ -16,13 +16,32 @@ export module Clipper {
 	}
 
 	export module Storage {
-		export function getValue(key: string, callback: (value: string) => void): void {
+		let storageCache: { [key: string]: string } = {};
+
+		// TODO type parameter to Constants.StorageKeys
+		export function preCacheValues(storageKeys: string[]): void {
+			for (let key of storageKeys) {
+				Clipper.Storage.getValue(key, () => { }, true);
+			}
+		}
+
+		export function getCachedValue(key: string): string {
+			return storageCache[key];
+		}
+
+		export function getValue(key: string, callback: (value: string) => void, cacheValue?: boolean): void {
 			Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.getStorageValue, { param: key, callback: (value: string) => {
+				if (cacheValue) {
+					storageCache[key] = value;
+				}
 				callback(value);
 			}});
 		}
 
 		export function setValue(key: string, value: string): void {
+			if (key in storageCache) {
+				storageCache[key] = value;
+			}
 			Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.setStorageValue, { param: { key: key, value: value }});
 		}
 	}

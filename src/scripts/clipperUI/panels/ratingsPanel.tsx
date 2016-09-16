@@ -59,7 +59,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.End");
 			default:
 			case RatingsPromptStage.NONE:
-				break;
+				return;
 		}
 	}
 
@@ -98,30 +98,22 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 						id: Constants.Ids.ratingsButtonInitNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Negative"),
 						handler: () => {
-							console.log("Init.Negative click handler called");
-							Clipper.Storage.getValue(Constants.StorageKeys.lastSeenVersion, (lastSeenVersion) => {
-								RatingsHelper.setLastBadRating(Date.now().toString(), lastSeenVersion).then((badRatingAlreadyOccurred) => {
-									if (badRatingAlreadyOccurred) {
-										// setting this to prevent additional ratings prompts after the second bad rating
-										RatingsHelper.setDoNotPromptStatus();
-									}
-								}, () => {
-									// values to set were invalid: err on the side of caution, always set do not prompt status
-									RatingsHelper.setDoNotPromptStatus();
-								}).then(() => {
-									let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
-									if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
-										console.log("Init.Negative then setting stage to", RatingsPromptStage[RatingsPromptStage.FEEDBACK]);
-										panel.setState({
-											userSelectedRatingsPromptStage: RatingsPromptStage.FEEDBACK
-										});
-									} else {
-										panel.setState({
-											userSelectedRatingsPromptStage: RatingsPromptStage.END
-										});
-									}
+							let lastSeenVersion: string = Clipper.Storage.getCachedValue(Constants.StorageKeys.lastSeenVersion);
+							let badRatingAlreadyOccurred: boolean = RatingsHelper.setLastBadRating(Date.now().toString(), lastSeenVersion);
+							if (badRatingAlreadyOccurred) {
+								// setting this to prevent additional ratings prompts after the second bad rating
+								RatingsHelper.setDoNotPromptStatus();
+							}
+							let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
+							if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
+								panel.setState({
+									userSelectedRatingsPromptStage: RatingsPromptStage.FEEDBACK
 								});
-							});
+							} else {
+								panel.setState({
+									userSelectedRatingsPromptStage: RatingsPromptStage.END
+								});
+							}
 						}
 					});
 				break;
@@ -194,7 +186,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 
 	render() {
 		if (!this.props.clipperState.showRatingsPrompt || !this.props.clipperState.showRatingsPrompt.get()) {
-			return;
+			return <div />;
 		}
 
 		let message: string = this.getMessage(this.state.userSelectedRatingsPromptStage);
@@ -212,6 +204,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 					animationStrategy={animationStrategy} />
 			);
 		}
+
+		return <div />;
 	}
 }
 

@@ -54,6 +54,17 @@ export class SaveToOneNote {
 		});
 	}
 
+	/**
+	 * Checks for the 1) data result from creating a new page on clip, and 2) completion of the show ratings prompt calculation
+	 */
+	public static getClipSuccessStatus(clipperState: ClipperState): Status {
+		if (clipperState.showRatingsPrompt && !Utils.isNullOrUndefined(clipperState.showRatingsPrompt.get()) && clipperState.oneNoteApiResult.data) {
+			return Status.Succeeded;
+		}
+
+		return Status.InProgress;
+	}
+
 	private static logPageModifications(clipperState: ClipperState) {
 		let isAugmentationMode = clipperState.currentMode.get() === ClipMode.Augmentation;
 		let notApplicableText = "Not Applicable";

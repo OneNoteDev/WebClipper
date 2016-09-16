@@ -1,5 +1,5 @@
 import {DialogButton} from "../../scripts/clipperUI/panels/dialogPanel";
-import {SuccessPanel} from "../../scripts/clipperUI/panels/successPanel";
+import {RatingsPanel} from "../../scripts/clipperUI/panels/ratingsPanel";
 
 import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
 import {RatingsHelper, RatingsPromptStage} from "../../scripts/clipperUI/ratingsHelper";
@@ -17,11 +17,19 @@ import {HelperFunctions} from "../helperFunctions";
 // MOCK STORAGE
 
 let mockStorage: { [key: string]: string };
-Clipper.Storage.getValue = (key: string, callback: (value: string) => void) => {
+let mockStorageCache: { [key: string]: string };
+Clipper.Storage.getValue = (key: string, callback: (value: string) => void, cacheValue?: boolean) => {
+	if (cacheValue) {
+		mockStorageCache[key] = mockStorage[key];
+	}
 	callback(mockStorage[key]);
 };
 Clipper.Storage.setValue = (key: string, value: string) => {
+	mockStorageCache[key] = value; // TODO is this ok?
 	mockStorage[key] = value;
+};
+Clipper.Storage.getCachedValue = (key: string) => {
+	return mockStorageCache[key];
 };
 
 // SETUP
@@ -30,7 +38,9 @@ QUnit.module("ratingsHelper", {
 	beforeEach: () => {
 		Clipper.logger = new StubSessionLogger();
 		Settings.setSettingsJsonForTesting();
+
 		mockStorage = {};
+		mockStorageCache = {};
 	}
 });
 
@@ -363,17 +373,13 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns false when 
 	let badRatingDateToSet: string = Date.now().toString();
 	let badRatingVersionToSet = "3.0.0";
 
-	RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet).then((alreadyRatedBad: boolean) => {
-		strictEqual(alreadyRatedBad, false);
-	}, () => {
-		ok(false, "setLastBadRating should not reject.");
-	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-			Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
-				strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
-				strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
-				done();
-			});
+	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+	strictEqual(alreadyRatedBad, false);
+	Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
+		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
+			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
+			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
+			done();
 		});
 	});
 });
@@ -386,17 +392,13 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns false when 
 	let badRatingDateToSet: string = Date.now().toString();
 	let badRatingVersionToSet = "3.0.0";
 
-	RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet).then((alreadyRatedBad: boolean) => {
-		strictEqual(alreadyRatedBad, false);
-	}, () => {
-		ok(false, "setLastBadRating should not reject.");
-	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-			Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
-				strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
-				strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
-				done();
-			});
+	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+	strictEqual(alreadyRatedBad, false);
+	Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
+		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
+			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
+			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
+			done();
 		});
 	});
 });
@@ -409,17 +411,13 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns false when 
 	let badRatingDateToSet: string = Date.now().toString();
 	let badRatingVersionToSet = "3.0.0";
 
-	RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet).then((alreadyRatedBad: boolean) => {
-		strictEqual(alreadyRatedBad, false);
-	}, () => {
-		ok(false, "setLastBadRating should not reject.");
-	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-			Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
-				strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
-				strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
-				done();
-			});
+	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+	strictEqual(alreadyRatedBad, false);
+	Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
+		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
+			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
+			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
+			done();
 		});
 	});
 });
@@ -432,168 +430,57 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns true when l
 	let badRatingDateToSet: string = Date.now().toString();
 	let badRatingVersionToSet = "3.0.0";
 
-	RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet).then((alreadyRatedBad: boolean) => {
-		strictEqual(alreadyRatedBad, true);
-	}, () => {
-		ok(false, "setLastBadRating should not reject");
-	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-			Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
-				strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
-				strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
-				done();
-			});
+	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+	strictEqual(alreadyRatedBad, true);
+	Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
+		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
+			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
+			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
+			done();
 		});
 	});
 });
 
-test("setLastBadRating rejects when badRatingDateToSet is not a valid date", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("setLastBadRating rejects when badRatingDateToSet is not a valid date", () => {
 	let badRatingDateToSet: string = (Constants.Settings.maximumJSTimeValue + 1).toString();
 	let badRatingVersionToSet = "3.0.0";
 
-	RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet).then((alreadyRatedBad: boolean) => {
-		ok(false, "setLastBadRating should not resolve");
-	}, () => {
-		ok(true, "setLastBadRating should reject");
-	}).then(() => {
-		done();
-	});
+	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+	strictEqual(alreadyRatedBad, true);
 });
 
-test("setLastBadRating rejects when badRatingVersionToSet is not in a valid version format", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("setLastBadRating rejects when badRatingVersionToSet is not in a valid version format", () => {
 	let badRatingDateToSet: string = Date.now().toString();
 	let badRatingVersionToSet = "12345";
 
-	RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet).then((alreadyRatedBad: boolean) => {
-		ok(false, "setLastBadRating should not resolve");
-	}, () => {
-		ok(true, "setLastBadRating should reject");
-	}).then(() => {
-		done();
-	});
+	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+	strictEqual(alreadyRatedBad, true);
 });
-
-// incrementClipSuccessCount
-
-/*test("incrementClipSuccessCount sets numClipSuccess in storage to 1 if value is undefined at call", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	RatingsHelper.incrementClipSuccessCount().then(() => {
-		ok(true, "incrementClipSuccessCount should resolve");
-	}, () => {
-		ok(false, "incrementClipSuccessCount should not reject");
-	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipSuccessAsStr: string) => {
-			strictEqual(parseInt(numClipSuccessAsStr, 10), 1, "number of successful clips is incorrect");
-			done();
-		});
-	});
-});
-
-test("incrementClipSuccessCount sets numClipSuccess in storage to 1 if value is NaN at call", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, "not a number");
-
-	RatingsHelper.incrementClipSuccessCount().then(() => {
-		ok(true, "incrementClipSuccessCount should resolve");
-	}, () => {
-		ok(false, "incrementClipSuccessCount should not reject");
-	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipSuccessAsStr: string) => {
-			strictEqual(parseInt(numClipSuccessAsStr, 10), 1, "number of successful clips is incorrect");
-			done();
-		});
-	});
-});
-
-test("incrementClipSuccessCount sets numClipSuccess in storage to 1 if value is 0 at call", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, "0");
-
-	RatingsHelper.incrementClipSuccessCount().then(() => {
-		ok(true, "incrementClipSuccessCount should resolve");
-	}, () => {
-		ok(false, "incrementClipSuccessCount should not reject");
-	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipSuccessAsStr: string) => {
-			strictEqual(parseInt(numClipSuccessAsStr, 10), 1, "number of successful clips is incorrect");
-			done();
-		});
-	});
-});
-
-test("incrementClipSuccessCount sets numClipSuccess in storage to (numClipSuccess + 1) if value is (numClipSuccess) at call", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	let originalNumClipSuccess = 999;
-
-	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, originalNumClipSuccess.toString());
-
-	RatingsHelper.incrementClipSuccessCount().then(() => {
-		ok(true, "incrementClipSuccessCount should resolve");
-	}, () => {
-		ok(false, "incrementClipSuccessCount should not reject");
-	}).then(() => {
-		Clipper.Storage.getValue(Constants.StorageKeys.numSuccessfulClips, (numClipSuccessAsStr: string) => {
-			strictEqual(parseInt(numClipSuccessAsStr, 10), originalNumClipSuccess + 1, "number of successful clips is incorrect");
-			done();
-		});
-	});
-});*/
 
 // shouldShowRatingsPrompt
 
-/* TODO might not be testable anymore...
-test("shouldShowRatingsPrompt rejects when clipperState is undefined", (assert: QUnitAssert) => {
-	let done = assert.async();
+test("shouldShowRatingsPrompt returns hardcoded false when clipperState is undefined", () => {
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(undefined);
+	strictEqual(shouldShowRatingsPrompt, false);
+});
 
-	RatingsHelper.setShowRatingsPromptState(undefined).then((shouldShowRatingsPrompt: boolean) => {
-		ok(false, "shouldShowRatingsPrompt should not resolve");
-	}, () => {
-		ok(true, "shouldShowRatingsPrompt should reject");
-	}).then(() => {
-		done();
-	});
-});*/
-
-/* TODO next two tests are timing out
-test("shouldShowRatingsPrompt returns cached false when shouldShowRatingsPrompt is already set to false", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("shouldShowRatingsPrompt returns cached false when shouldShowRatingsPrompt is already set to false", () => {
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(false);
 
-	clipperState.showRatingsPrompt.subscribe((shouldShowRatingsPrompt) => {
-		strictEqual(shouldShowRatingsPrompt, false);
-		done();
-	}, { callOnSubscribe: false });
-
-	RatingsHelper.setShowRatingsPromptState(clipperState);
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, false);
 });
 
-test("shouldShowRatingsPrompt returns cached true when shouldShowRatingsPrompt is already set to true", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("shouldShowRatingsPrompt returns cached true when shouldShowRatingsPrompt is already set to true", () => {
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	clipperState.showRatingsPrompt.subscribe((shouldShowRatingsPrompt) => {
-		strictEqual(shouldShowRatingsPrompt, true);
-		done();
-	}, { callOnSubscribe: false });
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, true);
+});
 
-	RatingsHelper.setShowRatingsPromptState(clipperState);
-});*/
-
-test("shouldShowRatingsPrompt returns false when ratings prompt is disabled for the client", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("shouldShowRatingsPrompt returns false when ratings prompt is disabled for the client", () => {
 	Settings.setSettingsJsonForTesting({
 		"ChromeExtension_RatingsEnabled": {
 			"Value": "false"
@@ -601,19 +488,12 @@ test("shouldShowRatingsPrompt returns false when ratings prompt is disabled for 
 	});
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>();
 
-	clipperState.showRatingsPrompt.subscribe((shouldShowRatingsPrompt) => {
-		strictEqual(shouldShowRatingsPrompt, false);
-		done();
-	}, { callOnSubscribe: false });
-
-	RatingsHelper.setShowRatingsPromptState(clipperState);
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, false);
 });
 
-test("shouldShowRatingsPrompt returns false when do not prompt ratings is set in storage to 'true' (case-insensitive)", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("shouldShowRatingsPrompt returns false when do not prompt ratings is set in storage to 'true' (case-insensitive)", () => {
 	Settings.setSettingsJsonForTesting({
 		"ChromeExtension_RatingsEnabled": {
 			"Value": "true"
@@ -623,19 +503,12 @@ test("shouldShowRatingsPrompt returns false when do not prompt ratings is set in
 	Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "tRuE");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>();
 
-	clipperState.showRatingsPrompt.subscribe((shouldShowRatingsPrompt) => {
-		strictEqual(shouldShowRatingsPrompt, false);
-		done();
-	}, { callOnSubscribe: false });
-
-	RatingsHelper.setShowRatingsPromptState(clipperState);
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, false);
 });
 
-test("shouldShowRatingsPrompt returns true when do not prompt ratings is set in storage but to an invalid value", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("shouldShowRatingsPrompt returns true when do not prompt ratings is set in storage but to an invalid value", () => {
 	Settings.setSettingsJsonForTesting({
 		"ChromeExtension_RatingsEnabled": {
 			"Value": "true"
@@ -646,77 +519,48 @@ test("shouldShowRatingsPrompt returns true when do not prompt ratings is set in 
 	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>();
 
-	clipperState.showRatingsPrompt.subscribe((shouldShowRatingsPrompt) => {
-		strictEqual(shouldShowRatingsPrompt, true);
-		done();
-	}, { callOnSubscribe: false });
-
-	RatingsHelper.setShowRatingsPromptState(clipperState);
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, true);
 });
 
-test("shouldShowRatingsPrompt returns true when a valid configuration is provided", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("shouldShowRatingsPrompt returns true when a valid configuration is provided", () => {
 	Settings.setSettingsJsonForTesting({
 		"ChromeExtension_RatingsEnabled": {
 			"Value": "true"
 		}
 	});
-
-	let lastBadRatingDate: number = Date.now() - Constants.Settings.minTimeBetweenBadRatings;
-	let lastBadRatingVersion = "3.0.9";
-	let lastSeenVersion = "3.1.0";
 
 	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, lastBadRatingDate.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastBadRatingVersion);
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, lastSeenVersion);
+	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, "3.0.9");
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>();
 
-	clipperState.showRatingsPrompt.subscribe((shouldShowRatingsPrompt) => {
-		strictEqual(shouldShowRatingsPrompt, true);
-		done();
-	}, { callOnSubscribe: false });
-
-	RatingsHelper.setShowRatingsPromptState(clipperState);
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, true);
 });
 
-test("shouldShowRatingsPrompt returns false when number of successful clips is below the min", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("shouldShowRatingsPrompt returns false when number of successful clips is below the min", () => {
 	Settings.setSettingsJsonForTesting({
 		"ChromeExtension_RatingsEnabled": {
 			"Value": "true"
 		}
 	});
 
-	let lastBadRatingDate: number = Date.now() - Constants.Settings.minTimeBetweenBadRatings;
-	let lastBadRatingVersion = "3.0.9";
-	let lastSeenVersion = "3.1.0";
-
 	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, (Constants.Settings.minClipSuccessForRatingsPrompt - 1).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, lastBadRatingDate.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastBadRatingVersion);
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, lastSeenVersion);
+	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, "3.0.9");
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>();
 
-	clipperState.showRatingsPrompt.subscribe((shouldShowRatingsPrompt) => {
-		strictEqual(shouldShowRatingsPrompt, false);
-		done();
-	}, { callOnSubscribe: false });
-
-	RatingsHelper.setShowRatingsPromptState(clipperState);
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, false);
 });
 
-test("shouldShowRatingsPrompt returns false when last bad rating date is too recent", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("shouldShowRatingsPrompt returns false when last bad rating date is too recent", () => {
 	Settings.setSettingsJsonForTesting({
 		"ChromeExtension_RatingsEnabled": {
 			"Value": "true"
@@ -724,58 +568,39 @@ test("shouldShowRatingsPrompt returns false when last bad rating date is too rec
 	});
 
 	let timeDiffInMs = 1000 * 60 * 60 * 24; // to make last bad rating date 1 day sooner than the min time delay
-	let lastBadRatingDate: number = Date.now() - Constants.Settings.minTimeBetweenBadRatings + timeDiffInMs;
-	let lastBadRatingVersion = "3.0.9";
-	let lastSeenVersion = "3.1.0";
 
 	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, lastBadRatingDate.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastBadRatingVersion);
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, lastSeenVersion);
+	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings + timeDiffInMs).toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, "3.0.9");
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>();
 
-	clipperState.showRatingsPrompt.subscribe((shouldShowRatingsPrompt) => {
-		strictEqual(shouldShowRatingsPrompt, false);
-		done();
-	}, { callOnSubscribe: false });
-
-	RatingsHelper.setShowRatingsPromptState(clipperState);
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, false);
 });
 
-test("shouldShowRatingsPrompt returns false when there has not been a significant version update since the last bad rating", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("shouldShowRatingsPrompt returns false when there has not been a significant version update since the last bad rating", () => {
 	Settings.setSettingsJsonForTesting({
 		"ChromeExtension_RatingsEnabled": {
 			"Value": "true"
 		}
 	});
 
-	let lastBadRatingDate: number = Date.now() - Constants.Settings.minTimeBetweenBadRatings;
-	let lastBadRatingVersion = "3.0.9";
-	let lastSeenVersion = "3.0.999";
-
 	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, lastBadRatingDate.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, lastBadRatingVersion);
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, lastSeenVersion);
+	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, "3.0.9");
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.0.999");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>();
 
-	clipperState.showRatingsPrompt.subscribe((shouldShowRatingsPrompt) => {
-		strictEqual(shouldShowRatingsPrompt, false);
-		done();
-	}, { callOnSubscribe: false });
-
-	RatingsHelper.setShowRatingsPromptState(clipperState);
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, false);
 });
 
 // getDialogButtons
 
-/*test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to RatingsPromptStage.RATE when rate url exists", (assert: QUnitAssert) => {
+test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to RatingsPromptStage.RATE when rate url exists", (assert: QUnitAssert) => {
 	let done = assert.async();
 
 	Settings.setSettingsJsonForTesting({
@@ -787,9 +612,9 @@ test("shouldShowRatingsPrompt returns false when there has not been a significan
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
 	HelperFunctions.simulateAction(() => {
@@ -812,9 +637,9 @@ test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to Rati
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
 	HelperFunctions.simulateAction(() => {
@@ -831,7 +656,7 @@ test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to Rati
 
 // TODO how to handle asyncronicity in 'Negative' click handler
 
-/*test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT without a prior bad rating goes to RatingsPromptStage.FEEDBACK when feedback url exists (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
+test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT without a prior bad rating goes to RatingsPromptStage.FEEDBACK when feedback url exists (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
 	let done = assert.async();
 
 	Settings.setSettingsJsonForTesting({
@@ -840,29 +665,26 @@ test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to Rati
 		}
 	});
 
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
 	HelperFunctions.simulateAction(() => {
-		console.log("Init.Negative click");
 		initNegative.click();
 	});
 
-	setTimeout(() => {
-		console.log("strictEqual", RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.FEEDBACK]);
-		strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.FEEDBACK]);
+	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.FEEDBACK]);
 
-		Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-			console.log("strictEqual", doNotPromptRatingsAsStr, "undefined");
-			strictEqual(doNotPromptRatingsAsStr, undefined);
-			done();
-		});
-	}, 500);
+	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+		strictEqual(doNotPromptRatingsAsStr, undefined);
+		done();
+	});
 });
 
 test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT without a prior bad rating goes to RatingsPromptStage.END when feedback url does not exist (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
@@ -870,12 +692,14 @@ test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT without a pr
 
 	Settings.setSettingsJsonForTesting({});
 
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
 	HelperFunctions.simulateAction(() => {
@@ -900,13 +724,14 @@ test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT with a prior
 	});
 
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
 	HelperFunctions.simulateAction(() => {
@@ -927,13 +752,14 @@ test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT with a prior
 	Settings.setSettingsJsonForTesting({});
 
 	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
 	HelperFunctions.simulateAction(() => {
@@ -946,9 +772,9 @@ test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT with a prior
 		strictEqual(doNotPromptRatingsAsStr, "true");
 		done();
 	});
-});*/
+});
 
-/*test("getDialogButtons: 'Rate' click at RatingsPromptStage.RATE goes to RatingsPromptStage.END when rate url exists", () => {
+test("getDialogButtons: 'Rate' click at RatingsPromptStage.RATE goes to RatingsPromptStage.END when rate url exists", () => {
 	Settings.setSettingsJsonForTesting({
 		"ChromeExtension_RatingUrl": {
 			"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
@@ -958,9 +784,9 @@ test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT with a prior
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// go to RATE panel, then click 'Rate'
 	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
@@ -976,13 +802,13 @@ test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT with a prior
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.END]);
 });
 
-/*test("getDialogButtons: 'Rate' click at RatingsPromptStage.RATE not available when rate url does not exist", () => {
+test("getDialogButtons: 'Rate' click at RatingsPromptStage.RATE not available when rate url does not exist", () => {
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// go to RATE panel
 	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
@@ -1009,9 +835,9 @@ test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.RATE goes to Rat
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// go to RATE panel, then click 'No Thanks'
 	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
@@ -1031,9 +857,9 @@ test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.RATE not availab
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// go to RATE panel
 	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
@@ -1052,19 +878,21 @@ test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.RATE not availab
 
 // TODO how to handle asyncronicity in 'initNegative' click handler
 
-/*test("getDialogButtons: 'Feedback' click at RatingsPromptStage.FEEDBACK goes to RatingsPromptStage.END when feedback url exists", () => {
+test("getDialogButtons: 'Feedback' click at RatingsPromptStage.FEEDBACK goes to RatingsPromptStage.END when feedback url exists", () => {
 	Settings.setSettingsJsonForTesting({
 		"LogCategory_RatingsPrompt": {
 			"Value": TestConstants.LogCategories.oneNoteClipperUsage
 		}
 	});
 
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// go to FEEDBACK panel, then click 'Feedback'
 	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
@@ -1081,12 +909,14 @@ test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.RATE not availab
 });
 
 test("getDialogButtons: 'Feedback' click at RatingsPromptStage.FEEDBACK not available when feedback url does not exist", () => {
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// go to FEEDBACK panel
 	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
@@ -1110,12 +940,14 @@ test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.FEEDBACK goes to
 		}
 	});
 
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// go to FEEDBACK panel, then click 'No Thanks'
 	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
@@ -1132,12 +964,14 @@ test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.FEEDBACK goes to
 });
 
 test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.FEEDBACK not available when feedback url does not exist", () => {
+	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.shouldShowRatingsPrompt = true;
+	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
-	let successPanel = <SuccessPanel clipperState={clipperState} />;
+	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let controllerInstance = HelperFunctions.mountToFixture(successPanel);
+	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// go to FEEDBACK panel
 	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
@@ -1152,6 +986,6 @@ test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.FEEDBACK not ava
 
 	ok(Utils.isNullOrUndefined(feedbackNegative), "'No Thanks' button should not exist");
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.NONE]);
-});*/
+});
 
 // test("", () => { });

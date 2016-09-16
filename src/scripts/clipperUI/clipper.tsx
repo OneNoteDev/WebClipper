@@ -447,6 +447,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 			// initialize here since it depends on storage in the extension
 			this.initializeNumSuccessfulClips();
+			RatingsHelper.preCacheNeededValues();
 		});
 
 		this.initializeInjectCommunicator(pageInfo, clientInfo);
@@ -505,7 +506,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 			// subscribe after initial set to storage value
 			this.state.numSuccessfulClips.subscribe(() => {
-				RatingsHelper.setShowRatingsPromptState(this.state);
+				this.state.showRatingsPrompt.set(RatingsHelper.shouldShowRatingsPrompt(this.state));
 			}, { callOnSubscribe: false });
 		});
 	}
@@ -646,13 +647,17 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, mode);
 
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
+		this.state.showRatingsPrompt.subscribe((shouldShow: boolean) => {
+			let statusToSet: Status = SaveToOneNote.getClipSuccessStatus(this.state);
+			this.state.setState({ oneNoteApiResult: { status: statusToSet } });
+		}, { callOnSubscribe: false });
+
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
-			// wait for state.shouldShowRatingsPrompt to be defined before setting state.oneNoteApiResult.status
-			this.state.showRatingsPrompt.subscribe((shouldShow: boolean) => {
-				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
-				clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
-				this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.Succeeded } });
-			}, { callOnSubscribe: false });
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
+
+			let statusToSet: Status = SaveToOneNote.getClipSuccessStatus(this.state);
+			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: statusToSet } });
 		}, (error: OneNoteApi.RequestError) => {
 			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
 

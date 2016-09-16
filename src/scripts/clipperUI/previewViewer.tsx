@@ -22,7 +22,7 @@ class PreviewViewerClass<TState, TProp extends ClipperStateProp> extends Compone
 			case ClipMode.Selection:
 				return <SelectionPreview clipperState={this.props.clipperState} />;
 			default:
-				return undefined;
+				return <div />;
 		}
 	}
 }
