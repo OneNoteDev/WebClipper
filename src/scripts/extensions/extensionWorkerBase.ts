@@ -282,7 +282,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 		let getLocalizedStringsEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetLocalizedStrings);
 		getLocalizedStringsEvent.setCustomProperty(Log.PropertyName.Custom.ForceRetrieveFreshLocStrings, localeInStorageIsDifferent);
-		this.clipperData.getAndCacheFreshValue(ClipperStorageKeys.locStrings, fetchStringDataFunction, updateInterval).then((response) => {
+		this.clipperData.getFreshValue(ClipperStorageKeys.locStrings, fetchStringDataFunction, updateInterval).then((response) => {
 			this.clipperData.setValue(ClipperStorageKeys.locale, locale);
 			if (callback) {
 				callback(response ? response.data : undefined);

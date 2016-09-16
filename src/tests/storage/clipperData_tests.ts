@@ -13,7 +13,7 @@ QUnit.module("clipperData", {
 	}
 });
 
-test("getAndCacheFreshValue should not store anything if it's retrieving notebooks and no userInformation is in storage", (assert: QUnitAssert) => {
+test("getFreshValue should not store anything if it's retrieving notebooks and no userInformation is in storage", (assert: QUnitAssert) => {
 	let done = assert.async();
 
 	let key = ClipperStorageKeys.cachedNotebooks;
@@ -27,7 +27,7 @@ test("getAndCacheFreshValue should not store anything if it's retrieving noteboo
 	};
 
 	let clipperData = new ClipperData(mockStorage);
-	clipperData.getAndCacheFreshValue(key, getRemoteValue, 0).then((timeStampedData) => {
+	clipperData.getFreshValue(key, getRemoteValue, 0).then((timeStampedData) => {
 		strictEqual(mockStorage.getValue(key), undefined,
 			"Notebooks should not be cached if userInformation does not exist in storage");
 	}, (error) => {
@@ -37,7 +37,7 @@ test("getAndCacheFreshValue should not store anything if it's retrieving noteboo
 	});
 });
 
-test("getAndCacheFreshValue should store notebooks if it's retrieving notebooks and userInformation is in storage", (assert: QUnitAssert) => {
+test("getFreshValue should store notebooks if it's retrieving notebooks and userInformation is in storage", (assert: QUnitAssert) => {
 	let done = assert.async();
 
 	let key = ClipperStorageKeys.cachedNotebooks;
@@ -53,7 +53,7 @@ test("getAndCacheFreshValue should store notebooks if it's retrieving notebooks 
 	mockStorage.setValue(ClipperStorageKeys.userInformation, "{ name: Leeeeeroy }");
 
 	let clipperData = new ClipperData(mockStorage);
-	clipperData.getAndCacheFreshValue(key, getRemoteValue, 0).then((timeStampedData) => {
+	clipperData.getFreshValue(key, getRemoteValue, 0).then((timeStampedData) => {
 		let actualStored: TimeStampedData = JSON.parse(mockStorage.getValue(key));
 		deepEqual(actualStored.data, {},
 			"Notebooks should be cached if userInformation exists in storage");
@@ -64,7 +64,7 @@ test("getAndCacheFreshValue should store notebooks if it's retrieving notebooks 
 	});
 });
 
-test("getAndCacheFreshValue should not store anything if it's setting notebooks and no userInformation is in storage", () => {
+test("getFreshValue should not store anything if it's setting notebooks and no userInformation is in storage", () => {
 	let key = ClipperStorageKeys.cachedNotebooks;
 	let expectedTimeStampedData = JSON.stringify({
 		parsedResponse: "{ notebooks: {} }",
@@ -77,7 +77,7 @@ test("getAndCacheFreshValue should not store anything if it's setting notebooks 
 		"Notebooks should not be stored if userInformation does not exist in storage");
 });
 
-test("getAndCacheFreshValue should store notebooks if it's setting notebooks and userInformation is in storage", () => {
+test("getFreshValue should store notebooks if it's setting notebooks and userInformation is in storage", () => {
 	let key = ClipperStorageKeys.cachedNotebooks;
 	let expectedTimeStampedData = JSON.stringify({
 		parsedResponse: "{ notebooks: {} }",
@@ -92,7 +92,7 @@ test("getAndCacheFreshValue should store notebooks if it's setting notebooks and
 		"Notebooks should be stored if userInformation exists in storage");
 });
 
-test("getAndCacheFreshValue should not store anything if it's setting current section and no userInformation is in storage", () => {
+test("getFreshValue should not store anything if it's setting current section and no userInformation is in storage", () => {
 	let key = ClipperStorageKeys.currentSelectedSection;
 	let expectedTimeStampedData = JSON.stringify({
 		parsedResponse: "{ section: {} }",
@@ -105,7 +105,7 @@ test("getAndCacheFreshValue should not store anything if it's setting current se
 		"Current section should not be stored if userInformation does not exist in storage");
 });
 
-test("getAndCacheFreshValue should store notebooks if it's setting current section and userInformation is in storage", () => {
+test("getFreshValue should store notebooks if it's setting current section and userInformation is in storage", () => {
 	let key = ClipperStorageKeys.currentSelectedSection;
 	let expectedTimeStampedData = JSON.stringify({
 		parsedResponse: "{ section: {} }",

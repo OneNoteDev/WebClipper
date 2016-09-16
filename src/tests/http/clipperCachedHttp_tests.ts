@@ -19,10 +19,10 @@ QUnit.module("clipperCachedHttp", {
 	}
 });
 
-test("When getAndCacheFreshValue is called with an undefined key, a failure should be logged", () => {
+test("When getFreshValue is called with an undefined key, a failure should be logged", () => {
 	let clipperCachedHttp = new ClipperCachedHttp(mockStorage, stubLogger);
 
-	clipperCachedHttp.getAndCacheFreshValue(undefined, MockStorage.fetchNonLocalData);
+	clipperCachedHttp.getFreshValue(undefined, MockStorage.fetchNonLocalData);
 
 	let logFailureSpy = stubLogger.logFailure as Sinon.SinonSpy;
 	ok(logFailureSpy.calledOnce, "logFailure should be called");
@@ -30,10 +30,10 @@ test("When getAndCacheFreshValue is called with an undefined key, a failure shou
 		"logFailure should be called as an unexpected failure caused by an invalid argument");
 });
 
-test("When getAndCacheFreshValue is called with an empty key, a failure should be logged", () => {
+test("When getFreshValue is called with an empty key, a failure should be logged", () => {
 	let clipperCachedHttp = new ClipperCachedHttp(mockStorage, stubLogger);
 
-	clipperCachedHttp.getAndCacheFreshValue("", MockStorage.fetchNonLocalData);
+	clipperCachedHttp.getFreshValue("", MockStorage.fetchNonLocalData);
 
 	let logFailureSpy = stubLogger.logFailure as Sinon.SinonSpy;
 	ok(logFailureSpy.calledOnce, "logFailure should be called");
@@ -41,10 +41,10 @@ test("When getAndCacheFreshValue is called with an empty key, a failure should b
 		"logFailure should be called as an unexpected failure caused by an invalid argument");
 });
 
-test("When getAndCacheFreshValue is called with an undefined fetchNonLocalData parameter, a failure should be logged", () => {
+test("When getFreshValue is called with an undefined fetchNonLocalData parameter, a failure should be logged", () => {
 	let clipperCachedHttp = new ClipperCachedHttp(mockStorage, stubLogger);
 
-	clipperCachedHttp.getAndCacheFreshValue("k", undefined);
+	clipperCachedHttp.getFreshValue("k", undefined);
 
 	let logFailureSpy = stubLogger.logFailure as Sinon.SinonSpy;
 	ok(logFailureSpy.calledOnce, "logFailure should be called");
@@ -52,10 +52,10 @@ test("When getAndCacheFreshValue is called with an undefined fetchNonLocalData p
 		"logFailure should be called as an unexpected failure caused by an invalid argument");
 });
 
-test("When getAndCacheFreshValue is called with an updateInterval of less than 0, a failure should be logged", () => {
+test("When getFreshValue is called with an updateInterval of less than 0, a failure should be logged", () => {
 	let clipperCachedHttp = new ClipperCachedHttp(mockStorage, stubLogger);
 
-	clipperCachedHttp.getAndCacheFreshValue("k", MockStorage.fetchNonLocalData, -1);
+	clipperCachedHttp.getFreshValue("k", MockStorage.fetchNonLocalData, -1);
 
 	let logFailureSpy = stubLogger.logFailure as Sinon.SinonSpy;
 	ok(logFailureSpy.calledOnce, "logFailure should be called");
@@ -63,12 +63,12 @@ test("When getAndCacheFreshValue is called with an updateInterval of less than 0
 		"logFailure should be called as an unexpected failure caused by an invalid argument");
 });
 
-test("When getAndCacheFreshValue is called with valid parameters (assuming when nothing is in storage), logEvent should be called once", (assert: QUnitAssert) => {
+test("When getFreshValue is called with valid parameters (assuming when nothing is in storage), logEvent should be called once", (assert: QUnitAssert) => {
 	let done = assert.async();
 
 	let clipperCachedHttp = new ClipperCachedHttp(mockStorage, stubLogger);
 
-	clipperCachedHttp.getAndCacheFreshValue("k", MockStorage.fetchNonLocalData, 0).then((timeStampedData) => {
+	clipperCachedHttp.getFreshValue("k", MockStorage.fetchNonLocalData, 0).then((timeStampedData) => {
 		let logEventSpy = stubLogger.logEvent as Sinon.SinonSpy;
 		ok(logEventSpy.calledOnce,
 			"logEvent should be called when the fetchNonLocalData function is executed");
@@ -79,7 +79,7 @@ test("When getAndCacheFreshValue is called with valid parameters (assuming when 
 	});
 });
 
-test("When getAndCacheFreshValue is called with valid parameters (assuming something fresh is in storage), logEvent should not be called, as the remote function is not executed", (assert: QUnitAssert) => {
+test("When getFreshValue is called with valid parameters (assuming something fresh is in storage), logEvent should not be called, as the remote function is not executed", (assert: QUnitAssert) => {
 	let done = assert.async();
 
 	let expiry = 99999999;
@@ -92,7 +92,7 @@ test("When getAndCacheFreshValue is called with valid parameters (assuming somet
 
 	let clipperCachedHttp = new ClipperCachedHttp(mockStorage, stubLogger);
 
-	clipperCachedHttp.getAndCacheFreshValue(key, MockStorage.fetchNonLocalData, expiry).then((timeStampedData) => {
+	clipperCachedHttp.getFreshValue(key, MockStorage.fetchNonLocalData, expiry).then((timeStampedData) => {
 		let logEventSpy = stubLogger.logEvent as Sinon.SinonSpy;
 		ok(logEventSpy.notCalled,
 			"logEvent should not be called as the fetchNonLocalData function was not executed");

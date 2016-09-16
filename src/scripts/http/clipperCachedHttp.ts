@@ -30,24 +30,24 @@ export class ClipperCachedHttp extends CachedHttp {
 	}
 
 	// Override
-	public getAndCacheFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval = ClipperCachedHttp.defaultExpiry): Promise<TimeStampedData> {
+	public getFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval = ClipperCachedHttp.defaultExpiry): Promise<TimeStampedData> {
 		if (!key) {
 			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
-				{ error: "getAndCacheFreshValue key parameter should be passed a non-empty string" }, "" + key);
+				{ error: "getFreshValue key parameter should be passed a non-empty string" }, "" + key);
 			return Promise.resolve(undefined);
 		} else if (!getRemoteValue) {
 			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
-				{ error: "getAndCacheFreshValue getRemoteValue parameter should be passed a non-undefined function" }, "" + getRemoteValue);
+				{ error: "getFreshValue getRemoteValue parameter should be passed a non-undefined function" }, "" + getRemoteValue);
 			return Promise.resolve(undefined);
 		} else if (updateInterval < 0) {
 			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
-				{ error: "getAndCacheFreshValue updateInterval parameter should be passed a number >= 0" }, "" + updateInterval);
+				{ error: "getFreshValue updateInterval parameter should be passed a number >= 0" }, "" + updateInterval);
 			updateInterval = 0;
 		}
 
 		let loggedGetRemoteValue = this.addLoggingToGetResponseAsync(key, getRemoteValue, updateInterval);
 
-		return super.getAndCacheFreshValue(key, loggedGetRemoteValue, updateInterval);
+		return super.getFreshValue(key, loggedGetRemoteValue, updateInterval);
 	}
 
 	private addLoggingToGetResponseAsync(key: string, getResponseAsync: GetResponseAsync, updateInterval: number): GetResponseAsync {

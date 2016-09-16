@@ -29,8 +29,8 @@ export class ClipperData implements Storage {
 		this.cachedHttp.setLogger(logger);
 	}
 
-	public getAndCacheFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval?: number): Promise<TimeStampedData> {
-		return this.cachedHttp.getAndCacheFreshValue(key, getRemoteValue, updateInterval);
+	public getFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval?: number): Promise<TimeStampedData> {
+		return this.cachedHttp.getFreshValue(key, getRemoteValue, updateInterval);
 	}
 
 	public getValue(key: string): string {
