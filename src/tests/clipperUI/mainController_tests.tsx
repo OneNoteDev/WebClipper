@@ -134,8 +134,6 @@ test("On the clip success panel, the tab order is correct, and each tab index sh
 
 	let elementsInExpectedTabOrder = [
 		{ name: Constants.Ids.launchOneNoteButton, elem: document.getElementById(Constants.Ids.launchOneNoteButton) },
-		{ name: Constants.Ids.feedbackButton, elem: document.getElementById(Constants.Ids.feedbackButton) },
-		{ name: Constants.Ids.currentUserControl, elem: document.getElementById(Constants.Ids.currentUserControl) },
 		{ name: Constants.Ids.closeButton, elem: document.getElementById(Constants.Ids.closeButton) }
 	];
 
@@ -464,15 +462,15 @@ test("The footer should be rendered when the ClippingFailure panel is shown", ()
 		"The footer container should render when the clipper is showing the clip failure panel");
 });
 
-test("The footer should be rendered when the ClippingSuccess panel is shown", () => {
+test("The footer should be not be rendered when the ClippingSuccess panel is shown", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	HelperFunctions.simulateAction(() => {
 		controllerInstance.state.currentPanel = PanelType.ClippingSuccess;
 	});
 
-	ok(document.getElementById(Constants.Ids.clipperFooterContainer),
-		"The footer container should render when the clipper is showing the clip success panel");
+	ok(!document.getElementById(Constants.Ids.clipperFooterContainer),
+		"The footer container should not be rendered when the clipper is showing the clip success panel");
 });
 
 test("The close button should not be rendered when the ClippingToApi panel is shown", () => {
