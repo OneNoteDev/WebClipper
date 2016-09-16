@@ -18,6 +18,7 @@ export module DomUtils {
 		export const base = "base";
 		export const button = "button";
 		export const canvas = "canvas";
+		export const center = "center";
 		export const embed = "embed";
 		export const head = "head";
 		export const hr = "hr";
@@ -63,7 +64,15 @@ export module DomUtils {
 	];
 
 	export function removeElementsNotSupportedInOnml(doc: Document) {
+		// For elements that cannot be converted into something equivalent in ONML, we remove them ...
 		domReplacer(doc, tagsNotSupportedInOnml.join());
+
+		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
+		domReplacer(doc, Tags.center, (node: HTMLElement) => {
+			let div = document.createElement("DIV");
+			div.innerHTML = node.innerHTML;
+			return div;
+		});
 	}
 
 	export function domReplacer(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Node = () => undefined) {
