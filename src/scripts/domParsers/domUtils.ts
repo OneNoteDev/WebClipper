@@ -164,26 +164,28 @@ export module DomUtils {
 	}
 
 	/**
-	 * Get a clone of the current DOM, with our own UI and other unwanted tags removed, and as much CSS and canvas
-	 * inlining as possible given the API's upload size limitation.
+	 * Get a clone of the specified DOM, with our own UI and other unwanted tags removed, and as much CSS and canvas
+	 * inlining as possible given the API's upload size limitation. This does not affect the document passed into the
+	 * function.
 	 *
 	 * @returns The cleaned DOM
 	 */
 	export function getCleanDomOfCurrentPage(originalDoc: Document): string {
 		let doc = cloneDocument(originalDoc);
 		convertCanvasElementsToImages(doc, originalDoc);
-
 		addBaseTagIfNecessary(doc, originalDoc.location);
 
+		addImageSizeInformationToDom(doc);
+		removeUnwantedItems(doc);
+
+		let domString = getDomString(doc);
+		return domString;
+	}
+
+	export function removeUnwantedItems(doc: Document): void {
 		removeClipperElements(doc);
 		removeUnwantedElements(doc);
 		removeUnwantedAttributes(doc);
-
-		addImageSizeInformationToDom(doc);
-
-		let domString = getDomString(doc);
-
-		return domString;
 	}
 
 	/**
@@ -735,7 +737,7 @@ export module DomUtils {
 	export function toOnml(doc: Document): Promise<void> {
 		removeElementsNotSupportedInOnml(doc);
 		domReplacer(doc, [Tags.iframe].join());
-		getCleanDomOfCurrentPage(doc);
+		removeUnwantedItems(doc);
 		convertRelativeUrlsToAbsolute(doc);
 		removeAllStylesAndClasses(doc);
 		return removeBlankImages(doc);
