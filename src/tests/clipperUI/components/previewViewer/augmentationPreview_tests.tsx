@@ -57,7 +57,7 @@ test("The tab order flow from the header to the preview title is correct in Augm
 
 	for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
 		ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-			"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name + ", " + elementsInExpectedTabOrder[i].elem.tabIndex + " > " + elementsInExpectedTabOrder[i - 1].elem.tabIndex);
+			"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
 	}
 
 	for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
@@ -74,8 +74,8 @@ test("The augmentation header and all related controls should be displayed in Au
 
 	ok(document.getElementById(Constants.Ids.highlightControl), "The highlight control should exist");
 	ok(document.getElementById(Constants.Ids.serifControl), "The font family control should exist");
-	ok(document.getElementById(Constants.Ids.decrementFontSize), "The font size control should exist");
-	ok(document.getElementById(Constants.Ids.incrementFontSize), "The font size control should exist");
+	ok(document.getElementById(Constants.Ids.decrementFontSize), "The decrement font size control should exist");
+	ok(document.getElementById(Constants.Ids.incrementFontSize), "The increment font size control should exist");
 });
 
 test("The editable title of the page should be displayed in the preview title in Augmentation mode", () => {

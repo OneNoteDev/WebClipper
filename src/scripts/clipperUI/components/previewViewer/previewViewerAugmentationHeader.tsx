@@ -15,7 +15,7 @@ export interface PreviewViewerAugmentationHeaderProp {
 
 class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentBase<{}, PreviewViewerAugmentationHeaderProp> {
 	getControlGroups(): ControlGroup[] {
-		return [this.getHighlightGroup(), this.getSerifGroup(), this.getFontDownGroup()];
+		return [this.getHighlightGroup(), this.getSerifGroup(), this.getFontSizeGroup()];
 	}
 
 	private getHighlightGroup(): ControlGroup {
@@ -52,7 +52,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 		};
 	}
 
-	private getFontDownGroup(): ControlGroup {
+	private getFontSizeGroup(): ControlGroup {
 		return {
 			className: HeaderClasses.Button.relatedButtons,
 			innerElements: [
@@ -69,14 +69,6 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			]
 		};
 	}
-
-	// private getFontUpGroup(): ControlGroup {
-	// 	return {
-	// 		innerElements: [
-
-	// 		]
-	// 	};
-	// }
 }
 
 let component = PreviewViewerAugmentationHeaderClass.componentize();
