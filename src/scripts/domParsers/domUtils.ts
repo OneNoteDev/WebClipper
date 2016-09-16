@@ -739,6 +739,47 @@ export module DomUtils {
 		return a;
 	}
 
+	export function removeEventListenerAttributes(doc: Document): void {
+		// See: https://en.wikipedia.org/wiki/DOM_events
+		let attributesToRemove = [
+			"onclick",
+			"ondblclick",
+			"onmousedown",
+			"onmouseup",
+			"onmouseover",
+			"onmousemove",
+			"onmouseout",
+			"ondragstart",
+			"ondrag",
+			"ondragenter",
+			"ondragleave",
+			"ondragover",
+			"ondrop",
+			"ondragend",
+			"onkeydown",
+			"onkeypress",
+			"onkeyup",
+			"onload",
+			"onunload",
+			"onabort",
+			"onerror",
+			"onresize",
+			"onscroll",
+			"onselect",
+			"onchange",
+			"onsubmit",
+			"onreset",
+			"onfocus",
+			"onblur"
+		];
+		for (let i = 0; i < attributesToRemove.length; i++) {
+			let elements = doc.querySelectorAll("[" + attributesToRemove[i] + "]");
+			for (let j = 0; j < elements.length; j++) {
+				elements[j].removeAttribute(attributesToRemove[i]);
+			}
+		}
+	}
+
 	/*
 	 * Mimics augmentation API cleaning and ensuring that only ONML-compliant
 	 * elements remain
@@ -749,6 +790,7 @@ export module DomUtils {
 		removeUnwantedItems(doc);
 		convertRelativeUrlsToAbsolute(doc);
 		removeAllStylesAndClasses(doc);
+		removeEventListenerAttributes(doc);
 		return removeBlankImages(doc);
 	}
 
