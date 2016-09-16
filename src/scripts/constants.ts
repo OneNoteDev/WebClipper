@@ -128,7 +128,6 @@ export module Constants {
 		// previewViewerAugmentationHeader
 		export var highlightControl = "highlightControl";
 		export var highlightButton = "highlightButton";
-		export var fontSizeControl = "fontSizeControl";
 		export var decrementFontSize = "decrementFontSize";
 		export var incrementFontSize = "incrementFontSize";
 		export var serifControl = "serifControl";

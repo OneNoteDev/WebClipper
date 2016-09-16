@@ -139,6 +139,10 @@
 					}
 				}
 
+				#incrementFontSize {
+					margin-left: 6px;
+				}
+
 				#serifControl {
 					#sansSerif {
 						font-family: Verdana;
@@ -154,12 +158,6 @@
 					}
 				}
 
-				#fontSizeControl {
-					img {
-						vertical-align: middle;
-					}
-				}
-
 				.control-button {
 					text-align: center;
 					vertical-align: middle;
@@ -171,7 +169,8 @@
 					height: @ControlButtonHeight;
 
 					&.active {
-						background: @DarkBackgroundColor;
+						background: #fff;
+						color: #7321a6;
 					}
 
 					&:hover:not(.active) {
@@ -180,6 +179,10 @@
 
 					:focus {
 						outline: 0;
+					}
+
+					img {
+						vertical-align: middle;
 					}
 				}
 
