@@ -28,8 +28,8 @@ interface RatingsPanelState {
 class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStateProp> {
 	getInitialState(): RatingsPanelState {
 		return {
-			currentRatingsPromptStage: RatingsPromptStage.INIT,
-			userSelectedRatingsPromptStage: RatingsPromptStage.INIT
+			currentRatingsPromptStage: RatingsPromptStage.Init,
+			userSelectedRatingsPromptStage: RatingsPromptStage.Init
 		};
 	}
 
@@ -49,21 +49,19 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 	 */
 	private getMessage(stage: RatingsPromptStage): string {
 		switch (stage) {
-			case RatingsPromptStage.INIT:
+			case RatingsPromptStage.Init:
 				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.Init");
-			case RatingsPromptStage.RATE:
+			case RatingsPromptStage.Rate:
 				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.Rate");
-			case RatingsPromptStage.FEEDBACK:
+			case RatingsPromptStage.Feedback:
 				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.Feedback");
-			case RatingsPromptStage.END:
+			case RatingsPromptStage.End:
 				return Localization.getLocalizedString("WebClipper.Label.Ratings.Message.End");
 			default:
-			case RatingsPromptStage.NONE:
+			case RatingsPromptStage.None:
 				return;
 		}
 	}
-
-	// TODO consolidate as much storage access as possible
 
 	/**
 	 * Get appropriate dialog panel buttons for the panel (with its internal states) provided
@@ -76,7 +74,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 		let buttons: DialogButton[] = [];
 
 		switch (stage) {
-			case RatingsPromptStage.INIT:
+			case RatingsPromptStage.Init:
 				buttons.push({
 					id: Constants.Ids.ratingsButtonInitYes,
 					label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Positive"),
@@ -86,11 +84,11 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
 						if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
 							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.RATE
+								userSelectedRatingsPromptStage: RatingsPromptStage.Rate
 							});
 						} else {
 							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.END
+								userSelectedRatingsPromptStage: RatingsPromptStage.End
 							});
 						}
 					}
@@ -107,17 +105,17 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 							let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
 							if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
 								panel.setState({
-									userSelectedRatingsPromptStage: RatingsPromptStage.FEEDBACK
+									userSelectedRatingsPromptStage: RatingsPromptStage.Feedback
 								});
 							} else {
 								panel.setState({
-									userSelectedRatingsPromptStage: RatingsPromptStage.END
+									userSelectedRatingsPromptStage: RatingsPromptStage.End
 								});
 							}
 						}
 					});
 				break;
-			case RatingsPromptStage.RATE:
+			case RatingsPromptStage.Rate:
 				let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
 				if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
 					buttons.push({
@@ -127,7 +125,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 							window.open(rateUrl, "_blank");
 
 							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.END
+								userSelectedRatingsPromptStage: RatingsPromptStage.End
 							});
 						}
 					}, {
@@ -135,18 +133,18 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
 						handler: () => {
 							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.NONE
+								userSelectedRatingsPromptStage: RatingsPromptStage.None
 							});
 						}
 					});
 				} else {
 					// this shouldn't happen
 					panel.setState({
-						userSelectedRatingsPromptStage: RatingsPromptStage.NONE
+						userSelectedRatingsPromptStage: RatingsPromptStage.None
 					});
 				}
 				break;
-			case RatingsPromptStage.FEEDBACK:
+			case RatingsPromptStage.Feedback:
 				let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
 				if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
 					buttons.push({
@@ -156,7 +154,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 							window.open(feedbackUrl, "_blank");
 
 							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.END
+								userSelectedRatingsPromptStage: RatingsPromptStage.End
 							});
 						}
 					}, {
@@ -164,20 +162,20 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.NoThanks"),
 						handler: () => {
 							panel.setState({
-								userSelectedRatingsPromptStage: RatingsPromptStage.NONE
+								userSelectedRatingsPromptStage: RatingsPromptStage.None
 							});
 						}
 					});
 				} else {
 					// this shouldn't happen
 					panel.setState({
-						userSelectedRatingsPromptStage: RatingsPromptStage.NONE
+						userSelectedRatingsPromptStage: RatingsPromptStage.None
 					});
 				}
 				break;
 			default:
-			case RatingsPromptStage.END:
-			case RatingsPromptStage.NONE:
+			case RatingsPromptStage.End:
+			case RatingsPromptStage.None:
 				break;
 		}
 

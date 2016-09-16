@@ -9,11 +9,11 @@ import {Clipper} from "./frontEndGlobals";
 import * as Log from "../logging/log";
 
 export enum RatingsPromptStage {
-	NONE,
-	INIT,
-	RATE,
-	FEEDBACK,
-	END
+	None,
+	Init,
+	Rate,
+	Feedback,
+	End
 }
 
 interface RatingsLoggingInfo {
@@ -46,8 +46,6 @@ export class RatingsHelper {
 		];
 		Clipper.Storage.preCacheValues(ratingsPromptStorageKeys);
 	}
-
-	// TODO better name for setShowRatingsPromptState
 
 	/**
 	 * We will show the ratings prompt if ALL of the below applies:
@@ -202,14 +200,10 @@ export class RatingsHelper {
 	 * Returns true if ALL of the below applies:
 	 *   * Number of successful clips >= {Constants.Settings.minClipSuccessForRatingsPrompt}
 	 *   * Number of successful clips <= {Constants.Settings.maxClipSuccessForRatingsPrompt}
-	 *   * TODO Number of successful clips is on the "gap between prompts" boundary
 	 *
 	 * Public for testing
 	 */
 	public static clipSuccessDelayIsOver(numClips: number): boolean {
-		// TODO Waiting for consensus on how should we handle users who never interact with the ratings prompt
-			// (keep showing the prompt forever, stop after max # of successful clips, slowly increase "gap between prompts")
-
 		// TODO MVP+? when # of successful clips > nMax, collapse panel into a Rate Us hyperlink in the footer that is always available
 
 		if (isNaN(numClips)) {
@@ -217,8 +211,7 @@ export class RatingsHelper {
 		}
 
 		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt &&
-			numClips <= Constants.Settings.maxClipSuccessForRatingsPrompt; /*&&
-			numClips % Constants.Settings.gapBetweenClipSuccessForRatingsPrompt === 0;*/
+			numClips <= Constants.Settings.maxClipSuccessForRatingsPrompt;
 	}
 
 	/**

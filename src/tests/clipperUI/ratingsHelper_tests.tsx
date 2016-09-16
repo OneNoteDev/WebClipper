@@ -1,15 +1,13 @@
-import {DialogButton} from "../../scripts/clipperUI/panels/dialogPanel";
-import {RatingsPanel} from "../../scripts/clipperUI/panels/ratingsPanel";
-
 import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
-import {RatingsHelper, RatingsPromptStage} from "../../scripts/clipperUI/ratingsHelper";
+import {RatingsHelper} from "../../scripts/clipperUI/ratingsHelper";
+
+import {SmartValue} from "../../scripts/communicator/smartValue";
 
 import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
 
 import {Constants} from "../../scripts/constants";
 import {ClientType} from "../../scripts/clientType";
 import {Settings} from "../../scripts/settings";
-import {SmartValue} from "../../scripts/communicator/smartValue";
 import {Utils} from "../../scripts/utils";
 
 import {HelperFunctions} from "../helperFunctions";
@@ -25,8 +23,15 @@ Clipper.Storage.getValue = (key: string, callback: (value: string) => void, cach
 	callback(mockStorage[key]);
 };
 Clipper.Storage.setValue = (key: string, value: string) => {
-	mockStorageCache[key] = value; // TODO is this ok?
+	if (key in mockStorageCache) {
+		mockStorageCache[key] = value;
+	}
 	mockStorage[key] = value;
+};
+Clipper.Storage.preCacheValues = (storageKeys: string[]) => {
+	for (let key of storageKeys) {
+		Clipper.Storage.getValue(key, () => { }, true);
+	}
 };
 Clipper.Storage.getCachedValue = (key: string) => {
 	return mockStorageCache[key];
@@ -41,6 +46,7 @@ QUnit.module("ratingsHelper", {
 
 		mockStorage = {};
 		mockStorageCache = {};
+		RatingsHelper.preCacheNeededValues();
 	}
 });
 
@@ -73,19 +79,8 @@ test("clipSuccessDelayIsOver returns false when numClips is out of range", () =>
 	}
 });
 
-// TODO > min && < max, % gap === 0, % gap !== 0
-
-/*test("clipSuccessDelayIsOver returns false when numClips is not on the gap boundary", () => {
-	let notOnGapBoundaryParams = [];
-
-	for (let numClips of notOnGapBoundaryParams) {
-		let over: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips);
-		strictEqual(over, false, "numClips is in range but not on the gap boundary with value " + numClips);
-	}
-});*/
-
-test("clipSuccessDelayIsOver returns true when numClips is in range and on the gap boundary", () => {
-	let validParams = [Constants.Settings.minClipSuccessForRatingsPrompt, Constants.Settings.maxClipSuccessForRatingsPrompt];
+test("clipSuccessDelayIsOver returns true when numClips is in range", () => {
+	let validParams = [Constants.Settings.minClipSuccessForRatingsPrompt, Constants.Settings.minClipSuccessForRatingsPrompt + 1, Constants.Settings.maxClipSuccessForRatingsPrompt - 1, Constants.Settings.maxClipSuccessForRatingsPrompt];
 
 	for (let numClips of validParams) {
 		let over: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips);
@@ -596,396 +591,6 @@ test("shouldShowRatingsPrompt returns false when there has not been a significan
 
 	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 	strictEqual(shouldShowRatingsPrompt, false);
-});
-
-// getDialogButtons
-
-test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to RatingsPromptStage.RATE when rate url exists", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	Settings.setSettingsJsonForTesting({
-		"ChromeExtension_RatingUrl": {
-			"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
-		}
-	});
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.RATE]);
-
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, "true");
-		done();
-	});
-});
-
-test("getDialogButtons: 'Positive' click at RatingsPromptStage.INIT goes to RatingsPromptStage.END when rate url does not exist", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	Settings.setSettingsJsonForTesting({});
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.END]);
-
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, "true");
-		done();
-	});
-});
-
-// TODO how to handle asyncronicity in 'Negative' click handler
-
-test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT without a prior bad rating goes to RatingsPromptStage.FEEDBACK when feedback url exists (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	Settings.setSettingsJsonForTesting({
-		"LogCategory_RatingsPrompt": {
-			"Value": TestConstants.LogCategories.oneNoteClipperUsage
-		}
-	});
-
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.FEEDBACK]);
-
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, undefined);
-		done();
-	});
-});
-
-test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT without a prior bad rating goes to RatingsPromptStage.END when feedback url does not exist (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	Settings.setSettingsJsonForTesting({});
-
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.END]);
-
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, undefined);
-		done();
-	});
-});
-
-test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT with a prior bad rating sets doNotPromptRatings to 'true' (feedback url exists)", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	Settings.setSettingsJsonForTesting({
-		"LogCategory_RatingsPrompt": {
-			"Value": TestConstants.LogCategories.oneNoteClipperUsage
-		}
-	});
-
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.FEEDBACK]);
-
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, "true");
-		done();
-	});
-});
-
-test("getDialogButtons: 'Negative' click at RatingsPromptStage.INIT with a prior bad rating sets doNotPromptRatings to 'true' (feedback url does not exist)", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	Settings.setSettingsJsonForTesting({});
-
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.END]);
-
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, "true");
-		done();
-	});
-});
-
-test("getDialogButtons: 'Rate' click at RatingsPromptStage.RATE goes to RatingsPromptStage.END when rate url exists", () => {
-	Settings.setSettingsJsonForTesting({
-		"ChromeExtension_RatingUrl": {
-			"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
-		}
-	});
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	// go to RATE panel, then click 'Rate'
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-	});
-
-	let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
-	HelperFunctions.simulateAction(() => {
-		ratePositive.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.END]);
-});
-
-test("getDialogButtons: 'Rate' click at RatingsPromptStage.RATE not available when rate url does not exist", () => {
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	// go to RATE panel
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-		// clearing rate url before rendering RATE panel
-		// to test the unexpected case that we got to it without a rate url
-		Settings.setSettingsJsonForTesting({});
-	});
-
-	let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
-
-	ok(Utils.isNullOrUndefined(ratePositive), "'Rate' button should not exist");
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.NONE]);
-});
-
-test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.RATE goes to RatingsPromptStage.NONE when rate url exists", () => {
-	Settings.setSettingsJsonForTesting({
-		"ChromeExtension_RatingUrl": {
-			"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
-		}
-	});
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	// go to RATE panel, then click 'No Thanks'
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-	});
-
-	let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
-	HelperFunctions.simulateAction(() => {
-		rateNegative.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.NONE]);
-});
-
-test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.RATE not available when rate url does not exist", () => {
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	// go to RATE panel
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-		// clearing rate url before rendering RATE panel
-		// to test the unexpected case that we got to it without a rate url
-		Settings.setSettingsJsonForTesting({});
-	});
-
-	let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
-
-	ok(Utils.isNullOrUndefined(rateNegative), "'No Thanks' button should not exist");
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.NONE]);
-});
-
-// TODO how to handle asyncronicity in 'initNegative' click handler
-
-test("getDialogButtons: 'Feedback' click at RatingsPromptStage.FEEDBACK goes to RatingsPromptStage.END when feedback url exists", () => {
-	Settings.setSettingsJsonForTesting({
-		"LogCategory_RatingsPrompt": {
-			"Value": TestConstants.LogCategories.oneNoteClipperUsage
-		}
-	});
-
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	// go to FEEDBACK panel, then click 'Feedback'
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
-
-	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
-	HelperFunctions.simulateAction(() => {
-		feedbackPositive.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.END]);
-});
-
-test("getDialogButtons: 'Feedback' click at RatingsPromptStage.FEEDBACK not available when feedback url does not exist", () => {
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	// go to FEEDBACK panel
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-		// clearing feedback url before rendering FEEDBACK panel
-		// to test the unexpected case that we got to it without a feedback url
-		Settings.setSettingsJsonForTesting({});
-	});
-
-	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
-
-	ok(Utils.isNullOrUndefined(feedbackPositive), "'Feedback' button should not exist");
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.NONE]);
-});
-
-test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.FEEDBACK goes to RatingsPromptStage.NONE when feedback url exists", () => {
-	Settings.setSettingsJsonForTesting({
-		"LogCategory_RatingsPrompt": {
-			"Value": TestConstants.LogCategories.oneNoteClipperUsage
-		}
-	});
-
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	// go to FEEDBACK panel, then click 'No Thanks'
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
-
-	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
-	HelperFunctions.simulateAction(() => {
-		feedbackNegative.click();
-	});
-
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.NONE]);
-});
-
-test("getDialogButtons: 'No Thanks' click at RatingsPromptStage.FEEDBACK not available when feedback url does not exist", () => {
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
-
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
-
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
-
-	// go to FEEDBACK panel
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-		// clearing feedback url before rendering FEEDBACK panel
-		// to test the unexpected case that we got to it without a feedback url
-		Settings.setSettingsJsonForTesting({});
-	});
-
-	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
-
-	ok(Utils.isNullOrUndefined(feedbackNegative), "'No Thanks' button should not exist");
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.NONE]);
 });
 
 // test("", () => { });

@@ -18,7 +18,6 @@ export module Clipper {
 	export module Storage {
 		let storageCache: { [key: string]: string } = {};
 
-		// TODO type parameter to Constants.StorageKeys
 		export function preCacheValues(storageKeys: string[]): void {
 			for (let key of storageKeys) {
 				Clipper.Storage.getValue(key, () => { }, true);

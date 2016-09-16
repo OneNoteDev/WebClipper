@@ -353,8 +353,8 @@ export module Constants {
 
 	export module Settings {
 		export var fontSizeStep = 2;
-		export var maxClipSuccessForRatingsPrompt = 12; // TODO waiting for consensus on this value
-		export var maximumJSTimeValue = 8640000000000000; // http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
+		export var maxClipSuccessForRatingsPrompt = 8;
+		export var maximumJSTimeValue = 1000 * 60 * 60 * 24 * 100000000; // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
 		export var maximumFontSize = 72;
 		export var minClipSuccessForRatingsPrompt = 4;
 		export var minimumFontSize = 8;
