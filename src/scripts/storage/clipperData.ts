@@ -37,6 +37,10 @@ export class ClipperData implements Storage {
 		return this.storage.getValue(key);
 	}
 
+	public getValues(keys: string[]): {} {
+		return this.storage.getValues(keys);
+	}
+
 	public setValue(key: string, value: string): void {
 		if (this.storageGateStrategy.shouldSet(key, value)) {
 			this.storage.setValue(key, value);

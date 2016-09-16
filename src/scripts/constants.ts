@@ -221,6 +221,7 @@ export module Constants {
 		export var getInitialUser = "GET_INITIAL_USER";
 		export var getPageNavTooltipProps = "GET_PAGE_NAV_TOOLTIP_PROPS";
 		export var getStorageValue = "GET_STORAGE_VALUE";
+		export var getMultipleStorageValues = "GET_MULTIPLE_STORAGE_VALUES";
 		export var getTooltipToRenderInPageNav = "GET_TOOLTIP_TO_RENDER_IN_PAGE_NAV";
 		export var hideUi = "HIDE_UI";
 		export var invokeClipper = "INVOKE_CLIPPER";

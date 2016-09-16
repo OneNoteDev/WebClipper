@@ -24,6 +24,14 @@ export class MockStorage implements Storage {
 		return this.storedValues[key];
 	}
 
+	public getValues(keys: string[]): {} {
+		let values = {};
+		for (let i = 0; i < keys.length; i++) {
+			values[keys[i]] = this.storedValues[keys[i]];
+		}
+		return values;
+	}
+
 	public setValue(key: string, value: string): void {
 		this.storedValues[key] = value;
 	}
