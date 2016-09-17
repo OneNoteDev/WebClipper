@@ -19,13 +19,17 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 	}
 
 	private getHighlightGroup(): ControlGroup {
+		let highlighterEnabled = this.props.textHighlighterEnabled;
+		let classForHighlighter = highlighterEnabled ? HeaderClasses.Button.active : "";
+		let imgSrc = highlighterEnabled ? "editorOptions/highlight_tool_on.png" : "editorOptions/highlight_tool_off.png";
+
 		return {
 			id: Constants.Ids.highlightControl,
 			innerElements: [<img
 				id={Constants.Ids.highlightButton}
 				{...this.enableInvoke(this.props.toggleHighlight, 100) }
-				className={this.props.textHighlighterEnabled ? HeaderClasses.Button.active : ""}
-				src={Utils.getImageResourceUrl("editorOptions/highlight_tool.png") } />
+				className={classForHighlighter}
+				src={Utils.getImageResourceUrl(imgSrc) } />
 			]
 		};
 	}
