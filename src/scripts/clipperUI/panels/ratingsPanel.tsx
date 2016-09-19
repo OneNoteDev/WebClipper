@@ -198,7 +198,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 					message={message}
 					buttons={buttons}
 					buttonFontFamily={Localization.FontFamily.Regular}
-					divId={Constants.Ids.ratingsPromptContainer}
+					containerId={Constants.Ids.ratingsPromptContainer}
 					animationStrategy={animationStrategy} />
 			);
 		}

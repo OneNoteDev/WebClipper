@@ -353,12 +353,12 @@ export module Constants {
 
 	export module Settings {
 		export var fontSizeStep = 2;
-		export var maxClipSuccessForRatingsPrompt = 8;
+		export var maxClipSuccessForRatingsPrompt = 12;
 		export var maximumJSTimeValue = 1000 * 60 * 60 * 24 * 100000000; // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
 		export var maximumFontSize = 72;
 		export var minClipSuccessForRatingsPrompt = 4;
 		export var minimumFontSize = 8;
-		export var minTimeBetweenBadRatings = 1000 * 30; // 30 seconds // TODO 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
+		export var minTimeBetweenBadRatings = 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
 		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
 		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
 	}
