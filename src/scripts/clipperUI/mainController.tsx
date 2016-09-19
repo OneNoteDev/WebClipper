@@ -303,9 +303,10 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		switch (panelType) {
 			case PanelType.ClipOptions:
 			case PanelType.ClippingFailure:
-			case PanelType.ClippingSuccess:
 			case PanelType.SignInNeeded:
 				return <Footer clipperState={this.props.clipperState} onSignOutInvoked={this.props.onSignOutInvoked} />;
+			case PanelType.ClippingSuccess:
+				/* falls through */
 			default:
 				return undefined;
 		}

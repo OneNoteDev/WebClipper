@@ -43,7 +43,8 @@ test("The full page header should be displayed in Full Page mode", () => {
 
 	ok(!document.getElementById(Constants.Ids.highlightControl), "The highlight control should not exist");
 	ok(!document.getElementById(Constants.Ids.serifControl), "The font family control should not exist");
-	ok(!document.getElementById(Constants.Ids.fontSizeControl), "The font size control should not exist");
+	ok(!document.getElementById(Constants.Ids.decrementFontSize), "The decrement font size button should not exist");
+	ok(!document.getElementById(Constants.Ids.incrementFontSize), "The increment font size button should not exist");
 });
 
 test("The editable title of the page should be displayed in the preview title in Full Page mode", () => {

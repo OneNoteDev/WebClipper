@@ -18,6 +18,7 @@ export module DomUtils {
 		export const base = "base";
 		export const button = "button";
 		export const canvas = "canvas";
+		export const center = "center";
 		export const embed = "embed";
 		export const head = "head";
 		export const hr = "hr";
@@ -63,7 +64,15 @@ export module DomUtils {
 	];
 
 	export function removeElementsNotSupportedInOnml(doc: Document) {
+		// For elements that cannot be converted into something equivalent in ONML, we remove them ...
 		domReplacer(doc, tagsNotSupportedInOnml.join());
+
+		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
+		domReplacer(doc, Tags.center, (node: HTMLElement) => {
+			let div = document.createElement("DIV");
+			div.innerHTML = node.innerHTML;
+			return div;
+		});
 	}
 
 	export function domReplacer(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Node = () => undefined) {
@@ -164,26 +173,28 @@ export module DomUtils {
 	}
 
 	/**
-	 * Get a clone of the current DOM, with our own UI and other unwanted tags removed, and as much CSS and canvas
-	 * inlining as possible given the API's upload size limitation.
+	 * Get a clone of the specified DOM, with our own UI and other unwanted tags removed, and as much CSS and canvas
+	 * inlining as possible given the API's upload size limitation. This does not affect the document passed into the
+	 * function.
 	 *
 	 * @returns The cleaned DOM
 	 */
 	export function getCleanDomOfCurrentPage(originalDoc: Document): string {
 		let doc = cloneDocument(originalDoc);
 		convertCanvasElementsToImages(doc, originalDoc);
-
 		addBaseTagIfNecessary(doc, originalDoc.location);
 
+		addImageSizeInformationToDom(doc);
+		removeUnwantedItems(doc);
+
+		let domString = getDomString(doc);
+		return domString;
+	}
+
+	export function removeUnwantedItems(doc: Document): void {
 		removeClipperElements(doc);
 		removeUnwantedElements(doc);
 		removeUnwantedAttributes(doc);
-
-		addImageSizeInformationToDom(doc);
-
-		let domString = getDomString(doc);
-
-		return domString;
 	}
 
 	/**
@@ -728,6 +739,47 @@ export module DomUtils {
 		return a;
 	}
 
+	export function removeEventListenerAttributes(doc: Document): void {
+		// See: https://en.wikipedia.org/wiki/DOM_events
+		let attributesToRemove = [
+			"onclick",
+			"ondblclick",
+			"onmousedown",
+			"onmouseup",
+			"onmouseover",
+			"onmousemove",
+			"onmouseout",
+			"ondragstart",
+			"ondrag",
+			"ondragenter",
+			"ondragleave",
+			"ondragover",
+			"ondrop",
+			"ondragend",
+			"onkeydown",
+			"onkeypress",
+			"onkeyup",
+			"onload",
+			"onunload",
+			"onabort",
+			"onerror",
+			"onresize",
+			"onscroll",
+			"onselect",
+			"onchange",
+			"onsubmit",
+			"onreset",
+			"onfocus",
+			"onblur"
+		];
+		for (let i = 0; i < attributesToRemove.length; i++) {
+			let elements = doc.querySelectorAll("[" + attributesToRemove[i] + "]");
+			for (let j = 0; j < elements.length; j++) {
+				elements[j].removeAttribute(attributesToRemove[i]);
+			}
+		}
+	}
+
 	/*
 	 * Mimics augmentation API cleaning and ensuring that only ONML-compliant
 	 * elements remain
@@ -735,9 +787,10 @@ export module DomUtils {
 	export function toOnml(doc: Document): Promise<void> {
 		removeElementsNotSupportedInOnml(doc);
 		domReplacer(doc, [Tags.iframe].join());
-		getCleanDomOfCurrentPage(doc);
+		removeUnwantedItems(doc);
 		convertRelativeUrlsToAbsolute(doc);
 		removeAllStylesAndClasses(doc);
+		removeEventListenerAttributes(doc);
 		return removeBlankImages(doc);
 	}
 
