@@ -18,7 +18,7 @@ export interface DialogPanelProps {
 	buttons: DialogButton[];
 	fontFamily?: Localization.FontFamily;
 	buttonFontFamily?: Localization.FontFamily;
-	divId?: string;
+	containerId?: string;
 	animationStrategy?: AnimationStrategy;
 }
 
@@ -36,10 +36,10 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 	render() {
 		let fontFamily = !Utils.isNullOrUndefined(this.props.fontFamily) ? this.props.fontFamily : Localization.FontFamily.Semibold;
 		let buttonFontFamily = !Utils.isNullOrUndefined(this.props.buttonFontFamily) ? this.props.buttonFontFamily : Localization.FontFamily.Semibold;
-		let divId = this.props.divId ? this.props.divId : "";
+		let containerId = this.props.containerId ? this.props.containerId : "";
 
 		return (
-			<div id={divId}>
+			<div id={containerId}>
 				<div className={Constants.Classes.panelAnimator} {...this.onElementDraw(this.onPanelAnimatorDraw)}>
 					<div id={Constants.Ids.dialogMessageContainer} className="resultPagePadding">
 						<div className="messageLabelContainer" style={Localization.getFontFamilyAsStyle(fontFamily)}>

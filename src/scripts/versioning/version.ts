@@ -17,36 +17,36 @@ export class Version {
 		this.stringRepresentation = this.major + "." + this.minor + "." + this.patch;
 	}
 
-	public isEqualTo(other: Version): boolean {
-		return this.major === other.major && this.minor === other.minor && this.patch === other.patch;
+	public isEqualTo(other: Version, ignorePatchUpdate?: boolean): boolean {
+		return this.major === other.major && this.minor === other.minor && (ignorePatchUpdate || this.patch === other.patch);
 	}
 
-	public isGreaterThan(other: Version): boolean {
+	public isGreaterThan(other: Version, ignorePatchUpdate?: boolean): boolean {
 		if (this.major !== other.major) {
 			return this.major > other.major;
 		}
 		if (this.minor !== other.minor) {
 			return this.minor > other.minor;
 		}
-		return this.patch > other.patch;
+		return ignorePatchUpdate ? false : this.patch > other.patch;
 	}
 
-	public isGreaterThanOrEqualTo(other: Version): boolean {
-		return this.isEqualTo(other) || this.isGreaterThan(other);
+	public isGreaterThanOrEqualTo(other: Version, ignorePatchUpdate?: boolean): boolean {
+		return this.isEqualTo(other, ignorePatchUpdate) || this.isGreaterThan(other, ignorePatchUpdate);
 	}
 
-	public isLesserThan(other: Version): boolean {
+	public isLesserThan(other: Version, ignorePatchUpdate?: boolean): boolean {
 		if (this.major !== other.major) {
 			return this.major < other.major;
 		}
 		if (this.minor !== other.minor) {
 			return this.minor < other.minor;
 		}
-		return this.patch < other.patch;
+		return ignorePatchUpdate ? false : this.patch < other.patch;
 	}
 
-	public isLesserThanOrEqualTo(other: Version): boolean {
-		return this.isEqualTo(other) || this.isLesserThan(other);
+	public isLesserThanOrEqualTo(other: Version, ignorePatchUpdate?: boolean): boolean {
+		return this.isEqualTo(other, ignorePatchUpdate) || this.isLesserThan(other, ignorePatchUpdate);
 	}
 
 	public toString(): string {

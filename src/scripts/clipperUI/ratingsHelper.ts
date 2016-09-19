@@ -2,6 +2,7 @@ import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {Utils} from "../utils";
 import {Settings} from "../settings";
+import {Version} from "../versioning/version";
 
 import {ClipperState} from "./clipperState";
 import {Clipper} from "./frontEndGlobals";
@@ -76,7 +77,7 @@ export class RatingsHelper {
 	 *
 	 * Public for testing
 	 */
-	public static setLastBadRating(badRatingDateToSetAsStr: string, badRatingVersionToSet: string): boolean {
+	public static setLastBadRating(badRatingDateToSetAsStr: string, badRatingVersionToSetAsStr: string): boolean {
 		// TODO decouple, stop returning boolean from here
 
 		let badDateKey: string = Constants.StorageKeys.lastBadRatingDate;
@@ -88,7 +89,10 @@ export class RatingsHelper {
 			return true;
 		}
 
-		if (!RatingsHelper.versionHasCorrectFormat(badRatingVersionToSet)) {
+		let badRatingVersionToSet: Version;
+		try {
+			badRatingVersionToSet = new Version(badRatingVersionToSetAsStr);
+		} catch (e) {
 			// invalid value: err on the side of caution, always set do not prompt status
 			return true;
 		}
@@ -100,7 +104,7 @@ export class RatingsHelper {
 		}
 
 		Clipper.Storage.setValue(badDateKey, badRatingDateToSetAsStr);
-		Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, badRatingVersionToSet);
+		Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, badRatingVersionToSet.toString());
 
 		return badRatingAlreadyOccurred;
 	}
@@ -169,31 +173,22 @@ export class RatingsHelper {
 	 *
 	 * Public for testing
 	 */
-	public static badRatingVersionDelayIsOver(badRatingVersion: string, lastSeenVersion: string): boolean {
-		if (Utils.isNullOrUndefined(badRatingVersion)) {
+	public static badRatingVersionDelayIsOver(badRatingVersionAsStr: string, lastSeenVersionAsStr: string): boolean {
+		if (Utils.isNullOrUndefined(badRatingVersionAsStr)) {
 			// value has never been set, no bad rating given
 			return true;
 		}
 
-		if (!RatingsHelper.versionHasCorrectFormat(lastSeenVersion) || !RatingsHelper.versionHasCorrectFormat(badRatingVersion)) {
+		let badRatingVersion: Version;
+		let lastSeenVersion: Version;
+		try {
+			badRatingVersion = new Version(badRatingVersionAsStr);
+			lastSeenVersion = new Version(lastSeenVersionAsStr);
+		} catch (e) {
 			return false;
 		}
 
-		let lastSeenMajor: number = RatingsHelper.getMajorVersion(lastSeenVersion);
-		let badRatingMajor: number = RatingsHelper.getMajorVersion(badRatingVersion);
-
-		if (lastSeenMajor > badRatingMajor) {
-			return true;
-		}
-
-		let lastSeenMinor: number = RatingsHelper.getMinorVersion(lastSeenVersion);
-		let badRatingMinor: number = RatingsHelper.getMinorVersion(badRatingVersion);
-
-		if (lastSeenMajor === badRatingMajor && lastSeenMinor > badRatingMinor) {
-			return true;
-		}
-
-		return false;
+		return lastSeenVersion.isGreaterThan(badRatingVersion, true /* ignorePatchUpdate */);
 	}
 
 	/**
@@ -277,40 +272,6 @@ export class RatingsHelper {
 		return ClientType[clientType] + suffix;
 	}
 
-	/**
-	 * Based on the three-part version number convention "X.Y.Z", where:
-	 *   * X = major version
-	 *   * Y = minor version
-	 *   * Z = patch
-	 * Returns the major version, X
-	 */
-	private static getMajorVersion(versionNum: string): number {
-		if (!Utils.isNullOrUndefined(versionNum)) {
-			let versionSplit: string[] = versionNum.split(".");
-
-			if (!Utils.isNullOrUndefined(versionSplit)) {
-				return parseInt(versionSplit[0], 10);
-			}
-		}
-	}
-
-	/**
-	 * Based on the three-part version number convention "X.Y.Z", where:
-	 *   * X = major version
-	 *   * Y = minor version
-	 *   * Z = patch
-	 * Returns the minor version, Y
-	 */
-	private static getMinorVersion(versionNum: string): number {
-		if (!Utils.isNullOrUndefined(versionNum)) {
-			let versionSplit: string[] = versionNum.split(".");
-
-			if (!Utils.isNullOrUndefined(versionSplit)) {
-				return parseInt(versionSplit[1], 10);
-			}
-		}
-	}
-
 	private static getRateUrlSettingNameForClient(clientType: ClientType): string {
 		return RatingsHelper.combineClientTypeAndSuffix(clientType, RatingsHelper.rateUrlSettingNameSuffix);
 	}
@@ -329,24 +290,5 @@ export class RatingsHelper {
 		Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "true");
 
 		Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.SetDoNotPromptRatings));
-	}
-
-	private static versionHasCorrectFormat(version: string): boolean {
-		if (!Utils.isNullOrUndefined(version)) {
-			let versionSplit: string[] = version.split(".");
-
-			if (Utils.isNullOrUndefined(versionSplit) ||
-				versionSplit.length !== 3 ||
-				isNaN(parseInt(versionSplit[0], 10)) ||
-				isNaN(parseInt(versionSplit[1], 10)) ||
-				isNaN(parseInt(versionSplit[2], 10))) {
-
-				return false;
-			}
-
-			return true;
-		}
-
-		return false;
 	}
 }

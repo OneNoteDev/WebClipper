@@ -156,6 +156,17 @@ test("Test that we aren't just only comparing the patch", () => {
 	ok(lesser.isLesserThanOrEqualTo(greater));
 });
 
+test("Test that we ignore patch update when that is requested", () => {
+	let current = new Version("3.2.0");
+	let nonSignificantUpdate = new Version("3.2.999");
+
+	ok(current.isEqualTo(nonSignificantUpdate, true /* ignorePatchUpdate */));
+	ok(!current.isGreaterThan(nonSignificantUpdate, true /* ignorePatchUpdate */));
+	ok(current.isGreaterThanOrEqualTo(nonSignificantUpdate, true /* ignorePatchUpdate */));
+	ok(!current.isLesserThan(nonSignificantUpdate, true /* ignorePatchUpdate */));
+	ok(current.isLesserThanOrEqualTo(nonSignificantUpdate, true /* ignorePatchUpdate */));
+});
+
 test("toString should return the major, minor, and patch numbers delimited with periods", () => {
 	let version = new Version("3.1.0");
 	strictEqual(version.toString(), "3.1.0");

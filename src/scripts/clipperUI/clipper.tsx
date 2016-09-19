@@ -656,6 +656,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
 
+			// set oneNoteApiResult.data first with status still InProgress, then check for correct status to set
+			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.InProgress } });
 			let statusToSet: Status = SaveToOneNote.getClipSuccessStatus(this.state);
 			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: statusToSet } });
 		}, (error: OneNoteApi.RequestError) => {

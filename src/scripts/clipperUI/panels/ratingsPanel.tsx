@@ -38,7 +38,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 	 */
 	private getAnimationStategy(panel: RatingsPanelClass): AnimationStrategy {
 		return new SlideFromRightAnimationStrategy({
-			extShouldAnimateIn: () => {	return panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage; },
+			extShouldAnimateIn: () => { return panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage; },
 			extShouldAnimateOut: () => { return false; },
 			onAfterAnimateIn: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage }); }
 		});
@@ -82,7 +82,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 						RatingsHelper.setDoNotPromptStatus();
 
 						let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
-						if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
+						if (rateUrl) {
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.Rate
 							});
@@ -103,7 +103,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 								RatingsHelper.setDoNotPromptStatus();
 							}
 							let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
-							if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
+							if (feedbackUrl) {
 								panel.setState({
 									userSelectedRatingsPromptStage: RatingsPromptStage.Feedback
 								});
@@ -117,7 +117,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 				break;
 			case RatingsPromptStage.Rate:
 				let rateUrl: string = RatingsHelper.getRateUrlIfExists(clientType);
-				if (!Utils.isNullOrUndefined(rateUrl) && rateUrl.length > 0) {
+				if (rateUrl) {
 					buttons.push({
 						id: Constants.Ids.ratingsButtonRateYes,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Rate"),
@@ -146,7 +146,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 				break;
 			case RatingsPromptStage.Feedback:
 				let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
-				if (!Utils.isNullOrUndefined(feedbackUrl) && feedbackUrl.length > 0) {
+				if (feedbackUrl) {
 					buttons.push({
 						id: Constants.Ids.ratingsButtonFeedbackYes,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Feedback"),

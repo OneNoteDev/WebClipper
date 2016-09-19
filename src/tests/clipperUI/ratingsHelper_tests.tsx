@@ -117,7 +117,7 @@ test("badRatingVersionDelayIsOver returns false when there has not been a versio
 });
 
 test("badRatingVersionDelayIsOver returns true when there has been a version update since the bad rating", () => {
-	let invalidParams: string[] = ["3.3.-999", "3.3.0", "4.-999.-999"];
+	let invalidParams: string[] = ["3.3.0", "4.0.0"];
 	let badRatingVersion = "3.2.0";
 
 	for (let lastSeenVersion of invalidParams) {
