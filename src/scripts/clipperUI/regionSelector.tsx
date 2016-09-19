@@ -207,7 +207,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		regionSelectionCapturingEvent.setCustomProperty(Log.PropertyName.Custom.Width, Math.abs(this.state.firstPoint.x - this.state.secondPoint.x));
 		regionSelectionCapturingEvent.setCustomProperty(Log.PropertyName.Custom.Height, Math.abs(this.state.firstPoint.y - this.state.secondPoint.y));
 
-		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.takeTabScreenshot, {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.takeTabScreenshot, {
 			callback: (dataUrl: string) => {
 				Clipper.logger.logEvent(regionSelectionCapturingEvent);
 				this.saveCompressedSelectionToState(dataUrl).then((canvas) => {

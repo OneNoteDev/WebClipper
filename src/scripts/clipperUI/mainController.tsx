@@ -76,7 +76,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		this.initAnimationStrategy();
 
 		// The user could have pressed esc when Clipper iframe was not in focus
-		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.escHandler, () => {
+		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.escHandler, () => {
 			this.handleEscPress();
 		});
 
@@ -106,7 +106,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			onBeforeAnimateOut: () => { this.setState({ currentPanel: PanelType.None }); },
 			onBeforeAnimateIn: () => { this.props.clipperState.reset(); },
 			onAnimateInExpand: () => { this.setState({ currentPanel: this.getPanelTypeToShow() }); },
-			onAfterAnimateOut: () => { Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.hideUi); },
+			onAfterAnimateOut: () => { Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi); },
 		});
 
 		this.panelAnimationStrategy = new SlideFromRightAnimationStrategy({
@@ -238,7 +238,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 					id: Constants.Ids.refreshPageButton,
 					label: Localization.getLocalizedString("WebClipper.Action.RefreshPage"),
 					handler: () => {
-						Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.refreshPage);
+						Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.refreshPage);
 					}
 				});
 				return <ErrorDialogPanel message={Localization.getLocalizedString("WebClipper.Error.OrphanedWebClipperDetected") } buttons={buttons} />;

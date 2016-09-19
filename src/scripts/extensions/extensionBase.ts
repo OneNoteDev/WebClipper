@@ -1,21 +1,26 @@
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
-import {Experiments} from "../experiments";
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
-import {StorageBase} from "./storageBase";
+import {Experiments} from "../experiments";
+import {ResponsePackage} from "../responsePackage";
 import {Utils} from "../utils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
 
 import {SmartValue} from "../communicator/smartValue";
 
+import {Http} from "../http/http";
+
 import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
 
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
+
+import {ClipperData} from "../storage/clipperData";
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ChangeLog} from "../versioning/changeLog";
 import {ChangeLogHelper} from "../versioning/changeLogHelper";
@@ -32,30 +37,30 @@ import {WorkerPassthroughLogger} from "./workerPassthroughLogger";
 export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TTabIdentifier>, TTab, TTabIdentifier> {
 	private workers: TWorker[];
 	private logger: Logger;
-	protected storage: StorageBase;
+	protected clipperData: ClipperData;
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
 	protected static version = "3.2.6";
 
-	constructor(clipperType: ClientType, storage: StorageBase) {
+	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
 
 		this.workers = [];
 		this.logger = new WorkerPassthroughLogger(this.workers);
-		this.storage = storage;
-		this.storage.setLogger(this.logger);
-		this.auth = new AuthenticationHelper(this.storage, this.logger);
-		this.tooltip = new TooltipHelper(this.storage);
+		this.clipperData = clipperData;
+		this.clipperData.setLogger(this.logger);
+		this.auth = new AuthenticationHelper(this.clipperData, this.logger);
+		this.tooltip = new TooltipHelper(this.clipperData);
 
 		let clipperFirstRun = false;
 
-		let clipperId = this.storage.getValue(Constants.StorageKeys.clipperId);
+		let clipperId = this.clipperData.getValue(ClipperStorageKeys.clipperId);
 		if (!clipperId) {
 			// New install
 			clipperFirstRun = true;
 			clipperId = ExtensionBase.generateClipperId();
-			this.storage.setValue(Constants.StorageKeys.clipperId, clipperId);
+			this.clipperData.setValue(ClipperStorageKeys.clipperId, clipperId);
 
 			// Ensure fresh installs don't trigger thats What's New experience
 			this.updateLastSeenVersionInStorageToCurrent();
@@ -124,8 +129,8 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				try {
 					let locStringsDict = JSON.parse(responsePackage.parsedResponse);
 					if (locStringsDict) {
-						this.storage.setValue(Constants.StorageKeys.locale, locale);
-						this.storage.setValue(Constants.StorageKeys.locStrings, responsePackage.parsedResponse);
+						this.clipperData.setValue(ClipperStorageKeys.locale, locale);
+						this.clipperData.setValue(ClipperStorageKeys.locStrings, responsePackage.parsedResponse);
 						Localization.setLocalizedStrings(locStringsDict);
 					}
 					resolve(locStringsDict);
@@ -169,12 +174,21 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	 */
 	protected getFlightingAssignments(clipperId: string): Promise<any> {
 		let fetchNonLocalData = () => {
-			let userFlightUrl = Utils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
-			return this.storage.httpGet(userFlightUrl);
+			return new Promise<ResponsePackage<string>>((resolve, reject) => {
+				let userFlightUrl = Utils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
+				Http.get(userFlightUrl).then((request) => {
+					resolve({
+						request: request,
+						parsedResponse: request.responseText
+					});
+				}, (error) => {
+					reject(error);
+				});
+			});
 		};
 
 		return new Promise((resolve: (formattedFlights: string[]) => void, reject: (error: OneNoteApi.GenericError) => void) => {
-			this.storage.getFreshValue(Constants.StorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
+			this.clipperData.getFreshValue(ClipperStorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
 				// The response comes as a string array in the form [flight1, flight2, flight3],
 				// needs to be in CSV format for ODIN cooker, so we rejoin w/o spaces
 				let parsedResponse: string[] = successfulResponse.data.Features ? successfulResponse.data.Features : [];
@@ -189,38 +203,34 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	 * Gets the last seen version from storage, and returns undefined if there is none in storage
 	 */
 	protected getLastSeenVersion(): Version {
-		let lastSeenVersionStr = this.storage.getValue(Constants.StorageKeys.lastSeenVersion);
+		let lastSeenVersionStr = this.clipperData.getValue(ClipperStorageKeys.lastSeenVersion);
 		return lastSeenVersionStr ? new Version(lastSeenVersionStr) : undefined;
 	}
 
 	protected getNewUpdates(lastSeenVersion: Version, currentVersion: Version): Promise<ChangeLog.Update[]> {
 		return new Promise<ChangeLog.Update[]>((resolve, reject) => {
-			let localeOverride = this.storage.getValue(Constants.StorageKeys.displayLanguageOverride);
+			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || navigator.userLanguage;
 			let changelogUrl = Utils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
-			this.storage.httpGet(changelogUrl).then((responsePackage) => {
-				if (responsePackage.request.status === 200) {
-					try {
-						let schemas: ChangeLog.Schema[] = JSON.parse(responsePackage.parsedResponse);
-						let allUpdates: ChangeLog.Update[];
-						for (let i = 0; i < schemas.length; i++) {
-							if (schemas[i].schemaVersion === ChangeLog.schemaVersionSupported) {
-								allUpdates = schemas[i].updates;
-								break;
-							}
+			Http.get(changelogUrl).then((request: XMLHttpRequest) => {
+				try {
+					let schemas: ChangeLog.Schema[] = JSON.parse(request.responseText);
+					let allUpdates: ChangeLog.Update[];
+					for (let i = 0; i < schemas.length; i++) {
+						if (schemas[i].schemaVersion === ChangeLog.schemaVersionSupported) {
+							allUpdates = schemas[i].updates;
+							break;
 						}
-
-						if (allUpdates) {
-							let updatesSinceLastVersion = ChangeLogHelper.getUpdatesBetweenVersions(allUpdates, lastSeenVersion, currentVersion);
-							resolve(updatesSinceLastVersion);
-						} else {
-							throw new Error("No matching schemas were found.");
-						}
-					} catch (error) {
-						reject(error);
 					}
-				} else {
-					reject(OneNoteApi.ErrorUtils.createRequestErrorObject(responsePackage.request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
+
+					if (allUpdates) {
+						let updatesSinceLastVersion = ChangeLogHelper.getUpdatesBetweenVersions(allUpdates, lastSeenVersion, currentVersion);
+						resolve(updatesSinceLastVersion);
+					} else {
+						throw new Error("No matching schemas were found.");
+					}
+				} catch (error) {
+					reject(error);
 				}
 			}, (error) => {
 				reject(error);
@@ -280,14 +290,14 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		let worker = this.getOrCreateWorkerForTab(tab, this.getIdFromTab);
 		let tooltipImpressionEvent = new Log.Event.BaseEvent(Log.Event.Label.TooltipImpression);
 		tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.TooltipType, TooltipType[tooltipType]);
-		tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.LastSeenTooltipTime, this.tooltip.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, tooltipType));
-		tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.NumTimesTooltipHasBeenSeen, this.tooltip.getTooltipInformation(Constants.StorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType));
+		tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.LastSeenTooltipTime, this.tooltip.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType));
+		tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.NumTimesTooltipHasBeenSeen, this.tooltip.getTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType));
 		worker.invokeTooltip(tooltipType).then((wasInvoked) => {
 			if (wasInvoked) {
-				this.tooltip.setTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, tooltipType, Date.now().toString());
-				let numSeenStorageKey = Constants.StorageKeys.numTimesTooltipHasBeenSeenBase;
+				this.tooltip.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType, Date.now().toString());
+				let numSeenStorageKey = ClipperStorageKeys.numTimesTooltipHasBeenSeenBase;
 				let numTimesSeen = this.tooltip.getTooltipInformation(numSeenStorageKey, tooltipType) + 1;
-				this.tooltip.setTooltipInformation(Constants.StorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType, numTimesSeen.toString());
+				this.tooltip.setTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType, numTimesSeen.toString());
 			}
 			tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.FeatureEnabled, wasInvoked);
 			worker.getLogger().logEvent(tooltipImpressionEvent);
@@ -415,6 +425,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	private updateLastSeenVersionInStorageToCurrent() {
-		this.storage.setValue(Constants.StorageKeys.lastSeenVersion, ExtensionBase.getExtensionVersion());
+		this.clipperData.setValue(ClipperStorageKeys.lastSeenVersion, ExtensionBase.getExtensionVersion());
 	}
 }

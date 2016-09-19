@@ -28,15 +28,18 @@ import {VideoUtils} from "../domParsers/videoUtils";
 
 import {ClipperInjectOptions} from "../extensions/clipperInject";
 import {InvokeOptions, InvokeMode} from "../extensions/invokeOptions";
-import {StorageBase, TimeStampedData} from "../extensions/storageBase";
 
 import {InlineExtension} from "../extensions/bookmarklet/inlineExtension";
+
+import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
 
 import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
 import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
 import {Logger} from "../logging/logger";
+
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
@@ -101,7 +104,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private initializeInjectCommunicator(pageInfo: SmartValue<PageInfo>, clientInfo: SmartValue<ClientInfo>) {
 		// Clear the inject no-op tracker
-		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.noOpTracker, (trackerStartTime: number) => {
+		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.noOpTracker, (trackerStartTime: number) => {
 			let clearNoOpTrackerEvent = new Log.Event.BaseEvent(Log.Event.Label.ClearNoOpTracker);
 			clearNoOpTrackerEvent.setCustomProperty(Log.PropertyName.Custom.TimeToClearNoOpTracker, new Date().getTime() - trackerStartTime);
 			clearNoOpTrackerEvent.setCustomProperty(Log.PropertyName.Custom.Channel, Constants.CommunicationChannels.injectedAndUi);
@@ -111,7 +114,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		});
 
 		// Register functions for Inject
-		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.showRefreshClipperMessage, (errorMessage: string) => {
+		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.showRefreshClipperMessage, (errorMessage: string) => {
 			if (!this.state.badState) {
 				Clipper.logger.logFailure(Log.Failure.Label.OrphanedWebClippersDueToExtensionRefresh, Log.Failure.Type.Expected,
 					{ error: errorMessage });
@@ -121,11 +124,11 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		});
 
-		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.toggleClipper, () => {
+		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.toggleClipper, () => {
 			this.state.setState({ uiExpanded: !this.state.uiExpanded });
 		});
 
-		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.onSpaNavigate, () => {
+		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.onSpaNavigate, () => {
 			// This could have been called when the UI is already toggled off
 			if (this.state.uiExpanded) {
 				let hideClipperDueToSpaNavigateEvent = new Log.Event.BaseEvent(Log.Event.Label.HideClipperDueToSpaNavigate);
@@ -134,14 +137,14 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			};
 		});
 
-		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.setInvokeOptions, (options: InvokeOptions) => {
+		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.setInvokeOptions, (options: InvokeOptions) => {
 			this.setInvokeOptions(options);
 		});
 
 		// Register smartValues for Inject
-		Clipper.injectCommunicator.broadcastAcrossCommunicator(this.isFullScreen, Constants.SmartValueKeys.isFullScreen);
+		Clipper.getInjectCommunicator().broadcastAcrossCommunicator(this.isFullScreen, Constants.SmartValueKeys.isFullScreen);
 
-		Clipper.injectCommunicator.subscribeAcrossCommunicator(pageInfo, Constants.SmartValueKeys.pageInfo, (updatedPageInfo: PageInfo) => {
+		Clipper.getInjectCommunicator().subscribeAcrossCommunicator(pageInfo, Constants.SmartValueKeys.pageInfo, (updatedPageInfo: PageInfo) => {
 			if (updatedPageInfo) {
 				let newPreviewGlobalInfo = Utils.createUpdatedObject(this.state.previewGlobalInfo, {
 					previewTitleText: updatedPageInfo.contentTitle
@@ -162,7 +165,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		});
 
-		Clipper.injectCommunicator.setErrorHandler((e: Error) => {
+		Clipper.getInjectCommunicator().setErrorHandler((e: Error) => {
 			Log.ErrorUtils.handleCommunicatorError(Constants.CommunicationChannels.injectedAndUi, e, clientInfo);
 		});
 	}
@@ -341,7 +344,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private initializeExtensionCommunicator(clientInfo: SmartValue<ClientInfo>) {
 		// Clear the extension no-op tracker
-		Clipper.extensionCommunicator.registerFunction(Constants.FunctionKeys.noOpTracker, (trackerStartTime: number) => {
+		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.noOpTracker, (trackerStartTime: number) => {
 			let clearNoOpTrackerEvent = new Log.Event.BaseEvent(Log.Event.Label.ClearNoOpTracker);
 			clearNoOpTrackerEvent.setCustomProperty(Log.PropertyName.Custom.TimeToClearNoOpTracker, new Date().getTime() - trackerStartTime);
 			clearNoOpTrackerEvent.setCustomProperty(Log.PropertyName.Custom.Channel, Constants.CommunicationChannels.extensionAndUi);
@@ -350,7 +353,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			return Promise.resolve();
 		});
 
-		Clipper.extensionCommunicator.registerFunction(Constants.FunctionKeys.createHiddenIFrame, (url: string) => {
+		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.createHiddenIFrame, (url: string) => {
 			Utils.appendHiddenIframeToDocument(url);
 		});
 
@@ -369,7 +372,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				};
 
 				// The user SV should never be set with expired user information
-				let tokenHasExpiredForLoggedInUser = StorageBase.valueHasExpired(timeStampedData, (updatedUser.user.accessTokenExpiration * 1000) - 180000);
+				let tokenHasExpiredForLoggedInUser = CachedHttp.valueHasExpired(timeStampedData, (updatedUser.user.accessTokenExpiration * 1000) - 180000);
 				if (tokenHasExpiredForLoggedInUser) {
 					Clipper.logger.logFailure(Log.Failure.Label.UserSetWithInvalidExpiredData, Log.Failure.Type.Unexpected);
 				}
@@ -383,21 +386,21 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		};
 
 		this.state.setState({ userResult: { status: Status.InProgress } });
-		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.getInitialUser, {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.getInitialUser, {
 			callback: (freshInitialUser: UserInfo) => {
 				if (freshInitialUser && freshInitialUser.user) {
 					Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthAlreadySignedIn);
 				} else if (!freshInitialUser) {
 					userInfoUpdateCb(freshInitialUser);
 				}
-				Clipper.extensionCommunicator.subscribeAcrossCommunicator(new SmartValue<UserInfo>(), Constants.SmartValueKeys.user, (updatedUser: UserInfo) => {
+				Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(new SmartValue<UserInfo>(), Constants.SmartValueKeys.user, (updatedUser: UserInfo) => {
 					userInfoUpdateCb(updatedUser);
 				});
 			}
 		});
 
 		this.state.setState({ fetchLocStringStatus: Status.InProgress });
-		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.clipperStrings, {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.clipperStrings, {
 			callback: (data: Object) => {
 				if (data) {
 					Localization.setLocalizedStrings(data);
@@ -406,7 +409,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		});
 
-		Clipper.extensionCommunicator.subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {
+		Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {
 			if (updatedClientInfo) {
 				this.state.setState({
 					clientInfo: updatedClientInfo
@@ -414,7 +417,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		});
 
-		Clipper.extensionCommunicator.setErrorHandler((e: Error) => {
+		Clipper.getExtensionCommunicator().setErrorHandler((e: Error) => {
 			Log.ErrorUtils.handleCommunicatorError(Constants.CommunicationChannels.extensionAndUi, e, clientInfo);
 		});
 	}
@@ -423,10 +426,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		let pageInfo = new SmartValue<PageInfo>();
 		let clientInfo = new SmartValue<ClientInfo>();
 
-		Clipper.injectCommunicator = new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.injectedAndUi);
+		Clipper.setInjectCommunicator(new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.injectedAndUi));
 
 		// Check the options passed in to determine what kind of Communicator we need to talk to the background task
-		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.setInjectOptions, (options: ClipperInjectOptions) => {
+		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.setInjectOptions, (options: ClipperInjectOptions) => {
 			this.setState({ injectOptions: options });
 
 			if (this.state.injectOptions.useInlineBackgroundWorker) {
@@ -434,19 +437,19 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				let backgroundMessageHandler = background.getInlineMessageHandler();
 				let uiMessageHandler = new InlineMessageHandler(backgroundMessageHandler);
 				backgroundMessageHandler.setOtherSide(uiMessageHandler);
-				Clipper.extensionCommunicator = new Communicator(uiMessageHandler, Constants.CommunicationChannels.extensionAndUi);
+				Clipper.setExtensionCommunicator(new Communicator(uiMessageHandler, Constants.CommunicationChannels.extensionAndUi));
 			} else {
-				Clipper.extensionCommunicator = new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.extensionAndUi);
+				Clipper.setExtensionCommunicator(new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.extensionAndUi));
 			}
 			this.initializeExtensionCommunicator(clientInfo);
-			Clipper.extensionCommunicator.subscribeAcrossCommunicator(Clipper.sessionId, Constants.SmartValueKeys.sessionId);
-			Clipper.logger = new CommunicatorLoggerPure(Clipper.extensionCommunicator);
+			Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(Clipper.sessionId, Constants.SmartValueKeys.sessionId);
+			Clipper.logger = new CommunicatorLoggerPure(Clipper.getExtensionCommunicator());
 		});
 
 		this.initializeInjectCommunicator(pageInfo, clientInfo);
 
 		// When tabbing from outside the iframe, we want to set focus to the lowest tabindex element in our iframe
-		Clipper.injectCommunicator.registerFunction(Constants.FunctionKeys.tabToLowestIndexedElement, () => {
+		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.tabToLowestIndexedElement, () => {
 			let tabbables = document.querySelectorAll("[tabindex]");
 			let lowestTabIndexElement: HTMLElement;
 			if (tabbables.length > 0) {
@@ -475,7 +478,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			switch (newMode) {
 				case ClipMode.FullPage:
 				case ClipMode.Augmentation:
-					Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged);
+					Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged);
 					break;
 				default:
 					break;
@@ -507,7 +510,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private updateFrameHeight(newContainerHeight: number) {
-		Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.updateFrameHeight, { param: newContainerHeight });
+		Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updateFrameHeight, { param: newContainerHeight });
 	}
 
 	private handleSignIn(authType: AuthType) {
@@ -516,7 +519,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		this.setState({ userResult: { status: Status.InProgress } });
 		type ErrorObject = { correlationId?: string, error: string, errorDescription: string };
-		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.signInUser, { param: authType, callback: (data: UserInfo | ErrorObject) => {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signInUser, { param: authType, callback: (data: UserInfo | ErrorObject) => {
 			// For cleaner referencing
 			let updatedUser = data as UserInfo;
 			let errorObject = data as ErrorObject;
@@ -550,7 +553,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private handleSignOut(authType: string) {
 		this.state.setState(this.getSignOutState());
-		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.signOutUser, { param: AuthType[authType] });
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signOutUser, { param: AuthType[authType] });
 
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.SignOut);
 		Clipper.logger.logSessionEnd(Log.Session.EndTrigger.SignOut);
@@ -567,11 +570,11 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ClipAttempted);
 
 		this.state.setState({ userResult: { status: Status.InProgress, data: this.state.userResult.data } });
-		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, { callback: (updatedUser: UserInfo) => {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, { callback: (updatedUser: UserInfo) => {
 			if (updatedUser && updatedUser.user) {
 				if (this.state.currentMode.get() === ClipMode.FullPage) {
 					// A page info refresh needs to be triggered if the url has changed right before the clip action
-					Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged, {
+					Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged, {
 						callback: () => {
 							this.startClip();
 						}
@@ -592,14 +595,14 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private startClip() {
-		Clipper.Storage.setValue(Constants.StorageKeys.lastClippedDate, Date.now().toString());
+		Clipper.storeValue(ClipperStorageKeys.lastClippedDate, Date.now().toString());
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
 		let mode = ClipMode[this.state.currentMode.get()];
 		if (this.state.currentMode.get() === ClipMode.FullPage && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			mode += ": " + OneNoteApi.ContentType[this.state.pageInfo.contentType];
-			Clipper.Storage.setValue(Constants.StorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
+			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
 		}
 		if (this.state.currentMode.get() === ClipMode.Augmentation) {
 			let styles = {
@@ -609,12 +612,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			// Record lastClippedDate for each different augmentationMode so we can upsell the augmentation mode
 			// to users who haven't Clipped this mode in a while
 			let augmentationTypeAsString = AugmentationHelper.getAugmentationType(this.state);
-			Clipper.Storage.setValue(Constants.StorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
+			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, augmentationTypeAsString);
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.Styles, JSON.stringify(styles));
 		}
 		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
-			Clipper.Storage.setValue(Constants.StorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
+			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
 		}
 		clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, mode);
 

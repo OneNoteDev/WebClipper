@@ -12,6 +12,9 @@ import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
 
+import {ClipperData} from "../../storage/clipperData";
+import {LocalStorage} from "../../storage/localStorage";
+
 import {ChangeLog} from "../../versioning/changeLog";
 import {Version} from "../../versioning/version";
 
@@ -19,7 +22,6 @@ import {ExtensionBase} from "../extensionBase";
 import {InvokeInfo} from "../invokeInfo";
 import {InvokeSource} from "../invokeSource";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
-import {StorageBase} from "../storageBase";
 
 import {InjectUrls} from "./injectUrls";
 import {WebExtensionWorker} from "./webExtensionWorker";
@@ -34,7 +36,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	public injectUrls: InjectUrls;
 
 	constructor(clientType: ClientType, injectUrls: InjectUrls) {
-		super(clientType, new StorageBase());
+		super(clientType, new ClipperData(new LocalStorage()));
 
 		this.injectUrls = injectUrls;
 
