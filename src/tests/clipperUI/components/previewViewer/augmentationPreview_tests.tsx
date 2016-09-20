@@ -94,9 +94,9 @@ test("The augmented content of the page should be displayed in preview body in A
 	let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 	HelperFunctions.mountToFixture(defaultComponent);
 
-	strictEqual(document.getElementById(Constants.Ids.previewBody).innerText,
+	strictEqual(document.getElementById(Constants.Ids.highlightablePreviewBody).innerHTML,
 		mockClipperState.augmentationPreviewInfo.previewBodyHtml,
-		"The editable augmentation result content is displayed in the preview body");
+		"The editable augmentation result content is displayed in the preview body's highlightable portion");
 });
 
 test("When the augmentation successfully completes, but no data is returned, the preview should indicate no content was found in Augmentation mode", () => {
@@ -371,8 +371,8 @@ test("If the user selects something in the preview body, then clicks the highlig
 	let paragraphId = "para";
 	paragraph.id = paragraphId;
 	let innerText = "Test";
-	paragraph.innerText = innerText;
-	document.getElementById(Constants.Ids.previewBody).appendChild(paragraph);
+	paragraph.innerHTML = innerText;
+	document.getElementById(Constants.Ids.highlightablePreviewBody).appendChild(paragraph);
 
 	let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
@@ -406,7 +406,7 @@ test("If the user selects something outside the preview body, then clicks the hi
 	let paragraphId = "para";
 	paragraph.id = paragraphId;
 	let innerText = "Test";
-	paragraph.innerText = innerText;
+	paragraph.innerHTML = innerText;
 
 	// Note this is outside the preview body
 	HelperFunctions.getFixture().appendChild(paragraph);

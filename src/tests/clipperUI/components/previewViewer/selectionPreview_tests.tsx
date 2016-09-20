@@ -31,11 +31,12 @@ QUnit.module("selectionPreview", {
 test("The selection preview should render the content", () => {
 	HelperFunctions.mountToFixture(defaultComponent);
 
-	strictEqual(document.getElementById(Constants.Ids.previewBody).innerText,
+	let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
+	strictEqual(highlightablePreviewBody.innerText,
 		mockClipperState.selectionPreviewInfo.previewBodyHtml,
 		"The editable selection result content is displayed in the preview body");
 
-	strictEqual(document.getElementById(Constants.Ids.previewBody).innerHTML,
+	strictEqual(highlightablePreviewBody.innerHTML,
 		mockClipperState.selectionPreviewInfo.previewBodyHtml,
 		"Only the editable selection result content is displayed in the preview body");
 });
@@ -45,13 +46,13 @@ test("The selection preview should render the content as HTML, not purely text",
 	defaultComponent = <SelectionPreview clipperState={mockClipperState} />;
 	HelperFunctions.mountToFixture(defaultComponent);
 
-	let previewBody = document.getElementById(Constants.Ids.previewBody);
+	let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
 
-	strictEqual(previewBody.innerHTML, mockClipperState.selectionPreviewInfo.previewBodyHtml,
+	strictEqual(highlightablePreviewBody.innerHTML, mockClipperState.selectionPreviewInfo.previewBodyHtml,
 		"Only the editable selection result content is displayed in the preview body");
-	strictEqual(previewBody.childElementCount, 1, "There should be one child");
+	strictEqual(highlightablePreviewBody.childElementCount, 1, "There should be one child");
 
-	let child = previewBody.firstElementChild as HTMLElement;
+	let child = highlightablePreviewBody.firstElementChild as HTMLElement;
 	strictEqual(child.outerHTML, mockClipperState.selectionPreviewInfo.previewBodyHtml,
 		"The child's outer HTML should be the preview body html");
 	strictEqual(child.innerHTML, "The selection",
