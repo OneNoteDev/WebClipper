@@ -17,6 +17,7 @@
 	"WebClipper.ClipType.Bookmark.Button.Tooltip": "Clip just the title, thumbnail, synopsis, and link.",
 	"WebClipper.ClipType.Bookmark.ProgressLabel": "Clipping Bookmark",
 	"WebClipper.ClipType.Button.Tooltip": "Clip just the {0} in an easy-to-read format.",
+	"WebClipper.ClipType.Image.Button": "Image",
 	"WebClipper.ClipType.ImageSnippet.Button": "Image Snippet",
 	"WebClipper.ClipType.MultipleRegions.Button.Tooltip": "Take screenshots of parts of the page you\u0027ll select.",
 	"WebClipper.ClipType.Pdf.Button": "PDF File",

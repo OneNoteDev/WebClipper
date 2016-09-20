@@ -1,6 +1,6 @@
-import {Constants} from "../constants";
-
 import {Rtl} from "../localization/rtl";
+
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 /*
  * Responsible for executing locale-specific tasks before initializing and displaying
@@ -30,7 +30,7 @@ export class LocaleSpecificTasks {
 
 let localeOverride: string;
 try {
-	localeOverride = window.localStorage.getItem(Constants.StorageKeys.displayLanguageOverride);
+	localeOverride = window.localStorage.getItem(ClipperStorageKeys.displayLanguageOverride);
 } catch (e) { }
 
 LocaleSpecificTasks.execute(localeOverride || navigator.language || navigator.userLanguage);

@@ -611,6 +611,7 @@ function exportChromeJS() {
 	]).pipe(concat("chromeInject.js")).pipe(gulp.dest(targetDir));
 
 	var chromePageNavInjectTask = gulp.src([
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "chromePageNavInject.js"
 	]).pipe(concat("chromePageNavInject.js")).pipe(gulp.dest(targetDir));
 
@@ -667,6 +668,7 @@ function exportEdgeJS() {
 	]).pipe(concat("edgeInject.js")).pipe(gulp.dest(targetDir));
 
 	var edgePageNavInjectTask = gulp.src([
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "edgePageNavInject.js"
 	]).pipe(concat("edgePageNavInject.js")).pipe(gulp.dest(targetDir));
 
@@ -745,6 +747,7 @@ function exportFirefoxJS() {
 	]).pipe(concat("firefoxInject.js")).pipe(gulp.dest(targetDir));
 
 	var firefoxPageNavInjectTask = gulp.src([
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "firefoxPageNavInject.js"
 	]).pipe(concat("firefoxPageNavInject.js")).pipe(gulp.dest(targetDir));
 
@@ -801,6 +804,7 @@ function exportSafariJS() {
 	]).pipe(concat("safariInject.js")).pipe(gulp.dest(targetDir));
 
 	var safariPageNavInjectTask = gulp.src([
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "safariPageNavInject.js"
 	]).pipe(concat("safariPageNavInject.js")).pipe(gulp.dest(targetDir));
 

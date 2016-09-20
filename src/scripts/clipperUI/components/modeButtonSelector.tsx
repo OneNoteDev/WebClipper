@@ -1,3 +1,4 @@
+import {ClientType} from "../../clientType";
 import {Experiments} from "../../experiments";
 import {Utils} from "../../utils";
 
@@ -50,10 +51,20 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		}
 
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("region.png") }
-			label={Localization.getLocalizedString("WebClipper.ClipType.Region.Button")}
+			label={Localization.getLocalizedString(this.getRegionModeButtonLabel())}
 			myMode={ClipMode.Region} tabIndex={41} selected={currentMode === ClipMode.Region}
 			onModeSelected={this.onModeSelected.bind(this) }
 			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.MultipleRegions.Button.Tooltip")}/>;
+	}
+
+	private getRegionModeButtonLabel(): string {
+		// As of 09/13/16, Edge does not support grabbing the viewport screenshot, so this mode only surfaces
+		// when the user selects an image through the context menu. In this scenario, it's best that we call it
+		// 'Image' instead of 'Region' mode. 
+		if (this.props.clipperState.clientInfo.clipperType === ClientType.EdgeExtension) {
+			return "WebClipper.ClipType.Image.Button";
+		}
+		return "WebClipper.ClipType.Region.Button";
 	}
 
 	private getSelectionModeButton(currentMode: ClipMode) {

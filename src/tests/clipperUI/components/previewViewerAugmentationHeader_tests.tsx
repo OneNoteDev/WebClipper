@@ -54,18 +54,13 @@ test("The serifControl's buttons should be visible", () => {
 	ok(!!document.getElementById(Constants.Ids.serif));
 });
 
-test("The fontSizeControl should be visible", () => {
-	HelperFunctions.mountToFixture(defaultComponent);
-	ok(!!document.getElementById(Constants.Ids.fontSizeControl));
-});
-
 test("The fontSizeControl's buttons should be visible", () => {
 	HelperFunctions.mountToFixture(defaultComponent);
 	ok(!!document.getElementById(Constants.Ids.decrementFontSize));
 	ok(!!document.getElementById(Constants.Ids.incrementFontSize));
 });
 
-test("The tabbing should flow from higlight to font family selectors to font size selectors, and each tab index should not be less than 1", () => {
+test("The tabbing should flow from highlight to font family selectors to font size selectors, and each tab index should not be less than 1", () => {
 	HelperFunctions.mountToFixture(defaultComponent);
 
 	let elementsInExpectedTabOrder = [
