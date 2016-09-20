@@ -203,13 +203,13 @@ test("For known get notebooks error codes, the appropriate failure message shoul
 		{ code: "10013", message: stringsJson["WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithActionableLink"] }
 	];
 
-	// The message should contain a link to the resolving blog post with text 'here'
+	// The message should contain a link to the resolving blog post with text 'Learn more'
 	let anchorElementToTooManyItemsPost = document.createElement("A") as HTMLAnchorElement;
-	anchorElementToTooManyItemsPost.innerText = "here";
+	anchorElementToTooManyItemsPost.innerText = "Learn more";
 	anchorElementToTooManyItemsPost.href = "https://aka.ms/onapi-too-many-items-actionable";
 
 	for (let i = 0; i < codeMessagePairs.length; i++) {
-		strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(codeMessagePairs[i].code), codeMessagePairs[i].message.replace("{here}", anchorElementToTooManyItemsPost.outerHTML),
+		strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(codeMessagePairs[i].code), codeMessagePairs[i].message.replace("{Learn more}", anchorElementToTooManyItemsPost.outerHTML),
 			"Code " + codeMessagePairs[i].code + " should be associated with the matching error message");
 	}
 });
