@@ -48,8 +48,8 @@ export class InlineExtension extends ExtensionBase<InlineWorker, any, any> {
 	protected addPageNavListener(callback: (tab: any) => void) {
 	}
 
-	protected checkIfTabMatchesATooltipType(tab: SafariBrowserTab, tooltipType: TooltipType): boolean {
-		return false;
+	protected checkIfTabMatchesATooltipType(tab: SafariBrowserTab, tooltipTypes: TooltipType[]): TooltipType {
+		return undefined;
 	}
 
 	protected checkIfTabIsAVideoDomain(tab: SafariBrowserTab): boolean {
