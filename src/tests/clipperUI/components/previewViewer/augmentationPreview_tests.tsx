@@ -41,7 +41,7 @@ let sansSerifDefaultFontSize = stringsJson["WebClipper.FontSize.Preview.SansSeri
 let serifFontFamily = stringsJson["WebClipper.FontFamily.Preview.SerifDefault"];
 let fontSizeStep = Constants.Settings.fontSizeStep;
 
-test("The tab order flow from the header to the preview title is correct in Augmentation mode", () => {
+test("The tab order flow from the header to the preview title is correct in Augmentation mode, and each tab index should not be less than 1", () => {
 	let mockClipperState = getMockAugmentationModeState();
 	let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 	HelperFunctions.mountToFixture(defaultComponent);
@@ -58,6 +58,10 @@ test("The tab order flow from the header to the preview title is correct in Augm
 	for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
 		ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
 			"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
+	}
+
+	for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
+		ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
 	}
 });
 
