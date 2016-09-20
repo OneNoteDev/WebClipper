@@ -229,13 +229,14 @@
 
 .wideButtonContainer {
 	background: @WideButtonBackgroundColor;
+	border: 1px solid @WideButtonBackgroundColor;
 	border-radius: 4px;
 	text-align: center;
-	width: 100%;
 	margin-bottom: 10px;
 
 	&:hover {
 		background: @WideButtonHoverColor;
+		border-color: @WideButtonHoverColor;
 	}
 }
 
@@ -274,7 +275,6 @@
 
 	.wideButtonContainer {
 		background: transparent;
-		border: 1px solid #ffffff;
 
 		.wideButtonFont {
 			color: #ffffff;
