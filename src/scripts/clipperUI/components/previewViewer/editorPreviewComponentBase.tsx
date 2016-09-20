@@ -17,7 +17,9 @@ export interface EditorPreviewState {
 
 /**
  * Child components will inherit the editor header where users can make rich edits to their content, such as highlighting
- * and font changes.
+ * and font changes. Within the preview body element, this component renders a highlightable preview body element underneath
+ * it that the highlighter is attached to. Highlighting logic can only take place within this element, and this prevents
+ * other types of preview bodies from accidentally providing highlighting functionality.
  */
 export abstract class EditorPreviewComponentBase<TState extends EditorPreviewState, TProps extends ClipperStateProp>
 	extends PreviewComponentBase<TState, TProps> {
