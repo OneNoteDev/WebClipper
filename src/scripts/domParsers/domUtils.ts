@@ -2,9 +2,10 @@
 /// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts"/>
 
 import {Constants} from "../constants";
-import {PageInfo} from "../pageInfo";
 import {Utils} from "../utils";
 import {VideoUtils} from "./videoUtils";
+
+import {VideoExtractorFactory} from "./VideoExtractorFactory";
 
 /**
  * Dom specific Helper utility methods
@@ -17,6 +18,7 @@ export module DomUtils {
 		export const base = "base";
 		export const button = "button";
 		export const canvas = "canvas";
+		export const center = "center";
 		export const embed = "embed";
 		export const head = "head";
 		export const hr = "hr";
@@ -33,6 +35,7 @@ export module DomUtils {
 		export const noscript = "noscript";
 		export const progress = "progress";
 		export const script = "script";
+		export const source = "source";
 		export const style = "style";
 		export const svg = "svg";
 		export const video = "video";
@@ -54,12 +57,22 @@ export module DomUtils {
 		Tags.noscript,
 		Tags.progress,
 		Tags.script,
+		Tags.source,
 		Tags.style,
+		Tags.svg,
 		Tags.video
 	];
 
 	export function removeElementsNotSupportedInOnml(doc: Document) {
+		// For elements that cannot be converted into something equivalent in ONML, we remove them ...
 		domReplacer(doc, tagsNotSupportedInOnml.join());
+
+		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
+		domReplacer(doc, Tags.center, (node: HTMLElement) => {
+			let div = document.createElement("DIV");
+			div.innerHTML = node.innerHTML;
+			return div;
+		});
 	}
 
 	export function domReplacer(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Node = () => undefined) {
@@ -160,26 +173,28 @@ export module DomUtils {
 	}
 
 	/**
-	 * Get a clone of the current DOM, with our own UI and other unwanted tags removed, and as much CSS and canvas
-	 * inlining as possible given the API's upload size limitation.
+	 * Get a clone of the specified DOM, with our own UI and other unwanted tags removed, and as much CSS and canvas
+	 * inlining as possible given the API's upload size limitation. This does not affect the document passed into the
+	 * function.
 	 *
 	 * @returns The cleaned DOM
 	 */
 	export function getCleanDomOfCurrentPage(originalDoc: Document): string {
 		let doc = cloneDocument(originalDoc);
 		convertCanvasElementsToImages(doc, originalDoc);
-
 		addBaseTagIfNecessary(doc, originalDoc.location);
 
+		addImageSizeInformationToDom(doc);
+		removeUnwantedItems(doc);
+
+		let domString = getDomString(doc);
+		return domString;
+	}
+
+	export function removeUnwantedItems(doc: Document): void {
 		removeClipperElements(doc);
 		removeUnwantedElements(doc);
 		removeUnwantedAttributes(doc);
-
-		addImageSizeInformationToDom(doc);
-
-		let domString = getDomString(doc);
-
-		return domString;
 	}
 
 	/**
@@ -211,11 +226,14 @@ export module DomUtils {
 
 			let iframes: HTMLIFrameElement[] = [];
 			try {
-				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.Vimeo) {
-					iframes = iframes.concat(createEmbeddedVimeoVideos(pageContent));
-				}
-				if (VideoUtils.SupportedVideoDomains[supportedDomain] === VideoUtils.SupportedVideoDomains.YouTube) {
-					iframes.push(createEmbeddedYouTubeVideo(pageUrl));
+				// Construct the appropriate videoExtractor based on the Domain we are on
+				let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
+				let extractor = VideoExtractorFactory.createVideoExtractor(domain);
+
+				// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
+				// to render them later
+				if (extractor) {
+					iframes = iframes.concat(extractor.createEmbeddedVideos(pageUrl, pageContent));
 				}
 			} catch (e) {
 				// if we end up here, we're unexpectedly broken
@@ -228,52 +246,9 @@ export module DomUtils {
 	}
 
 	/**
-	 * Create iframes in correct format for Vimeo video embed in OneNote.
-	 * Supports multiple videos.
-	 */
-	function createEmbeddedVimeoVideos(pageContent: string): HTMLIFrameElement[] {
-		let vimeoSrcs = VideoUtils.getVimeoVideoSrcValues(pageContent);
-
-		if (Utils.isNullOrUndefined(vimeoSrcs)) {
-			// fast fail: we expect all pages passed into this function in prod to contain clip ids
-			throw new Error("Vimeo page content does not contain clip ids");
-		}
-
-		let iframes: HTMLIFrameElement[] = [];
-
-		for (let vimeoSrc of vimeoSrcs) {
-			let iframe = createEmbedVideoIframe();
-			iframe.src = vimeoSrc;
-			iframe.setAttribute(dataOriginalSrcAttribute, vimeoSrc);
-
-			iframes.push(iframe);
-		}
-
-		return iframes;
-	}
-
-	/**
-	 * Create iframe in correct format for YouTube video embed in OneNote.
-	 * Supports a single video.
-	 */
-	function createEmbeddedYouTubeVideo(pageUrl: string): HTMLIFrameElement {
-		let iframe = createEmbedVideoIframe();
-		let srcValue = VideoUtils.getYouTubeVideoSrcValue(pageUrl);
-		let videoId = VideoUtils.getYouTubeVideoId(pageUrl);
-		if (Utils.isNullOrUndefined(srcValue) || Utils.isNullOrUndefined(videoId)) {
-			// fast fail: we expect all page urls passed into this function in prod to contain a video id
-			throw new Error("YouTube page url does not contain video id");
-		}
-		iframe.src = srcValue;
-		iframe.setAttribute(dataOriginalSrcAttribute, Utils.addUrlQueryValue(VideoUtils.youTubeWatchVideoBaseUrl, VideoUtils.youTubeVideoIdQueryKey, videoId));
-
-		return iframe;
-	}
-
-	/**
 	 * Create base iframe with reasonable style properties for video embed in OneNote.
 	 */
-	function createEmbedVideoIframe(): HTMLIFrameElement {
+	export function createEmbedVideoIframe(): HTMLIFrameElement {
 		let iframe = document.createElement("iframe");
 		// these values must be set inline, else the embed in OneNote won't respect them
 		// width and height set to preserve a 16:9 aspect ratio
@@ -764,6 +739,47 @@ export module DomUtils {
 		return a;
 	}
 
+	export function removeEventListenerAttributes(doc: Document): void {
+		// See: https://en.wikipedia.org/wiki/DOM_events
+		let attributesToRemove = [
+			"onclick",
+			"ondblclick",
+			"onmousedown",
+			"onmouseup",
+			"onmouseover",
+			"onmousemove",
+			"onmouseout",
+			"ondragstart",
+			"ondrag",
+			"ondragenter",
+			"ondragleave",
+			"ondragover",
+			"ondrop",
+			"ondragend",
+			"onkeydown",
+			"onkeypress",
+			"onkeyup",
+			"onload",
+			"onunload",
+			"onabort",
+			"onerror",
+			"onresize",
+			"onscroll",
+			"onselect",
+			"onchange",
+			"onsubmit",
+			"onreset",
+			"onfocus",
+			"onblur"
+		];
+		for (let i = 0; i < attributesToRemove.length; i++) {
+			let elements = doc.querySelectorAll("[" + attributesToRemove[i] + "]");
+			for (let j = 0; j < elements.length; j++) {
+				elements[j].removeAttribute(attributesToRemove[i]);
+			}
+		}
+	}
+
 	/*
 	 * Mimics augmentation API cleaning and ensuring that only ONML-compliant
 	 * elements remain
@@ -771,9 +787,10 @@ export module DomUtils {
 	export function toOnml(doc: Document): Promise<void> {
 		removeElementsNotSupportedInOnml(doc);
 		domReplacer(doc, [Tags.iframe].join());
-		getCleanDomOfCurrentPage(doc);
+		removeUnwantedItems(doc);
 		convertRelativeUrlsToAbsolute(doc);
 		removeAllStylesAndClasses(doc);
+		removeEventListenerAttributes(doc);
 		return removeBlankImages(doc);
 	}
 

@@ -13,12 +13,17 @@ import {Communicator} from "../communicator/communicator";
 import {MessageHandler} from "../communicator/messageHandler";
 import {SmartValue} from "../communicator/smartValue";
 
+import {ClipperCachedHttp} from "../http/clipperCachedHttp";
+
 import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
 
 import * as Log from "../logging/log";
 import {LogHelpers} from "../logging/logHelpers";
 import {SessionLogger} from "../logging/sessionLogger";
+
+import {ClipperData} from "../storage/clipperData";
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ChangeLog} from "../versioning/changeLog";
 
@@ -27,7 +32,6 @@ import {ExtensionBase} from "./extensionBase";
 import {InvokeInfo} from "./invokeInfo";
 import {InvokeSource} from "./invokeSource";
 import {InvokeMode, InvokeOptions} from "./invokeOptions";
-import {StorageBase} from "./storageBase";
 
 /**
  * The abstract base class for all of the extension workers
@@ -41,7 +45,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected tabId: TTabIdentifier;
 
 	protected auth: AuthenticationHelper;
-	protected storage: StorageBase;
+	protected clipperData: ClipperData;
 
 	protected uiCommunicator: Communicator;
 	protected pageNavUiCommunicator: Communicator;
@@ -54,7 +58,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected clientInfo: SmartValue<ClientInfo>;
 	protected sessionId: SmartValue<string>;
 
-	constructor(clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper, storage: StorageBase, uiMessageHandlerThunk: () => MessageHandler, injectMessageHandlerThunk: () => MessageHandler) {
+	constructor(clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper, clipperData: ClipperData, uiMessageHandlerThunk: () => MessageHandler, injectMessageHandlerThunk: () => MessageHandler) {
 		Polyfills.init();
 
 		this.onUnloading = () => { };
@@ -69,8 +73,8 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.logger = LogManager.createExtLogger(this.sessionId, LogHelpers.isConsoleOutputEnabled() ? this.debugLoggingInjectCommunicator : undefined);
 		this.logger.logSessionStart();
 
-		this.storage = storage;
-		this.storage.setLogger(this.logger);
+		this.clipperData = clipperData;
+		this.clipperData.setLogger(this.logger);
 
 		this.auth = auth;
 		this.clientInfo = clientInfo;
@@ -266,7 +270,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected getLocalizedStrings(locale: string, callback?: Function) {
 		this.logger.setContextProperty(Log.Context.Custom.BrowserLanguage, locale);
 
-		let storedLocale = this.storage.getValue(Constants.StorageKeys.locale);
+		let storedLocale = this.clipperData.getValue(ClipperStorageKeys.locale);
 		let localeInStorageIsDifferent = !storedLocale || storedLocale !== locale;
 
 		let getLocaleEvent = new Log.Event.BaseEvent(Log.Event.Label.GetLocale);
@@ -274,12 +278,12 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.logger.logEvent(getLocaleEvent);
 
 		let fetchStringDataFunction = () => { return LocalizationHelper.makeLocStringsFetchRequest(locale); };
-		let updateInterval = localeInStorageIsDifferent ? 0 : StorageBase.defaultInterval;
+		let updateInterval = localeInStorageIsDifferent ? 0 : ClipperCachedHttp.getDefaultExpiry();
 
 		let getLocalizedStringsEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetLocalizedStrings);
 		getLocalizedStringsEvent.setCustomProperty(Log.PropertyName.Custom.ForceRetrieveFreshLocStrings, localeInStorageIsDifferent);
-		this.storage.getFreshValue(Constants.StorageKeys.locStrings, fetchStringDataFunction, updateInterval).then((response) => {
-			this.storage.setValue(Constants.StorageKeys.locale, locale);
+		this.clipperData.getFreshValue(ClipperStorageKeys.locStrings, fetchStringDataFunction, updateInterval).then((response) => {
+			this.clipperData.setValue(ClipperStorageKeys.locale, locale);
 			if (callback) {
 				callback(response ? response.data : undefined);
 			}
@@ -296,7 +300,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	}
 
 	protected getLocalizedStringsForBrowser(callback: Function) {
-		let localeOverride = this.storage.getValue(Constants.StorageKeys.displayLanguageOverride);
+		let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 		let locale = localeOverride || navigator.language || navigator.userLanguage;
 		this.getLocalizedStrings(locale, callback);
 	}
@@ -458,13 +462,13 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.getStorageValue, (key: string) => {
 			return new Promise<string>((resolve) => {
-				let value = this.storage.getValue(key);
+				let value = this.clipperData.getValue(key);
 				resolve(value);
 			});
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.setStorageValue, (keyValuePair: { key: string, value: string }) => {
-			this.storage.setValue(keyValuePair.key, keyValuePair.value);
+			this.clipperData.setValue(keyValuePair.key, keyValuePair.value);
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.getInitialUser, () => {
@@ -499,9 +503,9 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			}
 
 			this.auth.user.set({ updateReason: UpdateReason.SignOutAction });
-			this.storage.setValue(Constants.StorageKeys.userInformation, undefined);
-			this.storage.setValue(Constants.StorageKeys.currentSelectedSection, undefined);
-			this.storage.setValue(Constants.StorageKeys.cachedNotebooks, undefined);
+			this.clipperData.setValue(ClipperStorageKeys.userInformation, undefined);
+			this.clipperData.setValue(ClipperStorageKeys.currentSelectedSection, undefined);
+			this.clipperData.setValue(ClipperStorageKeys.cachedNotebooks, undefined);
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.telemetry, (data: Log.LogDataPackage) => {
@@ -530,7 +534,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		});
 
 		this.injectCommunicator.registerFunction(Constants.FunctionKeys.setStorageValue, (keyValuePair: { key: string, value: string }) => {
-			this.storage.setValue(keyValuePair.key, keyValuePair.value);
+			this.clipperData.setValue(keyValuePair.key, keyValuePair.value);
 		});
 
 		this.injectCommunicator.setErrorHandler((e: Error) => {

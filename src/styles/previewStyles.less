@@ -134,9 +134,13 @@
 						}
 
 						&.active {
-							background-color: @DarkBackgroundColor;
+							background-color: #fff;
 						}
 					}
+				}
+
+				#incrementFontSize {
+					margin-left: 6px;
 				}
 
 				#serifControl {
@@ -154,12 +158,6 @@
 					}
 				}
 
-				#fontSizeControl {
-					img {
-						vertical-align: middle;
-					}
-				}
-
 				.control-button {
 					text-align: center;
 					vertical-align: middle;
@@ -171,7 +169,8 @@
 					height: @ControlButtonHeight;
 
 					&.active {
-						background: @DarkBackgroundColor;
+						background: #fff;
+						color: #7321a6;
 					}
 
 					&:hover:not(.active) {
@@ -181,9 +180,20 @@
 					:focus {
 						outline: 0;
 					}
+
+					img {
+						vertical-align: middle;
+					}
 				}
 
-				.control-button-group {
+				.related-buttons {
+					margin-top: 12px;
+					margin-bottom: 12px;
+					margin-left: 24px;
+					display: inline-block;
+				 }
+
+				.control-button-group, {
 					margin-top: 12px;
 					margin-bottom: 12px;
 					margin-left: 24px;
