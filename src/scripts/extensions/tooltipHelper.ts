@@ -35,15 +35,6 @@ export class TooltipHelper {
 		this.storage.setValue(storageKey, value);
 	}
 
-	/**
-	 *  Returns false if:
-	 *	- A user has clipped the content type we are trying to upsell
-	 *  - The user has seen this tooltip more than maxTooltipsShown times
-	 *  - They've seen any of the tooltips in the last timeBetweenTooltips time period
-	 *  - They have set a preference to stop showing tooltips
-	 *
-	 *  Returns true otherwise
-	 */
 	public tooltipDelayIsOver(tooltipType: TooltipType, time: number): boolean {
 		if (Utils.isNullOrUndefined(tooltipType) || Utils.isNullOrUndefined(time)) {
 			throw new Error("Invalid argument passed to tooltipDelayIsOver");
@@ -55,13 +46,11 @@ export class TooltipHelper {
 
 		// If the user has clipped this content type
 		if (lastClipTime !== 0) {
-			console.log("returned false");			
 			return false;
 		}
 
 		// If the user has seen enough of our tooltips :P 
 		if (numTimesTooltipHasBeenSeen >= Constants.Settings.maximumNumberOfTimesToShowTooltips) {
-			console.log("returned false");			
 			return false;
 		}
 
@@ -69,11 +58,9 @@ export class TooltipHelper {
 
 		// If the user has seen any of the tooltips in the last timeBetweenTooltips
 		if (this.hasAnyTooltipBeenSeenInLastTimePeriod(time, this.validTypes, Constants.Settings.timeBetweenTooltips)) {
-			console.log("returned false");
 			return false;
 		}
 
-		console.log("returned true");
 		return true;
 	}
 
@@ -88,11 +75,9 @@ export class TooltipHelper {
 	public tooltipHasBeenSeenInLastTimePeriod(tooltipType: TooltipType, curTime: number, timePeriod: number): boolean {
 		let lastSeenTooltipTime = this.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);
 		if (lastSeenTooltipTime === 0) {
-			console.log("time did not exist in storage");
 			return false;
 		}
 
-		console.log("curTime: " + curTime + ", lastSeenTooltipTime: " + lastSeenTooltipTime + ", timePeriod: " + timePeriod);
 		return (curTime - lastSeenTooltipTime) < timePeriod;
 	}
 
@@ -102,7 +87,6 @@ export class TooltipHelper {
 	public hasAnyTooltipBeenSeenInLastTimePeriod(curTime: number, typesToCheck: TooltipType[], timePeriod): boolean {
 		return this.validTypes.some((tooltipType) => {
 			let tooltipWasSeen = this.tooltipHasBeenSeenInLastTimePeriod(tooltipType, curTime, timePeriod);
-			console.log("[" + TooltipType[tooltipType] + "] " + tooltipWasSeen);
 			return tooltipWasSeen;
 		});
 	}
