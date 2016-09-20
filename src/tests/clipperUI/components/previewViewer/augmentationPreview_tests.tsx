@@ -89,7 +89,7 @@ test("The editable title of the page should be displayed in the preview title in
 	ok(!previewHeaderInput.readOnly);
 });
 
-test("The augmented content of the page should be displayed in preview body in Augmentation Mode", () => {
+test("The augmented content of the page should be displayed in the highlightable preview body in Augmentation Mode", () => {
 	let mockClipperState = getMockAugmentationModeState();
 	let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 	HelperFunctions.mountToFixture(defaultComponent);
@@ -361,7 +361,7 @@ test("If the user clicks the highlight button, the internal state should show th
 	notStrictEqual(highlightButton.className.indexOf("active"), -1, "The active class should be applied to the highlight button");
 });
 
-test("If the user selects something in the preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is disabled in Augmentation mode, and the item should be highlighted", () => {
+test("If the user selects something in the highlightable preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is disabled in Augmentation mode, and the item should be highlighted", () => {
 	let mockClipperState = getMockAugmentationModeState();
 	let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 	let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
@@ -396,7 +396,7 @@ test("If the user selects something in the preview body, then clicks the highlig
 		"The highlighted element should be the inner text of the paragraph");
 });
 
-test("If the user selects something outside the preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is enabled in Augmentation mode, and nothing should be highlighted", () => {
+test("If the user selects something outside the highlightable preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is enabled in Augmentation mode, and nothing should be highlighted", () => {
 	let mockClipperState = getMockAugmentationModeState();
 	let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 	let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);

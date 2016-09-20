@@ -28,7 +28,7 @@ QUnit.module("selectionPreview", {
 	}
 });
 
-test("The selection preview should render the content", () => {
+test("The selection's highlightable preview body should render the content", () => {
 	HelperFunctions.mountToFixture(defaultComponent);
 
 	let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
@@ -41,7 +41,7 @@ test("The selection preview should render the content", () => {
 		"Only the editable selection result content is displayed in the preview body");
 });
 
-test("The selection preview should render the content as HTML, not purely text", () => {
+test("The selection preview's highlightable preview body should render the content as HTML, not purely text", () => {
 	mockClipperState.selectionPreviewInfo.previewBodyHtml = "<div>The selection</div>";
 	defaultComponent = <SelectionPreview clipperState={mockClipperState} />;
 	HelperFunctions.mountToFixture(defaultComponent);
