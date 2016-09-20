@@ -277,7 +277,7 @@ export abstract class SessionLogger extends Logger {
 	private logAllStreams(): void {
 		for (let property in this.streams) {
 			if (this.streams.hasOwnProperty(property)) {
-				let streamEvent = new Log.Event.StreamEvent(Log.Event.Label[property]);
+				let streamEvent = new Log.Event.StreamEvent(Log.Event.Label[<string>property]);
 				let stream = this.streams[property];
 				for (let i = 0; i < stream.length; i++) {
 					streamEvent.append(stream[i]);

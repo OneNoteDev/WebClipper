@@ -18,7 +18,7 @@ export interface DialogPanelProps {
 }
 
 export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProps> {
-	public getExtraMessages(): any[] {
+	public getExtraMessages(): any {
 		return undefined;
 	}
 

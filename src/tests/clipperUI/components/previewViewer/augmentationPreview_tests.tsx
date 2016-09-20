@@ -52,7 +52,7 @@ test("The tab order flow from the header to the preview title is correct in Augm
 		{ name: Constants.Ids.serif, elem: document.getElementById(Constants.Ids.serif) },
 		{ name: Constants.Ids.decrementFontSize, elem: document.getElementById(Constants.Ids.decrementFontSize) },
 		{ name: Constants.Ids.incrementFontSize, elem: document.getElementById(Constants.Ids.incrementFontSize) },
-		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) },
+		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
 	];
 
 	for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {

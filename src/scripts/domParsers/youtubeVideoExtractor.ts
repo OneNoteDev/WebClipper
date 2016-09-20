@@ -16,7 +16,7 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 			return;
 		}
 
-		let youTubeId;
+		let youTubeId: string;
 		if (Utils.getPathname(youTubeUrl).indexOf("/watch") === 0) {
 			youTubeId = Utils.getQueryValue(youTubeUrl, this.youTubeVideoIdQueryKey);
 			if (Utils.isNullOrUndefined(youTubeId)) {

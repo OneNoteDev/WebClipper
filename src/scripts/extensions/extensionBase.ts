@@ -122,7 +122,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	protected fetchAndStoreLocStrings(): Promise<{}> {
-		let locale = navigator.language || navigator.userLanguage;
+		let locale = navigator.language || (<any>navigator).userLanguage;
 
 		return new Promise<{}>((resolve, reject) => {
 			LocalizationHelper.makeLocStringsFetchRequest(locale).then((responsePackage) => {
@@ -210,7 +210,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected getNewUpdates(lastSeenVersion: Version, currentVersion: Version): Promise<ChangeLog.Update[]> {
 		return new Promise<ChangeLog.Update[]>((resolve, reject) => {
 			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
-			let localeToGet = localeOverride || navigator.language || navigator.userLanguage;
+			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
 			let changelogUrl = Utils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
 			Http.get(changelogUrl).then((request: XMLHttpRequest) => {
 				try {

@@ -30,7 +30,6 @@ class RegionPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 
 	protected getTitleTextForCurrentStatus(): string {
 		let noContentFoundString = Localization.getLocalizedString("WebClipper.Preview.NoContentFound");
-		let failureMessage: string;
 
 		let previewStatus = this.getStatus();
 

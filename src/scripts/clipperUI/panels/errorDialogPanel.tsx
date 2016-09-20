@@ -6,7 +6,7 @@ import {DialogPanelClass} from "./dialogPanel";
 
 class ErrorDialogPanelClass extends DialogPanelClass {
 	// Override
-	public getExtraMessages(): any[] {
+	public getExtraMessages(): any {
 		return (
 			<div id={Constants.Ids.dialogDebugMessageContainer}>
 				{this.getDebugSessionId()}

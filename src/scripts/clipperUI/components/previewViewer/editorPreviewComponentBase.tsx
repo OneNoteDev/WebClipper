@@ -23,7 +23,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	extends PreviewComponentBase<TState, TProps> {
 
 	// We use this to force the existence of only one click handler
-	private static currentClickHandler;
+	private static currentClickHandler: EventListener;
 	private clickHandler = this.handleClick.bind(this);
 
 	constructor(props: TProps) {
@@ -176,7 +176,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 		} else {
 			// No selection found, so we actually toggle the highlighter functionality
 			let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
-				highlighterEnabled: !this.props.clipperState.previewGlobalInfo.highlighterEnabled,
+				highlighterEnabled: !this.props.clipperState.previewGlobalInfo.highlighterEnabled
 			} as PreviewGlobalInfo);
 
 			this.props.clipperState.setState({

@@ -6,7 +6,7 @@ import {Storage} from "./storage";
 export class ClipperStorageGateStrategy implements StorageGateStrategy {
 	private keysThatRequireUserInfo = [
 		ClipperStorageKeys.cachedNotebooks,
-		ClipperStorageKeys.currentSelectedSection,
+		ClipperStorageKeys.currentSelectedSection
 	];
 
 	private storage: Storage;

@@ -274,7 +274,7 @@ test("logSession should called logFailure if the first it's called, it's called 
 
 test("logSession End should log each stream as an event without checking all the usual logEvent requirements (i.e., call the pure version of the function)", () => {
 	let mockSessionLogger: SessionLogger = new MockSessionLogger({
-		contextStrategy: mockAlwaysTrueContext,
+		contextStrategy: mockAlwaysTrueContext
 	});
 
 	let handleEventPureSpy = sinon.spy((<any>mockSessionLogger).handleEventPure);
@@ -290,7 +290,7 @@ test("logSession End should log each stream as an event without checking all the
 
 test("logSession Start should clear the streams", () => {
 	let mockSessionLogger: SessionLogger = new MockSessionLogger({
-		contextStrategy: mockAlwaysTrueContext,
+		contextStrategy: mockAlwaysTrueContext
 	});
 
 	let handleEventPureSpy = sinon.spy((<any>mockSessionLogger).handleEventPure);
@@ -310,7 +310,7 @@ test("logSession Start should clear the streams", () => {
 
 test("logSession should not call handleSession if context requirements are not met", () => {
 	let mockSessionLogger: SessionLogger = new MockSessionLogger({
-		contextStrategy: mockAlwaysFalseContext,
+		contextStrategy: mockAlwaysFalseContext
 	});
 
 	let handleSessionSpy = sinon.spy((<any>mockSessionLogger).handleSession);
