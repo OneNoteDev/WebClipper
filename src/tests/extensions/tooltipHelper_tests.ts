@@ -166,12 +166,17 @@ test("tooltipDelayIsOver should return FALSE when the user has clipped this cont
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 	setClipTimeOutsideOfRange();
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
-
 });
 
 // Have they seen ANY content? If so, return FALSE
-test("tooltipDelayIsOver should return TRUE when they haven't seen a tooltip in 21 days and the key for lastClippedTime is empty", () => {
+test("tooltipDelayIsOver should return FALSE when they have seen a tooltip in the last 21 days", () => {
 	setSeenTimeWithinRange();
+	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
+});
+
+test("tooltipDelayIsOver should return FALSE when they have seen a tooltip (not the same one) in the last 21 days", () => {
+	let timeToSet = baseTime - Constants.Settings.timeBetweenTooltips + 5000;
+	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, TooltipType.Video, timeToSet.toString());
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
 
@@ -188,22 +193,22 @@ test("tooltipDelayIsOver should return TRUE when the user hasn't seen a tooltip 
 
 test("tooltipDelayIsOver should return FALSE when the user has seen a tooltip in the last 21 days, no matter the value of lastClippedTime", () => {
 	setSeenTimeWithinRange();
-	strictEqual(tooltipHelper.tooltipDelayIsOver(testType, baseTime), false);
+	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 
 	setClipTimeOutsideOfRange();
-	strictEqual(tooltipHelper.tooltipDelayIsOver(testType, baseTime), false);
+	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 
 	setClipTimeWithinRange();
-	strictEqual(tooltipHelper.tooltipDelayIsOver(testType, baseTime), false);
+	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
 
 test("tooltipDelayIsOver should return FALSE when the user has clipped a tooltip, no matter the value of lastSeenTime", () => {
 	setClipTimeWithinRange();
-	strictEqual(tooltipHelper.tooltipDelayIsOver(testType, baseTime), false);
+	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 
 	setSeenTimeOutsideOfRange();
-	strictEqual(tooltipHelper.tooltipDelayIsOver(testType, baseTime), false);
+	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 
 	setSeenTimeWithinRange();
-	strictEqual(tooltipHelper.tooltipDelayIsOver(testType, baseTime), false);
+	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
