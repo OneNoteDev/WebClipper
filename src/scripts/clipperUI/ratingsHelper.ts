@@ -199,8 +199,6 @@ export class RatingsHelper {
 	 * Public for testing
 	 */
 	public static clipSuccessDelayIsOver(numClips: number): boolean {
-		// TODO MVP+? when # of successful clips > nMax, collapse panel into a Rate Us hyperlink in the footer that is always available
-
 		if (isNaN(numClips)) {
 			return false;
 		}
