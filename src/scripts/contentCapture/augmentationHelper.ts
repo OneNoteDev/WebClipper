@@ -2,7 +2,6 @@
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
 import {Constants} from "../constants";
-import {PageInfo} from "../pageInfo";
 import {Settings} from "../settings";
 import {Utils} from "../utils";
 
@@ -12,6 +11,8 @@ import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
 import {Status} from "../clipperUI/status";
 
 import {DomUtils} from "../domParsers/domUtils";
+
+import {Http} from "../http/http";
 
 import {Localization} from "../localization/localization";
 
@@ -104,46 +105,30 @@ export class AugmentationHelper {
 	 */
 	public static makeAugmentationRequest(url: string, locale: string, pageContent: string, requestCorrelationId: string): Promise<OneNoteApi.ResponsePackage<any>> {
 		return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject: (error: OneNoteApi.RequestError) => void) => {
-			let augmentationApi = Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + url + "&lang=" + locale;
+			let augmentationApiUrl = Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + url + "&lang=" + locale;
 
-			let request = new XMLHttpRequest();
-			request.open("POST", augmentationApi);
+			let headers = {};
+			headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+			headers[Constants.HeaderValues.noAuthKey] = "true";
+			headers[Constants.HeaderValues.userSessionIdKey] = requestCorrelationId;
 
-			request.setRequestHeader(Constants.HeaderValues.appIdKey, Settings.getSetting("App_Id"));
-			request.setRequestHeader(Constants.HeaderValues.noAuthKey, "true");
-			request.setRequestHeader(Constants.HeaderValues.userSessionIdKey, requestCorrelationId);
-
-			request.onload = () => {
-				if (request.status === 200) {
-					let parsedResponse: any;
-					try {
-						parsedResponse = JSON.parse(request.response);
-					} catch (e) {
-						Clipper.logger.logJsonParseUnexpected(request.response);
-						return reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
-					}
-
-					let responsePackage = {
-						parsedResponse: parsedResponse,
-						request: request
-					};
-					resolve(responsePackage);
-				} else {
-					reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
+			Http.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
+				let parsedResponse: any;
+				try {
+					parsedResponse = JSON.parse(request.response);
+				} catch (e) {
+					Clipper.logger.logJsonParseUnexpected(request.response);
+					return reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
 				}
-			};
 
-			request.onerror = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.NETWORK_ERROR));
-			};
-
-			request.timeout = 30000;
-
-			request.ontimeout = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT));
-			};
-
-			request.send(pageContent);
+				let responsePackage = {
+					parsedResponse: parsedResponse,
+					request: request
+				};
+				resolve(responsePackage);
+			}, (error: OneNoteApi.RequestError) => {
+				reject(error);
+			});
 		});
 	}
 

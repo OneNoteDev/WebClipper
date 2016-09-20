@@ -74,7 +74,8 @@ test("The augmentation header and all related controls should be displayed in Au
 
 	ok(document.getElementById(Constants.Ids.highlightControl), "The highlight control should exist");
 	ok(document.getElementById(Constants.Ids.serifControl), "The font family control should exist");
-	ok(document.getElementById(Constants.Ids.fontSizeControl), "The font size control should exist");
+	ok(document.getElementById(Constants.Ids.decrementFontSize), "The decrement font size control should exist");
+	ok(document.getElementById(Constants.Ids.incrementFontSize), "The increment font size control should exist");
 });
 
 test("The editable title of the page should be displayed in the preview title in Augmentation mode", () => {

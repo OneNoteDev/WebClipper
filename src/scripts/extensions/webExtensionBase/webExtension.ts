@@ -12,6 +12,9 @@ import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
 
+import {ClipperData} from "../../storage/clipperData";
+import {LocalStorage} from "../../storage/localStorage";
+
 import {ChangeLog} from "../../versioning/changeLog";
 import {Version} from "../../versioning/version";
 
@@ -19,7 +22,6 @@ import {ExtensionBase} from "../extensionBase";
 import {InvokeInfo} from "../invokeInfo";
 import {InvokeSource} from "../invokeSource";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
-import {StorageBase} from "../storageBase";
 
 import {InjectUrls} from "./injectUrls";
 import {WebExtensionWorker} from "./webExtensionWorker";
@@ -34,7 +36,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	public injectUrls: InjectUrls;
 
 	constructor(clientType: ClientType, injectUrls: InjectUrls) {
-		super(clientType, new StorageBase());
+		super(clientType, new ClipperData(new LocalStorage()));
 
 		this.injectUrls = injectUrls;
 
@@ -74,7 +76,11 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	protected onFirstRun() {
-		// Don't do anything since we're using the onInstalled functionality instead
+		// Don't do anything since we're using the onInstalled functionality instead, unless it's not available
+		// then we use our 'missing-clipperId' heuristic
+		if (!this.onInstalledSupported()) {
+			this.onInstalled();
+		}
 	}
 
 	protected checkIfTabMatchesATooltipType(tab: W3CTab, tooltipType: TooltipType): boolean {
@@ -158,7 +164,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 
 	private registerInstallListener() {
 		// onInstalled is undefined as of Firefox 48
-		if (WebExtension.browser.runtime.onInstalled) {
+		if (this.onInstalledSupported()) {
 			WebExtension.browser.runtime.onInstalled.addListener(details => {
 				if (details.reason === "install") {
 					this.onInstalled();
@@ -174,5 +180,9 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 				this.removeWorker(worker);
 			}
 		});
+	}
+
+	private onInstalledSupported(): boolean {
+		return !!WebExtension.browser.runtime.onInstalled;
 	}
 }

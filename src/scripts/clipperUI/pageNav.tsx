@@ -48,16 +48,16 @@ class PageNavClass extends ComponentBase<PageNavState, {}> {
 	}
 
 	private closePageNav() {
-		Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.closePageNavTooltip);
+		Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.closePageNavTooltip);
 	}
 
 	private getAndStoreDataFromExtension() {
-		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.getTooltipToRenderInPageNav, {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.getTooltipToRenderInPageNav, {
 			callback: (tooltipType: TooltipType) => {
 				this.setState({ tooltipToRender: tooltipType });
 			}
 		});
-		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.getPageNavTooltipProps, {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.getPageNavTooltipProps, {
 			callback: (tooltipProps: any) => {
 				this.setState({ tooltipProps: tooltipProps });
 			}
@@ -65,13 +65,13 @@ class PageNavClass extends ComponentBase<PageNavState, {}> {
 	}
 
 	private initializeCommunicators() {
-		Clipper.injectCommunicator = new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.pageNavInjectedAndPageNavUi);
-		Clipper.extensionCommunicator = new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.extensionAndPageNavUi);
-		Clipper.logger = new CommunicatorLoggerPure(Clipper.extensionCommunicator);
+		Clipper.setInjectCommunicator(new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.pageNavInjectedAndPageNavUi));
+		Clipper.setExtensionCommunicator(new Communicator(new IFrameMessageHandler(() => parent), Constants.CommunicationChannels.extensionAndPageNavUi));
+		Clipper.logger = new CommunicatorLoggerPure(Clipper.getExtensionCommunicator());
 	}
 
 	private setFrontLoadedLocalizedStrings() {
-		Clipper.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.clipperStringsFrontLoaded, {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.clipperStringsFrontLoaded, {
 			callback: (locStringsObj) => {
 				Localization.setLocalizedStrings(locStringsObj);
 			}
@@ -79,7 +79,7 @@ class PageNavClass extends ComponentBase<PageNavState, {}> {
 	}
 
 	private updateFrameHeight(newHeightInfo: NewHeightInfo) {
-		Clipper.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.updateFrameHeight, {
+		Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updateFrameHeight, {
 			param: newHeightInfo.newContainerHeight
 		});
 	}

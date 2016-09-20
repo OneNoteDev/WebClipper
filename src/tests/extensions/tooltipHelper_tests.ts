@@ -1,20 +1,23 @@
-import {TooltipHelper} from "../../scripts/extensions/tooltipHelper";
+import {Constants} from "../../scripts/constants";
 
 import {TooltipType} from "../../scripts/clipperUI/tooltipType";
 
-import {Constants} from "../../scripts/constants";
+import {TooltipHelper} from "../../scripts/extensions/tooltipHelper";
 
-import {MockStorageBase} from "./mockStorageBase";
+import {Storage} from "../../scripts/storage/storage";
+import {ClipperStorageKeys} from "../../scripts/storage/clipperStorageKeys";
+
+import {MockStorage} from "../storage/mockStorage";
 
 let tooltipHelper: TooltipHelper;
-let mockStorageBase: MockStorageBase;
+let mockStorage: Storage;
 let testType = TooltipType.Pdf;
 let baseDate = new Date("09/27/1993 09:27:00 PM");
 
 QUnit.module("tooltipHelper", {
 	beforeEach: () => {
-		mockStorageBase = new MockStorageBase();
-		tooltipHelper = new TooltipHelper(mockStorageBase);
+		mockStorage = new MockStorage();
+		tooltipHelper = new TooltipHelper(mockStorage);
 	}
 });
 
@@ -26,7 +29,7 @@ test("Null or undefined passed to getTooltipInformation should throw an Error", 
 		tooltipHelper.getTooltipInformation(undefined, undefined);
 	});
 	throws(() => {
-		tooltipHelper.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, undefined);
+		tooltipHelper.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, undefined);
 	});
 	throws(() => {
 		tooltipHelper.getTooltipInformation(undefined, testType);
@@ -35,7 +38,7 @@ test("Null or undefined passed to getTooltipInformation should throw an Error", 
 		tooltipHelper.getTooltipInformation(null, null);
 	});
 	throws(() => {
-		tooltipHelper.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, null);
+		tooltipHelper.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, null);
 	});
 	throws(() => {
 		tooltipHelper.getTooltipInformation(null, testType);
@@ -44,23 +47,23 @@ test("Null or undefined passed to getTooltipInformation should throw an Error", 
 });
 
 test("getTooltipInformation should return 0 for a value that is not in storage", () => {
-	let value = tooltipHelper.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
+	let value = tooltipHelper.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType);
 	strictEqual(value, 0);
 });
 
 test("getTooltipInformation should return 0 for an invalid value", () => {
-	let storageKey = TooltipHelper.getStorageKeyForTooltip(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
+	let storageKey = TooltipHelper.getStorageKeyForTooltip(ClipperStorageKeys.lastSeenTooltipTimeBase, testType);
 	let expected = "blah";
-	mockStorageBase.setValue(storageKey, expected);
-	let value = tooltipHelper.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
+	mockStorage.setValue(storageKey, expected);
+	let value = tooltipHelper.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType);
 	strictEqual(value, 0);
 });
 
 test("getTooltipInformation should return correct information for a value that is in storage", () => {
-	let storageKey = TooltipHelper.getStorageKeyForTooltip(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
+	let storageKey = TooltipHelper.getStorageKeyForTooltip(ClipperStorageKeys.lastSeenTooltipTimeBase, testType);
 	let expected = 1234;
-	mockStorageBase.setValue(storageKey, expected.toString());
-	let value = tooltipHelper.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
+	mockStorage.setValue(storageKey, expected.toString());
+	let value = tooltipHelper.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType);
 	strictEqual(value, expected);
 });
 
@@ -70,7 +73,7 @@ test("Null or undefined passed to setTooltipInformation should throw an Error", 
 		tooltipHelper.setTooltipInformation(undefined, undefined, "");
 	});
 	throws(() => {
-		tooltipHelper.setTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, undefined, "");
+		tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, undefined, "");
 	});
 	throws(() => {
 		tooltipHelper.setTooltipInformation(undefined, testType, "");
@@ -79,7 +82,7 @@ test("Null or undefined passed to setTooltipInformation should throw an Error", 
 		tooltipHelper.setTooltipInformation(null, null, "");
 	});
 	throws(() => {
-		tooltipHelper.setTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, null, "");
+		tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, null, "");
 	});
 	throws(() => {
 		tooltipHelper.setTooltipInformation(null, testType, "");
@@ -89,8 +92,8 @@ test("Null or undefined passed to setTooltipInformation should throw an Error", 
 
 test("setTooltipInformation should correctly set the key and value when given valid arguments", () => {
 	let val = 4134134;
-	tooltipHelper.setTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, testType, val.toString());
-	let actual = tooltipHelper.getTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, testType);
+	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType, val.toString());
+	let actual = tooltipHelper.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType);
 	strictEqual(actual, val);
 });
 
@@ -107,22 +110,22 @@ test("Null or undefined passed to tooltipDelayIsOver should throw an Error", () 
 
 function setClipTimeWithinRange() {
 	let timeToSet = baseDate.getTime() - Constants.Settings.timeBetweenTooltips + 5000;
-	tooltipHelper.setTooltipInformation(Constants.StorageKeys.lastClippedTooltipTimeBase, testType, timeToSet.toString());
+	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastClippedTooltipTimeBase, testType, timeToSet.toString());
 }
 
 function setClipTimeOutsideOfRange() {
 	let timeToSet = baseDate.getTime() - Constants.Settings.timeBetweenTooltips - 5000;
-	tooltipHelper.setTooltipInformation(Constants.StorageKeys.lastClippedTooltipTimeBase, testType, timeToSet.toString());
+	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastClippedTooltipTimeBase, testType, timeToSet.toString());
 }
 
 function setSeenTimeWithinRange() {
 	let timeToSet = baseDate.getTime() - Constants.Settings.timeBetweenTooltips + 5000;
-	tooltipHelper.setTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, testType, timeToSet.toString());
+	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType, timeToSet.toString());
 }
 
 function setSeenTimeOutsideOfRange() {
 	let timeToSet = baseDate.getTime() - Constants.Settings.timeBetweenTooltips - 5000;
-	tooltipHelper.setTooltipInformation(Constants.StorageKeys.lastSeenTooltipTimeBase, testType, timeToSet.toString());
+	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType, timeToSet.toString());
 }
 
 test("tooltipDelayIsOver should return true when nothing in in storage", () => {

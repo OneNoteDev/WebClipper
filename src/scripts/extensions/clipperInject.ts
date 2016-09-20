@@ -21,6 +21,8 @@ import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
 
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
+
 import {Frame, StyledFrameFactory} from "./styledFrameFactory";
 import {FrameInjectBase} from "./frameInjectBase";
 import {FrameInjectOptions} from "./injectOptions";
@@ -82,7 +84,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			this.updatePageInfo();
 
 			this.extCommunicator.callRemoteFunction(Constants.FunctionKeys.setStorageValue, {
-				param: { key: Constants.StorageKeys.lastInvokedDate, value: Date.now().toString() }
+				param: { key: ClipperStorageKeys.lastInvokedDate, value: Date.now().toString() }
 			});
 
 			// We set up this call here as it requires both ui and ext communicators to be set up first
