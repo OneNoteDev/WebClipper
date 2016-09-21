@@ -124,9 +124,9 @@ function setSeenTimeWithinRange(tooltipType: TooltipType, timePeriod: number) {
 	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType, timeToSet.toString());
 }
 
-function setSeenTimeOutsideOfRange() {
-	let timeToSet = baseTime - Constants.Settings.timeBetweenSameTooltip - 5000;
-	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType, timeToSet.toString());
+function setSeenTimeOutsideOfRange(tooltipType: TooltipType, timePeriod: number) {
+	let timeToSet = baseTime - timePeriod - 5000;
+	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType, timeToSet.toString());
 }
 
 function setNumTimesTooltipHasBeenSeen(times: number) {
@@ -138,13 +138,8 @@ test("tooltipHasBeenSeenInLastTimePeriod should return FALSE when nothing is in 
 });
 
 test("tooltipHasBeenSeenInLastTimePeriod should return FALSE when a value is in storage but it is outside the time period", () => {
-	setSeenTimeOutsideOfRange();
+	setSeenTimeOutsideOfRange(testType, Constants.Settings.timeBetweenSameTooltip);
 	ok(!tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(baseTime, testType, Constants.Settings.timeBetweenSameTooltip));
-});
-
-test("tooltipHasBeenSeenInLastTimePeriod should return TRUE when a value is in storage and is within the time period for non-production values", () => {
-	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType, "15");
-	ok(tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(testType, 25, 11));
 });
 
 test("tooltipHasBeenSeenInLastTimePeriod should return TRUE when a value is in storage and is within the time period", () => {
@@ -152,17 +147,12 @@ test("tooltipHasBeenSeenInLastTimePeriod should return TRUE when a value is in s
 	ok(tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(testType, baseTime, Constants.Settings.timeBetweenSameTooltip));
 });
 
-test("tooltipHasBeenSeenInLastTimePeriod should return FALSE when a value is in storage, but it outside the time period #2", () => {
-	setSeenTimeWithinRange(testType, Constants.Settings.timeBetweenDifferentTooltips);
-	ok(!tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(testType, baseTime, Constants.Settings.timeBetweenSameTooltip));
-});
-
 test("hasAnyTooltipBeenSeenInLastTimerPeriod should return FALSE when nothing is in storage", () => {
 	ok(!tooltipHelper.hasAnyTooltipBeenSeenInLastTimePeriod(baseTime, validTypes, Constants.Settings.timeBetweenDifferentTooltips));
 });
 
 test("hasAnyTooltipBeenSeenInLastTimePeriod should return TRUE if at least one of the tooltips has a lastSeenTooltipTime in Storage within the time period", () => {
-	setSeenTimeWithinRange(Constants.Settings.timeBetweenDifferentTooltips);
+	setSeenTimeWithinRange(testType, Constants.Settings.timeBetweenDifferentTooltips);
 	ok(tooltipHelper.hasAnyTooltipBeenSeenInLastTimePeriod(baseTime, validTypes, Constants.Settings.timeBetweenDifferentTooltips));
 });
 
@@ -180,14 +170,18 @@ test("tooltipDelayIsOver should return FALSE when the user has clipped this cont
 
 // Have they seen ANY content? If so, return FALSE
 test("tooltipDelayIsOver should return FALSE when they have seen a tooltip in the last 21 days", () => {
-	setSeenTimeWithinRange();
+	setSeenTimeWithinRange(testType, Constants.Settings.timeBetweenSameTooltip);
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
 
-test("tooltipDelayIsOver should return FALSE when they have seen a tooltip (not the same one) in the last 21 days", () => {
-	let timeToSet = baseTime - Constants.Settings.timeBetweenTooltips + 5000;
-	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, TooltipType.Video, timeToSet.toString());
+test("tooltipDelayIsOver should return FALSE when they have seen a tooltip (not the same one) in the last 7 days", () => {
+	setSeenTimeWithinRange(TooltipType.Video, Constants.Settings.timeBetweenDifferentTooltips);
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
+});
+
+test("tooltipDelayIsOver should return TRUE if they have NOT seen a different tooltip in the last 7 days", () => {
+	setSeenTimeOutsideOfRange(TooltipType.Video, Constants.Settings.timeBetweenDifferentTooltips);
+	ok(tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
 
 // Has the user has seen the tooltip more than maxTooltipsShown times? If so, return FALSE
@@ -197,12 +191,12 @@ test("tooltipDelayIsOVer should return FALSE when the user has seen this tooltip
 });
 
 test("tooltipDelayIsOver should return TRUE when the user hasn't seen a tooltip in a while, they've never clipped this content, and they haven't gone over the max number of times to see the tooltip", () => {
-	setSeenTimeOutsideOfRange();
+	setSeenTimeOutsideOfRange(testType, Constants.Settings.timeBetweenSameTooltip);
 	ok(tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
 
 test("tooltipDelayIsOver should return FALSE when the user has seen a tooltip in the last 21 days, no matter the value of lastClippedTime", () => {
-	setSeenTimeWithinRange();
+	setSeenTimeWithinRange(testType, Constants.Settings.timeBetweenSameTooltip);
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 
 	setClipTimeOutsideOfRange();
@@ -216,9 +210,9 @@ test("tooltipDelayIsOver should return FALSE when the user has clipped a tooltip
 	setClipTimeWithinRange();
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 
-	setSeenTimeOutsideOfRange();
+	setSeenTimeOutsideOfRange(testType, Constants.Settings.timeBetweenSameTooltip);
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 
-	setSeenTimeWithinRange();
+	setSeenTimeWithinRange(testType, Constants.Settings.timeBetweenSameTooltip);
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });

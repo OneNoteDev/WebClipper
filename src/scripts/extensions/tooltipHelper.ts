@@ -65,7 +65,6 @@ export class TooltipHelper {
 		if (this.hasAnyTooltipBeenSeenInLastTimePeriod(curTime, tooltipsWithoutCurrentType, Constants.Settings.timeBetweenDifferentTooltips)) {
 			return false;
 		}
-		
 		return true;
 	}
 
