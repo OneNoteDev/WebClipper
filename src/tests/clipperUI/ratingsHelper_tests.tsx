@@ -5,6 +5,8 @@ import {SmartValue} from "../../scripts/communicator/smartValue";
 
 import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
 
+import {ClipperStorageKeys} from "../../scripts/storage/clipperStorageKeys";
+
 import {Constants} from "../../scripts/constants";
 import {ClientType} from "../../scripts/clientType";
 import {Settings} from "../../scripts/settings";
@@ -16,24 +18,24 @@ import {HelperFunctions} from "../helperFunctions";
 
 let mockStorage: { [key: string]: string };
 let mockStorageCache: { [key: string]: string };
-Clipper.Storage.getValue = (key: string, callback: (value: string) => void, cacheValue?: boolean) => {
+Clipper.getStoredValue = (key: string, callback: (value: string) => void, cacheValue?: boolean) => {
 	if (cacheValue) {
 		mockStorageCache[key] = mockStorage[key];
 	}
 	callback(mockStorage[key]);
 };
-Clipper.Storage.setValue = (key: string, value: string) => {
+Clipper.storeValue = (key: string, value: string) => {
 	if (key in mockStorageCache) {
 		mockStorageCache[key] = value;
 	}
 	mockStorage[key] = value;
 };
-Clipper.Storage.preCacheValues = (storageKeys: string[]) => {
+Clipper.preCacheStoredValues = (storageKeys: string[]) => {
 	for (let key of storageKeys) {
-		Clipper.Storage.getValue(key, () => { }, true);
+		Clipper.getStoredValue(key, () => { }, true);
 	}
 };
-Clipper.Storage.getCachedValue = (key: string) => {
+Clipper.getCachedValue = (key: string) => {
 	return mockStorageCache[key];
 };
 
@@ -370,8 +372,8 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns false when 
 
 	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
 	strictEqual(alreadyRatedBad, false);
-	Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
+		Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
 			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
 			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
 			done();
@@ -382,15 +384,15 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns false when 
 test("setLastBadRating sets lastBadRatingDate in storage and returns false when lastBadRatingDate is not a number", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, "not a number");
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, "not a number");
 
 	let badRatingDateToSet: string = Date.now().toString();
 	let badRatingVersionToSet = "3.0.0";
 
 	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
 	strictEqual(alreadyRatedBad, false);
-	Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
+		Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
 			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
 			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
 			done();
@@ -401,15 +403,15 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns false when 
 test("setLastBadRating sets lastBadRatingDate in storage and returns false when lastBadRatingDate is a number out of date range", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Constants.Settings.maximumJSTimeValue + 1).toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Constants.Settings.maximumJSTimeValue + 1).toString());
 
 	let badRatingDateToSet: string = Date.now().toString();
 	let badRatingVersionToSet = "3.0.0";
 
 	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
 	strictEqual(alreadyRatedBad, false);
-	Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
+		Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
 			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
 			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
 			done();
@@ -420,15 +422,15 @@ test("setLastBadRating sets lastBadRatingDate in storage and returns false when 
 test("setLastBadRating sets lastBadRatingDate in storage and returns true when lastBadRatingDate is a valid number", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, Date.now().toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, Date.now().toString());
 
 	let badRatingDateToSet: string = Date.now().toString();
 	let badRatingVersionToSet = "3.0.0";
 
 	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
 	strictEqual(alreadyRatedBad, true);
-	Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-		Clipper.Storage.getValue(Constants.StorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
+		Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
 			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
 			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
 			done();
@@ -495,7 +497,7 @@ test("shouldShowRatingsPrompt returns false when do not prompt ratings is set in
 		}
 	});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "tRuE");
+	Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "tRuE");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 
@@ -510,8 +512,8 @@ test("shouldShowRatingsPrompt returns true when do not prompt ratings is set in 
 		}
 	});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "invalid");
-	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "invalid");
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
 
 	let clipperState = HelperFunctions.getMockClipperState();
 
@@ -526,10 +528,10 @@ test("shouldShowRatingsPrompt returns true when a valid configuration is provide
 		}
 	});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, "3.0.9");
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 
@@ -544,10 +546,10 @@ test("shouldShowRatingsPrompt returns false when number of successful clips is b
 		}
 	});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, (Constants.Settings.minClipSuccessForRatingsPrompt - 1).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, "3.0.9");
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (Constants.Settings.minClipSuccessForRatingsPrompt - 1).toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 
@@ -564,10 +566,10 @@ test("shouldShowRatingsPrompt returns false when last bad rating date is too rec
 
 	let timeDiffInMs = 1000 * 60 * 60 * 24; // to make last bad rating date 1 day sooner than the min time delay
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings + timeDiffInMs).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, "3.0.9");
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings + timeDiffInMs).toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 
@@ -582,10 +584,10 @@ test("shouldShowRatingsPrompt returns false when there has not been a significan
 		}
 	});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, "3.0.9");
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.0.999");
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.0.999");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 

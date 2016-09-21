@@ -456,7 +456,7 @@ function exportCommonJS(targetDir) {
 
 		// This is exported from the node modules folder directly as it does not go through bundling
 		var injectLibPaths = [
-			PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.js",
+			PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.min.js",
 			PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
 			PATHS.NODE_MODULES + "urijs/src/URI.min.js"
 		];
@@ -495,8 +495,8 @@ function exportCommonLibFiles(targetDir) {
 		PATHS.NODE_MODULES + "json3/lib/json3.min.js",
 		PATHS.NODE_MODULES + "es5-shim/es5-shim.min.js",
 		PATHS.NODE_MODULES + "mithril/mithril.min.js",
-		PATHS.NODE_MODULES + "onenoteapi/target/oneNoteApi.js",
-		PATHS.NODE_MODULES + "onenotepicker/target/oneNotePicker.js",
+		PATHS.NODE_MODULES + "onenoteapi/target/oneNoteApi.min.js",
+		PATHS.NODE_MODULES + "onenotepicker/target/oneNotePicker.min.js",
 		PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js",
 		PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
 		PATHS.NODE_MODULES + "urijs/src/URI.min.js",
@@ -532,7 +532,7 @@ function exportBookmarkletJS(targetDir) {
 
 	var invokeTask = gulp.src([
 		targetDir + "logManager.js",
-		targetDir + "oneNoteApi.js",
+		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "bookmarklet.js"
@@ -594,7 +594,7 @@ function exportChromeJS() {
 
 	var chromeExtensionTask = gulp.src([
 		targetDir + "logManager.js",
-		targetDir + "oneNoteApi.js",
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "chromeExtension.js"
 	]).pipe(concat("chromeExtension.js")).pipe(gulp.dest(targetDir));
 
@@ -604,13 +604,14 @@ function exportChromeJS() {
 
 	var chromeInjectTask = gulp.src([
 		targetDir + "logManager.js",
-		targetDir + "oneNoteApi.js",
+		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "chromeInject.js"
 	]).pipe(concat("chromeInject.js")).pipe(gulp.dest(targetDir));
 
 	var chromePageNavInjectTask = gulp.src([
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "chromePageNavInject.js"
 	]).pipe(concat("chromePageNavInject.js")).pipe(gulp.dest(targetDir));
 
@@ -650,7 +651,7 @@ function exportEdgeJS() {
 
 	var edgeExtensionTask = gulp.src([
 		targetDir + "logManager.js",
-		targetDir + "oneNoteApi.js",
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "edgeExtension.js"
 	]).pipe(concat("edgeExtension.js")).pipe(gulp.dest(targetDir));
 
@@ -660,13 +661,14 @@ function exportEdgeJS() {
 
 	var edgeInjectTask = gulp.src([
 		targetDir + "logManager.js",
-		targetDir + "oneNoteApi.js",
+		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "edgeInject.js"
 	]).pipe(concat("edgeInject.js")).pipe(gulp.dest(targetDir));
 
 	var edgePageNavInjectTask = gulp.src([
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "edgePageNavInject.js"
 	]).pipe(concat("edgePageNavInject.js")).pipe(gulp.dest(targetDir));
 
@@ -728,7 +730,7 @@ function exportFirefoxJS() {
 
 	var firefoxExtensionTask = gulp.src([
 		targetDir + "logManager.js",
-		targetDir + "oneNoteApi.js",
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "firefoxExtension.js"
 	]).pipe(concat("firefoxExtension.js")).pipe(gulp.dest(targetDir));
 
@@ -738,13 +740,14 @@ function exportFirefoxJS() {
 
 	var firefoxInjectTask = gulp.src([
 		targetDir + "logManager.js",
-		targetDir + "oneNoteApi.js",
+		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "firefoxInject.js"
 	]).pipe(concat("firefoxInject.js")).pipe(gulp.dest(targetDir));
 
 	var firefoxPageNavInjectTask = gulp.src([
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "firefoxPageNavInject.js"
 	]).pipe(concat("firefoxPageNavInject.js")).pipe(gulp.dest(targetDir));
 
@@ -784,7 +787,7 @@ function exportSafariJS() {
 
 	var safariExtensionTask = gulp.src([
 		targetDir + "logManager.js",
-		targetDir + "oneNoteApi.js",
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "safariExtension.js"
 	]).pipe(concat("safariExtension.js")).pipe(gulp.dest(targetDir));
 
@@ -794,13 +797,14 @@ function exportSafariJS() {
 
 	var safariInjectTask = gulp.src([
 		targetDir + "logManager.js",
-		targetDir + "oneNoteApi.js",
+		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "safariInject.js"
 	]).pipe(concat("safariInject.js")).pipe(gulp.dest(targetDir));
 
 	var safariPageNavInjectTask = gulp.src([
+		targetDir + "oneNoteApi.min.js",
 		PATHS.BUNDLEROOT + "safariPageNavInject.js"
 	]).pipe(concat("safariPageNavInject.js")).pipe(gulp.dest(targetDir));
 
@@ -862,8 +866,8 @@ function exportTestLibFiles() {
 		PATHS.LIBROOT + "tests/bind_polyfill.js",
 		PATHS.LIBROOT + "tests/jquery-2.2.0.min.js",
 		PATHS.NODE_MODULES + "mithril/mithril.js",
-		PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.js",
-		PATHS.NODE_MODULES + "oneNotePicker/target/oneNotePicker.js",
+		PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.min.js",
+		PATHS.NODE_MODULES + "oneNotePicker/target/oneNotePicker.min.js",
 		PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js",
 		PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
 		PATHS.NODE_MODULES + "sinon/pkg/sinon.js",

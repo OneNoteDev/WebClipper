@@ -128,7 +128,6 @@ export module Constants {
 		// previewViewerAugmentationHeader
 		export var highlightControl = "highlightControl";
 		export var highlightButton = "highlightButton";
-		export var fontSizeControl = "fontSizeControl";
 		export var decrementFontSize = "decrementFontSize";
 		export var incrementFontSize = "incrementFontSize";
 		export var serifControl = "serifControl";
@@ -198,6 +197,7 @@ export module Constants {
 	}
 
 	export module HeaderValues {
+		export var accept = "Accept";
 		export var appIdKey = "MS-Int-AppId";
 		export var correlationId = "X-CorrelationId";
 		export var noAuthKey = "X-NoAuth";
@@ -229,6 +229,7 @@ export module Constants {
 		export var getInitialUser = "GET_INITIAL_USER";
 		export var getPageNavTooltipProps = "GET_PAGE_NAV_TOOLTIP_PROPS";
 		export var getStorageValue = "GET_STORAGE_VALUE";
+		export var getMultipleStorageValues = "GET_MULTIPLE_STORAGE_VALUES";
 		export var getTooltipToRenderInPageNav = "GET_TOOLTIP_TO_RENDER_IN_PAGE_NAV";
 		export var hideUi = "HIDE_UI";
 		export var invokeClipper = "INVOKE_CLIPPER";
@@ -257,27 +258,6 @@ export module Constants {
 		export var tab = 9;
 		export var enter = 13;
 		export var esc = 27;
-	}
-
-	export module StorageKeys {
-		export var clipperId = "clipperId";
-		export var cachedNotebooks = "notebooks";
-		export var currentSelectedSection = "curSection";
-		export var displayLanguageOverride = "displayLocaleOverride";
-		export var doNotPromptRatings = "doNotPromptRatings";
-		export var flightingInfo = "flightingInfo";
-		export var lastBadRatingDate = "lastBadRatingDate";
-		export var lastBadRatingVersion = "lastBadRatingVersion";
-		export var lastClippedDate = "lastClippedDate";
-		export var lastSeenVersion = "lastSeenVersion";
-		export var lastInvokedDate = "lastInvokedDate";
-		export var lastSeenTooltipTimeBase = "lastSeenTooltipTime";
-		export var lastClippedTooltipTimeBase = "lastClippedTooltipTime";
-		export var locale = "locale";
-		export var locStrings = "locStrings";
-		export var numSuccessfulClips = "numSuccessfulClips";
-		export var numTimesTooltipHasBeenSeenBase = "numTimesTooltipHasBeenSeen";
-		export var userInformation = "userInformation";
 	}
 
 	export module SmartValueKeys {

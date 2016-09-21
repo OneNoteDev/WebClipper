@@ -5,25 +5,29 @@ import {SmartValue} from "../communicator/smartValue";
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
+import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
+import {Http} from "../http/http";
+
+import {ClipperData} from "../storage/clipperData";
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
+
 import {Constants} from "../constants";
 import {ResponsePackage} from "../responsePackage";
 import {UserInfoData} from "../userInfo";
 import {AuthType, UserInfo, UpdateReason} from "../userInfo";
 import {Utils} from "../utils";
 
-import {StorageBase, TimeStampedData} from "./storageBase";
-
 declare var browser;
 
 export class AuthenticationHelper {
 	public user: SmartValue<UserInfo>;
 	private logger: Logger;
-	private storage: StorageBase;
+	private clipperData: ClipperData;
 
-	constructor(storage: StorageBase, logger: Logger) {
+	constructor(clipperData: ClipperData, logger: Logger) {
 		this.user = new SmartValue<UserInfo>();
 		this.logger = logger;
-		this.storage = storage;
+		this.clipperData = clipperData;
 	}
 
 	/**
@@ -33,7 +37,7 @@ export class AuthenticationHelper {
 		return new Promise<UserInfo>((resolve) => {
 			let updateInterval = 0;
 
-			let storedUserInformation = this.storage.getValue(Constants.StorageKeys.userInformation);
+			let storedUserInformation = this.clipperData.getValue(ClipperStorageKeys.userInformation);
 			if (storedUserInformation) {
 				let currentInfo: any;
 				try {
@@ -62,7 +66,7 @@ export class AuthenticationHelper {
 
 			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
 			getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
-			this.storage.getFreshValue(Constants.StorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
+			this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, !!response);
 
 				if (response) {
@@ -136,27 +140,8 @@ export class AuthenticationHelper {
 		return new Promise<ResponsePackage<string>>((resolve, reject: (error: OneNoteApi.RequestError) => void) => {
 			let userInfoUrl = Utils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
 
-			let request = new XMLHttpRequest();
-			request.open("POST", userInfoUrl);
-
-			request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			request.timeout = 30000;
-
-			request.onload = () => {
-				if (request.status === 200) {
-					let response = request.response;
-					// The false case is expected behavior if the user has not signed in or credentials have expired
-					resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });
-				} else {
-					reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
-				}
-			};
-			request.ontimeout = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT));
-			};
-			request.onerror = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.NETWORK_ERROR));
-			};
+			let headers = {};
+			headers["Content-type"] = "application/x-www-form-urlencoded";
 
 			let postData = "";
 			if (!Utils.isNullOrUndefined(cookie)) {
@@ -164,7 +149,13 @@ export class AuthenticationHelper {
 				postData = cookie.replace(/\+/g, "%2B");
 			}
 
-			request.send(postData);
+			Http.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
+				let response = request.response;
+				// The false case is expected behavior if the user has not signed in or credentials have expired
+				resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });
+			}, (error: OneNoteApi.RequestError) => {
+				reject(error);
+			});
 		});
 	}
 

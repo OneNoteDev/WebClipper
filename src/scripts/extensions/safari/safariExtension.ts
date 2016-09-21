@@ -10,13 +10,15 @@ import {VideoUtils} from "../../domParsers/videoUtils";
 
 import {Localization} from "../../localization/localization";
 
+import {ClipperData} from "../../storage/clipperData";
+import {LocalStorage} from "../../storage/LocalStorage";
+
 import {Version} from "../../versioning/version";
 
 import {ExtensionBase} from "../extensionBase";
 import {InvokeInfo} from "../invokeInfo";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
 import {InvokeSource} from "../invokeSource";
-import {StorageBase} from "../storageBase";
 
 import {ContextItemParameter, ContextType} from "./safariContext";
 import {SafariWorker} from "./safariWorker";
@@ -26,24 +28,30 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 	private currentContextItemParameter: ContextItemParameter;
 
 	constructor() {
-		super(ClientType.SafariExtension, new StorageBase());
+		super(ClientType.SafariExtension, new ClipperData(new LocalStorage()));
 
 		// Listen for the Toolbar button it be invoked
 		safari.application.addEventListener("command", (event: SafariValidateEvent) => {
-			// Defined in "Info.plist"
-			if (event.command === "ClipperInvoker") {
-				this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ExtensionButton }, { invokeMode: InvokeMode.Default });
-			} else if (event.command === "ContextClipperInvoker") {
-				this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
-			} else if (event.command === "ContextClipperInvokerWithImage") {
-				this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ContextMenu }, {
-					invokeDataForMode: this.currentContextItemParameter.parameters.src,
-					invokeMode: InvokeMode.ContextImage
-				});
-			} else if (event.command === "ContextClipperInvokerWithSelection") {
-				this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ContextMenu }, {
-					invokeMode: InvokeMode.ContextTextSelection
-				});
+			switch (event.command) {
+				case "ClipperInvoker":
+					this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ExtensionButton }, { invokeMode: InvokeMode.Default });
+					break;
+				case "ContextClipperInvoker":
+					this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
+					break;
+				case "ContextClipperInvokerWithImage":
+					this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ContextMenu }, {
+						invokeDataForMode: this.currentContextItemParameter.parameters.src,
+						invokeMode: InvokeMode.ContextImage
+					});
+					break;
+				case "ContextClipperInvokerWithSelection":
+					this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ContextMenu }, {
+						invokeMode: InvokeMode.ContextTextSelection
+					});
+					break;
+				default:
+					break;
 			}
 		}, false);
 
@@ -74,18 +82,8 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 
 	protected onFirstRun() {
 		// Send users to our installed page (redirect if they're already on our page, else open a new tab)
-		let activeWindow = safari.application.activeBrowserWindow;
-		let isInlineInstall: boolean = ExtensionBase.isOnOneNoteDomain(activeWindow.activeTab.url);
-		let installUrl = this.getClipperInstalledPageUrl(this.clientInfo.get().clipperId, this.clientInfo.get().clipperType, isInlineInstall);
-		if (activeWindow) {
-			if (isInlineInstall) {
-				activeWindow.activeTab.url = installUrl;
-			} else {
-				activeWindow.openTab().url = installUrl;
-			}
-		} else {
-			safari.application.openBrowserWindow().activeTab.url = installUrl;
-		}
+		let installUrl = this.getClipperInstalledPageUrl(this.clientInfo.get().clipperId, this.clientInfo.get().clipperType, false);
+		safari.application.activeBrowserWindow.activeTab.url = installUrl;
 	}
 
 	protected checkIfTabMatchesATooltipType(tab: SafariBrowserTab, tooltipType: TooltipType): boolean {

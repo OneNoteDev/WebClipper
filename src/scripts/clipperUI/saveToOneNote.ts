@@ -11,6 +11,8 @@ import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
 
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
+
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
 import {ClipperState} from "./clipperState";
@@ -192,7 +194,7 @@ export class SaveToOneNote {
 
 		numSuccessfulClips++;
 
-		Clipper.Storage.setValue(Constants.StorageKeys.numSuccessfulClips, numSuccessfulClips.toString());
+		Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numSuccessfulClips.toString());
 		clipperState.numSuccessfulClips.set(numSuccessfulClips);
 	}
 

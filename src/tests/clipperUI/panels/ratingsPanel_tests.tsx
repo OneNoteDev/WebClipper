@@ -8,6 +8,8 @@ import {SmartValue} from "../../../scripts/communicator/smartValue";
 
 import {StubSessionLogger} from "../../../scripts/logging/stubSessionLogger";
 
+import {ClipperStorageKeys} from "../../../scripts/storage/clipperStorageKeys";
+
 import {Constants} from "../../../scripts/constants";
 import {Settings} from "../../../scripts/settings";
 import {Utils} from "../../../scripts/utils";
@@ -18,24 +20,24 @@ import {HelperFunctions} from "../../helperFunctions";
 
 let mockStorage: { [key: string]: string };
 let mockStorageCache: { [key: string]: string };
-Clipper.Storage.getValue = (key: string, callback: (value: string) => void, cacheValue?: boolean) => {
+Clipper.getStoredValue = (key: string, callback: (value: string) => void, cacheValue?: boolean) => {
 	if (cacheValue) {
 		mockStorageCache[key] = mockStorage[key];
 	}
 	callback(mockStorage[key]);
 };
-Clipper.Storage.setValue = (key: string, value: string) => {
+Clipper.storeValue = (key: string, value: string) => {
 	if (key in mockStorageCache) {
 		mockStorageCache[key] = value;
 	}
 	mockStorage[key] = value;
 };
-Clipper.Storage.preCacheValues = (storageKeys: string[]) => {
+Clipper.preCacheStoredValues = (storageKeys: string[]) => {
 	for (let key of storageKeys) {
-		Clipper.Storage.getValue(key, () => { }, true);
+		Clipper.getStoredValue(key, () => { }, true);
 	}
 };
-Clipper.Storage.getCachedValue = (key: string) => {
+Clipper.getCachedValue = (key: string) => {
 	return mockStorageCache[key];
 };
 
@@ -84,7 +86,7 @@ test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.Rat
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Rate]);
 
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
 		strictEqual(doNotPromptRatingsAsStr, "true");
 		done();
 	});
@@ -109,7 +111,7 @@ test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.End
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
 
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
 		strictEqual(doNotPromptRatingsAsStr, "true");
 		done();
 	});
@@ -124,7 +126,7 @@ test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goe
 		}
 	});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
@@ -140,7 +142,7 @@ test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goe
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Feedback]);
 
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
 		strictEqual(doNotPromptRatingsAsStr, undefined);
 		done();
 	});
@@ -151,7 +153,7 @@ test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goe
 
 	Settings.setSettingsJsonForTesting({});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
@@ -167,7 +169,7 @@ test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goe
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
 
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
 		strictEqual(doNotPromptRatingsAsStr, undefined);
 		done();
 	});
@@ -182,8 +184,8 @@ test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets d
 		}
 	});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
@@ -199,7 +201,7 @@ test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets d
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Feedback]);
 
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
 		strictEqual(doNotPromptRatingsAsStr, "true");
 		done();
 	});
@@ -210,8 +212,8 @@ test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets d
 
 	Settings.setSettingsJsonForTesting({});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
@@ -227,7 +229,7 @@ test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets d
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
 
-	Clipper.Storage.getValue(Constants.StorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
 		strictEqual(doNotPromptRatingsAsStr, "true");
 		done();
 	});
@@ -342,7 +344,7 @@ test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage
 		}
 	});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
@@ -366,7 +368,7 @@ test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage
 });
 
 test("'Feedback' click at RatingsPromptStage.Feedback not available when feedback url does not exist", () => {
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
@@ -397,7 +399,7 @@ test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStag
 		}
 	});
 
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
@@ -421,7 +423,7 @@ test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStag
 });
 
 test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedback url does not exist", () => {
-	Clipper.Storage.setValue(Constants.StorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);

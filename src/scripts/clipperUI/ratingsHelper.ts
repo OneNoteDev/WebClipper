@@ -2,6 +2,7 @@ import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {Utils} from "../utils";
 import {Settings} from "../settings";
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 import {Version} from "../versioning/version";
 
 import {ClipperState} from "./clipperState";
@@ -39,13 +40,13 @@ export class RatingsHelper {
 	 */
 	public static preCacheNeededValues(): void {
 		let ratingsPromptStorageKeys = [
-			Constants.StorageKeys.doNotPromptRatings,
-			Constants.StorageKeys.lastBadRatingDate,
-			Constants.StorageKeys.lastBadRatingVersion,
-			Constants.StorageKeys.lastSeenVersion,
-			Constants.StorageKeys.numSuccessfulClips
+			ClipperStorageKeys.doNotPromptRatings,
+			ClipperStorageKeys.lastBadRatingDate,
+			ClipperStorageKeys.lastBadRatingVersion,
+			ClipperStorageKeys.lastSeenVersion,
+			ClipperStorageKeys.numSuccessfulClips
 		];
-		Clipper.Storage.preCacheValues(ratingsPromptStorageKeys);
+		Clipper.preCacheStoredValues(ratingsPromptStorageKeys);
 	}
 
 	/**
@@ -80,7 +81,7 @@ export class RatingsHelper {
 	public static setLastBadRating(badRatingDateToSetAsStr: string, badRatingVersionToSetAsStr: string): boolean {
 		// TODO decouple, stop returning boolean from here
 
-		let badDateKey: string = Constants.StorageKeys.lastBadRatingDate;
+		let badDateKey: string = ClipperStorageKeys.lastBadRatingDate;
 		let badRatingAlreadyOccurred = false;
 
 		let badRatingDateToSet: number = parseInt(badRatingDateToSetAsStr, 10);
@@ -97,14 +98,14 @@ export class RatingsHelper {
 			return true;
 		}
 
-		let lastBadRatingDateAsStr: string = Clipper.Storage.getCachedValue(badDateKey);
+		let lastBadRatingDateAsStr: string = Clipper.getCachedValue(badDateKey);
 		let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
 		if (!isNaN(lastBadRatingDate) && RatingsHelper.isValidDate(lastBadRatingDate)) {
 			badRatingAlreadyOccurred = true;
 		}
 
-		Clipper.Storage.setValue(badDateKey, badRatingDateToSetAsStr);
-		Clipper.Storage.setValue(Constants.StorageKeys.lastBadRatingVersion, badRatingVersionToSet.toString());
+		Clipper.storeValue(badDateKey, badRatingDateToSetAsStr);
+		Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, badRatingVersionToSet.toString());
 
 		return badRatingAlreadyOccurred;
 	}
@@ -229,11 +230,11 @@ export class RatingsHelper {
 			return false;
 		}
 
-		let doNotPromptRatingsStr: string = Clipper.Storage.getCachedValue(Constants.StorageKeys.doNotPromptRatings);
-		let lastBadRatingDateAsStr: string = Clipper.Storage.getCachedValue(Constants.StorageKeys.lastBadRatingDate);
-		let lastBadRatingVersion: string = Clipper.Storage.getCachedValue(Constants.StorageKeys.lastBadRatingVersion);
-		let lastSeenVersion: string = Clipper.Storage.getCachedValue(Constants.StorageKeys.lastSeenVersion);
-		let numClipsAsStr: string = Clipper.Storage.getCachedValue(Constants.StorageKeys.numSuccessfulClips);
+		let doNotPromptRatingsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
+		let lastBadRatingDateAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingDate);
+		let lastBadRatingVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingVersion);
+		let lastSeenVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastSeenVersion);
+		let numClipsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips);
 
 		if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
 			logEventInfo.doNotPromptRatings = true;
@@ -285,7 +286,7 @@ export class RatingsHelper {
 
 	// TODO make private again
 	public static setDoNotPromptStatus(): void {
-		Clipper.Storage.setValue(Constants.StorageKeys.doNotPromptRatings, "true");
+		Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "true");
 
 		Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.SetDoNotPromptRatings));
 	}

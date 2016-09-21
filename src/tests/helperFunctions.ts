@@ -47,8 +47,8 @@ export module HelperFunctions {
 	}
 
 	export function getMockClipperState(): ClipperState {
-		Clipper.injectCommunicator = new Communicator(new MockMessageHandler(), "INJECT_MOCK_COMM");
-		Clipper.extensionCommunicator = new Communicator(new MockMessageHandler(), "EXTENSION_MOCK_COMM");
+		Clipper.setInjectCommunicator(new Communicator(new MockMessageHandler(), "INJECT_MOCK_COMM"));
+		Clipper.setExtensionCommunicator(new Communicator(new MockMessageHandler(), "EXTENSION_MOCK_COMM"));
 		Clipper.logger = new ConsoleLoggerDecorator(new MockConsole(), {
 			contextStrategy: new ProductionRequirements()
 		});

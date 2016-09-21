@@ -6,6 +6,8 @@ import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
 
+import {ClipperStorageKeys} from "../../storage/clipperStorageKeys";
+
 import {ClipMode} from "../clipMode";
 import {ClipperState, ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
@@ -96,7 +98,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 						id: Constants.Ids.ratingsButtonInitNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Negative"),
 						handler: () => {
-							let lastSeenVersion: string = Clipper.Storage.getCachedValue(Constants.StorageKeys.lastSeenVersion);
+							let lastSeenVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastSeenVersion);
 							let badRatingAlreadyOccurred: boolean = RatingsHelper.setLastBadRating(Date.now().toString(), lastSeenVersion);
 							if (badRatingAlreadyOccurred) {
 								// setting this to prevent additional ratings prompts after the second bad rating

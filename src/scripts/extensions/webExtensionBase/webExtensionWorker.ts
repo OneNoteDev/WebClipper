@@ -11,13 +11,15 @@ import {SmartValue} from "../../communicator/smartValue";
 
 import * as Log from "../../logging/log";
 
+import {ClipperData} from "../../storage/clipperData";
+import {LocalStorage} from "../../storage/LocalStorage";
+
 import {ChangeLog} from "../../versioning/changeLog";
 
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InjectHelper} from "../injectHelper";
 import {InvokeSource} from "../invokeSource";
-import {StorageBase} from "../storageBase";
 
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
@@ -34,7 +36,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
 		let messageHandlerThunk = () => { return new WebExtensionBackgroundMessageHandler(tab.id); };
-		super(clientInfo, auth, new StorageBase(), messageHandlerThunk, messageHandlerThunk);
+		super(clientInfo, auth, new ClipperData(new LocalStorage()), messageHandlerThunk, messageHandlerThunk);
 
 		this.injectUrls = injectUrls;
 		this.tab = tab;
