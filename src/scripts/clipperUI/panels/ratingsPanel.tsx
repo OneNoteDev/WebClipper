@@ -98,12 +98,15 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 						id: Constants.Ids.ratingsButtonInitNo,
 						label: Localization.getLocalizedString("WebClipper.Label.Ratings.Button.Init.Negative"),
 						handler: () => {
-							let lastSeenVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastSeenVersion);
-							let badRatingAlreadyOccurred: boolean = RatingsHelper.setLastBadRating(Date.now().toString(), lastSeenVersion);
-							if (badRatingAlreadyOccurred) {
+							if (RatingsHelper.badRatingAlreadyOccurred()) {
 								// setting this to prevent additional ratings prompts after the second bad rating
 								RatingsHelper.setDoNotPromptStatus();
 							}
+
+							let lastSeenVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastSeenVersion);
+							Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, Date.now().toString());
+							Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, lastSeenVersion);
+
 							let feedbackUrl: string = RatingsHelper.getFeedbackUrlIfExists(clipperState);
 							if (feedbackUrl) {
 								panel.setState({

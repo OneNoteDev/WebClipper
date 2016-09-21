@@ -143,7 +143,7 @@ test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goe
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Feedback]);
 
 	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, undefined);
+		strictEqual(doNotPromptRatingsAsStr, undefined, "doNotPromptRatings should be undefined");
 		done();
 	});
 });
@@ -170,7 +170,7 @@ test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goe
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
 
 	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, undefined);
+		strictEqual(doNotPromptRatingsAsStr, undefined, "doNotPromptRatings should be undefined");
 		done();
 	});
 });

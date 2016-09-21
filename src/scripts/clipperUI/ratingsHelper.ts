@@ -36,6 +36,19 @@ export class RatingsHelper {
 	public static ratingsPromptEnabledSettingNameSuffix = "_RatingsEnabled";
 
 	/**
+	 * Returns true if ClipperStorageKeys.lastBadRatingDate already contained a cached value
+	 * (meaning the user had already rated us negatively)
+	 */
+	public static badRatingAlreadyOccurred(): boolean {
+		let lastBadRatingDateAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingDate);
+		let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
+		if (!isNaN(lastBadRatingDate) && RatingsHelper.isValidDate(lastBadRatingDate)) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Get the feedback URL with the special ratings prompt log category, if it exists
 	 */
 	public static getFeedbackUrlIfExists(clipperState: ClipperState): string {
@@ -77,50 +90,12 @@ export class RatingsHelper {
 	}
 
 	/**
-	 * Sets StorageKeys.lastBadRatingDate to the time provided (if valid),
-	 * and StorageKeys.lastBadRatingVersion to the version provided (if in accepted format).
-	 * Returns true if StorageKeys.lastBadRatingDate already contained a value before this set
-	 * (meaning the user had already rated us negatively)
-	 */
-	public static setLastBadRating(badRatingDateToSetAsStr: string, badRatingVersionToSetAsStr: string): boolean {
-		// TODO decouple, stop returning boolean from here
-
-		let badDateKey: string = ClipperStorageKeys.lastBadRatingDate;
-		let badRatingAlreadyOccurred = false;
-
-		let badRatingDateToSet: number = parseInt(badRatingDateToSetAsStr, 10);
-		if (!RatingsHelper.isValidDate(badRatingDateToSet)) {
-			// invalid value: err on the side of caution, always set do not prompt status
-			return true;
-		}
-
-		let badRatingVersionToSet: Version;
-		try {
-			badRatingVersionToSet = new Version(badRatingVersionToSetAsStr);
-		} catch (e) {
-			// invalid value: err on the side of caution, always set do not prompt status
-			return true;
-		}
-
-		let lastBadRatingDateAsStr: string = Clipper.getCachedValue(badDateKey);
-		let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
-		if (!isNaN(lastBadRatingDate) && RatingsHelper.isValidDate(lastBadRatingDate)) {
-			badRatingAlreadyOccurred = true;
-		}
-
-		Clipper.storeValue(badDateKey, badRatingDateToSetAsStr);
-		Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, badRatingVersionToSet.toString());
-
-		return badRatingAlreadyOccurred;
-	}
-
-	/**
 	 * We will show the ratings prompt if ALL of the below applies:
 	 *   * Ratings prompt is enabled for the ClientType/ClipperType
-	 *   * If StorageKeys.doNotPromptRatings is not "true"
-	 *   * If RatingsHelper.badRatingTimingDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingDate
-	 *   * If RatingsHelper.badRatingVersionDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingVersion and StorageKeys.lastSeenVersion
-	 *   * If RatingsHelper.clipSuccessDelayIsOver(...) returns true when provided StorageKeys.numClipSuccess
+	 *   * If ClipperStorageKeys.doNotPromptRatings is not "true"
+	 *   * If RatingsHelper.badRatingTimingDelayIsOver(...) returns true when provided ClipperStorageKeys.lastBadRatingDate
+	 *   * If RatingsHelper.badRatingVersionDelayIsOver(...) returns true when provided ClipperStorageKeys.lastBadRatingVersion and ClipperStorageKeys.lastSeenVersion
+	 *   * If RatingsHelper.clipSuccessDelayIsOver(...) returns true when provided ClipperStorageKeys.numClipSuccess
 	 */
 	public static shouldShowRatingsPrompt(clipperState: ClipperState): boolean {
 		let shouldShowRatingsPromptEvent = new Log.Event.PromiseEvent(Log.Event.Label.ShouldShowRatingsPrompt);

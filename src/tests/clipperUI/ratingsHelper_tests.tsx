@@ -362,95 +362,31 @@ test("ratingsPromptEnabledForClient returns true if a client's enable value is '
 	strictEqual(isEnabled, true);
 });
 
-// setLastBadRating
+// badRatingAlreadyOccurred
 
-test("setLastBadRating sets lastBadRatingDate in storage and returns false when lastBadRatingDate does not exist in storage", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	let badRatingDateToSet: string = Date.now().toString();
-	let badRatingVersionToSet = "3.0.0";
-
-	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+test("badRatingAlreadyOccurred returns false when lastBadRatingDate does not exist in storage", () => {
+	let alreadyRatedBad: boolean = RatingsHelper.badRatingAlreadyOccurred();
 	strictEqual(alreadyRatedBad, false);
-	Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-		Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
-			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
-			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
-			done();
-		});
-	});
 });
 
-test("setLastBadRating sets lastBadRatingDate in storage and returns false when lastBadRatingDate is not a number", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("badRatingAlreadyOccurred returns false when lastBadRatingDate is not a number", () => {
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, "not a number");
 
-	let badRatingDateToSet: string = Date.now().toString();
-	let badRatingVersionToSet = "3.0.0";
-
-	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+	let alreadyRatedBad: boolean = RatingsHelper.badRatingAlreadyOccurred();
 	strictEqual(alreadyRatedBad, false);
-	Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-		Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
-			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
-			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
-			done();
-		});
-	});
 });
 
-test("setLastBadRating sets lastBadRatingDate in storage and returns false when lastBadRatingDate is a number out of date range", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("badRatingAlreadyOccurred returns false when lastBadRatingDate is a number out of date range", () => {
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Constants.Settings.maximumJSTimeValue + 1).toString());
 
-	let badRatingDateToSet: string = Date.now().toString();
-	let badRatingVersionToSet = "3.0.0";
-
-	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+	let alreadyRatedBad: boolean = RatingsHelper.badRatingAlreadyOccurred();
 	strictEqual(alreadyRatedBad, false);
-	Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-		Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
-			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
-			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
-			done();
-		});
-	});
 });
 
-test("setLastBadRating sets lastBadRatingDate in storage and returns true when lastBadRatingDate is a valid number", (assert: QUnitAssert) => {
-	let done = assert.async();
-
+test("badRatingAlreadyOccurred returns true when lastBadRatingDate is a valid number", () => {
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, Date.now().toString());
 
-	let badRatingDateToSet: string = Date.now().toString();
-	let badRatingVersionToSet = "3.0.0";
-
-	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
-	strictEqual(alreadyRatedBad, true);
-	Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingDate, (badRateDateAsStr: string) => {
-		Clipper.getStoredValue(ClipperStorageKeys.lastBadRatingVersion, (badRateVersionAsStr: string) => {
-			strictEqual(badRateDateAsStr, badRatingDateToSet, "bad rating date is incorrect");
-			strictEqual(badRateVersionAsStr, badRatingVersionToSet, "bad rating version is incorrect");
-			done();
-		});
-	});
-});
-
-test("setLastBadRating rejects when badRatingDateToSet is not a valid date", () => {
-	let badRatingDateToSet: string = (Constants.Settings.maximumJSTimeValue + 1).toString();
-	let badRatingVersionToSet = "3.0.0";
-
-	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
-	strictEqual(alreadyRatedBad, true);
-});
-
-test("setLastBadRating rejects when badRatingVersionToSet is not in a valid version format", () => {
-	let badRatingDateToSet: string = Date.now().toString();
-	let badRatingVersionToSet = "12345";
-
-	let alreadyRatedBad: boolean = RatingsHelper.setLastBadRating(badRatingDateToSet, badRatingVersionToSet);
+	let alreadyRatedBad: boolean = RatingsHelper.badRatingAlreadyOccurred();
 	strictEqual(alreadyRatedBad, true);
 });
 
