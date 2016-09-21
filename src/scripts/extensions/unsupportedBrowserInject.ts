@@ -38,7 +38,7 @@ export class UnsupportedBrowserInject {
 			"margin: 0px; padding: 0px; border: 0px currentColor; border-image: none;" +
 			"top: 0px; width: 349px; height: 250px; overflow: hidden;" +
 			"display: block; position: fixed; z-index: 2147483647; ";
-		cssText += Rtl.isRtl(navigator.language || navigator.userLanguage) ? "left: 0;" : "right: 0;";
+		cssText += Rtl.isRtl(navigator.language || (<any>navigator).userLanguage) ? "left: 0;" : "right: 0;";
 		element.style.cssText = cssText;
 
 		// Attach to the body, unless we're in a frameset, then attach to the document itself

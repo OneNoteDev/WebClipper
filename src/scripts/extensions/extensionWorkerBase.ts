@@ -301,7 +301,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 	protected getLocalizedStringsForBrowser(callback: Function) {
 		let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
-		let locale = localeOverride || navigator.language || navigator.userLanguage;
+		let locale = localeOverride || navigator.language || (<any>navigator).userLanguage;
 		this.getLocalizedStrings(locale, callback);
 	}
 

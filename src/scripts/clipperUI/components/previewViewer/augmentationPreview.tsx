@@ -79,7 +79,7 @@ class AugmentationPreview extends EditorPreviewComponentBase<EditorPreviewState,
 			totalFrameCount={21}
 			loop={true} />;
 
-		return <div class={Constants.Classes.centeredInPreview}>{spinner}</div>;
+		return <div className={Constants.Classes.centeredInPreview}>{spinner}</div>;
 	}
 }
 

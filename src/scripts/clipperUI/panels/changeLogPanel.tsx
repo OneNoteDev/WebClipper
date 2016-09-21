@@ -54,7 +54,7 @@ class ChangeLogPanelClass extends ComponentBase<{}, TooltipProps.WhatsNew> {
 
 	render() {
 		return (
-			<div class={Constants.Classes.changes}>
+			<div className={Constants.Classes.changes}>
 				{this.getChangeElements()}
 			</div>
 		);

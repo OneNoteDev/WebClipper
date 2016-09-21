@@ -136,7 +136,7 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 			imageWidth={45}
 			totalFrameCount={21}
 			loop={true} />;
-		return <div class={Constants.Classes.centeredInPreview}>{spinner}</div>;
+		return <div className={Constants.Classes.centeredInPreview}>{spinner}</div>;
 	}
 }
 

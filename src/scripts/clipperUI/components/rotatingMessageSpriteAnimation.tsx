@@ -27,7 +27,7 @@ class RotatingMessageSpriteAnimationClass extends ComponentBase<SpriteAnimationS
 					/>
 				<div
 					id={Constants.Ids.spinnerText}
-					class="spinnerText"
+					className="spinnerText"
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}>
 					{Localization.getLocalizedString("WebClipper.Preview.Spinner.ClipAnyTimeInFullPage")}
 				</div>

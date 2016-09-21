@@ -32,7 +32,7 @@ test("The tab order flow from the header to the preview title is correct in Regi
 
 	let elementsInExpectedTabOrder = [
 		{ name: Constants.Ids.addRegionControl, elem: document.getElementById(Constants.Ids.addRegionControl) },
-		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) },
+		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
 	];
 
 	for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
