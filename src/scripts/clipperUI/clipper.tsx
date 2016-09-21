@@ -1,3 +1,4 @@
+/// <reference path="../../../typings/globals/sanitize-html/index.d.ts" />
 /// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts" />
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
@@ -252,9 +253,28 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 
 			AugmentationHelper.augmentPage(augmentationUrl, pageInfo.contentLocale, pageInfo.contentData).then((result) => {
+				let contentInHtml = result.ContentInHtml;
+				
+				let allowedTags = ["html", "head", "title", "meta", "body", "div", "span", "a", "p",
+					"h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "img", "object"];
+				let tableTags = ["table", "tr", "td"];
+				let styleTags = ["b", "em", "strong", "i", "u", "strike", "del", "sup", "sub", "cite", "font"];
+				let totalTags = allowedTags.concat(tableTags).concat(styleTags);
+
+				let allowedAttributes = {
+					a: ["href", "name", "target"],
+					img: ["src"],
+					"*": ["background-color", "color", "font-family", "font-size", "data*", "alt", "height", "width", "style", "id", "type"]
+				};
+
+				let sanitizedHtml = sanitizeHtml(result.ContentInHtml, {
+					allowedTags: totalTags,
+					allowedAttributes: allowedAttributes
+				});
+				
 				this.state.setState({
 					augmentationResult: { data: result, status: Status.Succeeded },
-					augmentationPreviewInfo: { previewBodyHtml: result.ContentInHtml }
+					augmentationPreviewInfo: { previewBodyHtml: sanitizedHtml }
 				});
 			}, () => {
 				this.state.setState({

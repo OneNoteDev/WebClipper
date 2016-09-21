@@ -500,7 +500,8 @@ function exportCommonLibFiles(targetDir) {
 		PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js",
 		PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
 		PATHS.NODE_MODULES + "urijs/src/URI.min.js",
-		PATHS.NODE_MODULES + "velocity-animate/velocity.min.js"
+		PATHS.NODE_MODULES + "velocity-animate/velocity.min.js",
+		PATHS.NODE_MODULES + "sanitize-html/sanitize-html.js"
 	];
 
 	var exportTask = gulp.src(assertModuleExists(libFiles))
