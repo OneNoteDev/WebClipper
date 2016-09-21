@@ -27,11 +27,11 @@ export class RemoteStorage implements StorageAsync {
 	}
 
 	public getValues(keys: string[], callback: (values: {}) => void, cacheValue?: boolean): void {
-		this.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.getMultipleStorageValues, { param: keys, callback: (values: {}) => {
+		this.extensionCommunicator.callRemoteFunction(Constants.FunctionKeys.getMultipleStorageValues, { param: keys, callback: (values: { [key: string]: string }) => {
 			if (cacheValue) {
-				for (let v in values) {
-					if (values.hasOwnProperty(v)) {
-						this.storageCache[v] = values[v];
+				for (let key in values) {
+					if (values.hasOwnProperty(key)) {
+						this.storageCache[key] = values[key];
 					}
 				}
 			}

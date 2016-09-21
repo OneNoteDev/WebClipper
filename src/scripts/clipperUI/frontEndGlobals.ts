@@ -57,10 +57,7 @@ export class Clipper {
 			throw new Error("The remote storage needs to be set up with the extension communicator first");
 		}
 
-		// TODO use Clipper.storage.getValues(storageKeys, () => {}, true);
-		for (let key of storageKeys) {
-			Clipper.storage.getValue(key, () => { }, true);
-		}
+		Clipper.storage.getValues(storageKeys, () => {}, true);
 	}
 
 	public static storeValue(key: string, value: string): void {
