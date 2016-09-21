@@ -36,7 +36,25 @@ export class RatingsHelper {
 	public static ratingsPromptEnabledSettingNameSuffix = "_RatingsEnabled";
 
 	/**
-	 *
+	 * Get the feedback URL with the special ratings prompt log category, if it exists
+	 */
+	public static getFeedbackUrlIfExists(clipperState: ClipperState): string {
+		let ratingsPromptLogCategory: string = Settings.getSetting("LogCategory_RatingsPrompt");
+		if (!Utils.isNullOrUndefined(ratingsPromptLogCategory) && ratingsPromptLogCategory.length > 0) {
+			return Utils.generateFeedbackUrl(clipperState, Clipper.getUserSessionId(), ratingsPromptLogCategory);
+		}
+	}
+
+	/**
+	 * Get ratings/reviews URL for the provided ClientType/ClipperType, if it exists
+	 */
+	public static getRateUrlIfExists(clientType: ClientType): string {
+		let settingName: string = RatingsHelper.getRateUrlSettingNameForClient(clientType);
+		return Settings.getSetting(settingName);
+	}
+
+	/**
+	 * Pre-cache values needed to determine whether to show the ratings prompt
 	 */
 	public static preCacheNeededValues(): void {
 		let ratingsPromptStorageKeys = [
@@ -50,24 +68,12 @@ export class RatingsHelper {
 	}
 
 	/**
-	 * We will show the ratings prompt if ALL of the below applies:
-	 *   * Ratings prompt is enabled for the ClientType/ClipperType
-	 *   * If StorageKeys.doNotPromptRatings is not "true"
-	 *   * If RatingsHelper.badRatingTimingDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingDate
-	 *   * If RatingsHelper.badRatingVersionDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingVersion and StorageKeys.lastSeenVersion
-	 *   * If RatingsHelper.clipSuccessDelayIsOver(...) returns true when provided StorageKeys.numClipSuccess
+	 * Set ClipperStorageKeys.doNotPromptRatings value to "true"
 	 */
-	public static shouldShowRatingsPrompt(clipperState: ClipperState): boolean {
-		let shouldShowRatingsPromptEvent = new Log.Event.PromiseEvent(Log.Event.Label.ShouldShowRatingsPrompt);
-		let shouldShowRatingsPromptInfo: RatingsLoggingInfo = {};
+	public static setDoNotPromptStatus(): void {
+		Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "true");
 
-		let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPromptInternal(clipperState, shouldShowRatingsPromptEvent, shouldShowRatingsPromptInfo);
-
-		shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.ShouldShowRatingsPrompt, shouldShowRatingsPrompt);
-		shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.RatingsInfo, JSON.stringify(shouldShowRatingsPromptInfo));
-		Clipper.logger.logEvent(shouldShowRatingsPromptEvent);
-
-		return shouldShowRatingsPrompt;
+		Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.SetDoNotPromptRatings));
 	}
 
 	/**
@@ -75,8 +81,6 @@ export class RatingsHelper {
 	 * and StorageKeys.lastBadRatingVersion to the version provided (if in accepted format).
 	 * Returns true if StorageKeys.lastBadRatingDate already contained a value before this set
 	 * (meaning the user had already rated us negatively)
-	 *
-	 * Public for testing
 	 */
 	public static setLastBadRating(badRatingDateToSetAsStr: string, badRatingVersionToSetAsStr: string): boolean {
 		// TODO decouple, stop returning boolean from here
@@ -111,6 +115,27 @@ export class RatingsHelper {
 	}
 
 	/**
+	 * We will show the ratings prompt if ALL of the below applies:
+	 *   * Ratings prompt is enabled for the ClientType/ClipperType
+	 *   * If StorageKeys.doNotPromptRatings is not "true"
+	 *   * If RatingsHelper.badRatingTimingDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingDate
+	 *   * If RatingsHelper.badRatingVersionDelayIsOver(...) returns true when provided StorageKeys.lastBadRatingVersion and StorageKeys.lastSeenVersion
+	 *   * If RatingsHelper.clipSuccessDelayIsOver(...) returns true when provided StorageKeys.numClipSuccess
+	 */
+	public static shouldShowRatingsPrompt(clipperState: ClipperState): boolean {
+		let shouldShowRatingsPromptEvent = new Log.Event.PromiseEvent(Log.Event.Label.ShouldShowRatingsPrompt);
+		let shouldShowRatingsPromptInfo: RatingsLoggingInfo = {};
+
+		let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPromptInternal(clipperState, shouldShowRatingsPromptEvent, shouldShowRatingsPromptInfo);
+
+		shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.ShouldShowRatingsPrompt, shouldShowRatingsPrompt);
+		shouldShowRatingsPromptEvent.setCustomProperty(Log.PropertyName.Custom.RatingsInfo, JSON.stringify(shouldShowRatingsPromptInfo));
+		Clipper.logger.logEvent(shouldShowRatingsPromptEvent);
+
+		return shouldShowRatingsPrompt;
+	}
+
+	/**
 	 * Returns true if the ratings prompt is enabled for ClientType/ClipperType provided
 	 *
 	 * Public for testing
@@ -119,28 +144,6 @@ export class RatingsHelper {
 		let settingName: string = RatingsHelper.getRatingsPromptEnabledSettingNameForClient(clientType);
 		let isEnabledAsStr: string = Settings.getSetting(settingName);
 		return !Utils.isNullOrUndefined(isEnabledAsStr) && isEnabledAsStr.toLowerCase() === "true";
-	}
-
-	/**
-	 * Get ratings/reviews URL for the provided ClientType/ClipperType, if it exists
-	 *
-	 * Public for testing
-	 */
-	public static getRateUrlIfExists(clientType: ClientType): string {
-		let settingName: string = RatingsHelper.getRateUrlSettingNameForClient(clientType);
-		return Settings.getSetting(settingName);
-	}
-
-	/**
-	 * Get the feedback URL with the special ratings prompt log category, if it exists
-	 *
-	 * Public for testing
-	 */
-	public static getFeedbackUrlIfExists(clipperState: ClipperState): string {
-		let ratingsPromptLogCategory: string = Settings.getSetting("LogCategory_RatingsPrompt");
-		if (!Utils.isNullOrUndefined(ratingsPromptLogCategory) && ratingsPromptLogCategory.length > 0) {
-			return Utils.generateFeedbackUrl(clipperState, Clipper.getUserSessionId(), ratingsPromptLogCategory);
-		}
 	}
 
 	/**
@@ -282,12 +285,5 @@ export class RatingsHelper {
 	private static isValidDate(date: number): boolean {
 		let minimumTimeValue: number = (Constants.Settings.maximumJSTimeValue * -1);
 		return date >= minimumTimeValue && date <= Constants.Settings.maximumJSTimeValue;
-	}
-
-	// TODO make private again
-	public static setDoNotPromptStatus(): void {
-		Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "true");
-
-		Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.SetDoNotPromptRatings));
 	}
 }
