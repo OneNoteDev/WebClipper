@@ -369,9 +369,12 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			let extensionVersion = new Version(ExtensionBase.getExtensionVersion());
 
 			let tooltips = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
-			let typeToShow = this.shouldShowTooltip(tab, tooltips);
-			if (typeToShow) {
-				this.showTooltip(tab, typeToShow);
+			if (!this.tooltip.hasAnyTooltipBeenSeenInLastTimePeriod(Date.now(), tooltips, Constants.Settings.timeBetweenDifferentTooltips)) {
+				let typeToShow = this.shouldShowTooltip(tab, tooltips);
+				if (typeToShow) {
+					this.showTooltip(tab, typeToShow);
+					return;
+				}
 			}
 
 			if (this.shouldShowVideoTooltip(tab)) {

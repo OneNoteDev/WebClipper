@@ -54,13 +54,6 @@ export class TooltipHelper {
 			return false;
 		}
 
-		let timeBetweenTooltips = Constants.Settings.timeBetweenTooltips;
-
-		// If the user has seen any of the tooltips in the last timeBetweenTooltips
-		if (this.hasAnyTooltipBeenSeenInLastTimePeriod(time, this.validTypes, Constants.Settings.timeBetweenTooltips)) {
-			return false;
-		}
-
 		return true;
 	}
 
