@@ -89,7 +89,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 
 	protected checkIfTabIsAVideoDomain(tab: W3CTab): boolean {
 		let domain = VideoUtils.videoDomainIfSupported(tab.url);
-		return domain ? true : false;
+		return !!domain;
 	}
 
 	private invokeClipperInTab(tab: W3CTab, invokeInfo: InvokeInfo, options: InvokeOptions) {

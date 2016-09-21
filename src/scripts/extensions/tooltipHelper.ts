@@ -35,8 +35,8 @@ export class TooltipHelper {
 		this.storage.setValue(storageKey, value);
 	}
 
-	public tooltipDelayIsOver(tooltipType: TooltipType, time: number): boolean {
-		if (Utils.isNullOrUndefined(tooltipType) || Utils.isNullOrUndefined(time)) {
+	public tooltipDelayIsOver(tooltipType: TooltipType, curTime: number): boolean {
+		if (Utils.isNullOrUndefined(tooltipType) || Utils.isNullOrUndefined(curTime)) {
 			throw new Error("Invalid argument passed to tooltipDelayIsOver");
 		}
 
@@ -54,6 +54,18 @@ export class TooltipHelper {
 			return false;
 		}
 
+		// If it has been less than 3 weeks since the user saw this specific tooltip, return false
+		if (this.tooltipHasBeenSeenInLastTimePeriod(tooltipType, curTime, Constants.Settings.timeBetweenSameTooltip)) {
+			return false;
+		}
+
+		// If it has been less than 7 days since the user saw any tooltip, then return false
+		let indexOfThisTooltip = this.validTypes.indexOf(tooltipType);
+		let tooltipsWithoutCurrentType = this.validTypes.splice(indexOfThisTooltip, 1);
+		if (this.hasAnyTooltipBeenSeenInLastTimePeriod(curTime, tooltipsWithoutCurrentType, Constants.Settings.timeBetweenDifferentTooltips)) {
+			return false;
+		}
+		
 		return true;
 	}
 
@@ -65,6 +77,9 @@ export class TooltipHelper {
 		return storageKeyBase + TooltipType[tooltipType];
 	}
 
+	/** 
+	 * Returns true if the lastSeenTooltipTime of @tooltipType is within @timePeriod of @curTime
+	 */
 	public tooltipHasBeenSeenInLastTimePeriod(tooltipType: TooltipType, curTime: number, timePeriod: number): boolean {
 		let lastSeenTooltipTime = this.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);
 		if (lastSeenTooltipTime === 0) {
@@ -77,7 +92,7 @@ export class TooltipHelper {
 	/**
 	 * Returns true if any of the @tooltipTypesToCheck have been seen in the last @timePeriod, given the current @time
 	 */
-	public hasAnyTooltipBeenSeenInLastTimePeriod(curTime: number, typesToCheck: TooltipType[], timePeriod): boolean {
+	public hasAnyTooltipBeenSeenInLastTimePeriod(curTime: number, typesToCheck: TooltipType[], timePeriod: number): boolean {
 		return this.validTypes.some((tooltipType) => {
 			let tooltipWasSeen = this.tooltipHasBeenSeenInLastTimePeriod(tooltipType, curTime, timePeriod);
 			return tooltipWasSeen;

@@ -369,12 +369,11 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			let extensionVersion = new Version(ExtensionBase.getExtensionVersion());
 
 			let tooltips = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
-			if (!this.tooltip.hasAnyTooltipBeenSeenInLastTimePeriod(Date.now(), tooltips, Constants.Settings.timeBetweenDifferentTooltips)) {
-				let typeToShow = this.shouldShowTooltip(tab, tooltips);
-				if (typeToShow) {
-					this.showTooltip(tab, typeToShow);
-					return;
-				}
+			// Returns the Type of tooltip to show IF the delay is over and the tab has the correct content type
+			let typeToShow = this.shouldShowTooltip(tab, tooltips);
+			if (typeToShow) {
+				this.showTooltip(tab, typeToShow);
+				return;
 			}
 
 			if (this.shouldShowVideoTooltip(tab)) {

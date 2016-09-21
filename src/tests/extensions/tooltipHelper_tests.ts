@@ -110,22 +110,22 @@ test("Null or undefined passed to tooltipDelayIsOver should throw an Error", () 
 });
 
 function setClipTimeWithinRange() {
-	let timeToSet = baseTime - Constants.Settings.timeBetweenTooltips + 5000;
+	let timeToSet = baseTime - Constants.Settings.timeBetweenSameTooltip + 5000;
 	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastClippedTooltipTimeBase, testType, timeToSet.toString());
 }
 
 function setClipTimeOutsideOfRange() {
-	let timeToSet = baseTime - Constants.Settings.timeBetweenTooltips - 5000;
+	let timeToSet = baseTime - Constants.Settings.timeBetweenSameTooltip - 5000;
 	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastClippedTooltipTimeBase, testType, timeToSet.toString());
 }
 
-function setSeenTimeWithinRange() {
-	let timeToSet = baseTime - Constants.Settings.timeBetweenTooltips + 5000;
-	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType, timeToSet.toString());
+function setSeenTimeWithinRange(tooltipType: TooltipType, timePeriod: number) {
+	let timeToSet = baseTime - timePeriod + 5000;
+	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType, timeToSet.toString());
 }
 
 function setSeenTimeOutsideOfRange() {
-	let timeToSet = baseTime - Constants.Settings.timeBetweenTooltips - 5000;
+	let timeToSet = baseTime - Constants.Settings.timeBetweenSameTooltip - 5000;
 	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType, timeToSet.toString());
 }
 
@@ -134,26 +134,36 @@ function setNumTimesTooltipHasBeenSeen(times: number) {
 }
 
 test("tooltipHasBeenSeenInLastTimePeriod should return FALSE when nothing is in storage", () => {
-	ok(!tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(baseTime, testType, Constants.Settings.timeBetweenTooltips));
+	ok(!tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(baseTime, testType, Constants.Settings.timeBetweenSameTooltip));
 });
 
 test("tooltipHasBeenSeenInLastTimePeriod should return FALSE when a value is in storage but it is outside the time period", () => {
 	setSeenTimeOutsideOfRange();
-	ok(!tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(baseTime, testType, Constants.Settings.timeBetweenTooltips));
+	ok(!tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(baseTime, testType, Constants.Settings.timeBetweenSameTooltip));
 });
 
-test("tooltipHasBeenSeenInLastTimePeriod should return TRUE when a value is in storage and is within the time period", () => {
+test("tooltipHasBeenSeenInLastTimePeriod should return TRUE when a value is in storage and is within the time period for non-production values", () => {
 	tooltipHelper.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, testType, "15");
 	ok(tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(testType, 25, 11));
 });
 
+test("tooltipHasBeenSeenInLastTimePeriod should return TRUE when a value is in storage and is within the time period", () => {
+	setSeenTimeWithinRange(testType, Constants.Settings.timeBetweenSameTooltip);
+	ok(tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(testType, baseTime, Constants.Settings.timeBetweenSameTooltip));
+});
+
+test("tooltipHasBeenSeenInLastTimePeriod should return FALSE when a value is in storage, but it outside the time period #2", () => {
+	setSeenTimeWithinRange(testType, Constants.Settings.timeBetweenDifferentTooltips);
+	ok(!tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(testType, baseTime, Constants.Settings.timeBetweenSameTooltip));
+});
+
 test("hasAnyTooltipBeenSeenInLastTimerPeriod should return FALSE when nothing is in storage", () => {
-	ok(!tooltipHelper.hasAnyTooltipBeenSeenInLastTimePeriod(baseTime, validTypes, Constants.Settings.timeBetweenTooltips));
+	ok(!tooltipHelper.hasAnyTooltipBeenSeenInLastTimePeriod(baseTime, validTypes, Constants.Settings.timeBetweenDifferentTooltips));
 });
 
 test("hasAnyTooltipBeenSeenInLastTimePeriod should return TRUE if at least one of the tooltips has a lastSeenTooltipTime in Storage within the time period", () => {
-	setSeenTimeWithinRange();
-	ok(tooltipHelper.hasAnyTooltipBeenSeenInLastTimePeriod(baseTime, validTypes, Constants.Settings.timeBetweenTooltips));
+	setSeenTimeWithinRange(Constants.Settings.timeBetweenDifferentTooltips);
+	ok(tooltipHelper.hasAnyTooltipBeenSeenInLastTimePeriod(baseTime, validTypes, Constants.Settings.timeBetweenDifferentTooltips));
 });
 
 test("tooltipDelayIsOver should return TRUE when nothing in in storage", () => {
