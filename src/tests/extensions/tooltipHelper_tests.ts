@@ -175,12 +175,12 @@ test("tooltipDelayIsOver should return FALSE when they have seen a tooltip in th
 });
 
 test("tooltipDelayIsOver should return FALSE when they have seen a tooltip (not the same one) in the last 7 days", () => {
-	setSeenTimeWithinRange(TooltipType.Video, Constants.Settings.timeBetweenDifferentTooltips);
-	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
+	setSeenTimeWithinRange(TooltipType.Pdf, Constants.Settings.timeBetweenDifferentTooltips);
+	ok(!tooltipHelper.tooltipDelayIsOver(TooltipType.Product, baseTime));
 });
 
 test("tooltipDelayIsOver should return TRUE if they have NOT seen a different tooltip in the last 7 days", () => {
-	setSeenTimeOutsideOfRange(TooltipType.Video, Constants.Settings.timeBetweenDifferentTooltips);
+	setSeenTimeOutsideOfRange(TooltipType.Product, Constants.Settings.timeBetweenDifferentTooltips);
 	ok(tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
 

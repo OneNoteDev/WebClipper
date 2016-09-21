@@ -61,8 +61,9 @@ export class TooltipHelper {
 
 		// If it has been less than 7 days since the user saw any tooltip, then return false
 		let indexOfThisTooltip = this.validTypes.indexOf(tooltipType);
-		let tooltipsWithoutCurrentType = this.validTypes.splice(indexOfThisTooltip, 1);
-		if (this.hasAnyTooltipBeenSeenInLastTimePeriod(curTime, tooltipsWithoutCurrentType, Constants.Settings.timeBetweenDifferentTooltips)) {
+		let validTypesWithCurrentTypeRemoved = this.validTypes.slice();
+		validTypesWithCurrentTypeRemoved.splice(indexOfThisTooltip, 1);
+		if (this.hasAnyTooltipBeenSeenInLastTimePeriod(curTime, validTypesWithCurrentTypeRemoved, Constants.Settings.timeBetweenDifferentTooltips)) {
 			return false;
 		}
 		return true;
@@ -92,7 +93,7 @@ export class TooltipHelper {
 	 * Returns true if any of the @tooltipTypesToCheck have been seen in the last @timePeriod, given the current @time
 	 */
 	public hasAnyTooltipBeenSeenInLastTimePeriod(curTime: number, typesToCheck: TooltipType[], timePeriod: number): boolean {
-		return this.validTypes.some((tooltipType) => {
+		return typesToCheck.some((tooltipType) => {
 			let tooltipWasSeen = this.tooltipHasBeenSeenInLastTimePeriod(tooltipType, curTime, timePeriod);
 			return tooltipWasSeen;
 		});
