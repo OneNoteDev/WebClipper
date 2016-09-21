@@ -13,8 +13,8 @@ import {SpriteAnimation} from "../../components/spriteAnimation";
 import {EditorPreviewComponentBase, EditorPreviewState} from "./editorPreviewComponentBase";
 
 class SelectionPreview extends EditorPreviewComponentBase<EditorPreviewState, ClipperStateProp> {
-	protected getContentBodyForCurrentStatus(): any[] {
-		return [m.trust(this.props.clipperState.selectionPreviewInfo.previewBodyHtml)];
+	protected getHighlightableContentBodyForCurrentStatus(): any {
+		return m.trust(this.props.clipperState.selectionPreviewInfo.previewBodyHtml);
 	}
 
 	protected getStatus(): Status {

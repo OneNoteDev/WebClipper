@@ -13,7 +13,7 @@ import {SpriteAnimation} from "../../components/spriteAnimation";
 import {EditorPreviewComponentBase, EditorPreviewState} from "./editorPreviewComponentBase";
 
 class AugmentationPreview extends EditorPreviewComponentBase<EditorPreviewState, ClipperStateProp> {
-	protected getContentBodyForCurrentStatus(): any[] {
+	protected getHighlightableContentBodyForCurrentStatus(): any[] {
 		let state = this.props.clipperState;
 		return this.convertAugmentationResultToContentData(state.augmentationResult);
 	}
@@ -50,25 +50,22 @@ class AugmentationPreview extends EditorPreviewComponentBase<EditorPreviewState,
 		});
 	}
 
-	private convertAugmentationResultToContentData(result: DataResult<AugmentationResult>): any[] {
-		let contentBody = [];
-
+	private convertAugmentationResultToContentData(result: DataResult<AugmentationResult>): any {
 		switch (result.status) {
 			case Status.Succeeded:
 				if (this.props.clipperState.augmentationResult.data && this.props.clipperState.augmentationResult.data.ContentModel !== AugmentationModel.None) {
-					contentBody.push(m.trust(this.props.clipperState.augmentationPreviewInfo.previewBodyHtml));
+					return m.trust(this.props.clipperState.augmentationPreviewInfo.previewBodyHtml);
 				}
 				break;
 			case Status.NotStarted:
 			case Status.InProgress:
-				contentBody.push(this.getSpinner());
-				break;
+				return this.getSpinner();
 			default:
 			case Status.Failed:
 				break;
 		}
 
-		return contentBody;
+		return undefined;
 	}
 
 	private getSpinner(): any {
