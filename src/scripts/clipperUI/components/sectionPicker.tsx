@@ -284,6 +284,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		}
 
 		// If we can show a better message, especially an actionable one, we do
+		// TODO: Add the retryable message back in
 		if (this.state.apiResponseCode && OneNoteApiUtils.getLocalizedErrorMessage(this.state.apiResponseCode)) {
 			localizedStrings.notebookLoadFailureMessage = OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(this.state.apiResponseCode);
 		}
