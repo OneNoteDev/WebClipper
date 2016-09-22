@@ -1,6 +1,20 @@
 {
 	"compilerOptions": {
 		"jsx": "preserve",
-		"module": "commonjs"
+		"module": "commonjs",
+		"types": [
+			"chrome",
+			"es6-promise",
+			"jquery",
+			"mithril",
+			"pdf",
+			"qunit",
+			"rangy",
+			"safari-extension",
+			"sinon",
+			"urijs",
+			"velocity-animate"
+		],
+		"outDir": "./build"
 	}
 }

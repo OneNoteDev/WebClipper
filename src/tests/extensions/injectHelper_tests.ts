@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {InjectHelper} from "../../scripts/extensions/injectHelper";
 
 QUnit.module("injectHelper", {});

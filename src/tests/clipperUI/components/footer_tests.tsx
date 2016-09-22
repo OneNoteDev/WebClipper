@@ -1,5 +1,3 @@
-/// <reference path="../../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {ClientType} from "../../../scripts/clientType";
 import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
 import {HelperFunctions} from "../../helperFunctions";

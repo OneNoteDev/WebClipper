@@ -1,13 +1,7 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
-
 import {BookmarkError, BookmarkHelper, BookmarkResult, MetadataKeyValuePair} from "../../scripts/contentCapture/bookmarkHelper";
-
 import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
-
 import {Utils} from "../../scripts/utils";
-
 import {HelperFunctions} from "../helperFunctions";
 
 QUnit.module("bookmarkHelper", {

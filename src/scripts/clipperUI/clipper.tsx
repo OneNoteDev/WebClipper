@@ -1,4 +1,3 @@
-/// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts" />
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
 import {AuthType, UpdateReason, UserInfo} from "../userInfo";

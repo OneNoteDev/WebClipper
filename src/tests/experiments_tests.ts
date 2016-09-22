@@ -1,5 +1,4 @@
-﻿/// <reference path="../../typings/main/ambient/qunit/qunit.d.ts" />
-import {Experiments} from "../scripts/experiments";
+﻿import {Experiments} from "../scripts/experiments";
 
 QUnit.module("experiments", {});
 

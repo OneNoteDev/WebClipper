@@ -1,5 +1,3 @@
-/// <reference path="../../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {HelperFunctions} from "../../helperFunctions";
 import {Constants} from "../../../scripts/constants";
 import {AuthType} from "../../../scripts/userInfo";

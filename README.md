@@ -15,19 +15,13 @@ From the root of this project, run:
 $ npm install
 ```
 
-### 4. Setup the external d.ts files and link the non-published npm packages
-From the root of this project, run:
-```sh
-$ gulp setup
-```
-
-### 5. Build and Test
+### 4. Build and Test
 The default gulp command is to build and test:
 ```sh
 $ gulp
 ```
  - Compiles LESS and TypeScript into /build
- - Bundles the JavaScript modules together into /bundle
+ - Bundles the JavaScript modules together into /build/bundles
  - Exports all the needed files to /target
 
 ## Congratulations!
@@ -41,3 +35,8 @@ $ gulp clean
 ```
 Removes all of the generated files from `build`
 
+#### Gulp watch
+```sh
+$ gulp watch
+```
+Automatically rebuilds the project when files are saved

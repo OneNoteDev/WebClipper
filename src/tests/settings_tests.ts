@@ -1,5 +1,4 @@
-﻿/// <reference path="../../typings/main/ambient/qunit/qunit.d.ts" />
-import {Settings} from "../scripts/settings";
+﻿import {Settings} from "../scripts/settings";
 
 declare function require(name: string);
 let settings = require("../settings.json");

@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
 import {OneNoteApiUtils} from "../../scripts/clipperUI/oneNoteApiUtils";
 

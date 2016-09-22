@@ -1,6 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-/// <reference path="../../../typings/main/ambient/jquery/jquery.d.ts" />
-
 import {Constants} from "../../scripts/constants";
 import {HelperFunctions} from "../helperFunctions";
 import {Point, RegionSelector} from "../../scripts/clipperUI/regionSelector";
