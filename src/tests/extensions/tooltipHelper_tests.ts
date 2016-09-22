@@ -147,7 +147,7 @@ test("tooltipHasBeenSeenInLastTimePeriod should return TRUE when a value is in s
 	ok(tooltipHelper.tooltipHasBeenSeenInLastTimePeriod(testType, baseTime, Constants.Settings.timeBetweenSameTooltip));
 });
 
-test("hasAnyTooltipBeenSeenInLastTimerPeriod should return FALSE when nothing is in storage", () => {
+test("hasAnyTooltipBeenSeenInLastTimePeriod should return FALSE when nothing is in storage", () => {
 	ok(!tooltipHelper.hasAnyTooltipBeenSeenInLastTimePeriod(baseTime, validTypes, Constants.Settings.timeBetweenDifferentTooltips));
 });
 
@@ -169,17 +169,17 @@ test("tooltipDelayIsOver should return FALSE when the user has clipped this cont
 });
 
 // Have they seen ANY content? If so, return FALSE
-test("tooltipDelayIsOver should return FALSE when they have seen a tooltip in the last 21 days", () => {
+test("tooltipDelayIsOver should return FALSE when they have seen a tooltip in the last Constants.Settings.timeBetweenSameTooltip period", () => {
 	setSeenTimeWithinRange(testType, Constants.Settings.timeBetweenSameTooltip);
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
 
-test("tooltipDelayIsOver should return FALSE when they have seen a tooltip (not the same one) in the last 7 days", () => {
+test("tooltipDelayIsOver should return FALSE when they have seen a tooltip (not the same one) in the last Constants.Settings.timeBetweenDifferentTooltipsPeriod", () => {
 	setSeenTimeWithinRange(TooltipType.Pdf, Constants.Settings.timeBetweenDifferentTooltips);
 	ok(!tooltipHelper.tooltipDelayIsOver(TooltipType.Product, baseTime));
 });
 
-test("tooltipDelayIsOver should return TRUE if they have NOT seen a different tooltip in the last 7 days", () => {
+test("tooltipDelayIsOver should return TRUE if they have NOT seen a different tooltip in the last Constants.Settings.timeBetweenDifferentTooltipsPeriod", () => {
 	setSeenTimeOutsideOfRange(TooltipType.Product, Constants.Settings.timeBetweenDifferentTooltips);
 	ok(tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
@@ -195,7 +195,7 @@ test("tooltipDelayIsOver should return TRUE when the user hasn't seen a tooltip 
 	ok(tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 });
 
-test("tooltipDelayIsOver should return FALSE when the user has seen a tooltip in the last 21 days, no matter the value of lastClippedTime", () => {
+test("tooltipDelayIsOver should return FALSE when the user has seen a tooltip in the last Constants.Settings.timeBetweenSameTooltip period, no matter the value of lastClippedTime", () => {
 	setSeenTimeWithinRange(testType, Constants.Settings.timeBetweenSameTooltip);
 	ok(!tooltipHelper.tooltipDelayIsOver(testType, baseTime));
 

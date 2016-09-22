@@ -323,8 +323,8 @@ export module Constants {
 	}
 
 	export module Settings {
-		export var timeBetweenDifferentTooltips = 1000 * 60 * 60 * 24 * 7 * 1; // 21 days
-		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 7 days
+		export var timeBetweenDifferentTooltips = 1000 * 60 * 60 * 24 * 7 * 1; // 1 week
+		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 3 weeks
 		export var maximumNumberOfTimesToShowTooltips = 3;
 		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
 		export var maximumFontSize = 72;

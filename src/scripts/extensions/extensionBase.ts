@@ -277,7 +277,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	private shouldShowTooltip(tab: TTab, tooltipTypes: TooltipType[]): TooltipType {
 		let type = this.checkIfTabMatchesATooltipType(tab, tooltipTypes);
 
-		// If the tab doesn't match any of the given tooltipTypes, then return
 		if (!type) {
 			return;
 		}
