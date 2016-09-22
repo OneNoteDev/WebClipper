@@ -66,45 +66,19 @@ export module OneNoteApiUtils {
 	export function getLocalizedErrorMessageForGetNotebooks(apiResponseCode: string): string {
 		let fallback = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage");
 
-		// Actionable codes have a message that have a hyperlink to documentation that users can use to solve their issue
-		let actionableResponseCodes: {[key: string]: {message: string, url: string} } = {
-			"10008": { message: Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithActionableLink"), url: "https://aka.ms/onapi-too-many-items-actionable" }, // SharepointQueryThrottled
-			"10013": { message: Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithActionableLink"), url: "https://aka.ms/onapi-too-many-items-actionable" } // TODO find error title in research
-		};
+		let actionableLink = document.createElement("A") as HTMLAnchorElement;
+		actionableLink.href = "https://aka.ms/onapi-too-many-items-actionable";
+		actionableLink.innerText = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureLinkMessage");
+		let actionableMessageAsHtml = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithExplanation") + "\n" + actionableLink.outerHTML;
 
-		let actionableResponseCode = actionableResponseCodes[apiResponseCode];
-		if (actionableResponseCode) {
-			let messageWithLinkAsHtml = addLinkToActionableErrorMessage(actionableResponseCode.message, actionableResponseCode.url, fallback);
-			return messageWithLinkAsHtml;
+		// Actionable codes have a message that have a hyperlink to documentation that users can use to solve their issue
+		let actionableResponseCodes = ["10008", "10013"];
+		let responseCodeIsActionable = actionableResponseCodes.indexOf(apiResponseCode) > -1;
+		if (responseCodeIsActionable) {
+			return actionableMessageAsHtml;
 		}
 
 		// Fall back to a non-actionable message
-		return fallback;
-	}
-
-	/**
-	 * Given an error message that specifies a word to be hyperlinked between curly braces, returns an HTML string
-	 * representing the error message, where the word has the specified hyperlink added to it.
-	 */
-	export function addLinkToActionableErrorMessage(message: string, url: string, fallback: string): string {
-		fallback = fallback ? fallback : "";
-
-		if (!message || !url) {
-			return fallback;
-		}
-
-		// Assume that the message contains a word between curly braces, which we will use to add the hyperlink to
-		let matchResults = message.match(/{([^{}]+)}/);
-		if (matchResults && matchResults.length > 1) {
-			let wordWithCurlies = matchResults[0];
-			let wordWithoutCurlies = matchResults[1];
-
-			let link = document.createElement("A") as HTMLAnchorElement;
-			link.innerText = wordWithoutCurlies;
-			link.href = url;
-			return message.replace(wordWithCurlies, link.outerHTML);
-		}
-
 		return fallback;
 	}
 

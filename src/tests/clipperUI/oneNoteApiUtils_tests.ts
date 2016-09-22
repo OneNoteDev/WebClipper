@@ -198,18 +198,14 @@ test("For unknown error codes, the generic failure message should be returned fr
 
 test("For known get notebooks error codes, the appropriate failure message should be returned from getLocalizedErrorMessageForGetNotebooks", () => {
 	let stringsJson = require("../../strings.json");
+	let message = "We couldn't load your notebooks because a list limit was exceeded in OneDrive.\n<a href=\"https://aka.ms/onapi-too-many-items-actionable\">Learn more</a>";
 	let codeMessagePairs = [
-		{ code: "10008", message: stringsJson["WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithActionableLink"] },
-		{ code: "10013", message: stringsJson["WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithActionableLink"] }
+		{ code: "10008", message: message },
+		{ code: "10013", message: message }
 	];
 
-	// The message should contain a link to the resolving blog post with text 'Learn more'
-	let anchorElementToTooManyItemsPost = document.createElement("A") as HTMLAnchorElement;
-	anchorElementToTooManyItemsPost.innerText = "Learn more";
-	anchorElementToTooManyItemsPost.href = "https://aka.ms/onapi-too-many-items-actionable";
-
 	for (let i = 0; i < codeMessagePairs.length; i++) {
-		strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(codeMessagePairs[i].code), codeMessagePairs[i].message.replace("{Learn more}", anchorElementToTooManyItemsPost.outerHTML),
+		strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(codeMessagePairs[i].code), codeMessagePairs[i].message,
 			"Code " + codeMessagePairs[i].code + " should be associated with the matching error message");
 	}
 });
@@ -220,49 +216,4 @@ test("For unknown error codes in the get notebooks scenario, the generic get not
 		"Unknown code -1 should be associated with the generic error message");
 	strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks("30105"), stringsJson["WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage"],
 		"Unknown code 30105 should be associated with the generic error message");
-});
-
-test("addLinkToActionableErrorMessage should replace text within curly braces with a hyperlinked version of itself", () => {
-	let url = "https://www.onenote.com";
-	let result = OneNoteApiUtils.addLinkToActionableErrorMessage("Hi {OneNote}", url, "This should not be displayed");
-
-	strictEqual(result, "Hi <a href=\"https://www.onenote.com\">OneNote</a>",
-		"The text in curly braces should be replaced with a link to the given url");
-});
-
-test("addLinkToActionableErrorMessage should return the fallback message if there's nothing in the curly braces", () => {
-	let url = "https://www.onenote.com";
-	let expected = "This should be returned";
-	let result = OneNoteApiUtils.addLinkToActionableErrorMessage("Hi {}", url, expected);
-
-	strictEqual(result, expected, "The fallback should be returned as there is nothing to be replaced");
-});
-
-test("addLinkToActionableErrorMessage should return the fallback message if no curly braces were found", () => {
-	let url = "https://www.onenote.com";
-	let expected = "This should be returned";
-	let result = OneNoteApiUtils.addLinkToActionableErrorMessage("Hi", url, expected);
-
-	strictEqual(result, expected, "The fallback should be returned as there is nothing to be replaced");
-});
-
-test("addLinkToActionableErrorMessage should return the fallback message if the message is undefined", () => {
-	let url = "https://www.onenote.com";
-	let expected = "This should be returned";
-	let result = OneNoteApiUtils.addLinkToActionableErrorMessage(undefined, url, expected);
-
-	strictEqual(result, expected, "The fallback should be returned as the message is undefined");
-});
-
-test("addLinkToActionableErrorMessage should return the fallback message if the message is undefined", () => {
-	let expected = "This should be returned";
-	let result = OneNoteApiUtils.addLinkToActionableErrorMessage("hi {name}", undefined, expected);
-
-	strictEqual(result, expected, "The fallback should be returned as the url is undefined");
-});
-
-test("addLinkToActionableErrorMessage should return empty string if it should return the fallback, but it was undefined", () => {
-	let result = OneNoteApiUtils.addLinkToActionableErrorMessage("hi {name}", undefined, undefined);
-
-	strictEqual(result, "", "The empty string should be returned as the fallback is undefined when it needed to be returned");
 });
