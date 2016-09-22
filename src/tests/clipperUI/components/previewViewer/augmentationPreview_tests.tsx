@@ -89,14 +89,14 @@ test("The editable title of the page should be displayed in the preview title in
 	ok(!previewHeaderInput.readOnly);
 });
 
-test("The augmented content of the page should be displayed in preview body in Augmentation Mode", () => {
+test("The augmented content of the page should be displayed in the highlightable preview body in Augmentation Mode", () => {
 	let mockClipperState = getMockAugmentationModeState();
 	let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 	HelperFunctions.mountToFixture(defaultComponent);
 
-	strictEqual(document.getElementById(Constants.Ids.previewBody).innerText,
+	strictEqual(document.getElementById(Constants.Ids.highlightablePreviewBody).innerHTML,
 		mockClipperState.augmentationPreviewInfo.previewBodyHtml,
-		"The editable augmentation result content is displayed in the preview body");
+		"The editable augmentation result content is displayed in the preview body's highlightable portion");
 });
 
 test("When the augmentation successfully completes, but no data is returned, the preview should indicate no content was found in Augmentation mode", () => {
@@ -361,7 +361,7 @@ test("If the user clicks the highlight button, the internal state should show th
 	notStrictEqual(highlightButton.className.indexOf("active"), -1, "The active class should be applied to the highlight button");
 });
 
-test("If the user selects something in the preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is disabled in Augmentation mode, and the item should be highlighted", () => {
+test("If the user selects something in the highlightable preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is disabled in Augmentation mode, and the item should be highlighted", () => {
 	let mockClipperState = getMockAugmentationModeState();
 	let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 	let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
@@ -371,8 +371,8 @@ test("If the user selects something in the preview body, then clicks the highlig
 	let paragraphId = "para";
 	paragraph.id = paragraphId;
 	let innerText = "Test";
-	paragraph.innerText = innerText;
-	document.getElementById(Constants.Ids.previewBody).appendChild(paragraph);
+	paragraph.innerHTML = innerText;
+	document.getElementById(Constants.Ids.highlightablePreviewBody).appendChild(paragraph);
 
 	let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
@@ -396,7 +396,7 @@ test("If the user selects something in the preview body, then clicks the highlig
 		"The highlighted element should be the inner text of the paragraph");
 });
 
-test("If the user selects something outside the preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is enabled in Augmentation mode, and nothing should be highlighted", () => {
+test("If the user selects something outside the highlightable preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is enabled in Augmentation mode, and nothing should be highlighted", () => {
 	let mockClipperState = getMockAugmentationModeState();
 	let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 	let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
@@ -406,7 +406,7 @@ test("If the user selects something outside the preview body, then clicks the hi
 	let paragraphId = "para";
 	paragraph.id = paragraphId;
 	let innerText = "Test";
-	paragraph.innerText = innerText;
+	paragraph.innerHTML = innerText;
 
 	// Note this is outside the preview body
 	HelperFunctions.getFixture().appendChild(paragraph);

@@ -17,7 +17,9 @@ export interface EditorPreviewState {
 
 /**
  * Child components will inherit the editor header where users can make rich edits to their content, such as highlighting
- * and font changes.
+ * and font changes. Within the preview body element, this component renders a highlightable preview body element underneath
+ * it that the highlighter is attached to. Highlighting logic can only take place within this element, and this prevents
+ * other types of preview bodies from accidentally providing highlighting functionality.
  */
 export abstract class EditorPreviewComponentBase<TState extends EditorPreviewState, TProps extends ClipperStateProp>
 	extends PreviewComponentBase<TState, TProps> {
@@ -40,6 +42,14 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	}
 
 	protected abstract handleBodyChange(newBodyHtml: string);
+	protected abstract getHighlightableContentBodyForCurrentStatus(): any;
+
+	// Override
+	protected getContentBodyForCurrentStatus() {
+		return [
+			<div id={Constants.Ids.highlightablePreviewBody}>{this.getHighlightableContentBodyForCurrentStatus()}</div>
+		];
+	}
 
 	// Override
 	protected getPreviewBodyConfig() {
@@ -95,15 +105,15 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	}
 
 	private deleteHighlight(timestamp: number) {
-		let previewBody = document.getElementById(Constants.Ids.previewBody);
-		let highlightedElements = previewBody.querySelectorAll("span.highlighted[data-timestamp='" + timestamp + "']");
+		let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
+		let highlightedElements = highlightablePreviewBody.querySelectorAll("span.highlighted[data-timestamp='" + timestamp + "']");
 		for (let i = 0; i < highlightedElements.length; i++) {
 			let current = highlightedElements[i] as HTMLSpanElement;
 			let parent = current.parentNode;
 			parent.insertBefore(document.createTextNode(current.innerText), current);
 			parent.removeChild(current);
 		}
-		this.handleBodyChange(previewBody.innerHTML);
+		this.handleBodyChange(highlightablePreviewBody.innerHTML);
 	}
 
 	private handleClick(event: Event) {
@@ -121,7 +131,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	private setHighlighter() {
 		let addDeleteButton = (range: Range, normalizedHighlights: HTMLSpanElement[]) => {
 			if (normalizedHighlights && normalizedHighlights.length > 0) {
-				let previewBody = document.getElementById(Constants.Ids.previewBody);
+				let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
 
 				// We need to get the latest timestamp for normalizing all encompassed highlights later
 				let timestamps = normalizedHighlights.map((span: HTMLSpanElement) => parseInt(span.getAttribute("data-timestamp"), 10 /* radix */));
@@ -131,7 +141,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 				for (let i = 0; i < normalizedHighlights.length; i++) {
 					// ... so we should delete their old delete buttons, and normalize them to the same timestamp
 					let oldHighlightTimestamp = normalizedHighlights[i].getAttribute("data-timestamp");
-					let oldHighlights = previewBody.querySelectorAll("span." + Constants.Classes.highlighted + "[data-timestamp='" + oldHighlightTimestamp + "']");
+					let oldHighlights = highlightablePreviewBody.querySelectorAll("span." + Constants.Classes.highlighted + "[data-timestamp='" + oldHighlightTimestamp + "']");
 					for (let j = 0; j < oldHighlights.length; j++) {
 						// Delete old delete buttons
 						let oldButtons = oldHighlights[j].querySelectorAll("img." + Constants.Classes.deleteHighlightButton);
@@ -145,7 +155,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 				}
 
 				// Find the first instance of the highlight and add the delete button
-				let firstHighlighted = previewBody.querySelector("span.highlighted[data-timestamp='" + timestamp + "']");
+				let firstHighlighted = highlightablePreviewBody.querySelector("span.highlighted[data-timestamp='" + timestamp + "']");
 				if (firstHighlighted) {
 					let deleteHighlight = document.createElement("IMG") as HTMLImageElement;
 					deleteHighlight.src = Utils.getImageResourceUrl("editoroptions/delete_button.png");
@@ -154,11 +164,11 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 					firstHighlighted.insertBefore(deleteHighlight, firstHighlighted.childNodes[0]);
 				}
 
-				this.handleBodyChange(previewBody.innerHTML);
+				this.handleBodyChange(highlightablePreviewBody.innerHTML);
 			}
 		};
 
-		let textHighlighter = Highlighter.reconstructInstance(document.getElementById(Constants.Ids.previewBody), {
+		let textHighlighter = Highlighter.reconstructInstance(document.getElementById(Constants.Ids.highlightablePreviewBody), {
 			color: Constants.Styles.Colors.oneNoteHighlightColor,
 			contextClass: Constants.Classes.highlightable,
 			onAfterHighlight: addDeleteButton
@@ -187,7 +197,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 
 	// Similarly adopted from: http://stackoverflow.com/questions/8339857/how-to-know-if-selected-text-is-inside-a-specific-div
 	private selectionIsInPreviewBody() {
-		let previewBody = document.getElementById(Constants.Ids.previewBody);
+		let previewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
 		if (!previewBody) {
 			return false;
 		}

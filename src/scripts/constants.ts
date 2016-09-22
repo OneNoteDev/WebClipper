@@ -62,6 +62,9 @@ export module Constants {
 		export var dialogMessage = "dialogMessage";
 		export var dialogTryAgainButton = "dialogTryAgainButton";
 
+		// editorPreviewComponentBase
+		export var highlightablePreviewBody = "highlightablePreviewBody";
+
 		// failurePanel
 		export var apiErrorMessage = "apiErrorMessage";
 		export var backToHomeButton = "backToHomeButton";
