@@ -40,21 +40,20 @@ export class TooltipHelper {
 			throw new Error("Invalid argument passed to tooltipDelayIsOver");
 		}
 
-
 		// If the user has clipped this content type
-		let lastClipTime = this.getTooltipInformation(ClipperStorageKeys.lastClippedTooltipTimeBase, tooltipType);		
+		let lastClipTime = this.getTooltipInformation(ClipperStorageKeys.lastClippedTooltipTimeBase, tooltipType);
 		if (lastClipTime !== 0) {
 			return false;
 		}
 
 		// If the user has seen enough of our tooltips :P 
-		let numTimesTooltipHasBeenSeen = this.getTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType);		
+		let numTimesTooltipHasBeenSeen = this.getTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType);
 		if (numTimesTooltipHasBeenSeen >= Constants.Settings.maximumNumberOfTimesToShowTooltips) {
 			return false;
 		}
 
 		// If not enough time has passed since the user saw this specific tooltip, return false
-		let lastSeenTooltipTime = this.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);		
+		let lastSeenTooltipTime = this.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);
 		if (this.tooltipHasBeenSeenInLastTimePeriod(tooltipType, curTime, Constants.Settings.timeBetweenSameTooltip)) {
 			return false;
 		}
