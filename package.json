@@ -49,6 +49,7 @@
     "sinon-qunit": "^2.0.0",
     "ssl-root-cas": "^1.1.10",
     "tslint": "^3.9.0",
+    "typescript": "^2.0.3",
     "typings": "~0.6.8",
     "urijs": "^1.18.1",
     "velocity-animate": "^1.2.3",

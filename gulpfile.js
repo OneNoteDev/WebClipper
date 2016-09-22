@@ -29,8 +29,6 @@ var typings = require("gulp-typings");
 var uglify = require("gulp-uglify");
 var zip = require("gulp-zip");
 
-var tsProject = ts.createProject("./tsconfig.json");
-
 var PATHS = {
 	SRC: {
 		ROOT: "src/",
@@ -188,7 +186,7 @@ gulp.task("preCompileInternal", function (callback) {
 
 gulp.task("compileTypeScript", ["copyStrings", "mergeSettings", "preCompileInternal"], function () {
 	return gulp.src([PATHS.SRC.ROOT + "**/*.+(ts|tsx)", PATHS.DEFINITIONS + "main/**/*.d.ts"])
-		.pipe(ts(tsProject))
+		.pipe(ts(ts.createProject("./tsconfig.json", { typescript: require('typescript') })))
 		.pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
