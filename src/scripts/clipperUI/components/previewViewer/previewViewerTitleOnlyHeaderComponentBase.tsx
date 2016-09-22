@@ -24,7 +24,7 @@ export abstract class PreviewViewerTitleOnlyHeaderComponentBase extends PreviewV
 				<div
 					id={headerId}
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}
-					class="buttonLabelFont">
+					className="buttonLabelFont">
 					<span>{header}</span>
 				</div>
 			]

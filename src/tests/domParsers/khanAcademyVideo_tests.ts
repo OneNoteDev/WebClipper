@@ -28,7 +28,7 @@ let pageContentWithHyphenatedVideoIds = [
 	"<div id='video_8-5DTsl1V5k'> </div>", // standard
 	"<div id = ' video_8-5DTsl1V5k ' > </div> ", // weird whitespace
 	"<DIV ID='Video_8-5DTsl1V5k'> </DIV>", // weird casing
-	"<div id=\"video_8-5DTsl1V5k\"> </div>", // double quotations,
+	"<div id=\"video_8-5DTsl1V5k\"> </div>" // double quotations,
 ];
 
 let pageContentWithDataYoutubeIds = [
@@ -39,7 +39,7 @@ let pageContentWithDataYoutubeIds = [
 ];
 
 let pageContentWithMultipleHyphenatedVideoIds = [
-	"<div id='video_8-5DTsl1V5k'></div> <DIV ID='video_8-53sl1V5k'></DIV> <div id='video_4ba196611'> </div>",
+	"<div id='video_8-5DTsl1V5k'></div> <DIV ID='video_8-53sl1V5k'></DIV> <div id='video_4ba196611'> </div>"
 ];
 
 let khanAcademyVideoExtractor = new KhanAcademyVideoExtractor();

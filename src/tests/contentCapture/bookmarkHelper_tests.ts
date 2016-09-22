@@ -321,7 +321,7 @@ test("getPrimaryThumbnailSrc returns undefined if og:image meta tag does not exi
 		TestHelper.StandardMetadata.FallbackDescription,
 		TestHelper.StandardMetadata.FallbackThumbnail,
 		TestHelper.StandardMetadata.FallbackThumbnail,
-		TestHelper.StandardMetadata.PrimaryDescription,
+		TestHelper.StandardMetadata.PrimaryDescription
 	]);
 
 	let result = BookmarkHelper.getPrimaryThumbnailSrc(metaTags);

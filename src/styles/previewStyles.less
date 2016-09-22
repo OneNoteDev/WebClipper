@@ -393,13 +393,15 @@
 						position: relative;
 					}
 
-					&.highlightable {
-						// We need to adjust the 'hotspot' of the cursor to be aligned to middle of the "I" symbol
-						cursor: url('./images/editoroptions/highlight_cursor.cur'), text; // Hotspots are built into cur files, which IE/Edge interprets
-						cursor: url('./images/editoroptions/highlight_cursor.cur') 16 16, text; // Other browsers need you to specify the hotspot in the css file
+					#highlightablePreviewBody {
+						&.highlightable {
+							// We need to adjust the 'hotspot' of the cursor to be aligned to middle of the "I" symbol
+							cursor: url('./images/editoroptions/highlight_cursor.cur'), text; // Hotspots are built into cur files, which IE/Edge interprets
+							cursor: url('./images/editoroptions/highlight_cursor.cur') 16 16, text; // Other browsers need you to specify the hotspot in the css file
 
-						* ::selection {
-							background: @OneNoteHighlightColor;
+							* ::selection {
+								background: @OneNoteHighlightColor;
+							}
 						}
 					}
 

@@ -16,7 +16,7 @@ export interface ExpandFromRightAnimationStrategyOptions extends TransitioningAn
  * When transitioning out, the opposite happens.
  */
 export class ExpandFromRightAnimationStrategy extends TransitioningAnimationStrategy<ExpandFromRightAnimationStrategyOptions> {
-	private animationTimeout;
+	private animationTimeout: number;
 	private animationTimeoutId: number;
 	private reverseChildAnimations: boolean;
 
