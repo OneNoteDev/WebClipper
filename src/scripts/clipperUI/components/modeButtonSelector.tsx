@@ -34,8 +34,10 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getFullPageModeButton(currentMode: ClipMode) {
+		let text = currentMode === ClipMode.Pdf ? "WebClipper.ClipType.Pdf.Button" : "WebClipper.ClipType.ScreenShot.Button";
+
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("fullpage.png")}
-			label={Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button")}
+			label={Localization.getLocalizedString(text)}
 			myMode={ClipMode.FullPage} tabIndex={40}
 			selected={!currentMode || currentMode === ClipMode.FullPage}
 			onModeSelected={this.onModeSelected.bind(this) }
