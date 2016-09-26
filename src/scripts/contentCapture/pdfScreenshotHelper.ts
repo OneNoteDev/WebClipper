@@ -19,6 +19,21 @@ export interface PdfScreenshotResult extends CaptureFailureInfo {
 }
 
 export class PdfScreenshotHelper {
+	public static getLocalPdfData(localFileUrl: string): Promise<PdfScreenshotResult> {
+		// Never rejects, interesting
+		return new Promise<PdfScreenshotResult>((resolve, reject) => {
+			PDFJS.getDocument(localFileUrl).then((pdf) => {
+				console.log(pdf);
+				PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+					console.log(dataUrls);
+					resolve({
+						dataUrls: dataUrls
+					});
+				});
+			});
+		});
+	}
+
 	public static getPdfData(url: string): Promise<PdfScreenshotResult> {
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetBinaryRequest);
