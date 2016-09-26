@@ -59,11 +59,7 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 				return Localization.getLocalizedString("WebClipper.Preview.LoadingMessage");
 			default:
 			case Status.Failed:
-				if (pageInfo && pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-					failureMessage = this.props.clipperState.pdfResult.data.get().failureMessage;
-				} else {
-					failureMessage = this.props.clipperState.fullPageResult.data.failureMessage;
-				}
+				failureMessage = this.props.clipperState.pdfResult.data.get().failureMessage;
 				return !!failureMessage ? failureMessage : noContentFoundString;
 		}
 	}
