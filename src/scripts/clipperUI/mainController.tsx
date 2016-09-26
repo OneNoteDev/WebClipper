@@ -21,7 +21,6 @@ import {AnimationStrategy} from "./animations/animationStrategy";
 import {ExpandFromRightAnimationStrategy} from "./animations/expandFromRightAnimationStrategy";
 import {SlideFromRightAnimationStrategy} from "./animations/slideFromRightAnimationStrategy";
 import {SlidingHeightAnimationStrategy} from "./animations/slidingHeightAnimationStrategy";
-import {TransitioningAnimationStrategy} from "./animations/transitioningAnimationStrategy";
 
 import {CloseButton} from "./components/closeButton";
 import {Footer} from "./components/footer";

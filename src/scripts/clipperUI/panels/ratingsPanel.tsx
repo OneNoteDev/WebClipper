@@ -16,7 +16,7 @@ import {RatingsHelper, RatingsPromptStage} from "../ratingsHelper";
 import {Status} from "../status";
 
 import {AnimationStrategy} from "../animations/animationStrategy";
-import {SlideFromRightAnimationStrategy} from "../animations/slideFromRightAnimationStrategy";
+import {SlideContentInFromTopAnimationStrategy} from "../animations/slideContentInFromTopAnimationStrategy";
 
 import {SpriteAnimation} from "../components/spriteAnimation";
 
@@ -39,7 +39,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 	 * Get the animation strategy for the ratings subpanel of the success panel provided
 	 */
 	private getAnimationStategy(panel: RatingsPanelClass): AnimationStrategy {
-		return new SlideFromRightAnimationStrategy({
+		return new SlideContentInFromTopAnimationStrategy({
 			extShouldAnimateIn: () => { return panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage; },
 			extShouldAnimateOut: () => { return false; },
 			onAfterAnimateIn: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage }); }
