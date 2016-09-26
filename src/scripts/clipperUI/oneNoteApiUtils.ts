@@ -66,19 +66,24 @@ export module OneNoteApiUtils {
 	export function getLocalizedErrorMessageForGetNotebooks(apiResponseCode: string): string {
 		let fallback = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage");
 
-		let actionableLink = document.createElement("A") as HTMLAnchorElement;
-		actionableLink.href = "https://aka.ms/onapi-too-many-items-actionable";
-		actionableLink.innerText = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureLinkMessage");
-		let actionableMessageAsHtml = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithExplanation") + "\n" + actionableLink.outerHTML;
-
 		// Actionable codes have a message that have a hyperlink to documentation that users can use to solve their issue
 		let actionableResponseCodes = ["10008", "10013"];
 		let responseCodeIsActionable = actionableResponseCodes.indexOf(apiResponseCode) > -1;
 		if (responseCodeIsActionable) {
+			let actionableLink = document.createElement("A") as HTMLAnchorElement;
+			actionableLink.href = "https://aka.ms/onapi-too-many-items-actionable";
+			actionableLink.innerText = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureLinkMessage");
+			let actionableMessageAsHtml = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithExplanation") + "\n" + actionableLink.outerHTML;
 			return actionableMessageAsHtml;
 		}
 
-		// Fall back to a non-actionable message
+		// See if there's a specific message we can show
+		let responseCodeInfo = getResponseCodeInformation(apiResponseCode);
+		if (responseCodeInfo && responseCodeInfo.message) {
+			return responseCodeInfo.message;
+		}
+
+		// Fall back to a non-retryable message
 		return fallback;
 	}
 

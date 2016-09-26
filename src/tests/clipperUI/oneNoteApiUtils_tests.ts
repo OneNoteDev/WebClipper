@@ -214,6 +214,6 @@ test("For unknown error codes in the get notebooks scenario, the generic get not
 	let stringsJson = require("../../strings.json");
 	strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks("-1"), stringsJson["WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage"],
 		"Unknown code -1 should be associated with the generic error message");
-	strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks("30105"), stringsJson["WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage"],
-		"Unknown code 30105 should be associated with the generic error message");
+	strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks("99999"), stringsJson["WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage"],
+		"Unknown code 99999 should be associated with the generic error message");
 });
