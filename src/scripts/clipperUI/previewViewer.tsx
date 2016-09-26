@@ -11,19 +11,23 @@ import {SelectionPreview} from "./components/previewViewer/selectionPreview";
 
 class PreviewViewerClass<TState, TProp extends ClipperStateProp> extends ComponentBase<TState, TProp> {
 	render() {
-		switch (this.props.clipperState.currentMode.get()) {
+		let state = this.props.clipperState;
+		switch (state.currentMode.get()) {
 			case ClipMode.Pdf:
-				return <PdfPreview clipperState={this.props.clipperState} />;
+				return <PdfPreview clipperState={state} />;
 			case ClipMode.FullPage:
-				return <FullPagePreview	clipperState={this.props.clipperState} />;
+				if (state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+					return <PdfPreview clipperState={state} />;
+				}
+				return <FullPagePreview	clipperState={state} />;
 			case ClipMode.Region:
-				return <RegionPreview clipperState={this.props.clipperState} />;
+				return <RegionPreview clipperState={state} />;
 			case ClipMode.Augmentation:
-				return <AugmentationPreview clipperState={this.props.clipperState} />;
+				return <AugmentationPreview clipperState={state} />;
 			case ClipMode.Bookmark:
-				return <BookmarkPreview clipperState={this.props.clipperState} />;
+				return <BookmarkPreview clipperState={state} />;
 			case ClipMode.Selection:
-				return <SelectionPreview clipperState={this.props.clipperState} />;
+				return <SelectionPreview clipperState={state} />;
 			default:
 				return undefined;
 		}
