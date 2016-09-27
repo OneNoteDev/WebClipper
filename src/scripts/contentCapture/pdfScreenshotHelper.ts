@@ -23,10 +23,10 @@ export class PdfScreenshotHelper {
 		// Never rejects, interesting
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			PDFJS.getDocument(localFileUrl).then((pdf) => {
-				pdf.getData().then((data) => {
+				pdf.getData().then((arrayBuffer) => {
 					PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
 						resolve({
-							arrayBuffer: data,
+							arrayBuffer: arrayBuffer,
 							dataUrls: dataUrls
 						});
 					});
