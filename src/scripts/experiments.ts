@@ -1,6 +1,6 @@
 ﻿export module Experiments {
 	let featuresToNumberlinesMap = {
-		DummyExperiment: "dummy-flight",
+		DummyExperiment: "dummy-flight"
 	};
 
 	export var updateIntervalForFlights = 60 * 60 * 5 * 1000; // 5 hours
@@ -16,7 +16,7 @@
 	 * @returns True/False
 	 */
 	export function isFeatureEnabled(feature: Experiments.Feature, flights: string[]): boolean {
-		let nameOfFeature = Experiments.Feature[feature];
+		let nameOfFeature = Feature[feature];
 
 		if (!featuresToNumberlinesMap || !featuresToNumberlinesMap[nameOfFeature]) {
 			return false;

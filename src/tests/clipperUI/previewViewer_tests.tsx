@@ -207,7 +207,7 @@ test("The tab order flow from the header to the preview title is correct in Regi
 
 	let elementsInExpectedTabOrder = [
 		{ name: Constants.Ids.addRegionControl, elem: document.getElementById(Constants.Ids.addRegionControl) },
-		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) },
+		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
 	];
 
 	for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
@@ -226,7 +226,7 @@ test("The tab order flow from the preview title through the region delete button
 	HelperFunctions.mountToFixture(defaultComponent);
 
 	let elementsInExpectedTabOrder = [
-		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) },
+		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
 	];
 
 	let removeButtons = document.getElementsByClassName(Constants.Classes.regionSelectionRemoveButton);
@@ -395,7 +395,7 @@ test("The tab order flow from the header to the preview title is correct in Augm
 		{ name: Constants.Ids.serif, elem: document.getElementById(Constants.Ids.serif) },
 		{ name: Constants.Ids.decrementFontSize, elem: document.getElementById(Constants.Ids.decrementFontSize) },
 		{ name: Constants.Ids.incrementFontSize, elem: document.getElementById(Constants.Ids.incrementFontSize) },
-		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) },
+		{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
 	];
 
 	for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {

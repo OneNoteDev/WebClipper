@@ -559,12 +559,12 @@ export module DomUtils {
 			// see https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image for why this is needed
 			image.crossOrigin = "anonymous";
 
-			image.onload = function () {
+			image.onload = () => {
 				let canvas = document.createElement(Tags.canvas) as HTMLCanvasElement;
-				canvas.width = this.naturalWidth;
-				canvas.height = this.naturalHeight;
+				canvas.width = image.naturalWidth;
+				canvas.height = image.naturalHeight;
 
-				canvas.getContext("2d").drawImage(this, 0, 0);
+				canvas.getContext("2d").drawImage(image, 0, 0);
 
 				try {
 					let dataUrl: string = canvas.toDataURL("image/png");
@@ -578,7 +578,7 @@ export module DomUtils {
 				}
 			};
 
-			image.onerror = function (ev: Event) {
+			image.onerror = (ev: Event) => {
 				let erroredImg: HTMLImageElement = ev.currentTarget as HTMLImageElement;
 				let erroredImgSrc: string;
 				if (!Utils.isNullOrUndefined(erroredImg)) {
@@ -694,7 +694,7 @@ export module DomUtils {
 	export function getLocale(doc: Document): string {
 		// window.navigator.userLanguage is defined for IE, and window.navigator.language is defined for other browsers
 		let docLocale = (<HTMLElement>doc.getElementsByTagName("html")[0]).getAttribute("lang");
-		return docLocale ? docLocale : (window.navigator.userLanguage || (<any>window.navigator).language);
+		return docLocale ? docLocale : window.navigator.language || (<any>window.navigator).userLanguage;
 	}
 
 	/**

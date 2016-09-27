@@ -86,8 +86,8 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 		safari.application.activeBrowserWindow.activeTab.url = installUrl;
 	}
 
-	protected checkIfTabMatchesATooltipType(tab: SafariBrowserTab, tooltipType: TooltipType): boolean {
-		return Utils.checkIfUrlMatchesAContentType(tab.url, tooltipType);
+	protected checkIfTabMatchesATooltipType(tab: SafariBrowserTab, tooltipTypes: TooltipType[]): TooltipType {
+		return Utils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
 	}
 
 	protected checkIfTabIsAVideoDomain(tab: SafariBrowserTab): boolean {

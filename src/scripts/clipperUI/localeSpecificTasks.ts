@@ -33,4 +33,4 @@ try {
 	localeOverride = window.localStorage.getItem(ClipperStorageKeys.displayLanguageOverride);
 } catch (e) { }
 
-LocaleSpecificTasks.execute(localeOverride || navigator.language || navigator.userLanguage);
+LocaleSpecificTasks.execute(localeOverride || navigator.language || (<any>navigator).userLanguage);

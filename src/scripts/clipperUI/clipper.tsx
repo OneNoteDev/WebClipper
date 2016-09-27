@@ -353,7 +353,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				// invokeDataForMode is scrubbed selected html as a string
 				this.state.setState({
 					selectionPreviewInfo: {
-						previewBodyHtml: options.invokeDataForMode,
+						previewBodyHtml: options.invokeDataForMode
 					}
 				});
 				break;

@@ -22,7 +22,7 @@ export class StyledFrameFactory {
 	}
 
 	private static applyGlobalStyles(iframe: HTMLIFrameElement) {
-		if (Rtl.isRtl(navigator.language || navigator.userLanguage)) {
+		if (Rtl.isRtl(navigator.language || (<any>navigator).userLanguage)) {
 			iframe.style.left = "0px";
 			iframe.style.right = "auto";
 		} else {

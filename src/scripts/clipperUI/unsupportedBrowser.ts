@@ -84,7 +84,7 @@ class UnsupportedBrowserClass {
 
 	render() {
 		if (this.state.localizedStringFetchAttemptCompleted === Status.NotStarted) {
-			this.fetchLocalizedStrings(navigator.language || navigator.userLanguage);
+			this.fetchLocalizedStrings(navigator.language || (<any>navigator).userLanguage);
 		}
 
 		// In IE8 and below, 'class' is a reserved keyword and cannot be used as a key in a JSON object
