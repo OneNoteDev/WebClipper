@@ -106,7 +106,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 						DomUtils.toOnml(doc).then(() => {
 							// Selections are prone to not having an outer html element, which can lead to anomalies in preview
 							let divContainer = document.createElement("DIV");
-							divContainer.innerHTML = doc.body.innerHTML;
+							divContainer.innerHTML = DomUtils.sanitizeHtml(doc.body.innerHTML);
 							invokeOptions.invokeDataForMode = divContainer.outerHTML;
 
 							this.sendInvokeOptionsToUi(invokeOptions);

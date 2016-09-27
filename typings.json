@@ -14,5 +14,8 @@
     "sinon": "github:DefinitelyTyped/DefinitelyTyped/sinon/sinon.d.ts#7de6c3dd94feaeb21f20054b9f30d5dabc5efabd",
     "urijs": "github:DefinitelyTyped/DefinitelyTyped/urijs/URIjs.d.ts#3e77642fd96ddef451d39d28533d78d9f87865f5",
     "velocity-animate": "github:DefinitelyTyped/DefinitelyTyped/velocity-animate/velocity-animate.d.ts#b92c8228f6ba925212e7744dfcb955964393ecc4"
+  },
+  "globalDependencies": {
+    "dompurify": "registry:dt/dompurify#0.0.0+20160316155526"
   }
 }

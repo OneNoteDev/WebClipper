@@ -13,6 +13,7 @@
   "devDependencies": {
     "browserify": "^13.0.0",
     "del": "^2.0.2",
+    "dompurify": "^0.8.3",
     "es5-shim": "^4.5.8",
     "es6-promise": "^3.0.2",
     "file-exists": "^1.0.0",
@@ -54,8 +55,5 @@
     "velocity-animate": "^1.2.3",
     "vinyl-source-stream": "^1.1.0",
     "yargs": "^4.3.1"
-  },
-  "dependencies": {
-    "sanitize-html": "^1.13.0"
   }
 }
