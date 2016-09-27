@@ -318,6 +318,7 @@ export module Constants {
 			export var timeoutInMs = "timeoutInMs";
 			export var url = "url";
 			export var userSessionId = "userSessionId";
+			export var wdfromclipper = "wdfromclipper";
 		}
 	}
 
