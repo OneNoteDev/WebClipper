@@ -13,6 +13,8 @@ import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
 
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
+
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
 import {ClipperState} from "./clipperState";
@@ -47,12 +49,24 @@ export class SaveToOneNote {
 
 			this.addPrimaryContentToPage(page, clipperState.currentMode.get()).then(() => {
 				this.createNewPage(page).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+					this.incrementClipSuccessCount(clipperState);
 					resolve({ responsePackage: responsePackage, annotationAdded: annotationAdded });
 				}, (error: OneNoteApi.RequestError) => {
 					reject(error);
 				});
 			});
 		});
+	}
+
+	/**
+	 * Checks for the 1) data result from creating a new page on clip, and 2) completion of the show ratings prompt calculation
+	 */
+	public static getClipSuccessStatus(clipperState: ClipperState): Status {
+		if (clipperState.showRatingsPrompt && !Utils.isNullOrUndefined(clipperState.showRatingsPrompt.get()) && clipperState.oneNoteApiResult.data) {
+			return Status.Succeeded;
+		}
+
+		return Status.InProgress;
 	}
 
 	private static logPageModifications(clipperState: ClipperState) {
@@ -174,6 +188,16 @@ export class SaveToOneNote {
 
 		this.stripUnwantedUIElements(newPreviewBody);
 		return newPreviewBody;
+	}
+
+	// Adds 1 to the value stored in StorageKeys.numSuccessfulClips and clipperState.numSuccessfulClips
+	private static incrementClipSuccessCount(clipperState: ClipperState): void {
+		let numSuccessfulClips: number = clipperState.numSuccessfulClips.get();
+
+		numSuccessfulClips++;
+
+		Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numSuccessfulClips.toString());
+		clipperState.numSuccessfulClips.set(numSuccessfulClips);
 	}
 
 	// Strips out UI elements that we don't wish to persist to the API

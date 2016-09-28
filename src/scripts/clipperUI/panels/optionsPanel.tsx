@@ -22,13 +22,14 @@ interface OptionsPanelProps extends ClipperStateProp {
 class OptionsPanelClass extends ComponentBase<{ }, OptionsPanelProps> {
 	render() {
 		let clipButtonEnabled = ClipperStateHelperFunctions.clipButtonEnabled(this.props.clipperState);
+		let clipButtonContainerClassName = clipButtonEnabled ? "wideButtonContainer" : "wideButtonContainer disabled";
 
 		return (
 			<div className="optionsPanel">
 				<ModeButtonSelector clipperState={this.props.clipperState} />
 				<SectionPicker onPopupToggle={this.props.onPopupToggle.bind(this)} clipperState={this.props.clipperState} />
 
-				<div id={Constants.Ids.clipButtonContainer} className="wideButtonContainer">
+				<div id={Constants.Ids.clipButtonContainer} className={clipButtonContainerClassName}>
 					{clipButtonEnabled
 					?	<a id={Constants.Ids.clipButton} className="wideActionButton" {...this.enableInvoke(this.props.onStartClip, 1) }>
 							<span className="wideButtonFont"
@@ -36,7 +37,7 @@ class OptionsPanelClass extends ComponentBase<{ }, OptionsPanelProps> {
 								{Localization.getLocalizedString("WebClipper.Action.Clip")}
 							</span>
 						</a>
-					:	<a id={Constants.Ids.clipButton} className="wideActionButton disabled">
+					:	<a id={Constants.Ids.clipButton} className="wideActionButton">
 							<span className="wideButtonFont"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 								{Localization.getLocalizedString("WebClipper.Action.Clip")}

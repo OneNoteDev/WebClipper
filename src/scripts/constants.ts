@@ -141,6 +141,15 @@ export module Constants {
 		export var bookmarkControl = "bookmarkControl";
 		export var bookmarkHeaderTitle = "bookmarkHeaderTitle";
 
+		// ratingsPrompt
+		export var ratingsButtonFeedbackNo = "ratingsButtonFeedbackNo";
+		export var ratingsButtonFeedbackYes = "ratingsButtonFeedbackYes";
+		export var ratingsButtonInitNo = "ratingsButtonInitNo";
+		export var ratingsButtonInitYes = "ratingsButtonInitYes";
+		export var ratingsButtonRateNo = "ratingsButtonRateNo";
+		export var ratingsButtonRateYes = "ratingsButtonRateYes";
+		export var ratingsPromptContainer = "ratingsPromptContainer";
+
 		// regionSelectingPanel
 		export var regionInstructionsContainer = "regionInstructionsContainer";
 		export var regionClipCancelButton = "regionClipCancelButton";
@@ -330,8 +339,14 @@ export module Constants {
 		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 3 weeks
 		export var maximumNumberOfTimesToShowTooltips = 3;
 		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
-		export var maximumFontSize = 72;
-		export var minimumFontSize = 8;
 		export var fontSizeStep = 2;
+		export var maxClipSuccessForRatingsPrompt = 12;
+		export var maximumJSTimeValue = 1000 * 60 * 60 * 24 * 100000000; // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
+		export var maximumFontSize = 72;
+		export var minClipSuccessForRatingsPrompt = 4;
+		export var minimumFontSize = 8;
+		export var minTimeBetweenBadRatings = 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
+		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
+		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
 	}
 }
