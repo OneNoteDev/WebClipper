@@ -152,9 +152,6 @@ export module DomUtils {
 	 * document structure
 	 */
 	export function sanitizeHtml(contentInHtml: string, includeTableTags = true): string {
-		let start = new Date();
-		// return contentInHtml;
-		// flatten out the attributesAllowedByOnml
 		let allAttributes: string[] = [];
 		for (let key in attributesAllowedByOnml) {
 			if (attributesAllowedByOnml.hasOwnProperty(key)) {
@@ -162,27 +159,17 @@ export module DomUtils {
 			}
 		}
 
-		let tables = ["table", "tr", "td"];
-		
 		let tags = htmlTags.concat(markupTags);
-
 		if (includeTableTags) {
 			tags = tags.concat(tableTags);
 		}
-
-		console.log(markupTags);
-		console.log(tableTags);
-		console.log(htmlTags);		
-		console.log(tags);
 
 		let sanitizedHtml = DOMPurify.sanitize(contentInHtml, {
 			ALLOWED_ATTR: allAttributes,
 			ALLOW_DATA_ATTR: true,
 			ALLOWED_TAGS: tags
 		});
-		let end = new Date();
-		console.log(end.getTime() - start.getTime());
-		
+
 		return sanitizedHtml;
 	}
 
