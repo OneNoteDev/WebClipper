@@ -60,27 +60,10 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 
 		if (!this.feedbackWindowRef || this.feedbackWindowRef.closed) {
 			if (!this.feedbackUrl) {
-				this.feedbackUrl = this.generateFeedbackUrl();
+				this.feedbackUrl = Utils.generateFeedbackUrl(this.props.clipperState, Clipper.getUserSessionId(), Constants.LogCategories.oneNoteClipperUsage);
 			}
 			this.feedbackWindowRef = Utils.openPopupWindow(this.feedbackUrl);
 		}
-	}
-
-	generateFeedbackUrl(): string {
-		let generatedFeedbackUrl = Utils.addUrlQueryValue(Constants.Urls.clipperFeedbackUrl,
-			"LogCategory", Constants.LogCategories.oneNoteClipperUsage);
-		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
-			"originalUrl", this.props.clipperState.pageInfo.rawUrl);
-		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
-			"clipperId", this.props.clipperState.clientInfo.clipperId);
-		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
-			"usid", Clipper.getUserSessionId());
-		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
-			"type", ClientType[this.props.clipperState.clientInfo.clipperType]);
-		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
-			"version", this.props.clipperState.clientInfo.clipperVersion);
-		this.feedbackUrl = generatedFeedbackUrl;
-		return generatedFeedbackUrl;
 	}
 
 	render() {

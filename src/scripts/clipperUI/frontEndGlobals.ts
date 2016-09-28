@@ -14,7 +14,6 @@ export class Clipper {
 
 	private static storage: StorageAsync;
 
-	// Public for convenience?
 	public static logger: Logger;
 	public static sessionId: SmartValue<string> = new SmartValue<string>();
 
@@ -39,11 +38,26 @@ export class Clipper {
 		Clipper.setUpRemoteStorage(extensionCommunicator);
 	}
 
-	public static getStoredValue(key: string, callback: (value: string) => void): void {
+	public static getCachedValue(key: string): string {
 		if (!Clipper.storage) {
 			throw new Error("The remote storage needs to be set up with the extension communicator first");
 		}
-		Clipper.storage.getValue(key, callback);
+		return Clipper.storage.getCachedValue(key);
+	}
+
+	public static getStoredValue(key: string, callback: (value: string) => void, cacheValue?: boolean): void {
+		if (!Clipper.storage) {
+			throw new Error("The remote storage needs to be set up with the extension communicator first");
+		}
+		Clipper.storage.getValue(key, callback, cacheValue);
+	}
+
+	public static preCacheStoredValues(storageKeys: string[]): void {
+		if (!Clipper.storage) {
+			throw new Error("The remote storage needs to be set up with the extension communicator first");
+		}
+
+		Clipper.storage.getValues(storageKeys, () => {}, true);
 	}
 
 	public static storeValue(key: string, value: string): void {
