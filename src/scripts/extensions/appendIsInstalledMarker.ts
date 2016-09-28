@@ -1,16 +1,9 @@
-let oneNoteWebClipperInstallMarker = "oneNoteWebClipperIsInstalledOnThisBrowser";
+let oneNoteWebClipperInstallMarkerClassName = "oneNoteWebClipperIsInstalledOnThisBrowser";
 let marker = document.createElement("DIV");
-marker.id = oneNoteWebClipperInstallMarker;
+marker.className = oneNoteWebClipperInstallMarkerClassName;
 marker.style.display = "none";
 
-if (document.body) {
-	appendMarker();
-} else {
-	document.addEventListener("DOMContentLoaded", appendMarker, false);
-}
-
-function appendMarker() {
-	if (!document.getElementById(oneNoteWebClipperInstallMarker)) {
-		document.body.appendChild(marker);
-	}
+// We need to do this asap so we append it to the documentElement instead of the body
+if (document.documentElement.getElementsByClassName(oneNoteWebClipperInstallMarkerClassName).length === 0) {
+	document.documentElement.appendChild(marker);
 }
