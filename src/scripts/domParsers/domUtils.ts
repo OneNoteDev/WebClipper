@@ -1,4 +1,5 @@
 /// <reference path="../../../typings/globals/dompurify/index.d.ts" />
+/// <reference path="../../../typings/globals/sanitize-html/index.d.ts" />
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 /// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts"/>
 
@@ -71,10 +72,10 @@ export module DomUtils {
 		export const video = "video";
 	}
 
-	const attributesAllowedByOnml = {
-		a: ["href", "name", "target"],
-		img: ["src"],
-		"*": ["background-color", "color", "font-family", "font-size", "data*", "alt", "height", "width", "style", "id", "type"]
+	const attributesAllowedByOnml: { [index: string]: string[] } = {
+		"a": ["href", "name", "target"],
+		"img": ["src"],
+		"*": ["src", "background-color", "color", "font-family", "font-size", "data*", "alt", "height", "width", "style", "id", "type"]
 	};
 
 	const tableTags = [
@@ -152,7 +153,7 @@ export module DomUtils {
 	 * with the attributes and the content between the HTML tags scrubbed, while preserving
 	 * document structure
 	 */
-	export function sanitizeHtml(contentInHtml: string, includeTableTags = true): string {
+	export function cleanHtml(contentInHtml: string): string {
 		let allAttributes: string[] = [];
 		for (let key in attributesAllowedByOnml) {
 			if (attributesAllowedByOnml.hasOwnProperty(key)) {
@@ -160,15 +161,20 @@ export module DomUtils {
 			}
 		}
 
-		let tags = htmlTags.concat(markupTags);
-		if (includeTableTags) {
-			tags = tags.concat(tableTags);
-		}
+		let tags = htmlTags.concat(markupTags).concat(tableTags);
 
-		let sanitizedHtml = DOMPurify.sanitize(contentInHtml, {
-			ALLOWED_ATTR: allAttributes,
-			ALLOW_DATA_ATTR: true,
-			ALLOWED_TAGS: tags
+		// let sanitizedHtml = DOMPurify.sanitize(contentInHtml, {
+		// 	ALLOWED_ATTR: allAttributes,
+		// 	ALLOW_DATA_ATTR: true,
+		// 	ALLOWED_TAGS: tags
+		// });
+
+		let sanitizedHtml = sanitizeHtml(contentInHtml, {
+			allowedTags: tags,
+			allowedAttributes: attributesAllowedByOnml,
+			allowedSchemeByTags: {
+				img: ['data']
+			}
 		});
 
 		return sanitizedHtml;
@@ -185,7 +191,7 @@ export module DomUtils {
 			// As a temporary workaround, if there are tables inside a <center> tag, we don't support those
 			// This will not affect WYSIWYG behavior, as the preview is rendered after removing elements not supported in ONML
 			// A very small amount of websites will be affected
-			div.innerHTML = DomUtils.sanitizeHtml(node.innerHTML, false);
+			div.innerHTML = DomUtils.cleanHtml(node.innerHTML);
 			return div;
 		});
 	}

@@ -1,4 +1,5 @@
 /// <reference path="../../../typings/globals/dompurify/index.d.ts" />
+/// <reference path="../../../typings/globals/sanitize-html/index.d.ts" />
 /// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts" />
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
@@ -256,7 +257,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 
 			AugmentationHelper.augmentPage(augmentationUrl, pageInfo.contentLocale, pageInfo.contentData).then((result) => {
-				result.ContentInHtml = DomUtils.sanitizeHtml(result.ContentInHtml);
+				result.ContentInHtml = DomUtils.cleanHtml(result.ContentInHtml);
 				this.state.setState({
 					augmentationResult: { data: result, status: Status.Succeeded },
 					augmentationPreviewInfo: { previewBodyHtml: result.ContentInHtml }

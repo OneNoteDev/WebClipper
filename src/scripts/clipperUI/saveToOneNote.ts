@@ -82,7 +82,7 @@ export class SaveToOneNote {
 
 		if (isAugmentationMode) {
 			let container = document.createElement("DIV");
-			container.innerHTML = DomUtils.sanitizeHtml(clipperState.augmentationPreviewInfo.previewBodyHtml);
+			container.innerHTML = DomUtils.cleanHtml(clipperState.augmentationPreviewInfo.previewBodyHtml);
 			let highlightedList = container.getElementsByClassName(Constants.Classes.highlighted);
 			pageModificationsEvent.setCustomProperty(Log.PropertyName.Custom.ContainsAtLeastOneHighlight, highlightedList && highlightedList.length > 0);
 		} else {
@@ -170,7 +170,7 @@ export class SaveToOneNote {
 	private static createPostProcessessedHtml(html: string): HTMLElement {
 		// Wrap the preview in in-line styling to persist the styling through the OneNote API
 		let newPreviewBody = document.createElement("DIV");
-		newPreviewBody.innerHTML = DomUtils.sanitizeHtml(html);
+		newPreviewBody.innerHTML = DomUtils.cleanHtml(html);
 
 		let fontSize = this.clipperState.previewGlobalInfo.fontSize.toString() + "px";
 		let fontFamilyString = (this.clipperState.previewGlobalInfo.serif) ? "WebClipper.FontFamily.Preview.SerifDefault" : "WebClipper.FontFamily.Preview.SansSerifDefault";

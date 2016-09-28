@@ -459,7 +459,8 @@ function exportCommonJS(targetDir) {
 			PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.min.js",
 			PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
 			PATHS.NODE_MODULES + "urijs/src/URI.min.js",
-			PATHS.NODE_MODULES + "dompurify/dist/purify.min.js"
+			PATHS.NODE_MODULES + "dompurify/dist/purify.min.js",
+			PATHS.LIBROOT + "sanitize-html.js"
 		];
 		var injectLibsTask = gulp.src(assertModuleExists(injectLibPaths)).pipe(gulp.dest(targetDir));
 
@@ -502,7 +503,8 @@ function exportCommonLibFiles(targetDir) {
 		PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
 		PATHS.NODE_MODULES + "urijs/src/URI.min.js",
 		PATHS.NODE_MODULES + "velocity-animate/velocity.min.js",
-		PATHS.NODE_MODULES + "dompurify/dist/purify.min.js"
+		PATHS.NODE_MODULES + "dompurify/dist/purify.min.js",
+		PATHS.LIBROOT + "sanitize-html.js"
 	];
 
 	var exportTask = gulp.src(assertModuleExists(libFiles))
@@ -537,6 +539,7 @@ function exportBookmarkletJS(targetDir) {
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "purify.min.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "bookmarklet.js"
 	]).pipe(concat("invoke.js")).pipe(gulp.dest(targetDir));
@@ -610,6 +613,7 @@ function exportChromeJS() {
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "purify.min.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "chromeInject.js"
 	]).pipe(concat("chromeInject.js")).pipe(gulp.dest(targetDir));
@@ -668,6 +672,7 @@ function exportEdgeJS() {
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "purify.min.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "edgeInject.js"
 	]).pipe(concat("edgeInject.js")).pipe(gulp.dest(targetDir));
@@ -748,6 +753,7 @@ function exportFirefoxJS() {
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "purify.min.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "firefoxInject.js"
 	]).pipe(concat("firefoxInject.js")).pipe(gulp.dest(targetDir));
@@ -806,6 +812,7 @@ function exportSafariJS() {
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
 		targetDir + "purify.min.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "safariInject.js"
 	]).pipe(concat("safariInject.js")).pipe(gulp.dest(targetDir));
@@ -882,7 +889,8 @@ function exportTestLibFiles() {
 		PATHS.NODE_MODULES + "sinon-qunit/lib/sinon-qunit.js",
 		PATHS.NODE_MODULES + "urijs/src/URI.min.js",
 		PATHS.SRC.ROOT + "scripts/highlighting/textHighlighter.js",
-		PATHS.NODE_MODULES + "velocity-animate/velocity.js"
+		PATHS.NODE_MODULES + "velocity-animate/velocity.js",
+		PATHS.LIBROOT + "sanitize-html.js"
 	];
 
 	var testLibFileRegexes = [PATHS.NODE_MODULES + "qunitjs/qunit/qunit.+(css|js)"];
