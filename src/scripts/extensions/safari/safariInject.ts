@@ -13,16 +13,7 @@ declare var safari;
  * to execute the code
  */
 
-// This is injected into every page loaded (including frames)
-
-if (!document.getElementById(Constants.Ids.installMarker)) {
-	let marker = document.createElement("DIV");
-	marker.id = Constants.Ids.installMarker;
-	marker.style.display = "none";
-	document.body.appendChild(marker);
-}
-
-// We only want to set the listener on the main document
+// This is injected into every page loaded (including frames), but we only want to set the listener on the main document
 if (window.top === window) {
 	safari.self.addEventListener("message", (event) => {
 		if (event.name === Constants.FunctionKeys.invokeClipper) {

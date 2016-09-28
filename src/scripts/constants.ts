@@ -85,9 +85,6 @@ export module Constants {
 		export var userDropdownArrow = "userDropdownArrow";
 		export var userSettingsContainer = "userSettingsContainer";
 
-		// install marker
-		export var installMarker = "oneNoteWebClipperIsInstalledOnThisBrowser";
-
 		// loadingPanel
 		export var clipperLoadingContainer = "clipperLoadingContainer";
 

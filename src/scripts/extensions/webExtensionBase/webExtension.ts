@@ -44,25 +44,25 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		this.registerContextMenuItems();
 		this.registerInstallListener();
 		this.registerTabRemoveListener();
-		this.registerAppendInstalledMarkerOnNav();
+		// this.registerAppendInstalledMarkerOnNav();
 	}
 
-	private registerAppendInstalledMarkerOnNav() {
-		WebExtension.browser.webNavigation.onCompleted.addListener((details) => {
-			let code = [
-				"if (!document.getElementById('" + Constants.Ids.installMarker + "')) {",
-					"var marker = document.createElement('DIV');",
-					"marker.id = '" + Constants.Ids.installMarker + "';",
-					"marker.style.display = 'none';",
-					"document.body.appendChild(marker);",
-				"}"
-			].join("\n");
-			WebExtension.browser.tabs.executeScript(details.tabId, {
-				code: code,
-				allFrames: true
-			});
-		});
-	}
+	// private registerAppendInstalledMarkerOnNav() {
+	// 	WebExtension.browser.webNavigation.onCommitted.addListener((details) => {
+	// 		let code = [
+	// 			"if (!document.getElementById('" + Constants.Ids.installMarker + "')) {",
+	// 				"var marker = document.createElement('DIV');",
+	// 				"marker.id = '" + Constants.Ids.installMarker + "';",
+	// 				"marker.style.display = 'none';",
+	// 				"document.body.appendChild(marker);",
+	// 			"}"
+	// 		].join("\n");
+	// 		WebExtension.browser.tabs.executeScript(details.tabId, {
+	// 			code: code,
+	// 			allFrames: true
+	// 		});
+	// 	});
+	// }
 
 	public static getExtensionVersion(): string {
 		return WebExtension.browser.runtime.getManifest().version;
