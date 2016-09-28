@@ -18,7 +18,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ViewInWac);
 		let data = this.props.clipperState.oneNoteApiResult.data as OneNoteApi.Page;
 		if (data && data.links && data.links.oneNoteWebUrl && data.links.oneNoteWebUrl.href) {
-			let urlWithFromClipperParam = Utils.addUrlQueryValue(data.links.oneNoteWebUrl.href, Constants.Urls.QueryParams.wdfromclipper, "1");
+			let urlWithFromClipperParam = Utils.addUrlQueryValue(data.links.oneNoteWebUrl.href, Constants.Urls.QueryParams.wdFromClipper, "1");
 			window.open(urlWithFromClipperParam, "_blank");
 		} else {
 			Clipper.logger.logFailure(Log.Failure.Label.OnLaunchOneNoteButton, Log.Failure.Type.Unexpected,

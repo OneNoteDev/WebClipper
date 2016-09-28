@@ -318,7 +318,7 @@ export module Constants {
 			export var timeoutInMs = "timeoutInMs";
 			export var url = "url";
 			export var userSessionId = "userSessionId";
-			export var wdfromclipper = "wdfromclipper"; // This naming convention is standard in OneNote Online
+			export var wdFromClipper = "wdfromclipper"; // This naming convention is standard in OneNote Online
 		}
 	}
 
