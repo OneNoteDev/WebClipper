@@ -253,7 +253,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 
 			AugmentationHelper.augmentPage(augmentationUrl, pageInfo.contentLocale, pageInfo.contentData).then((result) => {
-				// result.ContentInHtml = DomUtils.sanitizeHtml(result.ContentInHtml);
+				result.ContentInHtml = DomUtils.sanitizeHtml(result.ContentInHtml);
 				this.state.setState({
 					augmentationResult: { data: result, status: Status.Succeeded },
 					augmentationPreviewInfo: { previewBodyHtml: result.ContentInHtml }
