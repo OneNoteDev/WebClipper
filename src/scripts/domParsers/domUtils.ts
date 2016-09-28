@@ -24,6 +24,7 @@ export module DomUtils {
 		export const audio = "audio";
 		export const base = "base";
 		export const body = "body";
+		export const br = "br";
 		export const button = "button";
 		export const canvas = "canvas";
 		export const center = "center";
@@ -112,6 +113,7 @@ export module DomUtils {
 		Tags.span,
 		Tags.a,
 		Tags.p,
+		Tags.br,
 		Tags.h1,
 		Tags.h2,
 		Tags.h3,
@@ -176,8 +178,9 @@ export module DomUtils {
 		let sanitizedHtml = sanitizeHtml(contentInHtml, {
 			allowedTags: tags,
 			allowedAttributes: attributesAllowedByOnml,
-			allowedSchemesByTag: {
-				img: ["data"]
+			allowedSchemes: sanitizeHtml.defaults.allowedSchemes.concat(['data']),
+			allowedClasses: {
+				"*": ['MainArticleContainer']
 			}
 		});
 
