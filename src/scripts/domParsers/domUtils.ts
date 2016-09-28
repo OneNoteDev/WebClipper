@@ -117,7 +117,8 @@ export module DomUtils {
 		Tags.ol,
 		Tags.li,
 		Tags.img,
-		Tags.object
+		Tags.object,
+		Tags.video
 	];
 
 	const tagsSupportedInOnml = htmlTags.concat(markupTags).concat(tableTags);
