@@ -3,6 +3,10 @@
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 /// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts"/>
 
+// 9/28/2016 - We need to go back and update sanitize-html to the latest .d.ts once 
+// they rename `sanitize` to `sanitizeHtml`, which is the name of the actually exported function
+declare let sanitizeHtml;
+
 import {Constants} from "../constants";
 import {Utils} from "../utils";
 import {VideoUtils} from "./videoUtils";
@@ -172,8 +176,8 @@ export module DomUtils {
 		let sanitizedHtml = sanitizeHtml(contentInHtml, {
 			allowedTags: tags,
 			allowedAttributes: attributesAllowedByOnml,
-			allowedSchemeByTags: {
-				img: ['data']
+			allowedSchemesByTag: {
+				img: ["data"]
 			}
 		});
 
@@ -209,7 +213,7 @@ export module DomUtils {
 					oldNode.parentNode.removeChild(oldNode);
 				} else if (oldNode !== newNode) {
 					oldNode.parentNode.replaceChild(newNode, oldNode);
-				}
+				} 
 			} catch (e) {
 				// There are some cases (like dirty canvases) where running replace will throw an error.
 				// We catch it, thus leaving the original.
