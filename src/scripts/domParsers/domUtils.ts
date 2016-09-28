@@ -151,7 +151,7 @@ export module DomUtils {
 	 * with the attributes and the content between the HTML tags scrubbed, while preserving
 	 * document structure
 	 */
-	export function sanitizeHtml(contentInHtml: string): string {
+	export function sanitizeHtml(contentInHtml: string, includeTableTags = true): string {
 		let start = new Date();
 		// return contentInHtml;
 		// flatten out the attributesAllowedByOnml
@@ -164,7 +164,11 @@ export module DomUtils {
 
 		let tables = ["table", "tr", "td"];
 		
-		let tags = htmlTags.concat(markupTags).concat(tableTags);
+		let tags = htmlTags.concat(markupTags);
+
+		if (includeTableTags) {
+			tags = tags.concat(tableTags);
+		}
 
 		console.log(markupTags);
 		console.log(tableTags);
@@ -189,8 +193,11 @@ export module DomUtils {
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
 		domReplacer(doc, Tags.center, (node: HTMLElement) => {
 			let div = document.createElement("DIV");
-			// TODO: DOMPurify allows one to specify "hooks" so we can use that to replace the <center> tag
-			div.innerHTML = DomUtils.sanitizeHtml(node.innerHTML);
+			// As of 9/28/2016, there is a bug inside of DOMPurify that infinite loops on some table tags
+			// As a temporary workaround, if there are tables inside a <center> tag, we don't support those
+			// This will not affect WYSIWYG behavior, as the preview is rendered after removing elements not supported in ONML
+			// A very small amount of websites will be affected
+			div.innerHTML = DomUtils.sanitizeHtml(node.innerHTML, false);
 			return div;
 		});
 	}
