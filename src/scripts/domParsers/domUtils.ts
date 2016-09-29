@@ -188,9 +188,9 @@ export module DomUtils {
 		let sanitizedHtml = sanitizeHtml(contentInHtml, {
 			allowedTags: tags,
 			allowedAttributes: attributesAllowedByOnml,
-			allowedSchemes: sanitizeHtml.defaults.allowedSchemes.concat(['data']),
+			allowedSchemes: sanitizeHtml.defaults.allowedSchemes.concat(["data"]),
 			allowedClasses: {
-				"*": ['MainArticleContainer']
+				"*": ["MainArticleContainer"]
 			}
 		});
 
@@ -228,7 +228,7 @@ export module DomUtils {
 					oldNode.parentNode.removeChild(oldNode);
 				} else if (oldNode !== newNode) {
 					oldNode.parentNode.replaceChild(newNode, oldNode);
-				} 
+				}
 			} catch (e) {
 				// There are some cases (like dirty canvases) where running replace will throw an error.
 				// We catch it, thus leaving the original.
