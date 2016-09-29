@@ -75,13 +75,13 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 
 	protected intShouldAnimateIn(el: HTMLElement): boolean {
 		let shouldAnimateIn: boolean = this.getAnimationState() === AnimationState.Out;
-		console.log("intShouldAnimateIn", AnimationState[this.getAnimationState()], shouldAnimateIn);
+		// console.log("intShouldAnimateIn", AnimationState[this.getAnimationState()], shouldAnimateIn);
 		return shouldAnimateIn;
 	}
 
 	protected intShouldAnimateOut(el: HTMLElement): boolean {
 		let shouldAnimateOut: boolean = this.getAnimationState() === AnimationState.In;
-		console.log("intShouldAnimateOut", AnimationState[this.getAnimationState()], shouldAnimateOut);
+		// console.log("intShouldAnimateOut", AnimationState[this.getAnimationState()], shouldAnimateOut);
 		return shouldAnimateOut;
 	}
 }

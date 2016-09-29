@@ -48,14 +48,14 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 	private getPanelAnimationStrategy(panel: RatingsPanelClass): AnimationStrategy {
 		return new SlideContentInFromTopAnimationStrategy({
 			extShouldAnimateIn: () => {
-				console.log("extShouldAnimateIn", RatingsPromptStage[panel.state.userSelectedRatingsPromptStage], RatingsPromptStage[panel.state.currentRatingsPromptStage], !panel.state.userSelectedRatingsPromptStage ||
-					panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage);
+				/*console.log("extShouldAnimateIn", RatingsPromptStage[panel.state.userSelectedRatingsPromptStage], RatingsPromptStage[panel.state.currentRatingsPromptStage], !panel.state.userSelectedRatingsPromptStage ||
+					panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage);*/
 				return (!panel.state.userSelectedRatingsPromptStage ||
 					panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage);
 			},
 			extShouldAnimateOut: () => {
-				console.log("extShouldAnimateOut", RatingsPromptStage[panel.state.userSelectedRatingsPromptStage], RatingsPromptStage[panel.state.currentRatingsPromptStage], !panel.state.userSelectedRatingsPromptStage &&
-					panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage);
+				/*console.log("extShouldAnimateOut", RatingsPromptStage[panel.state.userSelectedRatingsPromptStage], RatingsPromptStage[panel.state.currentRatingsPromptStage], !panel.state.userSelectedRatingsPromptStage &&
+					panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage);*/
 				return (panel.state.userSelectedRatingsPromptStage &&
 					panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage);
 			},

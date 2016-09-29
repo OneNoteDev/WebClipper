@@ -36,7 +36,7 @@ export abstract class TransitioningAnimationStrategy<TOptions extends Transition
 		}
 
 		super(animationDuration, animationState);
-		console.log("constructor", AnimationState[this.getAnimationState()]);
+		// console.log("constructor", AnimationState[this.getAnimationState()]);
 		this.options = options;
 	}
 
@@ -56,12 +56,12 @@ export abstract class TransitioningAnimationStrategy<TOptions extends Transition
 		return new Promise<void>((resolve) => {
 			if (this.options.extShouldAnimateIn() && this.intShouldAnimateIn(el)) {
 				this.animateIn(el).then(() => {
-					console.log("animated in", el);
+					// console.log("animated in", el);
 					resolve();
 				});
 			} else if (this.options.extShouldAnimateOut() && this.intShouldAnimateOut(el)) {
 				this.animateOut(el).then(() => {
-					console.log("animated out", el);
+					// console.log("animated out", el);
 					resolve();
 				});
 			}
