@@ -155,7 +155,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					previewGlobalInfo: newPreviewGlobalInfo
 				});
 
-				this.captureFullScreenshotContent();
+				if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+					this.capturePdfScreenshotContent();
+				} else {
+					this.captureFullPageScreenshotContent();
+				}
+				// this.captureFullScreenshotContent();
 				this.captureAugmentedContent();
 				this.captureBookmarkContent();
 
@@ -170,19 +175,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		});
 	}
 
-	private captureFullScreenshotContent() {
-		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-			this.capturePdfScreenshotContent();
-		} else {
-			this.captureFullPageScreenshotContent();
-		}
-	}
-
 	private capturePdfScreenshotContent() {
 		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
 			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
 			// console.log(chrome.extension.isAllowedFileSchemeAccess((isAllowed) => { console.log(isAllowed); }));
-			// The pdf is local, and therefore we cannot get its binary
 			PDFJS.getDocument(this.state.pageInfo.rawUrl).then((pdf) => {
 				PdfScreenshotHelper.getLocalPdfData(this.state.pageInfo.rawUrl).then((result) => {
 					// this.state.pdfResult.set(result);
@@ -620,15 +616,23 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}});
 	}
 
-	private startClip() {
+	// Refactor this to do the correct thing based on the this.state.currentMode.get()	
+	private startClip(): void {
 		Clipper.storeValue(ClipperStorageKeys.lastClippedDate, Date.now().toString());
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
 		let mode = ClipMode[this.state.currentMode.get()];
+
+		// 
+		if (this.state.currentMode.get() === ClipMode.Pdf) {
+			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
+		}
+		// TODO: add a test that somehow checks for this behavior ?
+
+
 		if (this.state.currentMode.get() === ClipMode.FullPage && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			mode += ": " + OneNoteApi.ContentType[this.state.pageInfo.contentType];
-			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
 		}
 		if (this.state.currentMode.get() === ClipMode.Augmentation) {
 			let styles = {

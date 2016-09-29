@@ -115,6 +115,11 @@ export class SaveToOneNote {
 		return new Promise((resolve, reject) => {
 			switch (clipperState.currentMode.get()) {
 				default:
+				case ClipMode.Pdf:
+					this.addEnhancedUrlContentToPage(page).then(() => {
+						resolve();
+					});
+					break;
 				case ClipMode.FullPage:
 					if (clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 						this.addEnhancedUrlContentToPage(page).then(() => {
