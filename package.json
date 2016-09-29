@@ -1,5 +1,5 @@
 {
-  "version": "3.2.6",
+  "version": "3.2.7",
   "name": "webclipper",
   "private": true,
   "description": "The core of the OneNote Web Clipper found at https://www.onenote.com/clipper",
@@ -19,6 +19,7 @@
     "@types/qunit": "^1.16.30",
     "@types/rangy": "0.0.27",
     "@types/safari-extension": "0.0.27",
+    "@types/sanitize-html": "^1.13.31",
     "@types/sinon": "^1.16.30",
     "@types/urijs": "^1.15.30",
     "@types/velocity-animate": "^1.2.27",
@@ -64,5 +65,8 @@
     "velocity-animate": "^1.2.3",
     "vinyl-source-stream": "^1.1.0",
     "yargs": "^4.3.1"
+  },
+  "dependencies": {
+    "sanitize-html": "^1.13.0"
   }
 }

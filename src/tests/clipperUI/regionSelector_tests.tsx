@@ -368,7 +368,7 @@ test("For a single white pixel as the region selection, its quality should not b
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	let img = new Image();
-	let canvas = document.createElement("CANVAS") as HTMLCanvasElement;
+	let canvas = document.createElement("canvas") as HTMLCanvasElement;
 	img.onload = () => {
 		canvas.getContext("2d").drawImage(img, 0, 0);
 		let expectedUrl = canvas.toDataURL("image/png");
@@ -386,7 +386,7 @@ test("For a large image as the region selection, the resulting image should be d
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	let img = new Image();
-	let canvas = document.createElement("CANVAS") as HTMLCanvasElement;
+	let canvas = document.createElement("canvas") as HTMLCanvasElement;
 	img.onload = () => {
 		canvas.getContext("2d").drawImage(img, 0, 0);
 		let actualUrl = controllerInstance.getCompressedDataUrl(canvas);

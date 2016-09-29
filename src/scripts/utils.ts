@@ -1,5 +1,8 @@
-﻿import {Constants} from "./constants";
+﻿import {ClientType} from "./clientType";
+import {Constants} from "./constants";
 import {Settings} from "./settings";
+
+import {ClipperState} from "./clipperUI/clipperState";
 import {TooltipType} from "./clipperUI/tooltipType";
 
 export module Utils {
@@ -108,6 +111,23 @@ export module Utils {
 
 	export function generateSignOutUrl(clipperId: string, sessionId: string, authType: string): string {
 		return addAuthenticationQueryValues(Constants.Urls.Authentication.signOutUrl, clipperId, sessionId, authType);
+	}
+
+	export function generateFeedbackUrl(clipperState: ClipperState, usid: string, logCategory: string): string {
+		let generatedFeedbackUrl = Utils.addUrlQueryValue(Constants.Urls.clipperFeedbackUrl,
+			"LogCategory", logCategory);
+		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
+			"originalUrl", clipperState.pageInfo.rawUrl);
+		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
+			"clipperId", clipperState.clientInfo.clipperId);
+		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
+			"usid", usid);
+		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
+			"type", ClientType[clipperState.clientInfo.clipperType]);
+		generatedFeedbackUrl = Utils.addUrlQueryValue(generatedFeedbackUrl,
+			"version", clipperState.clientInfo.clipperVersion);
+
+		return generatedFeedbackUrl;
 	}
 
 	/**

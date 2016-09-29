@@ -467,6 +467,16 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			});
 		});
 
+		this.uiCommunicator.registerFunction(Constants.FunctionKeys.getMultipleStorageValues, (keys: string[]) => {
+			return new Promise<{ [key: string]: string }>((resolve) => {
+				let values: { [key: string]: string } = {};
+				for (let key of keys) {
+					values[key] = this.clipperData.getValue(key);
+				}
+				resolve(values);
+			});
+		});
+
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.setStorageValue, (keyValuePair: { key: string, value: string }) => {
 			this.clipperData.setValue(keyValuePair.key, keyValuePair.value);
 		});

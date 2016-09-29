@@ -14,11 +14,12 @@ import {Status} from "../status";
 import {SpriteAnimation} from "../components/spriteAnimation";
 
 class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
-	onLaunchOneNoteButton() {
+	public onLaunchOneNoteButton() {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ViewInWac);
 		let data = this.props.clipperState.oneNoteApiResult.data as OneNoteApi.Page;
 		if (data && data.links && data.links.oneNoteWebUrl && data.links.oneNoteWebUrl.href) {
-			window.open(data.links.oneNoteWebUrl.href, "_blank");
+			let urlWithFromClipperParam = Utils.addUrlQueryValue(data.links.oneNoteWebUrl.href, Constants.Urls.QueryParams.wdFromClipper, "1");
+			window.open(urlWithFromClipperParam, "_blank");
 		} else {
 			Clipper.logger.logFailure(Log.Failure.Label.OnLaunchOneNoteButton, Log.Failure.Type.Unexpected,
 				{ error: "Page created and returned by API is either missing entirely, or missing its links, oneNoteWebUrl, or oneNoteWebUrl.href. Page: " + data });
@@ -27,18 +28,18 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 
 	render() {
 		return (
-			<div id={Constants.Ids.clipperSuccessContainer} className="resultPagePadding">
+			<div id={Constants.Ids.clipperSuccessContainer}>
 				<div className="messageLabelContainer successPagePadding">
 					<SpriteAnimation spriteUrl={Utils.getImageResourceUrl("checkmark.png")} imageHeight={28} totalFrameCount={30} loop={false}/>
 					<span className="actionLabelFont messageLabel"
-						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 						{Localization.getLocalizedString("WebClipper.Label.ClipSuccessful")}
 					</span>
 				</div>
 				<a id={Constants.Ids.launchOneNoteButton} {...this.enableInvoke(this.onLaunchOneNoteButton, 70) }>
 					<div className="wideButtonContainer">
 						<span className="wideButtonFont wideActionButton"
-							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
+							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							{Localization.getLocalizedString("WebClipper.Action.ViewInOneNote")}
 						</span>
 					</div>

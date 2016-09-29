@@ -205,6 +205,15 @@ gulp.task("tslint", function() {
 ////////////////////////////////////////
 // BUNDLE
 ////////////////////////////////////////
+gulp.task("bundleAppendIsInstalledMarker", function () {
+	var appendIsInstalledMarkerTask = browserify(PATHS.BUILDROOT + "scripts/extensions/appendIsInstalledMarker.js")
+		.bundle()
+		.pipe(source("appendIsInstalledMarker.js"))
+		.pipe(gulp.dest(PATHS.BUNDLEROOT));
+
+	return appendIsInstalledMarkerTask;
+});
+
 gulp.task("bundleClipperUI", function() {
 	var clipperJsTask = browserify(PATHS.BUILDROOT + "scripts/clipperUI/clipper.js")
 		.bundle()
@@ -365,6 +374,7 @@ gulp.task("bundleTests", function() {
 
 gulp.task("bundle", function(callback) {
 	runSequence(
+		"bundleAppendIsInstalledMarker",
 		"bundleClipperUI",
 		"bundleLogManager",
 		"bundleBookmarklet",
@@ -433,7 +443,8 @@ function exportCommonJS(targetDir) {
 		var injectLibPaths = [
 			PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.min.js",
 			PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
-			PATHS.NODE_MODULES + "urijs/src/URI.min.js"
+			PATHS.NODE_MODULES + "urijs/src/URI.min.js",
+			PATHS.LIBROOT + "sanitize-html.js"
 		];
 		var injectLibsTask = gulp.src(assertModuleExists(injectLibPaths)).pipe(gulp.dest(targetDir));
 
@@ -475,7 +486,8 @@ function exportCommonLibFiles(targetDir) {
 		PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js",
 		PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
 		PATHS.NODE_MODULES + "urijs/src/URI.min.js",
-		PATHS.NODE_MODULES + "velocity-animate/velocity.min.js"
+		PATHS.NODE_MODULES + "velocity-animate/velocity.min.js",
+		PATHS.LIBROOT + "sanitize-html.js"
 	];
 
 	var exportTask = gulp.src(assertModuleExists(libFiles))
@@ -509,6 +521,7 @@ function exportBookmarkletJS(targetDir) {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "bookmarklet.js"
 	]).pipe(concat("invoke.js")).pipe(gulp.dest(targetDir));
@@ -567,6 +580,10 @@ function exportChromeJS() {
 
 	var commonTask = exportCommonJS(targetDir);
 
+	var appendIsInstalledMarkerTask = gulp.src([
+		PATHS.BUNDLEROOT + "appendIsInstalledMarker.js"
+	]).pipe(concat("appendIsInstalledMarker.js")).pipe(gulp.dest(targetDir));
+
 	var chromeExtensionTask = gulp.src([
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
@@ -581,6 +598,7 @@ function exportChromeJS() {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "chromeInject.js"
 	]).pipe(concat("chromeInject.js")).pipe(gulp.dest(targetDir));
@@ -591,9 +609,9 @@ function exportChromeJS() {
 	]).pipe(concat("chromePageNavInject.js")).pipe(gulp.dest(targetDir));
 
 	if (commonTask) {
-		return merge(commonTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
+		return merge(commonTask, appendIsInstalledMarkerTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
 	}
-	return merge(chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
+	return merge(chromeExtensionTask, appendIsInstalledMarkerTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
 }
 
 function exportChromeCSS() {
@@ -624,6 +642,10 @@ function exportEdgeJS() {
 
 	var commonTask = exportCommonJS(targetDir);
 
+	var appendIsInstalledMarkerTask = gulp.src([
+		PATHS.BUNDLEROOT + "appendIsInstalledMarker.js"
+	]).pipe(concat("appendIsInstalledMarker.js")).pipe(gulp.dest(targetDir));
+
 	var edgeExtensionTask = gulp.src([
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
@@ -638,6 +660,7 @@ function exportEdgeJS() {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "edgeInject.js"
 	]).pipe(concat("edgeInject.js")).pipe(gulp.dest(targetDir));
@@ -648,9 +671,9 @@ function exportEdgeJS() {
 	]).pipe(concat("edgePageNavInject.js")).pipe(gulp.dest(targetDir));
 
 	if (commonTask) {
-		return merge(commonTask, edgeExtensionTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
+		return merge(commonTask, appendIsInstalledMarkerTask, edgeExtensionTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
 	}
-	return merge(edgeExtensionTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
+	return merge(edgeExtensionTask, appendIsInstalledMarkerTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
 }
 
 function exportEdgeCSS() {
@@ -703,6 +726,10 @@ function exportFirefoxJS() {
 
 	var commonTask = exportCommonJS(targetDir);
 
+	var appendIsInstalledMarkerTask = gulp.src([
+		PATHS.BUNDLEROOT + "appendIsInstalledMarker.js"
+	]).pipe(concat("appendIsInstalledMarker.js")).pipe(gulp.dest(targetDir));
+
 	var firefoxExtensionTask = gulp.src([
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
@@ -717,6 +744,7 @@ function exportFirefoxJS() {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "firefoxInject.js"
 	]).pipe(concat("firefoxInject.js")).pipe(gulp.dest(targetDir));
@@ -727,9 +755,9 @@ function exportFirefoxJS() {
 	]).pipe(concat("firefoxPageNavInject.js")).pipe(gulp.dest(targetDir));
 
 	if (commonTask) {
-		return merge(commonTask, firefoxExtensionTask, firefoxDebugLoggingInjectTask, firefoxInjectTask, firefoxPageNavInjectTask);
+		return merge(commonTask, appendIsInstalledMarkerTask, firefoxExtensionTask, firefoxDebugLoggingInjectTask, firefoxInjectTask, firefoxPageNavInjectTask);
 	}
-	return merge(firefoxExtensionTask, firefoxDebugLoggingInjectTask, firefoxInjectTask, firefoxPageNavInjectTask);
+	return merge(firefoxExtensionTask, appendIsInstalledMarkerTask, firefoxDebugLoggingInjectTask, firefoxInjectTask, firefoxPageNavInjectTask);
 }
 
 function exportFirefoxCSS() {
@@ -760,6 +788,10 @@ function exportSafariJS() {
 
 	var commonTask = exportCommonJS(targetDir);
 
+	var appendIsInstalledMarkerTask = gulp.src([
+		PATHS.BUNDLEROOT + "appendIsInstalledMarker.js"
+	]).pipe(concat("appendIsInstalledMarker.js")).pipe(gulp.dest(targetDir));
+
 	var safariExtensionTask = gulp.src([
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
@@ -774,6 +806,7 @@ function exportSafariJS() {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
+		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "safariInject.js"
 	]).pipe(concat("safariInject.js")).pipe(gulp.dest(targetDir));
@@ -784,9 +817,9 @@ function exportSafariJS() {
 	]).pipe(concat("safariPageNavInject.js")).pipe(gulp.dest(targetDir));
 
 	if (commonTask) {
-		return merge(commonTask, safariExtensionTask, safariDebugLoggingInjectTask, safariInjectTask, safariPageNavInjectTask);
+		return merge(commonTask, appendIsInstalledMarkerTask, safariExtensionTask, safariDebugLoggingInjectTask, safariInjectTask, safariPageNavInjectTask);
 	}
-	return merge(safariExtensionTask, safariDebugLoggingInjectTask, safariInjectTask, safariPageNavInjectTask);
+	return merge(safariExtensionTask, appendIsInstalledMarkerTask, safariDebugLoggingInjectTask, safariInjectTask, safariPageNavInjectTask);
 }
 
 function exportSafariCSS() {
@@ -849,7 +882,8 @@ function exportTestLibFiles() {
 		PATHS.NODE_MODULES + "sinon-qunit/lib/sinon-qunit.js",
 		PATHS.NODE_MODULES + "urijs/src/URI.min.js",
 		PATHS.SRC.ROOT + "scripts/highlighting/textHighlighter.js",
-		PATHS.NODE_MODULES + "velocity-animate/velocity.js"
+		PATHS.NODE_MODULES + "velocity-animate/velocity.js",
+		PATHS.LIBROOT + "sanitize-html.js"
 	];
 
 	var testLibFileRegexes = [PATHS.NODE_MODULES + "qunitjs/qunit/qunit.+(css|js)"];

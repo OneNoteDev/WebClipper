@@ -30,6 +30,7 @@ import {DialogButton, DialogPanel} from "./panels/dialogPanel";
 import {ErrorDialogPanel} from "./panels/errorDialogPanel";
 import {LoadingPanel} from "./panels/loadingPanel";
 import {OptionsPanel} from "./panels/optionsPanel";
+import {RatingsPanel} from "./panels/ratingsPanel";
 import {RegionSelectingPanel} from "./panels/regionSelectingPanel";
 import {SignInPanel} from "./panels/signInPanel";
 import {SuccessPanel} from "./panels/successPanel";
@@ -281,7 +282,13 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				return <ErrorDialogPanel message={OneNoteApiUtils.getLocalizedErrorMessage(apiResponseCode) }
 					buttons={buttons} />;
 			case PanelType.ClippingSuccess:
-				return <SuccessPanel clipperState={this.props.clipperState} />;
+				let panels: any[] = [<SuccessPanel clipperState={this.props.clipperState} />];
+
+				if (this.props.clipperState.showRatingsPrompt && this.props.clipperState.showRatingsPrompt.get()) {
+					panels.push(<RatingsPanel clipperState={this.props.clipperState} />);
+				}
+
+				return panels;
 			default:
 				return undefined;
 		}
