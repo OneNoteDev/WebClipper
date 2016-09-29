@@ -3,12 +3,19 @@
 	"name": "OneNote Web Clipper",
 	"description": "__MSG_appDesc__",
 	"default_locale": "en",
-	"version": "3.2.6.0",
+	"version": "3.2.7.0",
 
 	"background": {
 		"page": "edgeExtension.html",
 		"persistent": true
 	},
+
+	"content_scripts": [{
+		"matches": ["<all_urls>"],
+		"js": ["appendIsInstalledMarker.js"],
+		"run_at": "document_start",
+		"all_frames": true
+	}],
 
 	"web_accessible_resources": [
 		"clipper.html"

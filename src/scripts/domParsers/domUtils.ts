@@ -69,7 +69,7 @@ export module DomUtils {
 
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
 		domReplacer(doc, Tags.center, (node: HTMLElement) => {
-			let div = document.createElement("DIV");
+			let div = document.createElement("div");
 			div.innerHTML = node.innerHTML;
 			return div;
 		});
@@ -387,7 +387,7 @@ export module DomUtils {
 			return false;
 		}
 
-		let canvas = document.createElement("CANVAS") as HTMLCanvasElement;
+		let canvas = document.createElement("canvas") as HTMLCanvasElement;
 		canvas.width = img.width;
 		canvas.height = img.height;
 
