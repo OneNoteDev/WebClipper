@@ -145,42 +145,6 @@ test("On clicking the feedback button, a popup should open", () => {
 		"Popup should open when feedback button is clicked");
 });
 
-test("The generated feedback url should be correct with url query values set appropriately", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
-
-	let url = controllerInstance.generateFeedbackUrl();
-	strictEqual(url.indexOf("#"), -1,
-		"There should be no fragment in the feedback url");
-
-	let splitUrl = url.split("?");
-	let hostAndPath = splitUrl[0];
-	let queryParams = splitUrl[1].split("&");
-
-	strictEqual(hostAndPath, TestConstants.Urls.clipperFeedbackUrl,
-		"The feedback host and path should be correct");
-
-	let expectedQueryParams = {
-		LogCategory: TestConstants.LogCategories.oneNoteClipperUsage,
-		originalUrl: startingState.pageInfo.rawUrl,
-		clipperId: startingState.clientInfo.clipperId,
-		usid: Clipper.getUserSessionId(),
-		type: ClientType[startingState.clientInfo.clipperType],
-		version: startingState.clientInfo.clipperVersion
-	};
-
-	strictEqual(queryParams.length, 6, "There must be exactly 6 query params");
-
-	for (let i = 0; i < queryParams.length; i++) {
-		let keyValuePair = queryParams[i].split("=");
-		let key = keyValuePair[0];
-		let value = keyValuePair[1];
-		ok(expectedQueryParams.hasOwnProperty(key),
-			"The key " + key + " must exist in the query params");
-		strictEqual(value, expectedQueryParams[key],
-			"The correct value must be assigned to the key " + key);
-	}
-});
-
 test("The tabbing should flow from the feedback to dropdown to sign out buttons", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
