@@ -11,6 +11,7 @@
     "qunit": "github:DefinitelyTyped/DefinitelyTyped/qunit/qunit.d.ts#4de74cb527395c13ba20b438c3a7a419ad931f1c",
     "rangy": "github:DefinitelyTyped/DefinitelyTyped/rangy/rangy.d.ts#56295f5058cac7ae458540423c50ac2dcf9fc711",
     "safari-extension": "github:DefinitelyTyped/DefinitelyTyped/safari-extension/safari-extension.d.ts#7de6c3dd94feaeb21f20054b9f30d5dabc5efabd",
+    "sanitize-html": "github:DefinitelyTyped/DefinitelyTyped/sanitize-html/sanitize-html.d.ts#4b6174de5ecccc33cb02a120ae5b9c51eb0fd08a",    
     "sinon": "github:DefinitelyTyped/DefinitelyTyped/sinon/sinon.d.ts#7de6c3dd94feaeb21f20054b9f30d5dabc5efabd",
     "urijs": "github:DefinitelyTyped/DefinitelyTyped/urijs/URIjs.d.ts#3e77642fd96ddef451d39d28533d78d9f87865f5",
     "velocity-animate": "github:DefinitelyTyped/DefinitelyTyped/velocity-animate/velocity-animate.d.ts#b92c8228f6ba925212e7744dfcb955964393ecc4"

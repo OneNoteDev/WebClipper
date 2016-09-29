@@ -65,12 +65,6 @@
 	user-select: text;
 }
 
-.disabled {
-	cursor: default;
-	background: gray;
-	border-radius: 4px;
-}
-
 .failureMessageFont {
 	font-weight: normal;
 	font-size: 18px;
@@ -191,7 +185,8 @@
 }
 
 .successPagePadding {
-	padding-bottom: 40px;
+	padding-top: 16px;
+	padding-bottom: 24px;
 }
 
 .userActionButton {
@@ -227,13 +222,23 @@
 
 .wideButtonContainer {
 	background: @WideButtonBackgroundColor;
+	border: 1px solid @WideButtonBackgroundColor;
 	border-radius: 4px;
 	text-align: center;
-	width: 100%;
 	margin-bottom: 10px;
 
 	&:hover {
 		background: @WideButtonHoverColor;
+		border-color: @WideButtonHoverColor;
+	}
+
+	&.disabled {
+		background: gray;
+		border-color: gray;
+
+		a {
+			cursor: default;
+		}
 	}
 }
 
@@ -249,5 +254,33 @@
 
 	img {
 		display: block;
+	}
+}
+
+#ratingsPromptContainer {
+	padding-left: @ClipperUIInnerPadding;
+	padding-right: @ClipperUIInnerPadding;
+	margin: 30px (@ClipperUIInnerPadding*-1) -20px;
+	padding-bottom: 30px;
+
+	.resultPagePadding {
+		padding-top: 0px;
+	}
+
+	.messageLabelContainer {
+		padding-bottom: 0px;
+	}
+
+	.dialogMessageFont {
+		font-size: 15px;
+	}
+
+	.wideButtonContainer {
+		background: transparent;
+
+		.wideButtonFont {
+			color: #ffffff;
+			font-size: 15px;
+		}
 	}
 }
