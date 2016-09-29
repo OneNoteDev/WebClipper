@@ -27,7 +27,7 @@ module TestHelper {
 	}
 
 	export function createHTMLMetaElement(attribute: MetadataKeyValuePair, content: string): HTMLMetaElement {
-		let metaElement: HTMLMetaElement = document.createElement("META") as HTMLMetaElement;
+		let metaElement: HTMLMetaElement = document.createElement("meta") as HTMLMetaElement;
 
 		metaElement.setAttribute(attribute.key, attribute.value);
 		if (content) {
@@ -38,7 +38,7 @@ module TestHelper {
 	}
 
 	export function createHTMLImageElement(srcUrl: string): HTMLImageElement {
-		let imgElement: HTMLImageElement = document.createElement("IMG") as HTMLImageElement;
+		let imgElement: HTMLImageElement = document.createElement("img") as HTMLImageElement;
 		if (srcUrl) {
 			imgElement.setAttribute(BookmarkHelper.srcAttrName, srcUrl);
 		}

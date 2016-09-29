@@ -69,7 +69,7 @@ export module DomUtils {
 
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
 		domReplacer(doc, Tags.center, (node: HTMLElement) => {
-			let div = document.createElement("DIV");
+			let div = document.createElement("div");
 			div.innerHTML = node.innerHTML;
 			return div;
 		});
@@ -360,7 +360,6 @@ export module DomUtils {
 				// Just passing in the image node won't work as it won't render properly
 				// and the algorithm will think every pixel is (0,0,0,0)
 				let theImg = new Image();
-				theImg.src = img.src;
 
 				// In Firefox, a SecurityError is thrown if the image is not CORS-enabled
 				theImg.crossOrigin = "anonymous";
@@ -372,6 +371,9 @@ export module DomUtils {
 				theImg.onerror = () => {
 					resolve(undefined);
 				};
+
+				// The request is kicked off as soon as the src is set, so it needs to happen last
+				theImg.src = img.src;
 			});
 		});
 	}
@@ -385,7 +387,7 @@ export module DomUtils {
 			return false;
 		}
 
-		let canvas = document.createElement("CANVAS") as HTMLCanvasElement;
+		let canvas = document.createElement("canvas") as HTMLCanvasElement;
 		canvas.width = img.width;
 		canvas.height = img.height;
 
