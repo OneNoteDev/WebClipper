@@ -80,6 +80,8 @@ export module DomUtils {
 		export const video = "video";
 	}
 
+	// See the OneNote Dev Center API Reference for a list of supported attributes and tags
+	// https://dev.onenote.com/docs#/introduction/html-tag-support-for-pages
 	const attributesAllowedByOnml: { [index: string]: string[] } = {
 		"a": ["href", "name", "target"],
 		"img": ["src"],
