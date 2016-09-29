@@ -169,13 +169,8 @@ export class SaveToOneNote {
 
 	private static createPostProcessessedHtml(html: string): HTMLElement {
 		// Wrap the preview in in-line styling to persist the styling through the OneNote API
-<<<<<<< HEAD
-		let newPreviewBody = document.createElement("DIV");
+		let newPreviewBody = document.createElement("div");		
 		newPreviewBody.innerHTML = DomUtils.cleanHtml(html);
-=======
-		let newPreviewBody = document.createElement("div");
-		newPreviewBody.innerHTML = html;
->>>>>>> master
 
 		let fontSize = this.clipperState.previewGlobalInfo.fontSize.toString() + "px";
 		let fontFamilyString = (this.clipperState.previewGlobalInfo.serif) ? "WebClipper.FontFamily.Preview.SerifDefault" : "WebClipper.FontFamily.Preview.SansSerifDefault";
