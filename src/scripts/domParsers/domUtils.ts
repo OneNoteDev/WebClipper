@@ -372,6 +372,7 @@ export module DomUtils {
 					resolve(undefined);
 				};
 
+				// The request is kicked off as soon as the src is set, so it needs to happen last
 				theImg.src = img.src;
 			});
 		});
