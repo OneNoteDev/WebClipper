@@ -125,5 +125,41 @@
 	"App_Id": {
 		"Description": "For identifying the Clipper during interaction with external services",
 		"Value": "OneNote Clipper OSS"
+	},
+	"LogCategory_RatingsPrompt": {
+		"Description": "OFeedback log category for the ratings prompt feature",
+		"Value": "OneNoteClipperRatingsPrompt"
+	},
+	"Bookmarklet_RatingsEnabled": {
+		"Description": "If true, ratings prompt will be enabled for the bookmarklet",
+		"Value": "false"
+	},
+	"ChromeExtension_RatingsEnabled": {
+		"Description": "If true, ratings prompt will be enabled for the Chrome extension",
+		"Value": "false"
+	},
+	"EdgeExtension_RatingsEnabled": {
+		"Description": "If true, ratings prompt will be enabled for the Edge extension",
+		"Value": "false"
+	},
+	"FirefoxExtension_RatingsEnabled": {
+		"Description": "If true, ratings prompt will be enabled for the Firefox extension",
+		"Value": "false"
+	},
+	"SafariExtension_RatingsEnabled": {
+		"Description": "If true, ratings prompt will be enabled for the Safari extension",
+		"Value": "false"
+	},
+	"ChromeExtension_RatingUrl": {
+		"Description": "URL for the Web Clipper in the Chrome Web Store; used to direct users to leave ratings and reviews",
+		"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/gojbdfnpnhogfdgjbigejoaolejmgdhk/reviews"
+	},
+	"EdgeExtension_RatingUrl": {
+		"Description": "URL for the Web Clipper in the Windows Store; used to direct users to leave ratings and reviews",
+		"Value": "https://www.microsoft.com/en-us/store/p/onenote-web-clipper/9nblggh4r01n#ratings-reviews"
+	},
+	"FirefoxExtension_RatingUrl": {
+		"Description": "URL for the Web Clipper in Firefox Add-ons; used to direct users to leave ratings and reviews",
+		"Value": ""
 	}
 }
