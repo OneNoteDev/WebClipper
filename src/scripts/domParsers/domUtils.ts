@@ -1,4 +1,3 @@
-/// <reference path="../../../typings/globals/dompurify/index.d.ts" />
 /// <reference path="../../../typings/globals/sanitize-html/index.d.ts" />
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 /// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts"/>
