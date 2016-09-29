@@ -83,13 +83,13 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		}
 	}
 
-	protected checkIfTabMatchesATooltipType(tab: W3CTab, tooltipType: TooltipType): boolean {
-		return Utils.checkIfUrlMatchesAContentType(tab.url, tooltipType);
+	protected checkIfTabMatchesATooltipType(tab: W3CTab, tooltipTypes: TooltipType[]): TooltipType {
+		return Utils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
 	}
 
 	protected checkIfTabIsAVideoDomain(tab: W3CTab): boolean {
 		let domain = VideoUtils.videoDomainIfSupported(tab.url);
-		return domain ? true : false;
+		return !!domain;
 	}
 
 	private invokeClipperInTab(tab: W3CTab, invokeInfo: InvokeInfo, options: InvokeOptions) {

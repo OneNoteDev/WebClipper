@@ -51,7 +51,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		});
 	}
 
-	private getPreviewTitle(contentTitle: string, titleIsEditable: boolean, inProgressClassIfApplicable: string): any[] {
+	private getPreviewTitle(contentTitle: string, titleIsEditable: boolean, inProgressClassIfApplicable: string): any {
 		if (this.props.clipperState.currentMode.get() !== ClipMode.Bookmark) {
 				return (
 				<div id={Constants.Ids.previewTitleContainer}>
@@ -69,7 +69,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		}
 	}
 
-	private getPreviewSubtitle(): any[] {
+	private getPreviewSubtitle(): any {
 		let sourceUrlCitation = Localization.getLocalizedString("WebClipper.FromCitation")
 			.replace("{0}", this.props.clipperState.pageInfo ? this.props.clipperState.pageInfo.rawUrl : "");
 

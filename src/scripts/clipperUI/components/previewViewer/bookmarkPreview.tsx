@@ -59,7 +59,7 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 			imageWidth={45}
 			totalFrameCount={21}
 			loop={true} />;
-		return <div class={Constants.Classes.centeredInPreview}>{spinner}</div>;
+		return <div className={Constants.Classes.centeredInPreview}>{spinner}</div>;
 	}
 
 	protected getHeader(): any {
@@ -77,7 +77,7 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		return Constants.Ids.bookmarkPreviewInnerContainer;
 	}
 
-	private convertBookmarkResultToContentData(result: BookmarkResult): any[] {
+	private convertBookmarkResultToContentData(result: BookmarkResult): any {
 		let url = result.url;
 
 		let secondColumnTdStyle = "";

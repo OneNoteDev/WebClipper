@@ -101,7 +101,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private getResetState(): ClipperState {
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
-			oneNoteApiResult: { status: Status.NotStarted }
+			oneNoteApiResult: { status: Status.NotStarted },
+			showRatingsPrompt: new SmartValue<boolean>()
 		};
 	}
 
@@ -336,7 +337,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				// invokeDataForMode is scrubbed selected html as a string
 				this.state.setState({
 					selectionPreviewInfo: {
-						previewBodyHtml: options.invokeDataForMode,
+						previewBodyHtml: options.invokeDataForMode
 					}
 				});
 				break;

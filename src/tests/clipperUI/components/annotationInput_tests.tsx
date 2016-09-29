@@ -17,12 +17,12 @@ QUnit.module("annotationInput", {
 test("The annotation container should expand to reveal the annotation field when the annotation placeholder is clicked", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
-	let annotationContainer = HelperFunctions.getFixture().firstElementChild as any;
+	let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
 	let annotationContainerChildren = annotationContainer.children;
 	strictEqual(annotationContainerChildren.length, 1,
 		"By default, the annotation container should only contain one child");
 
-	let annotationPlaceholder = annotationContainerChildren[0];
+	let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 	strictEqual(annotationPlaceholder.id, Constants.Ids.annotationPlaceholder,
 		"The annotation placeholder should be the only child of the container");
 
@@ -41,9 +41,9 @@ test("The annotation container should expand to reveal the annotation field when
 test("The annotation container should remain open on blur if the annotation field is populated with non whitespace", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
-	let annotationContainer = HelperFunctions.getFixture().firstElementChild as any;
+	let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
 	let annotationContainerChildren = annotationContainer.children;
-	let annotationPlaceholder = annotationContainerChildren[0];
+	let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
 	HelperFunctions.simulateAction(() => {
 		annotationPlaceholder.click();
@@ -69,9 +69,9 @@ test("The annotation container should remain open on blur if the annotation fiel
 test("The annotation container should close on blur if the annotation field is empty", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
-	let annotationContainer = HelperFunctions.getFixture().firstElementChild as any;
+	let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
 	let annotationContainerChildren = annotationContainer.children;
-	let annotationPlaceholder = annotationContainerChildren[0];
+	let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
 	HelperFunctions.simulateAction(() => {
 		annotationPlaceholder.click();
@@ -97,9 +97,9 @@ test("The annotation container should close on blur if the annotation field is e
 test("The annotation container should close on blur if the annotation field is whitespace", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
-	let annotationContainer = HelperFunctions.getFixture().firstElementChild as any;
+	let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
 	let annotationContainerChildren = annotationContainer.children;
-	let annotationPlaceholder = annotationContainerChildren[0];
+	let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
 	HelperFunctions.simulateAction(() => {
 		annotationPlaceholder.click();
@@ -131,9 +131,9 @@ test("The opened state should be false by default", () => {
 test("The opened state should be true after clicking on the annotation placeholder", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
-	let annotationContainer = HelperFunctions.getFixture().firstElementChild as any;
+	let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
 	let annotationContainerChildren = annotationContainer.children;
-	let annotationPlaceholder = annotationContainerChildren[0];
+	let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
 	HelperFunctions.simulateAction(() => {
 		annotationPlaceholder.click();
@@ -145,9 +145,9 @@ test("The opened state should be true after clicking on the annotation placehold
 test("The opened state should be true on blur after populating the annotation field with non whitespace", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
-	let annotationContainer = HelperFunctions.getFixture().firstElementChild as any;
+	let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
 	let annotationContainerChildren = annotationContainer.children;
-	let annotationPlaceholder = annotationContainerChildren[0];
+	let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
 	HelperFunctions.simulateAction(() => {
 		annotationPlaceholder.click();
@@ -168,9 +168,9 @@ test("The opened state should be true on blur after populating the annotation fi
 test("The opened state should be false on blur after populating the annotation field with whitespace", () => {
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
-	let annotationContainer = HelperFunctions.getFixture().firstElementChild as any;
+	let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
 	let annotationContainerChildren = annotationContainer.children;
-	let annotationPlaceholder = annotationContainerChildren[0];
+	let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
 	HelperFunctions.simulateAction(() => {
 		annotationPlaceholder.click();
