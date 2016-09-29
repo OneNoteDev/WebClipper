@@ -391,42 +391,39 @@ test("getPathName should return a valid path given a valid URL", () => {
 	ok(Utils.getPathname("https://www.youtube.com"), "/");
 });
 
-test("checkIfUrlMatchesAContentType should return false for an undefined, null, or empty URL", () => {
-	let tooltipsToTest = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
-
-	tooltipsToTest.forEach((tooltip) => {
-		ok(!Utils.checkIfUrlMatchesAContentType(undefined, tooltip));
-		/* tslint:disable:no-null-keyword */
-		ok(!Utils.checkIfUrlMatchesAContentType(null, tooltip));
-		/* tslint:enable:no-null-keyword */
-		ok(!Utils.checkIfUrlMatchesAContentType("", tooltip));
-	});
+let tooltipsToTest = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
+test("checkIfUrlMatchesAContentType should return UNDEFINED for an undefined, null, or empty URL", () => {
+	ok(!Utils.checkIfUrlMatchesAContentType(undefined, tooltipsToTest));
+	/* tslint:disable:no-null-keyword */
+	ok(!Utils.checkIfUrlMatchesAContentType(null, tooltipsToTest));
+	/* tslint:enable:no-null-keyword */
+	ok(!Utils.checkIfUrlMatchesAContentType("", tooltipsToTest));
 });
 
-test("checkIfUrlMatchesAContentType for PDF should return false for a valid URL without .pdf at the end", () => {
-	ok(!Utils.checkIfUrlMatchesAContentType("https://www.fistbump.reviews", TooltipType.Pdf));
-	ok(!Utils.checkIfUrlMatchesAContentType("https://fistbumppdfs.reviews", TooltipType.Pdf));
+test("checkIfUrlMatchesAContentType for PDF should return UNDEFINED for a valid URL without .pdf at the end", () => {
+	ok(!Utils.checkIfUrlMatchesAContentType("https://www.fistbump.reviews", tooltipsToTest));
+	ok(!Utils.checkIfUrlMatchesAContentType("https://fistbumppdfs.reviews", tooltipsToTest));
 });
 
-test("checkIfUrlMatchesAContentType for PDF should return true for a valid URL with .pdf at the end, case insensitive", () => {
-	ok(Utils.checkIfUrlMatchesAContentType("https://wwww.wen.jen/shipItFresh.pdf", TooltipType.Pdf));
-	ok(Utils.checkIfUrlMatchesAContentType("http://www.orimi.com/pdf-test.PDF", TooltipType.Pdf));
+test("checkIfUrlMatchesAContentType for PDF should return PDF for a valid URL with .pdf at the end, case insensitive", () => {
+	strictEqual(Utils.checkIfUrlMatchesAContentType("https://wwww.wen.jen/shipItFresh.pdf", tooltipsToTest), TooltipType.Pdf);
+	strictEqual(Utils.checkIfUrlMatchesAContentType("http://www.orimi.com/pdf-test.PDF", tooltipsToTest), TooltipType.Pdf);
 });
 
-test("checkIfUrlMatchesAContentType for Product should return false for an invalid url", () => {
-	ok(!Utils.checkIfUrlMatchesAContentType("https://www.onenote.com/clipper", TooltipType.Product));
+test("checkIfUrlMatchesAContentType for Product should return UNDEFINED for an invalid url", () => {
+	ok(!Utils.checkIfUrlMatchesAContentType("https://www.onenote.com/clipper", tooltipsToTest));
 });
 
-test("checkIfUrlMatchesAContentType for Product should return true for a valid Wal-mart URL", () => {
-	ok(Utils.checkIfUrlMatchesAContentType("http://www.walmart.com/ip/49424374", TooltipType.Product));
+test("checkIfUrlMatchesAContentType for Product should return Product for a valid Wal-mart URL", () => {
+	strictEqual(Utils.checkIfUrlMatchesAContentType("http://www.walmart.com/ip/49424374", tooltipsToTest), TooltipType.Product);
 });
 
-test("checkIfUrlMatchesAContentType for Recipe should return false for a valid url that isnt in the regex match", () => {
-	ok(!Utils.checkIfUrlMatchesAContentType("https://www.onenote.com/clipper", TooltipType.Recipe));
+test("checkIfUrlMatchesAContentType for Recipe should return UNDEFINED for a valid url that isnt in the regex match", () => {
+	ok(!Utils.checkIfUrlMatchesAContentType("https://www.onenote.com/clipper", tooltipsToTest));
 });
 
-test("checkIfUrlMatchesAContentType for Recipe should return true for a valid URL", () => {
-	ok(Utils.checkIfUrlMatchesAContentType("http://www.chowhound.com/recipes/easy-grilled-cheese-31834", TooltipType.Recipe));
+test("checkIfUrlMatchesAContentType for Recipe should return RECIPE for a valid URL", () => {
+	strictEqual(Utils.checkIfUrlMatchesAContentType("http://www.chowhound.com/recipes/easy-grilled-cheese-31834", tooltipsToTest), TooltipType.Recipe);
 });
 
 test("ensureLeadingForwardSlash should return a valid path given different browser return values.", () => {

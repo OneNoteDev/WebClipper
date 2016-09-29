@@ -122,7 +122,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	protected fetchAndStoreLocStrings(): Promise<{}> {
-		let locale = navigator.language || navigator.userLanguage;
+		let locale = navigator.language || (<any>navigator).userLanguage;
 
 		return new Promise<{}>((resolve, reject) => {
 			LocalizationHelper.makeLocStringsFetchRequest(locale).then((responsePackage) => {
@@ -210,7 +210,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected getNewUpdates(lastSeenVersion: Version, currentVersion: Version): Promise<ChangeLog.Update[]> {
 		return new Promise<ChangeLog.Update[]>((resolve, reject) => {
 			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
-			let localeToGet = localeOverride || navigator.language || navigator.userLanguage;
+			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
 			let changelogUrl = Utils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
 			Http.get(changelogUrl).then((request: XMLHttpRequest) => {
 				try {
@@ -274,16 +274,25 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		});
 	}
 
-	private shouldShowTooltip(tab: TTab, tooltipType: TooltipType): boolean {
-		if (this.tooltip.tooltipDelayIsOver(tooltipType, Date.now()) && this.checkIfTabMatchesATooltipType(tab, tooltipType)) {
-			return true;
+	private shouldShowTooltip(tab: TTab, tooltipTypes: TooltipType[]): TooltipType {
+		let type = this.checkIfTabMatchesATooltipType(tab, tooltipTypes);
+
+		if (!type) {
+			return;
 		}
+
+		if (!this.tooltip.tooltipDelayIsOver(type, Date.now())) {
+			return;
+		}
+
+		return type;
 	}
 
 	private shouldShowVideoTooltip(tab: TTab): boolean {
-		if (this.tooltip.tooltipDelayIsOver(TooltipType.Video, Date.now()) && this.checkIfTabIsAVideoDomain(tab)) {
+		if (this.checkIfTabIsAVideoDomain(tab) && this.tooltip.tooltipDelayIsOver(TooltipType.Video, Date.now())) {
 			return true;
 		}
+		return false;
 	}
 
 	private showTooltip(tab: TTab, tooltipType: TooltipType): void {
@@ -359,11 +368,11 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			let extensionVersion = new Version(ExtensionBase.getExtensionVersion());
 
 			let tooltips = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
-			for (let i = 0; i < tooltips.length; ++i) {
-				if (this.shouldShowTooltip(tab, tooltips[i])) {
-					this.showTooltip(tab, tooltips[i]);
-					return;
-				}
+			// Returns the Type of tooltip to show IF the delay is over and the tab has the correct content type
+			let typeToShow = this.shouldShowTooltip(tab, tooltips);
+			if (typeToShow) {
+				this.showTooltip(tab, typeToShow);
+				return;
 			}
 
 			if (this.shouldShowVideoTooltip(tab)) {
@@ -405,7 +414,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	/**
 	 * Returns True if the Extension determines the tab is a Product, Recipe, or PDF. False otherwise
 	 */
-	protected abstract checkIfTabMatchesATooltipType(tab: TTab, tooltipType: TooltipType): boolean;
+	protected abstract checkIfTabMatchesATooltipType(tab: TTab, tooltipTypes: TooltipType[]): TooltipType;
 
 	/**
 	 * Returns True if the Extension determines the tab is a Video, false otherwise

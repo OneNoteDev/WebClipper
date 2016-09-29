@@ -251,7 +251,7 @@ gulp.task("bundleClipperUI", function() {
 		.pipe(source("unsupportedBrowser.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	return merge(clipperJsTask, localeSpecificJsTask, unsupportedBrowserJsTask);
+	return merge(clipperJsTask, pageNavJsTask, localeSpecificJsTask, unsupportedBrowserJsTask);
 });
 
 gulp.task("bundleLogManager", function () {
@@ -700,20 +700,20 @@ function exportEdgeSrcFiles() {
 function exportEdgePackageFiles() {
 	var edgeAssetsTask = gulp.src([
 		PATHS.SRC.ROOT + "scripts/extensions/edge/package/assets/*"
-	]).pipe(gulp.dest(PATHS.TARGET.EDGE_ROOT + "manifest/assets"))
+	]).pipe(gulp.dest(PATHS.TARGET.EDGE_ROOT + "manifest/assets"));
 
 	var edgeResourcesTask = gulp.src([
 		PATHS.SRC.ROOT + "scripts/extensions/edge/package/resources/**"
-	]).pipe(gulp.dest(PATHS.TARGET.EDGE_ROOT + "manifest/resources"))
+	]).pipe(gulp.dest(PATHS.TARGET.EDGE_ROOT + "manifest/resources"));
 
 	var edgeManifestTask = gulp.src([
 		PATHS.SRC.ROOT + "scripts/extensions/edge/package/appxmanifest.xml",
 		PATHS.SRC.ROOT + "scripts/extensions/edge/package/priconfig.xml"
-	]).pipe(gulp.dest(PATHS.TARGET.EDGE_ROOT + "manifest"))
+	]).pipe(gulp.dest(PATHS.TARGET.EDGE_ROOT + "manifest"));
 
 	var edgePriconfigTask = gulp.src([
 		PATHS.SRC.ROOT + "scripts/extensions/edge/package/generationInfo.json"
-	]).pipe(gulp.dest(PATHS.TARGET.EDGE_ROOT))
+	]).pipe(gulp.dest(PATHS.TARGET.EDGE_ROOT));
 
 	return merge(edgeAssetsTask, edgeManifestTask, edgePriconfigTask, edgeResourcesTask);
 }

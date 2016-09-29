@@ -62,6 +62,9 @@ export module Constants {
 		export var dialogMessage = "dialogMessage";
 		export var dialogTryAgainButton = "dialogTryAgainButton";
 
+		// editorPreviewComponentBase
+		export var highlightablePreviewBody = "highlightablePreviewBody";
+
 		// failurePanel
 		export var apiErrorMessage = "apiErrorMessage";
 		export var backToHomeButton = "backToHomeButton";
@@ -324,6 +327,7 @@ export module Constants {
 			export var timeoutInMs = "timeoutInMs";
 			export var url = "url";
 			export var userSessionId = "userSessionId";
+			export var wdFromClipper = "wdfromclipper"; // This naming convention is standard in OneNote Online
 		}
 	}
 
@@ -336,10 +340,13 @@ export module Constants {
 		export var maxClipSuccessForRatingsPrompt = 12;
 		export var maximumJSTimeValue = 1000 * 60 * 60 * 24 * 100000000; // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
 		export var maximumFontSize = 72;
+		export var maximumNumberOfTimesToShowTooltips = 3;
 		export var minClipSuccessForRatingsPrompt = 4;
 		export var minimumFontSize = 8;
 		export var minTimeBetweenBadRatings = 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
 		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
+		export var timeBetweenDifferentTooltips = 1000 * 60 * 60 * 24 * 7 * 1; // 1 week
+		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 3 weeks
 		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
 	}
 }
