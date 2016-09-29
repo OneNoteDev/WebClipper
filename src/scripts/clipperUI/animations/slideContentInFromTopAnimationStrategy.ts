@@ -6,69 +6,84 @@ import {SmartValue} from "../../communicator/smartValue";
 import {AnimationState} from "./animationState";
 import {TransitioningAnimationStrategy, TransitioningAnimationStrategyOptions} from "./transitioningAnimationStrategy";
 
+export interface SlideContentInFromTopAnimationStrategyOptions extends TransitioningAnimationStrategyOptions {
+	animationState: SmartValue<AnimationState>;
+	contentToAnimate: ContentToAnimate[];
+}
+
+export interface ContentToAnimate {
+	selector: string;
+	animateInOptions: AnimateInOptions;
+}
+
+export interface AnimateInOptions {
+	verticalDeltas: number[];
+	delaysInMs: number[];
+}
+
 /**
  *
  */
 export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimationStrategy<TransitioningAnimationStrategyOptions> {
+	private animateOutDuration: number;
+	private animateInDuration: number;
+	private contentToAnimate: ContentToAnimate[];
 
-	// TODO add animationState to Options
-	constructor(options?: TransitioningAnimationStrategyOptions, animationState?: SmartValue<AnimationState>) {
-		super(367 /* animationDuration */, options, animationState);
+	constructor(options?: SlideContentInFromTopAnimationStrategyOptions) {
+		super(undefined /* animationDuration */, options, options.animationState);
+
+		this.animateInDuration = 367;
+		this.animateOutDuration = 267;
+		this.contentToAnimate = options.contentToAnimate;
 	}
 
 	protected doAnimateIn(parentEl: HTMLElement): Promise<void>  {
 		return new Promise<void>((resolve) => {
-			// TODO children-to-animate class names should be settable by user
-			let childrenSelectors = [".dialogButton .wideButtonContainer", ".messageLabel"];
-			let selectors: string = childrenSelectors.join(", ");
-			let translations = ["-48px", "-48px", "-50px"]; // bottom to top; TODO ensure this is equal to length of animatables
-			let delays = [0, 50, 33]; // bottom to top; TODO ensure this is equal to length of animatables
+			for (let cIndex = 0; cIndex < this.contentToAnimate.length; cIndex++) {
+				let content = this.contentToAnimate[cIndex];
+				let animatables = parentEl.querySelectorAll(content.selector) as NodeListOf<HTMLElement>;
 
-			let animatables: NodeListOf<HTMLElement> = parentEl.querySelectorAll(selectors) as NodeListOf<HTMLElement>;
+				for (let aIndex = 0; aIndex < animatables.length; aIndex++) {
+					let item: HTMLElement = animatables[aIndex];
 
-			for (let aIndex = animatables.length - 1; aIndex >= 0; aIndex--) {
-				let item = animatables[aIndex];
+					console.log("top:", -(content.animateInOptions.verticalDeltas[aIndex]) + "px", "delay:", content.animateInOptions.delaysInMs[aIndex], item);
 
-				// apply style to each animatable
-				item.style.top = translations[aIndex];
-				item.style.opacity = "0";
+					// apply style to each animatable
+					item.style.top = -(content.animateInOptions.verticalDeltas[aIndex]) + "px";
+					item.style.opacity = "0";
 
-				Velocity.animate(item, {
+					Velocity.animate(item, {
 					top: 0,
 					opacity: [1, "linear"]
-				}, {
-					complete: () => {
-						if (aIndex === 0) {
-							resolve();
-						}
-					},
-					delay: delays[aIndex],
-					duration: this.animationDuration,
-					easing: [ 0, 0, 0, 1 ] // TODO settable by user?
-				});
+					}, {
+						complete: () => {
+							if ((cIndex === this.contentToAnimate.length - 1) && (aIndex === animatables.length - 1)) {
+								resolve();
+							}
+						},
+						delay: content.animateInOptions.delaysInMs[aIndex],
+						duration: this.animateInDuration,
+						easing: [ 0, 0, 0, 1 ]
+					});
+				}
 			}
 		});
 	}
 
 	protected doAnimateOut(parentEl: HTMLElement): Promise<void> {
 		return new Promise<void>((resolve) => {
-			// TODO children-to-animate class names should be settable by user
-			let childrenSelectors = [".dialogButton .wideButtonContainer", ".messageLabel"];
-			let selectors: string = childrenSelectors.join(", ");
-
-			let animatables: NodeListOf<HTMLElement> = parentEl.querySelectorAll(selectors) as NodeListOf<HTMLElement>;
-
-			let verticalEndValue = -23;
+			let childrenSelectors: string = this.contentToAnimate.map((content) => { return content.selector; }).join(", ");
+			let animatables: NodeListOf<HTMLElement> = parentEl.querySelectorAll(childrenSelectors) as NodeListOf<HTMLElement>;
 
 			Velocity.animate(animatables, {
-				top: verticalEndValue,
+				top: -23,
 				opacity: [0, "linear"]
 			}, {
 				complete: () => {
 					resolve();
 				},
-				duration: 267, // TODO not hardcoded
-				easing: [1, 0, 1, 1] // TODO set-able by user?
+				duration: this.animateOutDuration,
+				easing: [1, 0, 1, 1]
 			});
 		});
 	}

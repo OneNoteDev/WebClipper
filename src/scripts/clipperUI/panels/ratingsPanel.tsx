@@ -19,7 +19,7 @@ import {Status} from "../status";
 
 import {AnimationState} from "../animations/animationState";
 import {AnimationStrategy} from "../animations/animationStrategy";
-import {SlideContentInFromTopAnimationStrategy} from "../animations/slideContentInFromTopAnimationStrategy";
+import {SlideContentInFromTopAnimationStrategy, ContentToAnimate} from "../animations/slideContentInFromTopAnimationStrategy";
 
 import {SpriteAnimation} from "../components/spriteAnimation";
 
@@ -32,7 +32,6 @@ interface RatingsPanelState {
 
 interface RatingsPanelProp extends ClipperStateProp {
 	ratingsAnimationState: SmartValue<AnimationState>;
-	updateFrameHeight: (newContainerHeight: number) => void;
 }
 
 class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelProp> {
@@ -47,6 +46,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 	 */
 	private getPanelAnimationStrategy(panel: RatingsPanelClass): AnimationStrategy {
 		return new SlideContentInFromTopAnimationStrategy({
+			animationState: this.props.ratingsAnimationState,
+			contentToAnimate: this.getContentToAnimate(),
 			extShouldAnimateIn: () => {
 				/*console.log("extShouldAnimateIn", RatingsPromptStage[panel.state.userSelectedRatingsPromptStage], RatingsPromptStage[panel.state.currentRatingsPromptStage], !panel.state.userSelectedRatingsPromptStage ||
 					panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage);*/
@@ -61,7 +62,26 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 			},
 			onBeforeAnimateIn: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage ? panel.state.userSelectedRatingsPromptStage : RatingsPromptStage.Init });	},
 			onAfterAnimateOut: () => { panel.setState({ currentRatingsPromptStage: panel.state.currentRatingsPromptStage }); } // TODO I know this is weird
-		}, this.props.ratingsAnimationState);
+		});
+	}
+
+	private getContentToAnimate(): ContentToAnimate[] {
+		return [
+			{
+				selector: ".messageLabel",
+				animateInOptions: {
+					verticalDeltas: [50],
+					delaysInMs: [33]
+				}
+			},
+			{
+				selector: ".dialogButton .wideButtonContainer",
+				animateInOptions: {
+					verticalDeltas: [48, 48],
+					delaysInMs: [50, 0]
+				}
+			}
+		];
 	}
 
 	/**
