@@ -136,14 +136,18 @@ export module Utils {
 		return this.ensureLeadingForwardSlash(urlPathName);
 	}
 
-	export function checkIfUrlMatchesAContentType(url: string, tooltipType: TooltipType) {
-		let contentTypeAsString = TooltipType[tooltipType];
-		let contentTypeRegexes = Settings.getSetting(contentTypeAsString + "Domains");
-		if (!contentTypeRegexes) {
-			return false;
+	export function checkIfUrlMatchesAContentType(url: string, tooltipTypes: TooltipType[]): TooltipType {
+		for (let i = 0; i < tooltipTypes.length; ++i) {
+			let tooltipType = tooltipTypes[i];
+			let contentTypeAsString = TooltipType[tooltipType];
+			let contentTypeRegexes = Settings.getSetting(contentTypeAsString + "Domains");
+			let concatenatedRegExes = new RegExp(contentTypeRegexes.join("|"), "i");
+			if (concatenatedRegExes.test(url)) {
+				return tooltipType;
+			}
 		}
-		let concatenatedRegExes = new RegExp(contentTypeRegexes.join("|"), "i");
-		return concatenatedRegExes.test(url);
+
+		return;
 	}
 
 	export function ensureLeadingForwardSlash(url: string): string {
