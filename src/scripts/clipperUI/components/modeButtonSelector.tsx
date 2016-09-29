@@ -21,6 +21,15 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		});
 	};
 
+	private getPdfModeButton(currentMode: ClipMode) {
+		return <ModeButton imgSrc={Utils.getImageResourceUrl("select.png") }
+			label={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button")}
+			myMode={ClipMode.Pdf} tabIndex={39} selected={currentMode === ClipMode.Pdf}
+			onModeSelected={this.onModeSelected.bind(this) }
+			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button.Tooltip")}/>;
+	}
+
+
 	private getAugmentationModeButton(currentMode: ClipMode) {
 		let augmentationType: string = AugmentationHelper.getAugmentationType(this.props.clipperState);
 		let augmentationLabel: string = Localization.getLocalizedString("WebClipper.ClipType." + augmentationType + ".Button");
@@ -93,7 +102,8 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		let currentMode = this.props.clipperState.currentMode.get();
 
 		return (
-			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}>
+			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight) }>
+				{ this.getPdfModeButton(currentMode) }
 				{ this.getFullPageModeButton(currentMode) }
 				{ this.getRegionModeButton(currentMode) }
 				{ this.getAugmentationModeButton(currentMode) }
