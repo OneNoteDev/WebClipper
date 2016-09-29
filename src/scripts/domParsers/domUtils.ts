@@ -21,6 +21,7 @@ export module DomUtils {
 		export const a = "a";
 		export const b = "b";
 		export const applet = "applet";
+		export const article = "article";
 		export const audio = "audio";
 		export const base = "base";
 		export const body = "body";
@@ -33,6 +34,7 @@ export module DomUtils {
 		export const div = "div";
 		export const em = "em";
 		export const embed = "embed";
+		export const figure = "figure";
 		export const font = "font";
 		export const h1 = "h1";
 		export const h2 = "h2";
@@ -41,6 +43,7 @@ export module DomUtils {
 		export const h5 = "h5";
 		export const h6 = "h6";
 		export const head = "head";
+		export const header = "header";
 		export const hr = "hr";
 		export const html = "html";
 		export const i = "i";
@@ -49,6 +52,7 @@ export module DomUtils {
 		export const input = "input";
 		export const li = "li";
 		export const link = "link";
+		export const main = "main";
 		export const map = "map";
 		export const menu = "menu";
 		export const menuitem = "menuitem";
@@ -111,6 +115,12 @@ export module DomUtils {
 		Tags.body,
 		Tags.div,
 		Tags.span,
+		Tags.article,
+		Tags.figure,
+		Tags.header,
+		Tags.main,
+		Tags.center,
+		Tags.iframe,
 		Tags.a,
 		Tags.p,
 		Tags.br,
@@ -191,8 +201,10 @@ export module DomUtils {
 		// For elements that cannot be converted into something equivalent in ONML, we remove them ...
 		domReplacer(doc, tagsNotSupportedInOnml.join());
 
+		let tagsToTurnIntoDiv = [Tags.main, Tags.article, Tags.figure, Tags.header, Tags.center];
+
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
-		domReplacer(doc, Tags.center, (node: HTMLElement) => {
+		domReplacer(doc, tagsToTurnIntoDiv.join(), (node: HTMLElement) => {
 			let div = document.createElement("DIV");
 			// As of 9/28/2016, there is a bug inside of DOMPurify that infinite loops on some table tags
 			// As a temporary workaround, if there are tables inside a <center> tag, we don't support those
