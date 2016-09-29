@@ -19,7 +19,7 @@ export interface DialogPanelProps {
 	fontFamily?: Localization.FontFamily;
 	buttonFontFamily?: Localization.FontFamily;
 	containerId?: string;
-	animationStrategy?: AnimationStrategy;
+	panelAnimationStrategy?: AnimationStrategy;
 }
 
 export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProps> {
@@ -28,8 +28,8 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 	}
 
 	private onPanelAnimatorDraw(panelAnimator: HTMLElement) {
-		if (this.props.animationStrategy) {
-			this.props.animationStrategy.animate(panelAnimator);
+		if (this.props.panelAnimationStrategy) {
+			this.props.panelAnimationStrategy.animate(panelAnimator);
 		}
 	}
 

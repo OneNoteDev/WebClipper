@@ -4,6 +4,8 @@ declare var Velocity: jquery.velocity.VelocityStatic;
 import {Constants} from "../constants";
 import {Utils} from "../utils";
 
+import {SmartValue} from "../communicator/smartValue";
+
 import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
@@ -21,7 +23,6 @@ import {AnimationStrategy} from "./animations/animationStrategy";
 import {ExpandFromRightAnimationStrategy} from "./animations/expandFromRightAnimationStrategy";
 import {SlideFromRightAnimationStrategy} from "./animations/slideFromRightAnimationStrategy";
 import {SlidingHeightAnimationStrategy} from "./animations/slidingHeightAnimationStrategy";
-import {TransitioningAnimationStrategy} from "./animations/transitioningAnimationStrategy";
 
 import {CloseButton} from "./components/closeButton";
 import {Footer} from "./components/footer";
@@ -55,6 +56,7 @@ export enum PanelType {
 
 export interface MainControllerState {
 	currentPanel?: PanelType;
+	ratingsAnimationState?: SmartValue<AnimationState>; // TODO subpanelAnimationState
 }
 
 export interface MainControllerProps extends ClipperStateProp {
@@ -285,8 +287,12 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			case PanelType.ClippingSuccess:
 				let panels: any[] = [<SuccessPanel clipperState={this.props.clipperState} />];
 
+				if (!this.state.ratingsAnimationState) {
+					this.state.ratingsAnimationState = new SmartValue<AnimationState>(AnimationState.Out);
+				}
+
 				if (this.props.clipperState.showRatingsPrompt && this.props.clipperState.showRatingsPrompt.get()) {
-					panels.push(<RatingsPanel clipperState={this.props.clipperState} />);
+					panels.push(<RatingsPanel clipperState={this.props.clipperState} ratingsAnimationState={this.state.ratingsAnimationState} />);
 				}
 
 				return panels;

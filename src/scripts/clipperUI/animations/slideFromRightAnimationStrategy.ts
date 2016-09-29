@@ -55,10 +55,10 @@ export class SlideFromRightAnimationStrategy extends TransitioningAnimationStrat
 	}
 
 	protected intShouldAnimateIn(el: HTMLElement): boolean {
-		return this.animationState === AnimationState.Out;
+		return this.getAnimationState() === AnimationState.Out;
 	}
 
 	protected intShouldAnimateOut(el: HTMLElement): boolean {
-		return this.animationState === AnimationState.In;
+		return this.getAnimationState() === AnimationState.In;
 	}
 }

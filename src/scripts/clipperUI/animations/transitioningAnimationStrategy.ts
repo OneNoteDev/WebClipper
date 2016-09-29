@@ -1,6 +1,8 @@
 /// <reference path="../../../../typings/main/ambient/velocity-animate/velocity-animate.d.ts"/>
 declare var Velocity: jquery.velocity.VelocityStatic;
 
+import {SmartValue} from "../../communicator/smartValue";
+
 import {AnimationHelper} from "./animationHelper";
 import {AnimationState} from "./animationState";
 import {AnimationStrategy} from "./animationStrategy";
@@ -26,9 +28,15 @@ export interface TransitioningAnimationStrategyOptions {
 export abstract class TransitioningAnimationStrategy<TOptions extends TransitioningAnimationStrategyOptions> extends AnimationStrategy {
 	protected options: TOptions;
 
-	constructor(animationDuration: number, options: TOptions) {
-		super(animationDuration);
-		this.animationState = AnimationState.Out;
+	constructor(animationDuration: number, options: TOptions, animationState?: SmartValue<AnimationState>) {
+		animationState = animationState || new SmartValue<AnimationState>();
+
+		if (!animationState.get()) {
+			animationState.set(AnimationState.Out);
+		}
+
+		super(animationDuration, animationState);
+		// console.log("constructor", AnimationState[this.getAnimationState()]);
 		this.options = options;
 	}
 
@@ -48,10 +56,12 @@ export abstract class TransitioningAnimationStrategy<TOptions extends Transition
 		return new Promise<void>((resolve) => {
 			if (this.options.extShouldAnimateIn() && this.intShouldAnimateIn(el)) {
 				this.animateIn(el).then(() => {
+					// console.log("animated in", el);
 					resolve();
 				});
 			} else if (this.options.extShouldAnimateOut() && this.intShouldAnimateOut(el)) {
 				this.animateOut(el).then(() => {
+					// console.log("animated out", el);
 					resolve();
 				});
 			}
@@ -64,9 +74,9 @@ export abstract class TransitioningAnimationStrategy<TOptions extends Transition
 				if (this.options.onBeforeAnimateIn) {
 					this.options.onBeforeAnimateIn(el);
 				}
-				this.animationState = AnimationState.GoingIn;
+				this.setAnimationState(AnimationState.GoingIn);
 				this.doAnimateIn(el).then(() => {
-					this.animationState = AnimationState.In;
+					this.setAnimationState(AnimationState.In);
 					if (this.options.onAfterAnimateIn) {
 						this.options.onAfterAnimateIn(el);
 					}
@@ -82,9 +92,9 @@ export abstract class TransitioningAnimationStrategy<TOptions extends Transition
 				if (this.options.onBeforeAnimateOut) {
 					this.options.onBeforeAnimateOut(el);
 				}
-				this.animationState = AnimationState.GoingOut;
+				this.setAnimationState(AnimationState.GoingOut);
 				this.doAnimateOut(el).then(() => {
-					this.animationState = AnimationState.Out;
+					this.setAnimationState(AnimationState.Out);
 					if (this.options.onAfterAnimateOut) {
 						this.options.onAfterAnimateOut(el);
 					}
