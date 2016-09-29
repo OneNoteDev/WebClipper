@@ -103,7 +103,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
 			oneNoteApiResult: { status: Status.NotStarted },
-			showRatingsPrompt: new SmartValue<boolean>
+			showRatingsPrompt: new SmartValue<boolean>()
 		};
 	}
 
