@@ -459,7 +459,6 @@ function exportCommonJS(targetDir) {
 			PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.min.js",
 			PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
 			PATHS.NODE_MODULES + "urijs/src/URI.min.js",
-			PATHS.NODE_MODULES + "dompurify/dist/purify.min.js",
 			PATHS.LIBROOT + "sanitize-html.js"
 		];
 		var injectLibsTask = gulp.src(assertModuleExists(injectLibPaths)).pipe(gulp.dest(targetDir));
@@ -503,7 +502,6 @@ function exportCommonLibFiles(targetDir) {
 		PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
 		PATHS.NODE_MODULES + "urijs/src/URI.min.js",
 		PATHS.NODE_MODULES + "velocity-animate/velocity.min.js",
-		PATHS.NODE_MODULES + "dompurify/dist/purify.min.js",
 		PATHS.LIBROOT + "sanitize-html.js"
 	];
 
@@ -538,7 +536,6 @@ function exportBookmarkletJS(targetDir) {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
-		targetDir + "purify.min.js",
 		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "bookmarklet.js"
@@ -612,7 +609,6 @@ function exportChromeJS() {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
-		targetDir + "purify.min.js",
 		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "chromeInject.js"
@@ -671,7 +667,6 @@ function exportEdgeJS() {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
-		targetDir + "purify.min.js",
 		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "edgeInject.js"
@@ -752,7 +747,6 @@ function exportFirefoxJS() {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
-		targetDir + "purify.min.js",
 		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "firefoxInject.js"
@@ -811,7 +805,6 @@ function exportSafariJS() {
 		targetDir + "logManager.js",
 		targetDir + "oneNoteApi.min.js",
 		targetDir + "rangy-core.js",
-		targetDir + "purify.min.js",
 		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
 		PATHS.BUNDLEROOT + "safariInject.js"
@@ -884,7 +877,6 @@ function exportTestLibFiles() {
 		PATHS.NODE_MODULES + "oneNotePicker/target/oneNotePicker.min.js",
 		PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js",
 		PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
-		PATHS.NODE_MODULES + "dompurify/dist/purify.min.js",
 		PATHS.NODE_MODULES + "sinon/pkg/sinon.js",
 		PATHS.NODE_MODULES + "sinon-qunit/lib/sinon-qunit.js",
 		PATHS.NODE_MODULES + "urijs/src/URI.min.js",

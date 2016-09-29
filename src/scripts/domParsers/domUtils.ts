@@ -138,10 +138,7 @@ export module DomUtils {
 		Tags.video
 	];
 
-	const tagsSupportedInOnml = htmlTags.concat(markupTags).concat(tableTags);
-
-	// TODO: write a module test to make sure these two have no intersection
-
+	// TODO: write a module test to make sure these tagsNotSupportedInOnml and the tags above have no intersection
 	const tagsNotSupportedInOnml = [
 		Tags.applet,
 		Tags.audio,
@@ -178,13 +175,6 @@ export module DomUtils {
 		}
 
 		let tags = htmlTags.concat(markupTags).concat(tableTags);
-
-		// let sanitizedHtml = DOMPurify.sanitize(contentInHtml, {
-		// 	ALLOWED_ATTR: allAttributes,
-		// 	ALLOW_DATA_ATTR: true,
-		// 	ALLOWED_TAGS: tags
-		// });
-
 		let sanitizedHtml = sanitizeHtml(contentInHtml, {
 			allowedTags: tags,
 			allowedAttributes: attributesAllowedByOnml,
@@ -206,10 +196,6 @@ export module DomUtils {
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
 		domReplacer(doc, tagsToTurnIntoDiv.join(), (node: HTMLElement) => {
 			let div = document.createElement("DIV");
-			// As of 9/28/2016, there is a bug inside of DOMPurify that infinite loops on some table tags
-			// As a temporary workaround, if there are tables inside a <center> tag, we don't support those
-			// This will not affect WYSIWYG behavior, as the preview is rendered after removing elements not supported in ONML
-			// A very small amount of websites will be affected
 			div.innerHTML = DomUtils.cleanHtml(node.innerHTML);
 			return div;
 		});

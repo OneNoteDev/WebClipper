@@ -16,6 +16,6 @@
     "velocity-animate": "github:DefinitelyTyped/DefinitelyTyped/velocity-animate/velocity-animate.d.ts#b92c8228f6ba925212e7744dfcb955964393ecc4"
   },
   "globalDependencies": {
-    "dompurify": "registry:dt/dompurify#0.0.0+20160316155526"
+    "sanitize-html": "registry:dt/sanitize-html#0.0.0+20160829143046"
   }
 }
