@@ -1,5 +1,3 @@
-import {SmartValue} from "../../communicator/smartValue";
-
 import {AnimationHelper} from "./animationHelper";
 import {AnimationState} from "./animationState";
 
@@ -10,29 +8,28 @@ import {AnimationState} from "./animationState";
  */
 export abstract class AnimationStrategy {
 	protected animationDuration: number;
+	protected animationState: AnimationState;
 
-	private animationState: SmartValue<AnimationState>; // TODO avoid SV if possible; maybe this shouldn't be owned by animationStrategy anymore...
-
-	constructor(animationDuration: number, animationState?: SmartValue<AnimationState>) {
+	constructor(animationDuration: number) {
 		this.animationDuration = animationDuration;
-		this.animationState = animationState || new SmartValue<AnimationState>(AnimationState.Stopped);
+		this.animationState = AnimationState.Stopped;
 	}
 
 	protected abstract doAnimate(el: HTMLElement): Promise<void>;
 
 	public getAnimationState(): AnimationState {
-		return this.animationState.get();
+		return this.animationState;
 	}
 
 	public setAnimationState(animationState: AnimationState) {
-		this.animationState.set(animationState);
+		this.animationState = animationState;
 	}
 
 	public animate(el: HTMLElement) {
 		AnimationHelper.stopAnimationsThen(el, () => {
-			this.setAnimationState(AnimationState.Transitioning);
+			this.animationState = AnimationState.Transitioning;
 			this.doAnimate(el).then(() => {
-				this.setAnimationState(AnimationState.Stopped);
+				this.animationState = AnimationState.Stopped;
 			});
 		});
 	}

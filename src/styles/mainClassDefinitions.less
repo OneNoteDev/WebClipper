@@ -258,7 +258,6 @@
 }
 
 #ratingsPromptContainer {
-	overflow: hidden;
 	padding-left: @ClipperUIInnerPadding;
 	padding-right: @ClipperUIInnerPadding;
 	margin: 30px (@ClipperUIInnerPadding*-1) -20px;
@@ -270,25 +269,18 @@
 
 	.messageLabelContainer {
 		padding-bottom: 0px;
-
-		.dialogMessageFont {
-			font-size: 15px;
-		}
-
-		.messageLabel {
-			position: relative;
-		}
 	}
 
-	.dialogButton {
-		.wideButtonContainer {
-			position: relative;
-			background: transparent;
+	.dialogMessageFont {
+		font-size: 15px;
+	}
 
-			.wideButtonFont {
-				color: #ffffff;
-				font-size: 15px;
-			}
+	.wideButtonContainer {
+		background: transparent;
+
+		.wideButtonFont {
+			color: #ffffff;
+			font-size: 15px;
 		}
 	}
 }
