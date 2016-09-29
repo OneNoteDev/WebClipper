@@ -81,7 +81,7 @@ export class PdfScreenshotHelper {
 				// Pages start at index 1
 				pdf.getPage(i + 1).then((page) => {
 					let viewport = page.getViewport(1 /* scale */);
-					let canvas = document.createElement("CANVAS") as HTMLCanvasElement;
+					let canvas = document.createElement("canvas") as HTMLCanvasElement;
 					let context = canvas.getContext("2d");
 					canvas.height = viewport.height;
 					canvas.width = viewport.width;

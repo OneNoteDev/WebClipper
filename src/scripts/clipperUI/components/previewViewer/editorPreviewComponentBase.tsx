@@ -157,7 +157,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 				// Find the first instance of the highlight and add the delete button
 				let firstHighlighted = highlightablePreviewBody.querySelector("span.highlighted[data-timestamp='" + timestamp + "']");
 				if (firstHighlighted) {
-					let deleteHighlight = document.createElement("IMG") as HTMLImageElement;
+					let deleteHighlight = document.createElement("img") as HTMLImageElement;
 					deleteHighlight.src = Utils.getImageResourceUrl("editoroptions/delete_button.png");
 					deleteHighlight.className = Constants.Classes.deleteHighlightButton;
 					deleteHighlight.setAttribute("data-timestamp", "" + timestamp);

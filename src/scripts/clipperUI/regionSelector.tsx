@@ -271,7 +271,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				let sourceWidth = (xMax - xMin) * this.devicePixelRatio;
 				let sourceHeight = (yMax - yMin) * this.devicePixelRatio;
 
-				let canvas: HTMLCanvasElement = document.createElement("CANVAS") as HTMLCanvasElement;
+				let canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 				canvas.width = width;
 				canvas.height = height;
 				let ctx: CanvasRenderingContext2D = canvas.getContext("2d");
