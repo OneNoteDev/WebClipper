@@ -152,11 +152,11 @@
 	},
 	"ChromeExtension_RatingUrl": {
 		"Description": "URL for the Web Clipper in the Chrome Web Store; used to direct users to leave ratings and reviews",
-		"Value": ""
+		"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/gojbdfnpnhogfdgjbigejoaolejmgdhk/reviews"
 	},
 	"EdgeExtension_RatingUrl": {
 		"Description": "URL for the Web Clipper in the Windows Store; used to direct users to leave ratings and reviews",
-		"Value": ""
+		"Value": "https://www.microsoft.com/en-us/store/p/onenote-web-clipper/9nblggh4r01n#ratings-reviews"
 	},
 	"FirefoxExtension_RatingUrl": {
 		"Description": "URL for the Web Clipper in Firefox Add-ons; used to direct users to leave ratings and reviews",
