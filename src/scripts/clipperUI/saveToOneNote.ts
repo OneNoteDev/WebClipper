@@ -169,7 +169,7 @@ export class SaveToOneNote {
 
 	private static createPostProcessessedHtml(html: string): HTMLElement {
 		// Wrap the preview in in-line styling to persist the styling through the OneNote API
-		let newPreviewBody = document.createElement("div");		
+		let newPreviewBody = document.createElement("div");
 		newPreviewBody.innerHTML = DomUtils.cleanHtml(html);
 
 		let fontSize = this.clipperState.previewGlobalInfo.fontSize.toString() + "px";
