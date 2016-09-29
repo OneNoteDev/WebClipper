@@ -235,7 +235,7 @@ test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets d
 	});
 });
 
-test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End when rate url exists", () => {
+/*test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End when rate url exists", () => {
 	Settings.setSettingsJsonForTesting({
 		"ChromeExtension_RatingUrl": {
 			"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
@@ -445,4 +445,4 @@ test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedba
 
 	ok(Utils.isNullOrUndefined(feedbackNegative), "'No Thanks' button should not exist");
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
-});
+});*/
