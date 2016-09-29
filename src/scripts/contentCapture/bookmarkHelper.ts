@@ -184,7 +184,6 @@ export class BookmarkHelper {
 	 */
 	public static getNonWhiteSpaceTextElements(doc: Document, cleanDoc = false): Text[] {
 		if (cleanDoc) {
-			DomUtils.domReplacer(doc, "iframe");
 			DomUtils.removeElementsNotSupportedInOnml(doc);
 		}
 
