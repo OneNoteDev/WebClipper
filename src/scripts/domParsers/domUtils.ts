@@ -1,5 +1,11 @@
+/// <reference path="../../../typings/globals/dompurify/index.d.ts" />
+/// <reference path="../../../typings/globals/sanitize-html/index.d.ts" />
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 /// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts"/>
+
+// 9/28/2016 - We need to go back and update sanitize-html to the latest .d.ts once 
+// they rename `sanitize` to `sanitizeHtml`, which is the name of the actually exported function
+declare let sanitizeHtml;
 
 import {Constants} from "../constants";
 import {Utils} from "../utils";
@@ -13,19 +19,35 @@ import {VideoExtractorFactory} from "./VideoExtractorFactory";
 export module DomUtils {
 	export module Tags {
 		export const a = "a";
+		export const b = "b";
 		export const applet = "applet";
 		export const audio = "audio";
 		export const base = "base";
+		export const body = "body";
+		export const br = "br";
 		export const button = "button";
 		export const canvas = "canvas";
 		export const center = "center";
+		export const cite = "cite";
+		export const del = "del";
+		export const div = "div";
+		export const em = "em";
 		export const embed = "embed";
+		export const font = "font";
+		export const h1 = "h1";
+		export const h2 = "h2";
+		export const h3 = "h3";
+		export const h4 = "h4";
+		export const h5 = "h5";
+		export const h6 = "h6";
 		export const head = "head";
 		export const hr = "hr";
 		export const html = "html";
+		export const i = "i";
 		export const iframe = "iframe";
 		export const img = "img";
 		export const input = "input";
+		export const li = "li";
 		export const link = "link";
 		export const map = "map";
 		export const menu = "menu";
@@ -33,13 +55,82 @@ export module DomUtils {
 		export const meta = "meta";
 		export const meter = "meter";
 		export const noscript = "noscript";
+		export const object = "object";
+		export const ol = "ol";
+		export const p = "p";
 		export const progress = "progress";
 		export const script = "script";
+		export const span = "span";
 		export const source = "source";
+		export const strike = "strike";
+		export const strong = "strong";
 		export const style = "style";
+		export const sub = "sub";
+		export const sup = "sup";
 		export const svg = "svg";
+		export const table = "table";
+		export const td = "td";
+		export const title = "title";
+		export const tr = "tr";
+		export const u = "u";
+		export const ul = "ul";
 		export const video = "video";
 	}
+
+	const attributesAllowedByOnml: { [index: string]: string[] } = {
+		"a": ["href", "name", "target"],
+		"img": ["src"],
+		"*": ["src", "background-color", "color", "font-family", "font-size", "data*", "alt", "height", "width", "style", "id", "type"]
+	};
+
+	const tableTags = [
+		Tags.table,
+		Tags.td,
+		Tags.tr
+	];
+
+	const markupTags = [
+		Tags.b,
+		Tags.em,
+		Tags.strong,
+		Tags.i,
+		Tags.u,
+		Tags.strike,
+		Tags.del,
+		Tags.sup,
+		Tags.sub,
+		Tags.cite,
+		Tags.font
+	];
+
+	const htmlTags = [
+		Tags.html,
+		Tags.head,
+		Tags.title,
+		Tags.meta,
+		Tags.body,
+		Tags.div,
+		Tags.span,
+		Tags.a,
+		Tags.p,
+		Tags.br,
+		Tags.h1,
+		Tags.h2,
+		Tags.h3,
+		Tags.h4,
+		Tags.h5,
+		Tags.h6,
+		Tags.ul,
+		Tags.ol,
+		Tags.li,
+		Tags.img,
+		Tags.object,
+		Tags.video
+	];
+
+	const tagsSupportedInOnml = htmlTags.concat(markupTags).concat(tableTags);
+
+	// TODO: write a module test to make sure these two have no intersection
 
 	const tagsNotSupportedInOnml = [
 		Tags.applet,
@@ -63,14 +154,51 @@ export module DomUtils {
 		Tags.video
 	];
 
-	export function removeElementsNotSupportedInOnml(doc: Document) {
+	/**
+	 * Given an HTML Document in string form, return an HTML Document in string form
+	 * with the attributes and the content between the HTML tags scrubbed, while preserving
+	 * document structure
+	 */
+	export function cleanHtml(contentInHtml: string): string {
+		let allAttributes: string[] = [];
+		for (let key in attributesAllowedByOnml) {
+			if (attributesAllowedByOnml.hasOwnProperty(key)) {
+				allAttributes = allAttributes.concat(attributesAllowedByOnml[key]);
+			}
+		}
+
+		let tags = htmlTags.concat(markupTags).concat(tableTags);
+
+		// let sanitizedHtml = DOMPurify.sanitize(contentInHtml, {
+		// 	ALLOWED_ATTR: allAttributes,
+		// 	ALLOW_DATA_ATTR: true,
+		// 	ALLOWED_TAGS: tags
+		// });
+
+		let sanitizedHtml = sanitizeHtml(contentInHtml, {
+			allowedTags: tags,
+			allowedAttributes: attributesAllowedByOnml,
+			allowedSchemes: sanitizeHtml.defaults.allowedSchemes.concat(['data']),
+			allowedClasses: {
+				"*": ['MainArticleContainer']
+			}
+		});
+
+		return sanitizedHtml;
+	}
+
+	export function removeElementsNotSupportedInOnml(doc: Document): void {
 		// For elements that cannot be converted into something equivalent in ONML, we remove them ...
 		domReplacer(doc, tagsNotSupportedInOnml.join());
 
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
 		domReplacer(doc, Tags.center, (node: HTMLElement) => {
 			let div = document.createElement("DIV");
-			div.innerHTML = node.innerHTML;
+			// As of 9/28/2016, there is a bug inside of DOMPurify that infinite loops on some table tags
+			// As a temporary workaround, if there are tables inside a <center> tag, we don't support those
+			// This will not affect WYSIWYG behavior, as the preview is rendered after removing elements not supported in ONML
+			// A very small amount of websites will be affected
+			div.innerHTML = DomUtils.cleanHtml(node.innerHTML);
 			return div;
 		});
 	}
@@ -88,7 +216,7 @@ export module DomUtils {
 					oldNode.parentNode.removeChild(oldNode);
 				} else if (oldNode !== newNode) {
 					oldNode.parentNode.replaceChild(newNode, oldNode);
-				}
+				} 
 			} catch (e) {
 				// There are some cases (like dirty canvases) where running replace will throw an error.
 				// We catch it, thus leaving the original.
