@@ -73,10 +73,10 @@ export class ExpandFromRightAnimationStrategy extends TransitioningAnimationStra
 	}
 
 	protected intShouldAnimateIn(el: HTMLElement): boolean {
-		return this.animationState === AnimationState.GoingOut || this.animationState === AnimationState.Out;
+		return this.getAnimationState() === AnimationState.GoingOut || this.getAnimationState() === AnimationState.Out;
 	}
 
 	protected intShouldAnimateOut(el: HTMLElement): boolean {
-		return this.animationState === AnimationState.GoingIn || this.animationState === AnimationState.In;
+		return this.getAnimationState() === AnimationState.GoingIn || this.getAnimationState() === AnimationState.In;
 	}
 }

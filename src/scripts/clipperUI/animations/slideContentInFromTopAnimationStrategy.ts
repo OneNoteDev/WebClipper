@@ -1,6 +1,8 @@
 /// <reference path="../../../../typings/main/ambient/velocity-animate/velocity-animate.d.ts"/>
 declare var Velocity: jquery.velocity.VelocityStatic;
 
+import {SmartValue} from "../../communicator/smartValue";
+
 import {AnimationState} from "./animationState";
 import {TransitioningAnimationStrategy, TransitioningAnimationStrategyOptions} from "./transitioningAnimationStrategy";
 
@@ -9,59 +11,77 @@ import {TransitioningAnimationStrategy, TransitioningAnimationStrategyOptions} f
  */
 export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimationStrategy<TransitioningAnimationStrategyOptions> {
 
-	constructor(options?: TransitioningAnimationStrategyOptions) {
-		super(400 /* animationDuration */, options);
+	// TODO add animationState to Options
+	constructor(options?: TransitioningAnimationStrategyOptions, animationState?: SmartValue<AnimationState>) {
+		super(367 /* animationDuration */, options, animationState);
 	}
 
 	protected doAnimateIn(parentEl: HTMLElement): Promise<void>  {
 		return new Promise<void>((resolve) => {
 			// TODO children-to-animate class names should be settable by user
-			let childrenClasses = ["dialogButton", "messageLabel"];
-			let selectors: string = ".dialogButton .wideButtonContainer, .messageLabel";
+			let childrenSelectors = [".dialogButton .wideButtonContainer", ".messageLabel"];
+			let selectors: string = childrenSelectors.join(", ");
+			let translations = ["-48px", "-48px", "-50px"]; // bottom to top; TODO ensure this is equal to length of animatables
+			let delays = [0, 50, 33]; // bottom to top; TODO ensure this is equal to length of animatables
 
 			let animatables: NodeListOf<HTMLElement> = parentEl.querySelectorAll(selectors) as NodeListOf<HTMLElement>;
 
-			Array.prototype.forEach.call(animatables, function (item) {
-				// apply style to each animatable
-				item.style.top = "-20px";
-				item.style.opacity = "0";
-			});
+			for (let aIndex = animatables.length - 1; aIndex >= 0; aIndex--) {
+				let item = animatables[aIndex];
 
-			Velocity.animate(animatables, {
-				top: 0,
-				opacity: 1
-			}, {
-				complete: () => {
-					resolve();
-				},
-				duration: this.animationDuration,
-				easing: [ 0.4, 0, 0.3, 1 ] // TODO settable by user?
-			});
+				// apply style to each animatable
+				item.style.top = translations[aIndex];
+				item.style.opacity = "0";
+
+				Velocity.animate(item, {
+					top: 0,
+					opacity: [1, "linear"]
+				}, {
+					complete: () => {
+						if (aIndex === 0) {
+							resolve();
+						}
+					},
+					delay: delays[aIndex],
+					duration: this.animationDuration,
+					easing: [ 0, 0, 0, 1 ] // TODO settable by user?
+				});
+			}
 		});
 	}
 
-	protected doAnimateOut(el: HTMLElement): Promise<void> {
+	protected doAnimateOut(parentEl: HTMLElement): Promise<void> {
 		return new Promise<void>((resolve) => {
-			let verticalEndValue = 20;
+			// TODO children-to-animate class names should be settable by user
+			let childrenSelectors = [".dialogButton .wideButtonContainer", ".messageLabel"];
+			let selectors: string = childrenSelectors.join(", ");
 
-			Velocity.animate(el, {
+			let animatables: NodeListOf<HTMLElement> = parentEl.querySelectorAll(selectors) as NodeListOf<HTMLElement>;
+
+			let verticalEndValue = -23;
+
+			Velocity.animate(animatables, {
 				top: verticalEndValue,
-				opacity: 0
+				opacity: [0, "linear"]
 			}, {
 				complete: () => {
 					resolve();
 				},
-				duration: this.animationDuration,
+				duration: 267, // TODO not hardcoded
 				easing: [1, 0, 1, 1] // TODO set-able by user?
 			});
 		});
 	}
 
 	protected intShouldAnimateIn(el: HTMLElement): boolean {
-		return this.animationState === AnimationState.Out;
+		let shouldAnimateIn: boolean = this.getAnimationState() === AnimationState.Out;
+		console.log("intShouldAnimateIn", AnimationState[this.getAnimationState()], shouldAnimateIn);
+		return shouldAnimateIn;
 	}
 
 	protected intShouldAnimateOut(el: HTMLElement): boolean {
-		return this.animationState === AnimationState.In;
+		let shouldAnimateOut: boolean = this.getAnimationState() === AnimationState.In;
+		console.log("intShouldAnimateOut", AnimationState[this.getAnimationState()], shouldAnimateOut);
+		return shouldAnimateOut;
 	}
 }
