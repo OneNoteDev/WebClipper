@@ -24,6 +24,9 @@ export module Constants {
 		export var regionSelectionImage = "region-selection-image";
 		export var regionSelectionRemoveButton = "region-selection-remove-button";
 
+		// pdfPreview
+		export var pdfPreviewImage = "pdf-preview-image";
+
 		// spriteAnimation
 		export var spinner = "spinner";
 

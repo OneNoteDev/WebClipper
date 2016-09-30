@@ -67,20 +67,40 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	private convertPdfResultToContentData(result: DataResult<SmartValue<PdfScreenshotResult>>): any[] {
 		let contentBody = [];
 
+		let dataUrls = this.props.clipperState.pdfResult.data.get().dataUrls;
+		
+		let previewImages = [];
+		
+		for (let i = 0; i < 5; ++i) {
+			dataUrls.forEach((dataUrl) => {
+				previewImages.push(<img src={dataUrl} className="previewThumbnail"></img>)
+			});
+		}
+
 		switch (result.status) {
 			case Status.Succeeded:
 				// In OneNote we don't display the extension
 				let defaultAttachmentName = "Original.pdf";
 				let fullAttachmentName = this.props.clipperState.pageInfo ? Utils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
+				// contentBody.push(
+				// 	<span className="attachment-overlay">
+				// 		<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
+				// 		<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
+				// 	</span>);
 				contentBody.push(
-					<span className="attachment-overlay">
-						<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
-						<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
-					</span>);
+					<div id="pdfPreviewScrollBar">
+						{previewImages}
+					</div>
+				);
 
+				contentBody.push("<div style='padding-top: 10px'>");	
+				
+				contentBody.push("<div id='previewImages'>");
 				for (let dataUrl of this.props.clipperState.pdfResult.data.get().dataUrls) {
-					contentBody.push(<img src={dataUrl}></img>);
+					contentBody.push(<img className={Constants.Classes.pdfPreviewImage} src={dataUrl}></img>);
 				}
+				contentBody.push("</div>");
+				contentBody.push("</div>");
 				break;
 			case Status.NotStarted:
 			case Status.InProgress:

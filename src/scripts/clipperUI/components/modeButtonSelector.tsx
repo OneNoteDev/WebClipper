@@ -48,7 +48,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("fullpage.png")}
 			label={Localization.getLocalizedString(text)}
 			myMode={ClipMode.FullPage} tabIndex={40}
-			selected={!currentMode || currentMode === ClipMode.FullPage}
+			selected={currentMode === ClipMode.FullPage}
 			onModeSelected={this.onModeSelected.bind(this) }
 			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button.Tooltip")}/>;
 	}
