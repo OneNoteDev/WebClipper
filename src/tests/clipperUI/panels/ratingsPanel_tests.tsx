@@ -261,7 +261,7 @@ test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End whe
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
 });
 
-test("'Rate' click at RatingsPromptStage.Rate not available when rate url does not exist", () => {
+test("'Rate' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
 	Settings.setSettingsJsonForTesting({});
 
 	let clipperState = HelperFunctions.getMockClipperState();
@@ -307,7 +307,7 @@ test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.No
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });
 
-test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url does not exist", () => {
+test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
 	Settings.setSettingsJsonForTesting({});
 
 	let clipperState = HelperFunctions.getMockClipperState();
@@ -355,7 +355,7 @@ test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
 });
 
-test("'Feedback' click at RatingsPromptStage.Feedback not available when feedback url does not exist", () => {
+test("'Feedback' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
 	Settings.setSettingsJsonForTesting({});
 
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
@@ -372,8 +372,8 @@ test("'Feedback' click at RatingsPromptStage.Feedback not available when feedbac
 	m.redraw(true);
 
 	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
-
 	ok(Utils.isNullOrUndefined(feedbackPositive), "'Feedback' button should not exist");
+
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });
 
@@ -405,7 +405,7 @@ test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStag
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });
 
-test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedback url does not exist", () => {
+test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
 	Settings.setSettingsJsonForTesting({});
 
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
@@ -422,7 +422,7 @@ test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedba
 	m.redraw(true);
 
 	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
-
 	ok(Utils.isNullOrUndefined(feedbackNegative), "'No Thanks' button should not exist");
+
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });
