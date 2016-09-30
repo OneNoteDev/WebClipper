@@ -46,7 +46,7 @@ Clipper.getCachedValue = (key: string) => {
 QUnit.module("ratingsPanel", {
 	beforeEach: () => {
 		Clipper.logger = new StubSessionLogger();
-		Settings.setSettingsJsonForTesting();
+		Settings.setSettingsJsonForTesting({});
 
 		mockStorage = {};
 		mockStorageCache = {};
@@ -94,8 +94,6 @@ test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.Rat
 
 test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.End when rate url does not exist", (assert: QUnitAssert) => {
 	let done = assert.async();
-
-	Settings.setSettingsJsonForTesting({});
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
@@ -150,8 +148,6 @@ test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goe
 
 test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goes to RatingsPromptStage.End when feedback url does not exist (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
 	let done = assert.async();
-
-	Settings.setSettingsJsonForTesting({});
 
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
@@ -210,8 +206,6 @@ test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets d
 test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets doNotPromptRatings to 'true' (feedback url does not exist)", (assert: QUnitAssert) => {
 	let done = assert.async();
 
-	Settings.setSettingsJsonForTesting({});
-
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
@@ -262,8 +256,6 @@ test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End whe
 });
 
 test("'Rate' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
-	Settings.setSettingsJsonForTesting({});
-
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
@@ -308,8 +300,6 @@ test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.No
 });
 
 test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
-	Settings.setSettingsJsonForTesting({});
-
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
@@ -356,8 +346,6 @@ test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage
 });
 
 test("'Feedback' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
-	Settings.setSettingsJsonForTesting({});
-
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
@@ -406,8 +394,6 @@ test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStag
 });
 
 test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
-	Settings.setSettingsJsonForTesting({});
-
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
