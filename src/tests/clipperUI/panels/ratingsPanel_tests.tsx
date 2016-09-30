@@ -249,11 +249,9 @@ test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End whe
 
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	// go to RATE panel, then click 'Rate'
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-	});
+	// skip to RATE panel
+	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Rate });
+	m.redraw(true);
 
 	let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
 	HelperFunctions.simulateAction(() => {
@@ -264,6 +262,8 @@ test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End whe
 });
 
 test("'Rate' click at RatingsPromptStage.Rate not available when rate url does not exist", () => {
+	Settings.setSettingsJsonForTesting({});
+
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
@@ -271,18 +271,13 @@ test("'Rate' click at RatingsPromptStage.Rate not available when rate url does n
 
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	// go to RATE panel
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-		// clearing rate url before rendering RATE panel
-		// to test the unexpected case that we got to it without a rate url
-		Settings.setSettingsJsonForTesting({});
-	});
+	// skip to RATE panel
+	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Rate });
+	m.redraw(true);
 
 	let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
-
 	ok(Utils.isNullOrUndefined(ratePositive), "'Rate' button should not exist");
+
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });
 
@@ -300,11 +295,9 @@ test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.No
 
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	// go to RATE panel, then click 'No Thanks'
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-	});
+	// skip to RATE panel
+	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Rate });
+	m.redraw(true);
 
 	let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
 	HelperFunctions.simulateAction(() => {
@@ -315,6 +308,8 @@ test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.No
 });
 
 test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url does not exist", () => {
+	Settings.setSettingsJsonForTesting({});
+
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
 
@@ -322,18 +317,13 @@ test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url d
 
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	// go to RATE panel
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-		// clearing rate url before rendering RATE panel
-		// to test the unexpected case that we got to it without a rate url
-		Settings.setSettingsJsonForTesting({});
-	});
+	// skip to RATE panel
+	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Rate });
+	m.redraw(true);
 
 	let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
-
 	ok(Utils.isNullOrUndefined(rateNegative), "'No Thanks' button should not exist");
+
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });
 
@@ -353,11 +343,9 @@ test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage
 
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	// go to FEEDBACK panel, then click 'Feedback'
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
+	// skip to FEEDBACK panel
+	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Feedback });
+	m.redraw(true);
 
 	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
 	HelperFunctions.simulateAction(() => {
@@ -368,6 +356,8 @@ test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage
 });
 
 test("'Feedback' click at RatingsPromptStage.Feedback not available when feedback url does not exist", () => {
+	Settings.setSettingsJsonForTesting({});
+
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
@@ -377,14 +367,9 @@ test("'Feedback' click at RatingsPromptStage.Feedback not available when feedbac
 
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	// go to FEEDBACK panel
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-		// clearing feedback url before rendering FEEDBACK panel
-		// to test the unexpected case that we got to it without a feedback url
-		Settings.setSettingsJsonForTesting({});
-	});
+	// skip to FEEDBACK panel
+	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Feedback });
+	m.redraw(true);
 
 	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
 
@@ -408,11 +393,9 @@ test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStag
 
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	// go to FEEDBACK panel, then click 'No Thanks'
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
+	// skip to FEEDBACK panel
+	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Feedback });
+	m.redraw(true);
 
 	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
 	HelperFunctions.simulateAction(() => {
@@ -423,6 +406,8 @@ test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStag
 });
 
 test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedback url does not exist", () => {
+	Settings.setSettingsJsonForTesting({});
+
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
@@ -432,14 +417,9 @@ test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedba
 
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	// go to FEEDBACK panel
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-		// clearing feedback url before rendering FEEDBACK panel
-		// to test the unexpected case that we got to it without a feedback url
-		Settings.setSettingsJsonForTesting({});
-	});
+	// skip to FEEDBACK panel
+	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Feedback });
+	m.redraw(true);
 
 	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
 
