@@ -1178,7 +1178,7 @@ gulp.task("watchSrcAction", function(callback) {
 ////////////////////////////////////////
 gulp.task("buildOnly", function(callback) {
 	var tasks = ["compileCss", "compile", "bundle"];
-	if (argv.production) {
+	if (argv.production && !argv.nominify) {
 		tasks.push("minify");
 	}
 	tasks.push("export", "package", callback);
