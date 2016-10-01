@@ -46,7 +46,7 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 				for (let aIndex = 0; aIndex < animatables.length; aIndex++) {
 					let item: HTMLElement = animatables[aIndex];
 
-					console.log("top:", -(content.animateInOptions.verticalDeltas[aIndex]) + "px", "delay:", content.animateInOptions.delaysInMs[aIndex], item);
+					// console.log("top:", -(content.animateInOptions.verticalDeltas[aIndex]) + "px", "delay:", content.animateInOptions.delaysInMs[aIndex], item);
 
 					// apply style to each animatable
 					item.style.top = -(content.animateInOptions.verticalDeltas[aIndex]) + "px";
@@ -90,13 +90,13 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 
 	protected intShouldAnimateIn(el: HTMLElement): boolean {
 		let shouldAnimateIn: boolean = this.getAnimationState() === AnimationState.Out;
-		// console.log("intShouldAnimateIn", AnimationState[this.getAnimationState()], shouldAnimateIn);
+		console.log("intShouldAnimateIn", AnimationState[this.getAnimationState()], shouldAnimateIn);
 		return shouldAnimateIn;
 	}
 
 	protected intShouldAnimateOut(el: HTMLElement): boolean {
 		let shouldAnimateOut: boolean = this.getAnimationState() === AnimationState.In;
-		// console.log("intShouldAnimateOut", AnimationState[this.getAnimationState()], shouldAnimateOut);
+		console.log("intShouldAnimateOut", AnimationState[this.getAnimationState()], shouldAnimateOut);
 		return shouldAnimateOut;
 	}
 }
