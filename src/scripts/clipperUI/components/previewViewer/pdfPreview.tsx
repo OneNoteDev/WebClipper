@@ -87,20 +87,20 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 				// 		<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
 				// 		<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
 				// 	</span>);
-				contentBody.push(
-					<div id="pdfPreviewScrollBar">
-						{previewImages}
-					</div>
-				);
+				// contentBody.push(
+				// 	<div id="pdfPreviewScrollBar">
+				// 		{previewImages}
+				// 	</div>
+				// );
 
-				contentBody.push("<div style='padding-top: 10px'>");	
+				// contentBody.push(<div style="padding-top: 10px">);
 				
-				contentBody.push("<div id='previewImages'>");
+				// contentBody.push(<div id="previewImages">);
 				for (let dataUrl of this.props.clipperState.pdfResult.data.get().dataUrls) {
 					contentBody.push(<img className={Constants.Classes.pdfPreviewImage} src={dataUrl}></img>);
 				}
-				contentBody.push("</div>");
-				contentBody.push("</div>");
+				// contentBody.push(</div>);
+				// contentBody.push(</div>);
 				break;
 			case Status.NotStarted:
 			case Status.InProgress:
