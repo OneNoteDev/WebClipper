@@ -7,22 +7,23 @@ import {AnimationState} from "./animationState";
 import {TransitioningAnimationStrategy, TransitioningAnimationStrategyOptions} from "./transitioningAnimationStrategy";
 
 export interface SlideContentInFromTopAnimationStrategyOptions extends TransitioningAnimationStrategyOptions {
-	animationState: SmartValue<AnimationState>;
+	currentAnimationState: SmartValue<AnimationState>;
 	contentToAnimate: ContentToAnimate[];
 }
 
 export interface ContentToAnimate {
-	selector: string;
+	cssSelector: string;
 	animateInOptions: AnimateInOptions;
 }
 
 export interface AnimateInOptions {
-	verticalDeltas: number[];
+	slideDownDeltas: number[];
 	delaysInMs: number[];
 }
 
 /**
- *
+ * Represents an animation where content fades in and slides downward into its position within the parent element provided.
+ * When animating out, content will fade out and slide upwards.
  */
 export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimationStrategy<TransitioningAnimationStrategyOptions> {
 	private animateOutDuration: number;
@@ -30,7 +31,7 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 	private contentToAnimate: ContentToAnimate[];
 
 	constructor(options?: SlideContentInFromTopAnimationStrategyOptions) {
-		super(undefined /* animationDuration */, options, options.animationState);
+		super(undefined /* animationDuration */, options, options.currentAnimationState);
 
 		this.animateInDuration = 367;
 		this.animateOutDuration = 267;
@@ -41,13 +42,13 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 		return new Promise<void>((resolve) => {
 			for (let cIndex = 0; cIndex < this.contentToAnimate.length; cIndex++) {
 				let content = this.contentToAnimate[cIndex];
-				let animatables = parentEl.querySelectorAll(content.selector) as NodeListOf<HTMLElement>;
+				let animatables = parentEl.querySelectorAll(content.cssSelector) as NodeListOf<HTMLElement>;
 
 				for (let aIndex = 0; aIndex < animatables.length; aIndex++) {
 					let item: HTMLElement = animatables[aIndex];
 
 					// apply style to each animatable
-					item.style.top = -(content.animateInOptions.verticalDeltas[aIndex]) + "px";
+					item.style.top = -(content.animateInOptions.slideDownDeltas[aIndex]) + "px";
 					item.style.opacity = "0";
 
 					Velocity.animate(item, {
@@ -70,7 +71,7 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 
 	protected doAnimateOut(parentEl: HTMLElement): Promise<void> {
 		return new Promise<void>((resolve) => {
-			let childrenSelectors: string = this.contentToAnimate.map((content) => { return content.selector; }).join(", ");
+			let childrenSelectors: string = this.contentToAnimate.map((content) => { return content.cssSelector; }).join(", ");
 			let animatables: NodeListOf<HTMLElement> = parentEl.querySelectorAll(childrenSelectors) as NodeListOf<HTMLElement>;
 
 			Velocity.animate(animatables, {

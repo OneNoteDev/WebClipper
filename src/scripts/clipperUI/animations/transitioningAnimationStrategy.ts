@@ -1,6 +1,8 @@
 /// <reference path="../../../../typings/main/ambient/velocity-animate/velocity-animate.d.ts"/>
 declare var Velocity: jquery.velocity.VelocityStatic;
 
+import {Utils} from "../../utils";
+
 import {SmartValue} from "../../communicator/smartValue";
 
 import {AnimationHelper} from "./animationHelper";
@@ -31,7 +33,7 @@ export abstract class TransitioningAnimationStrategy<TOptions extends Transition
 	constructor(animationDuration: number, options: TOptions, animationState?: SmartValue<AnimationState>) {
 		animationState = animationState || new SmartValue<AnimationState>();
 
-		if (!animationState.get()) {
+		if (Utils.isNullOrUndefined(animationState.get())) {
 			animationState.set(AnimationState.Out);
 		}
 

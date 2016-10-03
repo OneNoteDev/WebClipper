@@ -45,33 +45,35 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 	 * Get the panel animation strategy for the ratings subpanel of the success panel provided
 	 */
 	private getPanelAnimationStrategy(panel: RatingsPanelClass): AnimationStrategy {
-		return new SlideContentInFromTopAnimationStrategy({
-			animationState: this.props.ratingsAnimationState,
-			contentToAnimate: this.getContentToAnimate(),
-			extShouldAnimateIn: () => {
-				return (Utils.isNullOrUndefined(panel.state.userSelectedRatingsPromptStage) ||
-					panel.state.userSelectedRatingsPromptStage === panel.state.currentRatingsPromptStage);
-			},
-			extShouldAnimateOut: () => {
-				return panel.state.userSelectedRatingsPromptStage > panel.state.currentRatingsPromptStage;
-			},
-			onAfterAnimateOut: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage }); }
-		});
+		if (this.props.ratingsAnimationState) {
+			return new SlideContentInFromTopAnimationStrategy({
+				currentAnimationState: this.props.ratingsAnimationState,
+				contentToAnimate: this.getContentToAnimate(),
+				extShouldAnimateIn: () => {
+					return (Utils.isNullOrUndefined(panel.state.userSelectedRatingsPromptStage) ||
+						panel.state.userSelectedRatingsPromptStage === panel.state.currentRatingsPromptStage);
+				},
+				extShouldAnimateOut: () => {
+					return panel.state.userSelectedRatingsPromptStage > panel.state.currentRatingsPromptStage;
+				},
+				onAfterAnimateOut: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage }); }
+			});
+		}
 	}
 
 	private getContentToAnimate(): ContentToAnimate[] {
 		return [
 			{
-				selector: ".messageLabel",
+				cssSelector: ".messageLabel",
 				animateInOptions: {
-					verticalDeltas: [50],
+					slideDownDeltas: [50],
 					delaysInMs: [33]
 				}
 			},
 			{
-				selector: ".dialogButton .wideButtonContainer",
+				cssSelector: ".dialogButton .wideButtonContainer",
 				animateInOptions: {
-					verticalDeltas: [48, 48],
+					slideDownDeltas: [48, 48],
 					delaysInMs: [50, 0]
 				}
 			}
@@ -125,6 +127,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 								userSelectedRatingsPromptStage: RatingsPromptStage.End
 							});
 						}
+
+						this.forceTransitionIfAnimationsAreOff(panel);
 					}
 				}, {
 						id: Constants.Ids.ratingsButtonInitNo,
@@ -149,6 +153,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 									userSelectedRatingsPromptStage: RatingsPromptStage.End
 								});
 							}
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					});
 				break;
@@ -164,6 +170,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.End
 							});
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					}, {
 						id: Constants.Ids.ratingsButtonRateNo,
@@ -172,6 +180,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.None
 							});
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					});
 				} else {
@@ -193,6 +203,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.End
 							});
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					}, {
 						id: Constants.Ids.ratingsButtonFeedbackNo,
@@ -201,6 +213,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.None
 							});
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					});
 				} else {
@@ -217,6 +231,12 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 		}
 
 		return buttons;
+	}
+
+	private forceTransitionIfAnimationsAreOff(panel: RatingsPanelClass) {
+		if (!panel.props.ratingsAnimationState) {
+			panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage });
+		}
 	}
 
 	render() {

@@ -11,7 +11,7 @@ import {AnimationState} from "./animationState";
 export abstract class AnimationStrategy {
 	protected animationDuration: number;
 
-	private animationState: SmartValue<AnimationState>; // TODO avoid SV if possible; maybe this shouldn't be owned by animationStrategy anymore...
+	private animationState: SmartValue<AnimationState>;
 
 	constructor(animationDuration: number, animationState?: SmartValue<AnimationState>) {
 		this.animationDuration = animationDuration;
