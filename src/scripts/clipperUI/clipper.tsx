@@ -178,7 +178,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private capturePdfScreenshotContent() {
 		// console.log(chrome.extension.isAllowedFileSchemeAccess((isAllowed) => { console.log(isAllowed); }));
-		
 		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
 			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
 			PDFJS.getDocument(this.state.pageInfo.rawUrl).then((pdf) => {
@@ -667,16 +666,11 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		let mode = ClipMode[this.state.currentMode.get()];
 
-		// 
 		if (this.state.currentMode.get() === ClipMode.Pdf) {
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
-		}
-		// TODO: add a test that somehow checks for this behavior ?
-
-
-		if (this.state.currentMode.get() === ClipMode.FullPage && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			mode += ": " + OneNoteApi.ContentType[this.state.pageInfo.contentType];
 		}
+
 		if (this.state.currentMode.get() === ClipMode.Augmentation) {
 			let styles = {
 				fontSize: this.state.previewGlobalInfo.fontSize,

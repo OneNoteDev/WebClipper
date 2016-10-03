@@ -33,7 +33,6 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button.Tooltip")}/>;
 	}
 
-
 	private getAugmentationModeButton(currentMode: ClipMode) {
 		let augmentationType: string = AugmentationHelper.getAugmentationType(this.props.clipperState);
 		let augmentationLabel: string = Localization.getLocalizedString("WebClipper.ClipType." + augmentationType + ".Button");

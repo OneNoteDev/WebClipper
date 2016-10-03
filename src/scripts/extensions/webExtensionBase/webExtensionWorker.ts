@@ -162,7 +162,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 	protected isAllowedFileSchemeAccessBrowserSpecific(): boolean {
 		let isAllowedReturnValue: boolean;
-		
+
 		// As of 10/3/2016, Edge does not support this particular API
 		if (!WebExtension.browser.extension.isAllowedFileSchemeAccess) {
 			return false;

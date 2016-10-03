@@ -166,7 +166,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * check this as of 10/3/2016
 	 */
 	protected abstract isAllowedFileSchemeAccessBrowserSpecific(): boolean;
-	
+
 	/**
 	 * Gets the visible tab's screenshot as an image url
 	 */

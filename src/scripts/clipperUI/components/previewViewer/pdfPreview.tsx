@@ -21,7 +21,7 @@ import {PreviewViewerPdfHeader} from "./previewViewerPdfHeader";
 class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	protected getContentBodyForCurrentStatus(): any[] {
 		let state = this.props.clipperState;
-		
+
 		if (!state.pageInfo) {
 			return [this.getSpinner()];
 		}
@@ -68,12 +68,11 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		let contentBody = [];
 
 		let dataUrls = this.props.clipperState.pdfResult.data.get().dataUrls;
-		
 		let previewImages = [];
-		
+
 		for (let i = 0; i < 5; ++i) {
 			dataUrls.forEach((dataUrl) => {
-				previewImages.push(<img src={dataUrl} className="previewThumbnail"></img>)
+				previewImages.push(<img src={dataUrl} className="previewThumbnail"></img>);
 			});
 		}
 
@@ -92,9 +91,7 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 				// 		{previewImages}
 				// 	</div>
 				// );
-
 				// contentBody.push(<div style="padding-top: 10px">);
-				
 				// contentBody.push(<div id="previewImages">);
 				for (let dataUrl of this.props.clipperState.pdfResult.data.get().dataUrls) {
 					contentBody.push(<img className={Constants.Classes.pdfPreviewImage} src={dataUrl}></img>);
@@ -110,10 +107,9 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 			case Status.Failed:
 				break;
 		}
-
 		return contentBody;
 	}
-	
+
 	private getSpinner(): any {
 		let spinner = <RotatingMessageSpriteAnimation
 			spriteUrl={Utils.getImageResourceUrl("spinner_loop_colored.png") }
