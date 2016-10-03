@@ -540,6 +540,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private getDefaultClipMode(): ClipMode {
+		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			return ClipMode.Pdf;
+		}
+
 		if (this.state && this.state.invokeOptions) {
 			switch (this.state.invokeOptions.invokeMode) {
 				case InvokeMode.ContextImage:

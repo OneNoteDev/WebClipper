@@ -22,6 +22,10 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	};
 
 	private getPdfModeButton(currentMode: ClipMode) {
+		if (this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
+			return undefined;
+		}
+		
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("select.png") }
 			label={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button")}
 			myMode={ClipMode.Pdf} tabIndex={39} selected={currentMode === ClipMode.Pdf}
