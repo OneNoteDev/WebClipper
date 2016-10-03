@@ -49,18 +49,12 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 			animationState: this.props.ratingsAnimationState,
 			contentToAnimate: this.getContentToAnimate(),
 			extShouldAnimateIn: () => {
-				console.log("extShouldAnimateIn", RatingsPromptStage[panel.state.userSelectedRatingsPromptStage], RatingsPromptStage[panel.state.currentRatingsPromptStage], Utils.isNullOrUndefined(panel.state.userSelectedRatingsPromptStage) ||
-					panel.state.userSelectedRatingsPromptStage === panel.state.currentRatingsPromptStage);
 				return (Utils.isNullOrUndefined(panel.state.userSelectedRatingsPromptStage) ||
 					panel.state.userSelectedRatingsPromptStage === panel.state.currentRatingsPromptStage);
 			},
 			extShouldAnimateOut: () => {
-				console.log("extShouldAnimateOut", RatingsPromptStage[panel.state.userSelectedRatingsPromptStage], RatingsPromptStage[panel.state.currentRatingsPromptStage], panel.state.userSelectedRatingsPromptStage > panel.state.currentRatingsPromptStage);
 				return panel.state.userSelectedRatingsPromptStage > panel.state.currentRatingsPromptStage;
 			},
-			//onBeforeAnimateIn: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage ? panel.state.userSelectedRatingsPromptStage : RatingsPromptStage.Init });	},
-			//onAfterAnimateOut: () => { panel.setState({ currentRatingsPromptStage: panel.state.currentRatingsPromptStage }); } // TODO I know this is weird
-			//onAfterAnimateIn: () => { panel.setState({ currentRatingsPromptStage: undefined }); }, // TODO would make more sense if currentRatingsPromptStage was set to undefined onAfterAnimateOut instead
 			onAfterAnimateOut: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage }); }
 		});
 	}
@@ -107,7 +101,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 	 * Get appropriate dialog panel buttons for the panel (with its internal states) provided
 	 */
 	private getDialogButtons(panel: RatingsPanelClass): DialogButton[] {
-		let stage: RatingsPromptStage = this.state.userSelectedRatingsPromptStage || panel.state.currentRatingsPromptStage;
+		let stage: RatingsPromptStage = panel.state.currentRatingsPromptStage;
 		let clipperState: ClipperState = panel.props.clipperState;
 		let clientType: ClientType = clipperState.clientInfo.clipperType;
 
@@ -230,7 +224,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 			return <div />;
 		}
 
-		let message: string = this.getMessage(this.state.userSelectedRatingsPromptStage || this.state.currentRatingsPromptStage);
+		let message: string = this.getMessage(this.state.currentRatingsPromptStage);
 
 		if (!Utils.isNullOrUndefined(message)) {
 			let buttons: DialogButton[] = this.getDialogButtons(this);
