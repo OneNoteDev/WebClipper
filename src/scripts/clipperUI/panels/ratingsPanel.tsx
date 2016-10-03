@@ -31,7 +31,7 @@ interface RatingsPanelState {
 }
 
 interface RatingsPanelProp extends ClipperStateProp {
-	ratingsAnimationState: SmartValue<AnimationState>;
+	animationState: SmartValue<AnimationState>;
 }
 
 class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelProp> {
@@ -45,9 +45,9 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 	 * Get the panel animation strategy for the ratings subpanel of the success panel provided
 	 */
 	private getPanelAnimationStrategy(panel: RatingsPanelClass): AnimationStrategy {
-		if (this.props.ratingsAnimationState) {
+		if (this.props.animationState) {
 			return new SlideContentInFromTopAnimationStrategy({
-				currentAnimationState: this.props.ratingsAnimationState,
+				currentAnimationState: this.props.animationState,
 				contentToAnimate: this.getContentToAnimate(),
 				extShouldAnimateIn: () => {
 					return (Utils.isNullOrUndefined(panel.state.userSelectedRatingsPromptStage) ||
@@ -234,7 +234,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 	}
 
 	private forceTransitionIfAnimationsAreOff(panel: RatingsPanelClass) {
-		if (!panel.props.ratingsAnimationState) {
+		if (!panel.props.animationState) {
 			panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage });
 		}
 	}

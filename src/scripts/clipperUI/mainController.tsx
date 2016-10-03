@@ -292,7 +292,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				}
 
 				if (this.props.clipperState.showRatingsPrompt && this.props.clipperState.showRatingsPrompt.get()) {
-					panels.push(<RatingsPanel clipperState={this.props.clipperState} ratingsAnimationState={this.state.ratingsPanelAnimationState} />);
+					panels.push(<RatingsPanel clipperState={this.props.clipperState} animationState={this.state.ratingsPanelAnimationState} />);
 				}
 
 				return panels;

@@ -26,8 +26,9 @@ export interface AnimateInOptions {
  * When animating out, content will fade out and slide upwards.
  */
 export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimationStrategy<TransitioningAnimationStrategyOptions> {
-	private animateOutDuration: number;
 	private animateInDuration: number;
+	private animateOutDuration: number;
+	private animateOutSlideUpDelta: number;
 	private contentToAnimate: ContentToAnimate[];
 
 	constructor(options?: SlideContentInFromTopAnimationStrategyOptions) {
@@ -35,6 +36,7 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 
 		this.animateInDuration = 367;
 		this.animateOutDuration = 267;
+		this.animateOutSlideUpDelta = 23;
 		this.contentToAnimate = options.contentToAnimate;
 	}
 
@@ -45,25 +47,14 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 				let animatables = parentEl.querySelectorAll(content.cssSelector) as NodeListOf<HTMLElement>;
 
 				for (let aIndex = 0; aIndex < animatables.length; aIndex++) {
-					let item: HTMLElement = animatables[aIndex];
+					let isLastElementToAnimate: boolean = (cIndex === this.contentToAnimate.length - 1) && (aIndex === animatables.length - 1);
 
-					// apply style to each animatable
-					item.style.top = -(content.animateInOptions.slideDownDeltas[aIndex]) + "px";
-					item.style.opacity = "0";
-
-					Velocity.animate(item, {
-					top: 0,
-					opacity: [1, "linear"]
-					}, {
-						complete: () => {
-							if ((cIndex === this.contentToAnimate.length - 1) && (aIndex === animatables.length - 1)) {
+					this.animateElementIn(animatables[aIndex], content.animateInOptions.slideDownDeltas[aIndex], content.animateInOptions.delaysInMs[aIndex], isLastElementToAnimate)
+						.then((lastElementFinishedAnimating) => {
+							if (lastElementFinishedAnimating) {
 								resolve();
 							}
-						},
-						delay: content.animateInOptions.delaysInMs[aIndex],
-						duration: this.animateInDuration,
-						easing: [ 0, 0, 0, 1 ]
-					});
+						});
 				}
 			}
 		});
@@ -75,7 +66,7 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 			let animatables: NodeListOf<HTMLElement> = parentEl.querySelectorAll(childrenSelectors) as NodeListOf<HTMLElement>;
 
 			Velocity.animate(animatables, {
-				top: -23,
+				top: -(this.animateOutSlideUpDelta),
 				opacity: [0, "linear"]
 			}, {
 				complete: () => {
@@ -93,5 +84,31 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 
 	protected intShouldAnimateOut(el: HTMLElement): boolean {
 		return this.getAnimationState() === AnimationState.In;
+	}
+
+	/**
+	 * Apply animate-in styling to a single element of content
+	 */
+	private animateElementIn(elem: HTMLElement, slideDownDelta: number, delayInMs: number, isLastElementToAnimate: boolean): Promise<boolean> {
+		return new Promise<boolean>((resolve) => {
+			elem.style.top = -(slideDownDelta) + "px";
+			elem.style.opacity = "0";
+
+			Velocity.animate(elem, {
+				top: 0,
+				opacity: [1, "linear"]
+			}, {
+					complete: () => {
+						if (isLastElementToAnimate) {
+							resolve(true);
+						} else {
+							resolve(false);
+						}
+					},
+					delay: delayInMs,
+					duration: this.animateInDuration,
+					easing: [0, 0, 0, 1]
+				});
+		});
 	}
 }
