@@ -160,12 +160,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					previewGlobalInfo: newPreviewGlobalInfo
 				});
 
-				if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-					this.capturePdfScreenshotContent();
-				} else {
-					this.captureFullPageScreenshotContent();
-				}
-				// this.captureFullScreenshotContent();
+				this.capturePdfScreenshotContent();
+				this.captureFullPageScreenshotContent();
 				this.captureAugmentedContent();
 				this.captureBookmarkContent();
 
@@ -181,9 +177,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private capturePdfScreenshotContent() {
+		// console.log(chrome.extension.isAllowedFileSchemeAccess((isAllowed) => { console.log(isAllowed); }));
+		
 		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
 			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
-			// console.log(chrome.extension.isAllowedFileSchemeAccess((isAllowed) => { console.log(isAllowed); }));
 			PDFJS.getDocument(this.state.pageInfo.rawUrl).then((pdf) => {
 				PdfScreenshotHelper.getLocalPdfData(this.state.pageInfo.rawUrl).then((result) => {
 					// this.state.pdfResult.set(result);

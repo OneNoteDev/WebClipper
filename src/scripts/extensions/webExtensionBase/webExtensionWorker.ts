@@ -160,6 +160,20 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		return this.invokePageNavBrowserSpecific();
 	}
 
+	protected isAllowedFileSchemeAccessBrowserSpecific(): boolean {
+		let isAllowedReturnValue: boolean;
+		
+		// As of 10/3/2016, Edge does not support this particular API
+		if (!WebExtension.browser.extension.isAllowedFileSchemeAccess) {
+			return false;
+		}
+
+		WebExtension.browser.extension.isAllowedFileSchemeAccess((isAllowed) => {
+			isAllowedReturnValue = isAllowed;
+		});
+		return isAllowedReturnValue;
+	}
+
 	/**
 	 * Gets the visible tab's screenshot as an image url
 	 */

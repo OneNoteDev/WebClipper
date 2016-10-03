@@ -162,6 +162,12 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected abstract invokeTooltipBrowserSpecific(tooltipType: TooltipType): Promise<boolean>;
 
 	/**
+	 * Returns true if the user has allowed our extension to access file:/// links. Edge does not have a function to
+	 * check this as of 10/3/2016
+	 */
+	protected abstract isAllowedFileSchemeAccessBrowserSpecific(): boolean;
+	
+	/**
 	 * Gets the visible tab's screenshot as an image url
 	 */
 	protected abstract takeTabScreenshot(): Promise<string>;
@@ -451,6 +457,12 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.uiCommunicator.broadcastAcrossCommunicator(this.auth.user, Constants.SmartValueKeys.user);
 		this.uiCommunicator.broadcastAcrossCommunicator(this.clientInfo, Constants.SmartValueKeys.clientInfo);
 		this.uiCommunicator.broadcastAcrossCommunicator(this.sessionId, Constants.SmartValueKeys.sessionId);
+
+		this.uiCommunicator.registerFunction(Constants.FunctionKeys.isAllowedFileSchemeAccess, () => {
+			return new Promise<boolean>((resolve) => {
+				return this.isAllowedFileSchemeAccessBrowserSpecific();
+			});
+		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.clipperStrings, () => {
 			return new Promise<string>((resolve) => {
