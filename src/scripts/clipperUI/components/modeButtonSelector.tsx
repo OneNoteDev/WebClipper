@@ -25,7 +25,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		if (this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
 			return undefined;
 		}
-		
+
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("select.png") }
 			label={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button")}
 			myMode={ClipMode.Pdf} tabIndex={39} selected={currentMode === ClipMode.Pdf}
@@ -47,10 +47,8 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getFullPageModeButton(currentMode: ClipMode) {
-		let text = currentMode === ClipMode.Pdf ? "WebClipper.ClipType.Pdf.Button" : "WebClipper.ClipType.ScreenShot.Button";
-
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("fullpage.png")}
-			label={Localization.getLocalizedString(text)}
+			label={Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button")}
 			myMode={ClipMode.FullPage} tabIndex={40}
 			selected={currentMode === ClipMode.FullPage}
 			onModeSelected={this.onModeSelected.bind(this) }

@@ -16,7 +16,7 @@ import {Status} from "../../status";
 import {RotatingMessageSpriteAnimation} from "../../components/rotatingMessageSpriteAnimation";
 
 import {PreviewComponentBase} from "./previewComponentBase";
-import {PreviewViewerFullPageHeader} from "./previewViewerFullPageHeader";
+import {PreviewViewerPdfHeader} from "./previewViewerPdfHeader";
 
 class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	protected getContentBodyForCurrentStatus(): any[] {
@@ -30,7 +30,7 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	}
 
 	protected getHeader(): any {
-		return <PreviewViewerFullPageHeader clipperState={this.props.clipperState} />;
+		return <PreviewViewerPdfHeader clipperState={this.props.clipperState} />;
 	}
 
 	protected getStatus(): Status {

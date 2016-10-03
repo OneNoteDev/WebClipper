@@ -242,20 +242,31 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private captureFullPageScreenshotContent() {
-		this.state.setState({ fullPageResult: { status: Status.InProgress } });
-
-		FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData).then((result) => {
-			this.state.setState({ fullPageResult: { data: result, status: Status.Succeeded } });
-		}, () => {
+		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			this.state.setState({
 				fullPageResult: {
 					data: {
-						failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+						failureMessage: Localization.getLocalizedString("WebClipper.Preview.NoContentFound")
 					},
 					status: Status.Failed
 				}
 			});
-		});
+		} else {
+			this.state.setState({ fullPageResult: { status: Status.InProgress } });
+
+			FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData).then((result) => {
+				this.state.setState({ fullPageResult: { data: result, status: Status.Succeeded } });
+			}, () => {
+				this.state.setState({
+					fullPageResult: {
+						data: {
+							failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+						},
+						status: Status.Failed
+					}
+				});
+			});
+		}
 	}
 
 	private captureAugmentedContent() {
@@ -540,7 +551,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private getDefaultClipMode(): ClipMode {
-		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+		if (this.state && this.state.pageInfo && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			return ClipMode.Pdf;
 		}
 

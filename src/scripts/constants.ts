@@ -144,6 +144,10 @@ export module Constants {
 		export var bookmarkControl = "bookmarkControl";
 		export var bookmarkHeaderTitle = "bookmarkHeaderTitle";
 
+		// previewViewerPdfHeader
+		export var pdfControl = "pdfControl";
+		export var pdfHeaderTitle = "PDF File";
+
 		// ratingsPrompt
 		export var ratingsButtonFeedbackNo = "ratingsButtonFeedbackNo";
 		export var ratingsButtonFeedbackYes = "ratingsButtonFeedbackYes";
