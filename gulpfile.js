@@ -25,11 +25,8 @@ var shell = require("gulp-shell");
 var source = require("vinyl-source-stream");
 var ts = require("gulp-typescript");
 var tslint = require("gulp-tslint");
-var typings = require("gulp-typings");
 var uglify = require("gulp-uglify");
 var zip = require("gulp-zip");
-
-var tsProject = ts.createProject("./tsconfig.json");
 
 var PATHS = {
 	SRC: {
@@ -39,7 +36,6 @@ var PATHS = {
 	BUILDROOT: "build/",
 	BUNDLEROOT: "build/bundles/",
 	LIBROOT: "lib/",
-	DEFINITIONS: "typings/",
 	SERVERROOT: "serverRoot/root/",
 	TARGET: {
 		ROOT: "target/",
@@ -69,27 +65,6 @@ function printGlobResults(glob) {
 		console.log(filePath);
 	});
 }
-
-////////////////////////////////////////
-// SETUP
-////////////////////////////////////////
-gulp.task("cleanDefinitions", function(callback) {
-	return del([
-		PATHS.DEFINITIONS
-	], callback);
-});
-
-gulp.task("definitions", function() {
-	return gulp.src("./typings.json")
-		.pipe(typings());
-});
-
-gulp.task("setup", function(callback) {
-	runSequence(
-		"cleanDefinitions",
-		"definitions",
-		callback);
-});
 
 ////////////////////////////////////////
 // CLEAN
@@ -187,8 +162,8 @@ gulp.task("preCompileInternal", function (callback) {
 });
 
 gulp.task("compileTypeScript", ["copyStrings", "mergeSettings", "preCompileInternal"], function () {
-	return gulp.src([PATHS.SRC.ROOT + "**/*.+(ts|tsx)", PATHS.DEFINITIONS + "main/**/*.d.ts"])
-		.pipe(ts(tsProject))
+	return gulp.src([PATHS.SRC.ROOT + "**/*.+(ts|tsx)"])
+		.pipe(ts(ts.createProject("./tsconfig.json", { typescript: require('typescript') })))
 		.pipe(gulp.dest(PATHS.BUILDROOT));
 });
 

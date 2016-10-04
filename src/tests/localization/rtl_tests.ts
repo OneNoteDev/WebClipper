@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Rtl} from "../../scripts/localization/rtl";
 
 QUnit.module("rtl", {});

@@ -1,7 +1,4 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {ExtensionBase} from "../../scripts/extensions/extensionBase";
-
 import {Version} from "../../scripts/versioning/version";
 
 QUnit.module("extensionBase", {});

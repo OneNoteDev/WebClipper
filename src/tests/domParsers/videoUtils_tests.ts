@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {VideoUtils} from "../../scripts/domParsers/videoUtils";
 
 let supportedYouTubeUrls = [

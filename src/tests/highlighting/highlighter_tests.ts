@@ -1,7 +1,4 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Highlighter} from "../../scripts/highlighting/highlighter";
-
 import {HelperFunctions} from "../helperFunctions";
 
 QUnit.module("highlighter", {});

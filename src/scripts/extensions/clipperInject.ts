@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/rangy/rangy.d.ts" />
-
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
@@ -228,7 +226,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 				this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.escHandler);
 			}
 			if (oldOnKeyDown) {
-				oldOnKeyDown(event);
+				oldOnKeyDown.call(document, event);
 			}
 		};
 

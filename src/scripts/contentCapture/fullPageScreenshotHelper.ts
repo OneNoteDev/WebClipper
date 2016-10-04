@@ -1,4 +1,3 @@
-/// <reference path="../../../typings/main/ambient/es6-promise/es6-promise.d.ts"/>
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
 import {Clipper} from "../clipperUI/frontEndGlobals";

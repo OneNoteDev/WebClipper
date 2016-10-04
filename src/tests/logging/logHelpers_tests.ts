@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import * as Log from "../../scripts/logging/log";
 import {LogHelpers} from "../../scripts/logging/logHelpers";
 

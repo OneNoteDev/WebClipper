@@ -1,5 +1,3 @@
-/// <reference path="../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {ClientType} from "../scripts/clientType";
 import {Constants} from "../scripts/constants";
 import {Utils} from "../scripts/utils";

@@ -1,5 +1,3 @@
-/// <reference path="../../../../typings/main/ambient/chrome/chrome.d.ts"/>
-
 import {ClientType} from "../../clientType";
 
 import {WebExtension} from "../webExtensionBase/webExtension";

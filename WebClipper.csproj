@@ -13,7 +13,7 @@
     <Content Include="serverRoot\server.js" />
     <Content Include="src\**\*" Exclude="src\**\*.ts*" />
     <TypeScriptCompile Include="src\**\*.ts*" />
-    <TypeScriptCompile Include="typings\main\**\*.d.ts" />
+    <TypeScriptCompile Include="node_modules\@types\**\*.d.ts*" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>

@@ -1,13 +1,7 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {DomUtils} from "../../scripts/domParsers/domUtils";
-
 import {AugmentationHelper} from "../../scripts/contentCapture/augmentationHelper";
-
 import {Constants} from "../../scripts/constants";
-
 import {HelperFunctions} from "../helperFunctions";
-
 import {DataUrls} from "../clipperUI/regionSelector_tests_dataUrls";
 
 function createRootScriptIFrame(): HTMLIFrameElement {

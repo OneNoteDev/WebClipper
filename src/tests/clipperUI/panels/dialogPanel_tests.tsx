@@ -1,5 +1,3 @@
-/// <reference path="../../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Constants} from "../../../scripts/constants";
 
 import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";

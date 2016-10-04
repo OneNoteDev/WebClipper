@@ -49,7 +49,7 @@ export module LogHelpers {
 				addStreamEventItems(logEvent, event as Log.Event.StreamEvent);
 				break;
 			default:
-				throw new Error("createLogEvent does not specify a case for event category: " + Log.Event.Category[eventCategory]);
+				throw new Error("createLogEvent does not specify a case for event category: " + Log.Event.Category[eventCategory as Log.Event.Category]);
 		}
 
 		return logEvent;
