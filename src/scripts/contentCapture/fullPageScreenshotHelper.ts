@@ -22,6 +22,8 @@ export interface FullPageScreenshotResult extends CaptureFailureInfo {
 }
 
 export class FullPageScreenshotHelper {
+	private static timeout = 50000;
+
 	public static getFullPageScreenshot(pageInfoContentData: string): Promise<FullPageScreenshotResult> {
 		return new Promise<FullPageScreenshotResult>((resolve, reject) => {
 			let fullPageScreenshotEvent = new Log.Event.PromiseEvent(Log.Event.Label.FullPageScreenshotCall);
@@ -40,7 +42,7 @@ export class FullPageScreenshotHelper {
 				OneNoteApiUtils.logOneNoteApiRequestError(fullPageScreenshotEvent, error);
 			};
 
-			Http.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204]).then((request: XMLHttpRequest) => {
+			Http.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((request: XMLHttpRequest) => {
 				if (request.status === 200) {
 					try {
 						resolve(JSON.parse(request.response) as FullPageScreenshotResult);
