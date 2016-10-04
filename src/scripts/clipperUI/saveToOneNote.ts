@@ -241,13 +241,17 @@ export class SaveToOneNote {
 	// Adds the given binary to the page if it is below the MIME size limit, then adds it as an image
 	private static addEnhancedUrlContentToPageHelper(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer) {
 		// Impose MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
+		let rawUrl = this.clipperState.pageInfo.rawUrl;
+		let mimePartName: string;
 		if (this.clipperState.pdfResult.status === Status.Succeeded && arrayBuffer) {
 			if (arrayBuffer.byteLength < this.maxMimeSizeLimit) {
 				let attachmentName = Utils.getFileNameFromUrl(this.clipperState.pageInfo.rawUrl, "Original.pdf");
-				page.addAttachment(arrayBuffer, attachmentName);
+				mimePartName = page.addAttachment(arrayBuffer, attachmentName);
 			}
 		}
-		page.addObjectUrlAsImage(this.clipperState.pageInfo.rawUrl);
+		let local = rawUrl.indexOf("file:///") !== -1;
+		let nameToUse = local ? "name:" + mimePartName : this.clipperState.pageInfo.rawUrl;
+		page.addObjectUrlAsImage(nameToUse);
 	}
 
 	// POST the page to OneNote API

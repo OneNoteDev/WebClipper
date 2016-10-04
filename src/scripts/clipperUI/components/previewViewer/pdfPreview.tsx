@@ -65,8 +65,12 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	}
 
 	private convertPdfResultToContentData(result: DataResult<SmartValue<PdfScreenshotResult>>): any[] {
+		let data = this.props.clipperState.pdfResult.data.get();
+		if (!data) {
+			return;
+		}
+		
 		let contentBody = [];
-
 		let dataUrls = this.props.clipperState.pdfResult.data.get().dataUrls;
 		let previewImages = [];
 

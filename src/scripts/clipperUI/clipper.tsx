@@ -177,12 +177,26 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private capturePdfScreenshotContent() {
+		if (this.state.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
+			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.Failed } });
+			this.state.pdfResult.data.set({
+				failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+			});
+
+			this.state.setState({
+				pdfResult: {
+					data: this.state.pdfResult.data,
+					status: Status.Failed
+				}
+			});
+			return;
+		}
+
 		// console.log(chrome.extension.isAllowedFileSchemeAccess((isAllowed) => { console.log(isAllowed); }));
 		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
 			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
 			PDFJS.getDocument(this.state.pageInfo.rawUrl).then((pdf) => {
 				PdfScreenshotHelper.getLocalPdfData(this.state.pageInfo.rawUrl).then((result) => {
-					// this.state.pdfResult.set(result);
 					this.state.pdfResult.data.set(result);
 					this.state.setState({
 						pdfResult: {
@@ -204,12 +218,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					this.state.pdfResult.data.forceUpdate();
 				});
 			});
-			// this.state.setState({
-			// 	pdfResult: {
-			// 		data: new SmartValue<PdfScreenshotResult>({ failureMessage: Localization.getLocalizedString("WebClipper.Preview.UnableToClipLocalFile") }),
-			// 		status: Status.Failed
-			// 	}
-			// });
 		} else {
 			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
 			PdfScreenshotHelper.getPdfData(this.state.pageInfo.rawUrl).then((result) => {

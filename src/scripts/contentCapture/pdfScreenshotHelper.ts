@@ -25,8 +25,10 @@ export class PdfScreenshotHelper {
 			PDFJS.getDocument(localFileUrl).then((pdf) => {
 				pdf.getData().then((arrayBuffer) => {
 					PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+						console.log("local array buffer: " + arrayBuffer.byteLength);
+						let castedArrayBuffer = <ArrayBuffer>arrayBuffer.buffer;
 						resolve({
-							arrayBuffer: arrayBuffer,
+							arrayBuffer: castedArrayBuffer,
 							dataUrls: dataUrls
 						});
 					});
@@ -60,10 +62,14 @@ export class PdfScreenshotHelper {
 					Clipper.logger.logEvent(getBinaryEvent);
 
 					PDFJS.getDocument(arrayBuffer).then((pdf) => {
-						PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
-							resolve({
-								arrayBuffer: arrayBuffer,
-								dataUrls: dataUrls
+						pdf.getData().then((pdfArrayBuffer) => {
+							PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+								console.log("pdfjs array buffer: " + pdfArrayBuffer.byteLength);
+								console.log("xhr array buffer: " + arrayBuffer.byteLength);
+								resolve({
+									arrayBuffer: arrayBuffer,
+									dataUrls: dataUrls
+								});
 							});
 						});
 					});
