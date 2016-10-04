@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {IFrameMessageHandler} from "../../scripts/communicator/iframeMessageHandler";
 
 QUnit.module("iframeMessageHandler", {});

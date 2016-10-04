@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {KhanAcademyVideoExtractor} from "../../scripts/domParsers/khanAcademyVideoExtractor";
 
 let supportedKhanAcademyUrls = [

@@ -1,11 +1,6 @@
-/// <reference path="../../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Constants} from "../../../scripts/constants";
-
 import {TooltipProps} from "../../../scripts/clipperUI/tooltipProps";
-
 import {ChangeLogPanel} from "../../../scripts/clipperUI/panels/changeLogPanel";
-
 import {HelperFunctions} from "../../helperFunctions";
 
 QUnit.module("changeLogPanel", {});

@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts" />
-
 import {Constants} from "../constants";
 import {Polyfills} from "../polyfills";
 

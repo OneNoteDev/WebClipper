@@ -1,4 +1,4 @@
-/// <reference path="../../../typings/main/ambient/sinon/sinon.d.ts" />
+import * as sinon from "sinon";
 
 import {Http} from "../../scripts/http/http";
 
