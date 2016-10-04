@@ -21,7 +21,7 @@ import {AnimationHelper} from "./animations/animationHelper";
 import {AnimationState} from "./animations/animationState";
 import {AnimationStrategy} from "./animations/animationStrategy";
 import {ExpandFromRightAnimationStrategy} from "./animations/expandFromRightAnimationStrategy";
-import {SlideFromRightAnimationStrategy} from "./animations/slideFromRightAnimationStrategy";
+import {FadeInAnimationStrategy} from "./animations/fadeInAnimationStrategy";
 import {SlidingHeightAnimationStrategy} from "./animations/slidingHeightAnimationStrategy";
 
 import {CloseButton} from "./components/closeButton";
@@ -112,7 +112,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			onAfterAnimateOut: () => { Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi); }
 		});
 
-		this.panelAnimationStrategy = new SlideFromRightAnimationStrategy({
+		this.panelAnimationStrategy = new FadeInAnimationStrategy({
 			extShouldAnimateIn: () => { return this.state.currentPanel !== PanelType.None; },
 			extShouldAnimateOut: () => { return this.getPanelTypeToShow() !== this.state.currentPanel; },
 			onAfterAnimateOut: () => { this.setState({ currentPanel: this.getPanelTypeToShow() }); },
