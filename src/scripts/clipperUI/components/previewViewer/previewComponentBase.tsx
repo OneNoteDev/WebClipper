@@ -83,7 +83,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 				{this.props.clipperState.currentMode.get() !== ClipMode.Bookmark
 					? <div id={Constants.Ids.previewUrlContainer}>
 						{sourceUrlCitationPrefix}
-						<a href={sourceUrl} target="_blank">{sourceUrl}</a>
+						<a href={sourceUrl} target="_blank" title={sourceUrl}>{sourceUrl}</a>
 					</div>
 					: undefined}
 			</div>
