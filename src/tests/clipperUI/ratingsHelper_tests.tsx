@@ -44,7 +44,7 @@ Clipper.getCachedValue = (key: string) => {
 QUnit.module("ratingsHelper", {
 	beforeEach: () => {
 		Clipper.logger = new StubSessionLogger();
-		Settings.setSettingsJsonForTesting();
+		Settings.setSettingsJsonForTesting({});
 
 		mockStorage = {};
 		mockStorageCache = {};
@@ -178,8 +178,6 @@ test("badRatingTimingDelayIsOver returns true when the time between bad rating a
 // getFeedbackUrlIfExists
 
 test("getFeedbackUrlIfExists returns undefined if log category for ratings prompt does not exist", () => {
-	Settings.setSettingsJsonForTesting({});
-
 	let url: string = RatingsHelper.getFeedbackUrlIfExists({});
 	strictEqual(url, undefined, "setting for log category for ratings prompt does not exist");
 
@@ -237,8 +235,6 @@ test("getRateUrlIfExists returns undefined if ClientType/ClipperType is invalid"
 });
 
 test("getRateUrlIfExists returns undefined if a client's rate url does not exist", () => {
-	Settings.setSettingsJsonForTesting({});
-
 	let clientType: ClientType = ClientType.ChromeExtension;
 	let settingName: string = ClientType[clientType] + RatingsHelper.rateUrlSettingNameSuffix;
 
@@ -291,8 +287,6 @@ test("ratingsPromptEnabledForClient returns false if ClientType/ClipperType is i
 });
 
 test("ratingsPromptEnabledForClient returns false if a client's enable value does not exist", () => {
-	Settings.setSettingsJsonForTesting({});
-
 	let clientType: ClientType = ClientType.ChromeExtension;
 	let settingName: string = ClientType[clientType] + RatingsHelper.ratingsPromptEnabledSettingNameSuffix;
 
