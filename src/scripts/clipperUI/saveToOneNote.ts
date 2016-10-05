@@ -238,6 +238,32 @@ export class SaveToOneNote {
 		});
 	}
 
+	// Adds the given binary to the page if it is below the MIME size limit
+	// If the binary was added, it returns a string, otherwise it returns undefined
+	private static addEnhancedUrlAttachmentToPageHelper(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer): string {
+		let rawUrl = this.clipperState.pageInfo.rawUrl;
+		let mimePartName: string;
+		if (this.clipperState.pdfResult.status === Status.Succeeded && arrayBuffer) {
+			if (arrayBuffer.byteLength < this.maxMimeSizeLimit) {
+				let attachmentName = Utils.getFileNameFromUrl(this.clipperState.pageInfo.rawUrl, "Original.pdf");
+				mimePartName = page.addAttachment(arrayBuffer, attachmentName);
+			}
+		}
+		return mimePartName;
+	}
+
+	// If the images we want to render are in the POST request, we must use a mimePartName
+	// This is required if the file we want to render is a local one.
+	// If the source is available as an HTTP(s) URL, we can use that instead. This is preferred for files
+	// available over a network
+	private static addLocalEnhancedUrlAsImagesToPageHelper(page: OneNoteApi.OneNotePage, mimePartName: string) {
+		
+	}
+	
+	private static addNetworkEnhancedUrlAsImagesToPageHelper(page: OneNoteApi.OneNotePage) {
+
+	}
+	
 	// Adds the given binary to the page if it is below the MIME size limit, then adds it as an image
 	private static addEnhancedUrlContentToPageHelper(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer) {
 		// Impose MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
