@@ -162,8 +162,13 @@ gulp.task("preCompileInternal", function (callback) {
 });
 
 gulp.task("compileTypeScript", ["copyStrings", "mergeSettings", "preCompileInternal"], function () {
+	var tsProject = ts.createProject("./tsconfig.json", {
+		typescript: require('typescript'),
+		noEmitOnError: true
+	})
+
 	return gulp.src([PATHS.SRC.ROOT + "**/*.+(ts|tsx)"])
-		.pipe(ts(ts.createProject("./tsconfig.json", { typescript: require('typescript') })))
+		.pipe(tsProject())
 		.pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
@@ -185,11 +190,6 @@ gulp.task("compile", function(callback) {
 ////////////////////////////////////////
 //The actual task to run
 gulp.task("tslint", function() {
-	var tsErrorReport = tslint.report("prose", {
-		emitError: false,
-		reportLimit: 50
-	});
-
 	var tsFiles = [
 		PATHS.SRC.ROOT + "**/*.ts",
 		PATHS.SRC.ROOT + "**/*.tsx",
@@ -198,8 +198,10 @@ gulp.task("tslint", function() {
 
 	return gulp.src(tsFiles)
 		.pipe(plumber())
-		.pipe(tslint())
-		.pipe(tsErrorReport);
+		.pipe(tslint({
+			formatter: "verbose"
+		}))
+		.pipe(tslint.report())
 });
 
 ////////////////////////////////////////
