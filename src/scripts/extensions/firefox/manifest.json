@@ -3,7 +3,7 @@
 	"name": "OneNote Web Clipper",
 	"description": "__MSG_appDesc__",
 	"default_locale": "en",
-	"version": "3.2.7",
+	"version": "3.2.8",
 	"background": {
 		"scripts": [ "firefoxExtension.js" ]
 	},
