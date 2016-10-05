@@ -433,8 +433,9 @@ function exportCommonJS(targetDir) {
 
 		var logManagerExportTask;
 		if (fileExists(PATHS.BUNDLEROOT + "logManager_internal.js") && !argv.nointernal) {
+			let ariaLibToInclude = argv.nominify ? "aria-web-telemetry-2.7.1" : "aria-web-telemetry-2.7.1.min.js"; 
 			logManagerExportTask = gulp.src([
-				PATHS.INTERNAL.LIBROOT + "aria-web-telemetry-2.7.0.min.js",
+				PATHS.INTERNAL.LIBROOT + ariaLibToInclude,
 				PATHS.BUNDLEROOT + "logManager_internal.js"
 			]).pipe(concat("logManager.js")).pipe(gulp.dest(targetDir));
 		} else {
