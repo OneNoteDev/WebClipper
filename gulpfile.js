@@ -59,6 +59,8 @@ var PATHS = {
 
 var RTL_SUFFIX = "-rtl";
 
+var ARIA_LIB_VERSION = "2.7.1";
+
 // Used for debugging glob declarations
 function printGlobResults(glob) {
 	globby.sync(glob).map(function(filePath) {
@@ -433,8 +435,12 @@ function exportCommonJS(targetDir) {
 
 		var logManagerExportTask;
 		if (fileExists(PATHS.BUNDLEROOT + "logManager_internal.js") && !argv.nointernal) {
+			let ariaFileName = "aria-web-telemetry-";
+			let unminifiedAriaLibraryFileName = ariaFileName + ARIA_LIB_VERSION + ".js";
+			let minifiedAriaLibraryFileName = ariaFileName + ARIA_LIB_VERSION + ".min.js";
+			let ariaLibToInclude = argv.nominify ? unminifiedAriaLibraryFileName : minifiedAriaLibraryFileName;
 			logManagerExportTask = gulp.src([
-				PATHS.INTERNAL.LIBROOT + "aria-web-telemetry-2.7.0.min.js",
+				PATHS.INTERNAL.LIBROOT + ariaLibToInclude,
 				PATHS.BUNDLEROOT + "logManager_internal.js"
 			]).pipe(concat("logManager.js")).pipe(gulp.dest(targetDir));
 		} else {
