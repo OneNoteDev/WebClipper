@@ -367,17 +367,19 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 			let extensionVersion = new Version(ExtensionBase.getExtensionVersion());
 
-			let tooltips = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
-			// Returns the Type of tooltip to show IF the delay is over and the tab has the correct content type
-			let typeToShow = this.shouldShowTooltip(tab, tooltips);
-			if (typeToShow) {
-				this.showTooltip(tab, typeToShow);
-				return;
-			}
+			if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
+				let tooltips = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
+				// Returns the Type of tooltip to show IF the delay is over and the tab has the correct content type
+				let typeToShow = this.shouldShowTooltip(tab, tooltips);
+				if (typeToShow) {
+					this.showTooltip(tab, typeToShow);
+					return;
+				}
 
-			if (this.shouldShowVideoTooltip(tab)) {
-				this.showTooltip(tab, TooltipType.Video);
-				return;
+				if (this.shouldShowVideoTooltip(tab)) {
+					this.showTooltip(tab, TooltipType.Video);
+					return;
+				}
 			}
 
 			// We don't show updates more recent than the local version for now, as it is easy

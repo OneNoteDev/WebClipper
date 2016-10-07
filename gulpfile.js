@@ -59,6 +59,8 @@ var PATHS = {
 
 var RTL_SUFFIX = "-rtl";
 
+var ARIA_LIB_VERSION = "2.7.1";
+
 // Used for debugging glob declarations
 function printGlobResults(glob) {
 	globby.sync(glob).map(function(filePath) {
@@ -162,8 +164,13 @@ gulp.task("preCompileInternal", function (callback) {
 });
 
 gulp.task("compileTypeScript", ["copyStrings", "mergeSettings", "preCompileInternal"], function () {
+	var tsProject = ts.createProject("./tsconfig.json", {
+		typescript: require('typescript'),
+		noEmitOnError: true
+	})
+
 	return gulp.src([PATHS.SRC.ROOT + "**/*.+(ts|tsx)"])
-		.pipe(ts(ts.createProject("./tsconfig.json", { typescript: require('typescript') })))
+		.pipe(tsProject())
 		.pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
@@ -185,11 +192,6 @@ gulp.task("compile", function(callback) {
 ////////////////////////////////////////
 //The actual task to run
 gulp.task("tslint", function() {
-	var tsErrorReport = tslint.report("prose", {
-		emitError: false,
-		reportLimit: 50
-	});
-
 	var tsFiles = [
 		PATHS.SRC.ROOT + "**/*.ts",
 		PATHS.SRC.ROOT + "**/*.tsx",
@@ -198,8 +200,10 @@ gulp.task("tslint", function() {
 
 	return gulp.src(tsFiles)
 		.pipe(plumber())
-		.pipe(tslint())
-		.pipe(tsErrorReport);
+		.pipe(tslint({
+			formatter: "verbose"
+		}))
+		.pipe(tslint.report())
 });
 
 ////////////////////////////////////////
@@ -431,8 +435,12 @@ function exportCommonJS(targetDir) {
 
 		var logManagerExportTask;
 		if (fileExists(PATHS.BUNDLEROOT + "logManager_internal.js") && !argv.nointernal) {
+			let ariaFileName = "aria-web-telemetry-";
+			let unminifiedAriaLibraryFileName = ariaFileName + ARIA_LIB_VERSION + ".js";
+			let minifiedAriaLibraryFileName = ariaFileName + ARIA_LIB_VERSION + ".min.js";
+			let ariaLibToInclude = argv.nominify ? unminifiedAriaLibraryFileName : minifiedAriaLibraryFileName;
 			logManagerExportTask = gulp.src([
-				PATHS.INTERNAL.LIBROOT + "aria-web-telemetry-2.7.0.min.js",
+				PATHS.INTERNAL.LIBROOT + ariaLibToInclude,
 				PATHS.BUNDLEROOT + "logManager_internal.js"
 			]).pipe(concat("logManager.js")).pipe(gulp.dest(targetDir));
 		} else {
