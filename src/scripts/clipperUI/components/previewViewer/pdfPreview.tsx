@@ -29,8 +29,14 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		return this.convertPdfResultToContentData(state.pdfResult);
 	}
 
+	onTextChange(text: string) {
+		console.log("text: " + text);
+	}
+
 	protected getHeader(): any {
-		return <PreviewViewerPdfHeader clipperState={this.props.clipperState} />;
+		return <PreviewViewerPdfHeader
+				onTextChange={this.onTextChange.bind(this)}
+				clipperState={this.props.clipperState} />;
 	}
 
 	protected getStatus(): Status {
@@ -69,7 +75,7 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		if (!data) {
 			return;
 		}
-		
+
 		let contentBody = [];
 		let dataUrls = this.props.clipperState.pdfResult.data.get().dataUrls;
 		let previewImages = [];

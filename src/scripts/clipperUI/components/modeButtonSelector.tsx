@@ -34,6 +34,10 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getAugmentationModeButton(currentMode: ClipMode) {
+		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			return undefined;
+		}
+
 		let augmentationType: string = AugmentationHelper.getAugmentationType(this.props.clipperState);
 		let augmentationLabel: string = Localization.getLocalizedString("WebClipper.ClipType." + augmentationType + ".Button");
 		let augmentationTooltip = Localization.getLocalizedString("WebClipper.ClipType.Button.Tooltip").replace("{0}", augmentationLabel);
@@ -46,6 +50,10 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getFullPageModeButton(currentMode: ClipMode) {
+		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			return undefined;
+		}
+
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("fullpage.png")}
 			label={Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button")}
 			myMode={ClipMode.FullPage} tabIndex={40}

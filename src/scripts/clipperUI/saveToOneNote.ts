@@ -132,6 +132,15 @@ export class SaveToOneNote {
 			switch (clipperState.currentMode.get()) {
 				default:
 				case ClipMode.Pdf:
+					let dataUrls = clipperState.pdfResult.data.get().dataUrls;
+					// There are 3 properties of a PDF clip: Local, Attachment, All Pages OR Page Range
+					// our current function handles the AllPages + Attachment clip correctly
+					// We have to use dataUrls for the rest
+					// and split the add attachment function
+					// for (let pdfPageDataUrl of dataUrls) {
+					// 	// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
+					// 	page.addOnml("<p><img src=\"" + dataUrls + "\" /></p>&nbsp;");
+					// }
 					this.addEnhancedUrlContentToPage(page).then(() => {
 						resolve();
 					});
@@ -257,13 +266,11 @@ export class SaveToOneNote {
 	// If the source is available as an HTTP(s) URL, we can use that instead. This is preferred for files
 	// available over a network
 	private static addLocalEnhancedUrlAsImagesToPageHelper(page: OneNoteApi.OneNotePage, mimePartName: string) {
-		
 	}
-	
-	private static addNetworkEnhancedUrlAsImagesToPageHelper(page: OneNoteApi.OneNotePage) {
 
+	private static addNetworkEnhancedUrlAsImagesToPageHelper(page: OneNoteApi.OneNotePage) {
 	}
-	
+
 	// Adds the given binary to the page if it is below the MIME size limit, then adds it as an image
 	private static addEnhancedUrlContentToPageHelper(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer) {
 		// Impose MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx

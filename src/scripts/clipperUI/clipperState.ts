@@ -80,11 +80,11 @@ export module ClipperStateHelperFunctions {
 		let currentMode = clipperState.currentMode.get();
 		switch (currentMode) {
 			case ClipMode.Pdf:
-				return true;	
+				return true;
 			case ClipMode.FullPage:
 				// The pdf and full page screenshots are only needed for preview. In the case of pdf, binary downloads
 				// can be deferred to the clip wait.
-				return currentMode !== ClipMode.Pdf;
+				return true;
 			case ClipMode.Region:
 				let regionResult = clipperState.regionResult;
 				return regionResult.status === Status.Succeeded && regionResult.data && regionResult.data.length > 0;
