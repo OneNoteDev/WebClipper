@@ -18,7 +18,19 @@ import {RotatingMessageSpriteAnimation} from "../../components/rotatingMessageSp
 import {PreviewComponentBase} from "./previewComponentBase";
 import {PreviewViewerPdfHeader} from "./previewViewerPdfHeader";
 
-class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
+interface PdfPreviewState {
+	allPages?: boolean;
+	pagesToShow?: number[];
+}
+
+class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
+	getInitialState(): PdfPreviewState {
+		return {
+			allPages: true,
+			pagesToShow: [1, 3, 5]
+		} as PdfPreviewState;
+	}
+
 	protected getContentBodyForCurrentStatus(): any[] {
 		let state = this.props.clipperState;
 
@@ -71,6 +83,7 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	}
 
 	private convertPdfResultToContentData(result: DataResult<SmartValue<PdfScreenshotResult>>): any[] {
+		console.log("converting that pdf result");
 		let data = this.props.clipperState.pdfResult.data.get();
 		if (!data) {
 			return;

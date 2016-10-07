@@ -20,17 +20,35 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		return {};
 	}
 
+	handleOnChange(event: any) {
+		console.log(event);
+	}
+
 	getControlGroups(): ControlGroup[] {
 		return [this.getPageRangeGroup()];
 	}
 
 	private addTextAreaListener() {
+
+		// elements.forEach((element) => {
+		// 	addEventListener("click", (event) => {
+		// 		console.log(event);
+		// 	});
+		// });
+
 		document.addEventListener("input", (event) => {
 			let element = event.target;
 			let pageRangeField = document.getElementById("rangeInput") as HTMLTextAreaElement;
 			if (!!element && element === pageRangeField) {
 				this.handlePageRangeFieldChanged(pageRangeField.value);
 			}
+		});
+	}
+
+	private addRadioButtonListener(element: HTMLElement) {
+		element.addEventListener("click", (event) => {
+			let target = event.target as HTMLInputElement;
+			console.log(target.value);
 		});
 	}
 
@@ -42,11 +60,16 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		return {
 			id: "pageRangeControl",
 			innerElements: [
-				<input type="radio" name="pageSelection" value="all">{Localization.getLocalizedString("WebClipper.Preview.Header.AddAnotherRegionButtonLabel")}</input>,
-				<input type="radio" name="pageSelection" value="some">{<span>"Range"</span>}
-				</input>,
-				<input type="text" id="rangeInput" name="some" placeholer="e.g. 1-3,5,7"></input>
+				<input id="all-pages" type="radio" name="pageSelection" value="all" config={this.addRadioButtonListener}></input>,
+				<label for="all-pages"><span>{"All Pages"}</span></label>,
+				<input id="all-pages"type="radio" name="pageSelection" value="some" config={this.addRadioButtonListener}></input>,
+				<label for="all-pages"><span>{"Some Pages"}</span></label>
 			]
+			// innerElements: [
+			// 	<label><input type="radio" className="yolo" name="pageSelection" value="all" config={this.addRadioButtonListener}>{Localization.getLocalizedString("WebClipper.Preview.Header.AddAnotherRegionButtonLabel")}</input></label>,
+			// 	<label><input type="radio" className="yolo" name="pageSelection" value="some" config={this.addRadioButtonListener}>{"Range"}</input></label>,
+			// 	<input type="text" id="rangeInput" name="some" placeholder="e.g. 1-3,5,7"></input>
+			// ]
 		};
 	}
 }
