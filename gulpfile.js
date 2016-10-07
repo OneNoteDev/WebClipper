@@ -435,10 +435,10 @@ function exportCommonJS(targetDir) {
 
 		var logManagerExportTask;
 		if (fileExists(PATHS.BUNDLEROOT + "logManager_internal.js") && !argv.nointernal) {
-			let ariaFileName = "aria-web-telemetry-";
-			let unminifiedAriaLibraryFileName = ariaFileName + ARIA_LIB_VERSION + ".js";
-			let minifiedAriaLibraryFileName = ariaFileName + ARIA_LIB_VERSION + ".min.js";
-			let ariaLibToInclude = argv.nominify ? unminifiedAriaLibraryFileName : minifiedAriaLibraryFileName;
+			var ariaFileName = "aria-web-telemetry-";
+			var unminifiedAriaLibraryFileName = ariaFileName + ARIA_LIB_VERSION + ".js";
+			var minifiedAriaLibraryFileName = ariaFileName + ARIA_LIB_VERSION + ".min.js";
+			var ariaLibToInclude = argv.nominify ? unminifiedAriaLibraryFileName : minifiedAriaLibraryFileName;
 			logManagerExportTask = gulp.src([
 				PATHS.INTERNAL.LIBROOT + ariaLibToInclude,
 				PATHS.BUNDLEROOT + "logManager_internal.js"
