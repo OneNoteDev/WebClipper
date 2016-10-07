@@ -31,7 +31,7 @@ export module VideoUtils {
 
 		for (let domainEnum in SupportedVideoDomains) {
 			let domain = SupportedVideoDomains[domainEnum];
-			if (hostname.indexOf(domain.toLowerCase() + ".") > -1) {
+			if (typeof(domain) === "string" && hostname.indexOf(domain.toLowerCase() + ".") > -1) {
 				return domain;
 			}
 		}
