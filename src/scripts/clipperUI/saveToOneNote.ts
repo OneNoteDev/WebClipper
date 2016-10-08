@@ -125,7 +125,7 @@ export class SaveToOneNote {
 	}
 
 	// Adds the primary page content to the page, which may be async or not
-	private static addPrimaryContentToPage(page: OneNoteApi.OneNotePage, mode: ClipMode): Promise<any> {
+	private static addPrimaryContentToPage(page: OneNoteApi.OneNotePage, mode: ClipMode, modeArgs: any): Promise<any> {
 		let clipperState = this.clipperState;
 
 		return new Promise((resolve, reject) => {
@@ -133,27 +133,19 @@ export class SaveToOneNote {
 				default:
 				case ClipMode.Pdf:
 					let dataUrls = clipperState.pdfResult.data.get().dataUrls;
-					// There are 3 properties of a PDF clip: Local, Attachment, All Pages OR Page Range
-					// our current function handles the AllPages + Attachment clip correctly
-					// We have to use dataUrls for the rest
-					// and split the add attachment function
-					// for (let pdfPageDataUrl of dataUrls) {
-					// 	// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
-					// 	page.addOnml("<p><img src=\"" + dataUrls + "\" /></p>&nbsp;");
-					// }
 					this.addEnhancedUrlContentToPage(page).then(() => {
 						resolve();
 					});
 					break;
 				case ClipMode.FullPage:
-					if (clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-						this.addEnhancedUrlContentToPage(page).then(() => {
-							resolve();
-						});
-					} else {
-						page.addHtml(clipperState.pageInfo.contentData);
-						resolve();
-					}
+					// if (clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+					// 	this.addEnhancedUrlContentToPage(page).then(() => {
+					// 		resolve();
+					// 	});
+					// } else {
+					page.addHtml(clipperState.pageInfo.contentData);
+					resolve();
+					// }
 					break;
 				case ClipMode.Region:
 					for (let regionDataUrl of clipperState.regionResult.data) {
@@ -261,14 +253,55 @@ export class SaveToOneNote {
 		return mimePartName;
 	}
 
-	// If the images we want to render are in the POST request, we must use a mimePartName
-	// This is required if the file we want to render is a local one.
-	// If the source is available as an HTTP(s) URL, we can use that instead. This is preferred for files
-	// available over a network
-	private static addLocalEnhancedUrlAsImagesToPageHelper(page: OneNoteApi.OneNotePage, mimePartName: string) {
+	/**
+	 *	This function handles posting a PDF to OneNote. We handle the PDF differently based on:
+	 *		1. Whether the user wants ALL pages or a subset of pages.
+	 *		2. Where the user wants to attach the PDF 
+	 * */
+	private static doStuff(page: OneNoteApi.OneNotePage, allPages: boolean, dataUrls: string[], addAttachment: boolean, arrayBuffer: ArrayBuffer) {
+		if (addAttachment) {
+			let mimePartName = SaveToOneNote.addEnhancedUrlAttachmentToPage(page, arrayBuffer);
+
+			if (allPages) {
+				// This optimization, though it complicates the logic, lets us save on lots of requests
+				SaveToOneNote.renderMimePartNameAsImage(page, mimePartName);
+			} else {
+				// TODO: batch the dataUrl requests with the caveat that the first request can only have 5
+				SaveToOneNote.addDataUrlImagesToPage(page, dataUrls);
+			}
+
+		} else {
+			// TODO: batch the dataUrl requests
+			SaveToOneNote.addDataUrlImagesToPage(page, dataUrls);
+		}
 	}
 
-	private static addNetworkEnhancedUrlAsImagesToPageHelper(page: OneNoteApi.OneNotePage) {
+	private static addDataUrlImagesToPage(page: OneNoteApi.OneNotePage, dataUrlsToAdd: string[]): void {
+		for (let regionDataUrl of dataUrlsToAdd) {
+			// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
+			page.addOnml("<p><img src=\"" + regionDataUrl + "\" /></p>&nbsp;");
+		}
+	}
+
+	/**
+	 *	Adds @arrayBuffer as an attachment to the OneNotePage.
+	 *  MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
+	 * 	@returns undefined if @arrayBuffer is above the OneNote MIME Size limit, or the name of the MimePart
+	 **/
+	private static addEnhancedUrlAttachmentToPage(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer): string {
+		let rawUrl = this.clipperState.pageInfo.rawUrl;
+		let mimePartName: string;
+		if (this.clipperState.pdfResult.status === Status.Succeeded && arrayBuffer) {
+			if (arrayBuffer.byteLength < this.maxMimeSizeLimit) {
+				let attachmentName = Utils.getFileNameFromUrl(this.clipperState.pageInfo.rawUrl, "Original.pdf");
+				mimePartName = page.addAttachment(arrayBuffer, attachmentName);
+			}
+		}
+		return mimePartName;
+	}
+
+	private static renderMimePartNameAsImage(page: OneNoteApi.OneNotePage, mimePartName: string): void {
+		page.addObjectUrlAsImage("name:" + mimePartName);
 	}
 
 	// Adds the given binary to the page if it is below the MIME size limit, then adds it as an image
