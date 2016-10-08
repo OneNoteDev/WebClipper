@@ -7,6 +7,7 @@ import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./p
 
 interface PdfPreviewProp extends ClipperStateProp {
 	onTextChange: (blah: string) => void;
+	onSelectionChange: (blah: boolean) => void;
 };
 
 class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, PdfPreviewProp> {
@@ -25,17 +26,10 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 	}
 
 	getControlGroups(): ControlGroup[] {
-		return [this.getPageRangeGroup()];
+		return [this.getPageRangeGroup(), this.getAttachmentCheckbox()];
 	}
 
 	private addTextAreaListener() {
-
-		// elements.forEach((element) => {
-		// 	addEventListener("click", (event) => {
-		// 		console.log(event);
-		// 	});
-		// });
-
 		document.addEventListener("input", (event) => {
 			let element = event.target;
 			let pageRangeField = document.getElementById("rangeInput") as HTMLTextAreaElement;
@@ -52,24 +46,36 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		});
 	}
 
+	private getAttachmentCheckbox(): ControlGroup {
+		return {
+			id: "attachmentCheckboxControl",
+			innerElements: [
+				<input id="attachment-checkbox" type="checkbox" value="true"></input>,
+				<label id="attachment-checkbox-label" for="attachment-checkbox"><span>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span></label>
+			]
+		};
+	}
+
 	private handlePageRangeFieldChanged(annotationValue: string) {
 		this.props.onTextChange(annotationValue);
+	}
+
+	private handleRadioButtonClick(event: MouseEvent) {
+		let target = event.target as HTMLInputElement;
+		// console.log(target.value);
+		let value = (target.value.toLowerCase() === "true") ? true : false;
+		this.props.onSelectionChange(value);
 	}
 
 	private getPageRangeGroup(): ControlGroup {
 		return {
 			id: "pageRangeControl",
 			innerElements: [
-				<input id="all-pages" type="radio" name="pageSelection" value="all" config={this.addRadioButtonListener}></input>,
-				<label for="all-pages"><span>{"All Pages"}</span></label>,
-				<input id="all-pages"type="radio" name="pageSelection" value="some" config={this.addRadioButtonListener}></input>,
-				<label for="all-pages"><span>{"Some Pages"}</span></label>
+				<input id="all-pages" type="radio" name="pageSelection" value="true" onclick={this.handleRadioButtonClick.bind(this)}></input>,
+				<label for="all-pages"><span class="radio-control-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}</span></label>,
+				<input id="all-pages" type="radio" name="pageSelection" value="false" onclick={this.handleRadioButtonClick.bind(this)}></input>,
+				<label for="all-pages"><input type="text" id="rangeInput" name="some" placeholder="e.g. 1-5, 7, 9-12"></input></label>
 			]
-			// innerElements: [
-			// 	<label><input type="radio" className="yolo" name="pageSelection" value="all" config={this.addRadioButtonListener}>{Localization.getLocalizedString("WebClipper.Preview.Header.AddAnotherRegionButtonLabel")}</input></label>,
-			// 	<label><input type="radio" className="yolo" name="pageSelection" value="some" config={this.addRadioButtonListener}>{"Range"}</input></label>,
-			// 	<input type="text" id="rangeInput" name="some" placeholder="e.g. 1-3,5,7"></input>
-			// ]
 		};
 	}
 }
