@@ -125,7 +125,7 @@ export class SaveToOneNote {
 	}
 
 	// Adds the primary page content to the page, which may be async or not
-	private static addPrimaryContentToPage(page: OneNoteApi.OneNotePage, mode: ClipMode, modeArgs: any): Promise<any> {
+	private static addPrimaryContentToPage(page: OneNoteApi.OneNotePage, mode: ClipMode, modeArgs?: any): Promise<any> {
 		let clipperState = this.clipperState;
 
 		return new Promise((resolve, reject) => {
@@ -253,11 +253,9 @@ export class SaveToOneNote {
 		return mimePartName;
 	}
 
-	/**
-	 *	This function handles posting a PDF to OneNote. We handle the PDF differently based on:
-	 *		1. Whether the user wants ALL pages or a subset of pages.
-	 *		2. Where the user wants to attach the PDF 
-	 * */
+	// This function handles posting a PDF to OneNote. We handle the PDF differently based on:
+	//  1. Whether the user wants ALL pages or a subset of pages.
+	//  2. Where the user wants to attach the PDF 
 	private static doStuff(page: OneNoteApi.OneNotePage, allPages: boolean, dataUrls: string[], addAttachment: boolean, arrayBuffer: ArrayBuffer) {
 		if (addAttachment) {
 			let mimePartName = SaveToOneNote.addEnhancedUrlAttachmentToPage(page, arrayBuffer);
@@ -283,11 +281,9 @@ export class SaveToOneNote {
 		}
 	}
 
-	/**
-	 *	Adds @arrayBuffer as an attachment to the OneNotePage.
-	 *  MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
-	 * 	@returns undefined if @arrayBuffer is above the OneNote MIME Size limit, or the name of the MimePart
-	 **/
+	// Adds @arrayBuffer as an attachment to the OneNotePage.
+	// MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
+	// @returns undefined if @arrayBuffer is above the OneNote MIME Size limit, or the name of the MimePart
 	private static addEnhancedUrlAttachmentToPage(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer): string {
 		let rawUrl = this.clipperState.pageInfo.rawUrl;
 		let mimePartName: string;
