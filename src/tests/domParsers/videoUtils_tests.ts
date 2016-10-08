@@ -45,7 +45,7 @@ test("videoDomainIfSupported should return YouTube if the url represents a video
 
 	for (let pageUrl of supportedYouTubeUrls) {
 		let domain = VideoUtils.videoDomainIfSupported(pageUrl);
-		strictEqual(domain,	"YouTube", pageUrl + " should return YouTube");
+		strictEqual(domain, "YouTube", pageUrl + " should return YouTube");
 	}
 });
 
@@ -65,7 +65,7 @@ test("videoDomainIfSupported should return Vimeo if the url represents a video, 
 	];
 	for (let pageUrl of supportedVimeoUrls) {
 		let domain = VideoUtils.videoDomainIfSupported(pageUrl);
-		strictEqual(domain,	"Vimeo", pageUrl + " should return Vimeo");
+		strictEqual(domain, "Vimeo", pageUrl + " should return Vimeo");
 	}
 });
 
@@ -77,7 +77,7 @@ test("videoDomainIfSupported should correctly return the domain if its a video s
 	];
 	for (let pageUrl of supportedVimeoUrls) {
 		let domain = VideoUtils.videoDomainIfSupported(pageUrl);
-		strictEqual(domain,	"Vimeo", pageUrl + " should return Vimeo");
+		strictEqual(domain, "Vimeo", pageUrl + " should return Vimeo");
 	}
 });
 
