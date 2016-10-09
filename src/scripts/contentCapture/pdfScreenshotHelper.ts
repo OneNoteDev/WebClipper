@@ -18,6 +18,24 @@ export interface PdfScreenshotResult extends CaptureFailureInfo {
 }
 
 export class PdfScreenshotHelper {
+	public static getLocalPdfData(localFileUrl: string): Promise<PdfScreenshotResult> {
+		// Never rejects, interesting
+		return new Promise<PdfScreenshotResult>((resolve, reject) => {
+			PDFJS.getDocument(localFileUrl).then((pdf) => {
+				pdf.getData().then((arrayBuffer) => {
+					PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+						console.log("local array buffer: " + arrayBuffer.byteLength);
+						let castedArrayBuffer = <ArrayBuffer>arrayBuffer.buffer;
+						resolve({
+							arrayBuffer: castedArrayBuffer,
+							dataUrls: dataUrls
+						});
+					});
+				});
+			});
+		});
+	}
+
 	public static getPdfData(url: string): Promise<PdfScreenshotResult> {
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetBinaryRequest);
@@ -43,10 +61,14 @@ export class PdfScreenshotHelper {
 					Clipper.logger.logEvent(getBinaryEvent);
 
 					PDFJS.getDocument(arrayBuffer).then((pdf) => {
-						PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
-							resolve({
-								arrayBuffer: arrayBuffer,
-								dataUrls: dataUrls
+						pdf.getData().then((pdfArrayBuffer) => {
+							PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+								console.log("pdfjs array buffer: " + pdfArrayBuffer.byteLength);
+								console.log("xhr array buffer: " + arrayBuffer.byteLength);
+								resolve({
+									arrayBuffer: arrayBuffer,
+									dataUrls: dataUrls
+								});
 							});
 						});
 					});

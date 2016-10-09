@@ -77,7 +77,10 @@ export module ClipperStateHelperFunctions {
 	}
 
 	export function clipButtonEnabled(clipperState: ClipperState): boolean {
-		switch (clipperState.currentMode.get()) {
+		let currentMode = clipperState.currentMode.get();
+		switch (currentMode) {
+			case ClipMode.Pdf:
+				return true;
 			case ClipMode.FullPage:
 				// The pdf and full page screenshots are only needed for preview. In the case of pdf, binary downloads
 				// can be deferred to the clip wait.

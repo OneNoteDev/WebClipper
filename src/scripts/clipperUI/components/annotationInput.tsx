@@ -25,6 +25,7 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 		textArea.focus();
 	}
 
+	// TODO: change this to a config passed into the textarea?
 	private addTextAreaListener() {
 		document.addEventListener("input", (event) => {
 			let element = event.target;

@@ -25,9 +25,7 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		if (!state.pageInfo) {
 			return [this.getSpinner()];
 		}
-		if (state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-			return this.convertPdfResultToContentData(state.pdfResult);
-		}
+
 		return this.convertFullPageResultToContentData(state.fullPageResult);
 	}
 
@@ -40,9 +38,7 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		if (!this.props.clipperState.pageInfo) {
 			return Status.NotStarted;
 		}
-		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-			return this.props.clipperState.pdfResult.status;
-		}
+
 		return this.props.clipperState.fullPageResult.status;
 	}
 
@@ -55,8 +51,7 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 
 		switch (previewStatus) {
 			case Status.Succeeded:
-				if (pageInfo && pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl &&
-					!this.props.clipperState.fullPageResult.data) {
+				if (pageInfo &&  !this.props.clipperState.fullPageResult.data) {
 					return Localization.getLocalizedString("WebClipper.Preview.NoContentFound");
 				}
 				return this.props.clipperState.previewGlobalInfo.previewTitleText;
@@ -65,11 +60,7 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 				return Localization.getLocalizedString("WebClipper.Preview.LoadingMessage");
 			default:
 			case Status.Failed:
-				if (pageInfo && pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-					failureMessage = this.props.clipperState.pdfResult.data.get().failureMessage;
-				} else {
-					failureMessage = this.props.clipperState.fullPageResult.data.failureMessage;
-				}
+				failureMessage = this.props.clipperState.fullPageResult.data.failureMessage;
 				return !!failureMessage ? failureMessage : noContentFoundString;
 		}
 	}
@@ -85,36 +76,6 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 						let dataUrl = "data:image/" + screenshotImages.ImageFormat + ";" + screenshotImages.ImageEncoding + "," + imageData;
 						contentBody.push(<img src={dataUrl}></img>);
 					}
-				}
-				break;
-			case Status.NotStarted:
-			case Status.InProgress:
-				contentBody.push(this.getSpinner());
-				break;
-			default:
-			case Status.Failed:
-				break;
-		}
-
-		return contentBody;
-	}
-
-	private convertPdfResultToContentData(result: DataResult<SmartValue<PdfScreenshotResult>>): any[] {
-		let contentBody = [];
-
-		switch (result.status) {
-			case Status.Succeeded:
-				// In OneNote we don't display the extension
-				let defaultAttachmentName = "Original.pdf";
-				let fullAttachmentName = this.props.clipperState.pageInfo ? Utils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
-				contentBody.push(
-					<span className="attachment-overlay">
-						<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
-						<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
-					</span>);
-
-				for (let dataUrl of this.props.clipperState.pdfResult.data.get().dataUrls) {
-					contentBody.push(<img src={dataUrl}></img>);
 				}
 				break;
 			case Status.NotStarted:

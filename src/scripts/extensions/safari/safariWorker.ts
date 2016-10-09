@@ -111,6 +111,10 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		return this.invokePageNavBrowserSpecific();
 	}
 
+	protected isAllowedFileSchemeAccessBrowserSpecific(): boolean {
+		return false;
+	}
+
 	/**
 	 * Gets the visible tab's screenshot as an image url
 	 */

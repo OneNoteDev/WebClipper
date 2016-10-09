@@ -24,6 +24,9 @@ export module Constants {
 		export var regionSelectionImage = "region-selection-image";
 		export var regionSelectionRemoveButton = "region-selection-remove-button";
 
+		// pdfPreview
+		export var pdfPreviewImage = "pdf-preview-image";
+
 		// spriteAnimation
 		export var spinner = "spinner";
 
@@ -141,6 +144,10 @@ export module Constants {
 		export var bookmarkControl = "bookmarkControl";
 		export var bookmarkHeaderTitle = "bookmarkHeaderTitle";
 
+		// previewViewerPdfHeader
+		export var pdfControl = "pdfControl";
+		export var pdfHeaderTitle = "PDF File";
+
 		// ratingsPrompt
 		export var ratingsButtonFeedbackNo = "ratingsButtonFeedbackNo";
 		export var ratingsButtonFeedbackYes = "ratingsButtonFeedbackYes";
@@ -239,6 +246,7 @@ export module Constants {
 		export var invokeClipperFromPageNav = "INVOKE_CLIPPER_FROM_PAGE_NAV";
 		export var invokeDebugLogging = "INVOKE_DEBUG_LOGGING";
 		export var invokePageNav = "INVOKE_PAGE_NAV";
+		export var isAllowedFileSchemeAccess = "IS_ALLOWED_FILE_SCHEME_ACCESS";
 		export var noOpTracker = "NO_OP_TRACKER";
 		export var onSpaNavigate = "ON_SPA_NAVIGATE";
 		export var refreshPage = "REFRESH_PAGE";
