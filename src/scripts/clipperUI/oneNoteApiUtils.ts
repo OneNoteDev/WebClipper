@@ -8,6 +8,10 @@ import * as Log from "../logging/log";
 import {Clipper} from "./frontEndGlobals";
 
 export module OneNoteApiUtils {
+	export module Limits {
+		export var imagesPerRequestLimit = 30;
+	}
+
 	export function logOneNoteApiRequestError(event: Log.Event.PromiseEvent, error: OneNoteApi.RequestError) {
 		if (!event || !error) {
 			return;

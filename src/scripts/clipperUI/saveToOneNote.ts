@@ -10,6 +10,7 @@ import {PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
 import {DomUtils} from "../domParsers/domUtils";
 
 import {Localization} from "../localization/localization";
+import {PdfPreviewInfo} from "../previewInfo";
 
 import * as Log from "../logging/log";
 
@@ -132,7 +133,9 @@ export class SaveToOneNote {
 			switch (clipperState.currentMode.get()) {
 				default:
 				case ClipMode.Pdf:
-					let dataUrls = clipperState.pdfResult.data.get().dataUrls;
+					let previewOptions = clipperState.pdfPreviewInfo;
+					let pdfResult = clipperState.pdfResult.data.get();
+					// let dataUrls = clipperState.pdfResult.data.get().dataUrls;
 					this.addEnhancedUrlContentToPage(page).then(() => {
 						resolve();
 					});
@@ -256,7 +259,11 @@ export class SaveToOneNote {
 	// This function handles posting a PDF to OneNote. We handle the PDF differently based on:
 	//  1. Whether the user wants ALL pages or a subset of pages.
 	//  2. Where the user wants to attach the PDF 
-	private static doStuff(page: OneNoteApi.OneNotePage, allPages: boolean, dataUrls: string[], addAttachment: boolean, arrayBuffer: ArrayBuffer) {
+	private static addEnhancedUrlContentToPageTwo(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer, dataUrls: string[], options: PdfPreviewInfo) {
+		let addAttachment = options.shouldAttachPdf;
+		let allPages = options.allPages;
+
+		
 		if (addAttachment) {
 			let mimePartName = SaveToOneNote.addEnhancedUrlAttachmentToPage(page, arrayBuffer);
 
@@ -270,6 +277,9 @@ export class SaveToOneNote {
 
 		} else {
 			// TODO: batch the dataUrl requests
+			// construct a POST, followed by a bunch of PATCHes
+			let numRequestsToSend = Math.floor(dataUrls.length / OneNoteApiUtils.Limits.imagesPerRequestLimit);
+			// helper function to split an array into the appropriate pieces
 			SaveToOneNote.addDataUrlImagesToPage(page, dataUrls);
 		}
 	}
