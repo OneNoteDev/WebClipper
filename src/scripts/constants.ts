@@ -129,9 +129,10 @@ export module Constants {
 		export var regionHeaderTitle = "regionHeaderTitle";
 
 		// previewViewerAugmentationHeader
-		export var highlightControl = "highlightControl";
-		export var highlightButton = "highlightButton";
 		export var decrementFontSize = "decrementFontSize";
+		export var fontSizeControl = "fontSizeControl";
+		export var highlightButton = "highlightButton";
+		export var highlightControl = "highlightControl";
 		export var incrementFontSize = "incrementFontSize";
 		export var serifControl = "serifControl";
 		export var sansSerif = "sansSerif";
