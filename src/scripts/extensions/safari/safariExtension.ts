@@ -1,5 +1,3 @@
-/// <reference path="../../../../typings/main/ambient/safari-extension/safari-extension.d.ts"/>
-
 import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
 import {Utils} from "../../utils";

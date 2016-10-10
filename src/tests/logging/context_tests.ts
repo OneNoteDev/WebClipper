@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Context, NoRequirements, ProductionRequirements} from "../../scripts/logging/context";
 
 let prod: Context;

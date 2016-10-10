@@ -1,35 +1,29 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {DomUtils} from "../../scripts/domParsers/domUtils";
-
 import {AugmentationHelper} from "../../scripts/contentCapture/augmentationHelper";
-
 import {Constants} from "../../scripts/constants";
-
 import {HelperFunctions} from "../helperFunctions";
-
 import {DataUrls} from "../clipperUI/regionSelector_tests_dataUrls";
 
 function createRootScriptIFrame(): HTMLIFrameElement {
-	let iframe = document.createElement("IFRAME") as HTMLIFrameElement;
+	let iframe = document.createElement("iframe") as HTMLIFrameElement;
 	iframe.id = Constants.Ids.clipperRootScript;
 	return iframe;
 }
 
 function createUiIFrame(): HTMLIFrameElement {
-	let iframe = document.createElement("IFRAME") as HTMLIFrameElement;
+	let iframe = document.createElement("iframe") as HTMLIFrameElement;
 	iframe.id = Constants.Ids.clipperUiFrame;
 	return iframe;
 }
 
 function createExtIFrame(): HTMLIFrameElement {
-	let iframe = document.createElement("IFRAME") as HTMLIFrameElement;
+	let iframe = document.createElement("iframe") as HTMLIFrameElement;
 	iframe.id = Constants.Ids.clipperExtFrame;
 	return iframe;
 }
 
 function createMainArticleContainer(): HTMLHtmlElement {
-	let div = document.createElement("DIV") as HTMLHtmlElement;
+	let div = <any>document.createElement("div") as HTMLHtmlElement;
 	div.className = "MainArticleContainer";
 	return div;
 }
@@ -93,7 +87,7 @@ test("removeClipperElements should remove all Web Clipper iframes, but not an ar
 	fixture.appendChild(createUiIFrame());
 	fixture.appendChild(createExtIFrame());
 
-	let arbitraryIframe = document.createElement("IFRAME") as HTMLIFrameElement;
+	let arbitraryIframe = document.createElement("iframe") as HTMLIFrameElement;
 	let arbitraryIframeId = "whatever";
 	arbitraryIframe.id = arbitraryIframeId;
 	arbitraryIframe.src = "https://www.mywebsite.doesnotexist";
@@ -116,7 +110,7 @@ test("removeClipperElements should remove all Web Clipper iframes, but not an ar
 });
 
 test("removeUnwantedElements should remove elements with tags that we don't support in full page mode", () => {
-	let tagsNotSupportedForFullPage = ["SCRIPT", "NOSCRIPT"];
+	let tagsNotSupportedForFullPage = ["script", "noscript"];
 	for (let i = 0; i < tagsNotSupportedForFullPage.length; i++) {
 		let element = document.createElement(tagsNotSupportedForFullPage[i]);
 		element.id = tagsNotSupportedForFullPage[i];
@@ -133,7 +127,7 @@ test("removeUnwantedElements should remove elements with tags that we don't supp
 
 test("removeUnwantedElements should not remove elements with tags that we support in full page mode", () => {
 	// Example subset
-	let tagsSupportedForFullPage = ["APPLET", "IMG", "DIV", "STYLE", "SVG", "VIDEO"];
+	let tagsSupportedForFullPage = ["applet", "img", "div", "style", "svg", "video"];
 	for (let i = 0; i < tagsSupportedForFullPage.length; i++) {
 		let element = document.createElement(tagsSupportedForFullPage[i]);
 		element.id = tagsSupportedForFullPage[i];
@@ -150,7 +144,7 @@ test("removeUnwantedElements should not remove elements with tags that we suppor
 
 test("removeUnwantedElements should not remove elements with tags that we support in full page mode when the " +
 	"document has both supported and unsupported elements", () => {
-	let tagsNotSupportedForFullPage = ["SCRIPT", "NOSCRIPT"];
+	let tagsNotSupportedForFullPage = ["script", "noscript"];
 	for (let i = 0; i < tagsNotSupportedForFullPage.length; i++) {
 		let element = document.createElement(tagsNotSupportedForFullPage[i]);
 		element.id = tagsNotSupportedForFullPage[i];
@@ -158,7 +152,7 @@ test("removeUnwantedElements should not remove elements with tags that we suppor
 	}
 
 	// Example subset
-	let tagsSupportedForFullPage = ["APPLET", "IMG", "DIV", "STYLE", "SVG", "VIDEO"];
+	let tagsSupportedForFullPage = ["applet", "img", "div", "style", "svg", "video"];
 	for (let i = 0; i < tagsSupportedForFullPage.length; i++) {
 		let element = document.createElement(tagsSupportedForFullPage[i]);
 		element.id = tagsSupportedForFullPage[i];
@@ -179,7 +173,7 @@ test("removeUnwantedElements should not remove elements with tags that we suppor
 });
 
 test("removeUnwantedAttributes should remove the srcset on images without modifying other attributes", () => {
-	let image = document.createElement("IMG") as HTMLImageElement;
+	let image = document.createElement("img") as HTMLImageElement;
 	let id = "IMG";
 	image.id = id;
 	let src = "https://cdn.mywebsite.doesnotexist";
@@ -202,7 +196,7 @@ test("removeUnwantedAttributes should remove the srcset on images without modify
 	let numberOfImages = 3;
 	let src = "https://cdn.mywebsite.doesnotexist";
 	for (let i = 0; i < numberOfImages; i++) {
-		let image = document.createElement("IMG") as HTMLImageElement;
+		let image = document.createElement("img") as HTMLImageElement;
 		let id = "IMG" + i;
 		image.id = id;
 		image.setAttribute("src", src);

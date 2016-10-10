@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {SmartValue} from "../../scripts/communicator/smartValue";
 
 QUnit.module("smartValue", {});

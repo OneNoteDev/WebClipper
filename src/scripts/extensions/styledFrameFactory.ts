@@ -46,7 +46,7 @@ export class StyledFrameFactory {
 	}
 
 	private static getGloballyStyledFrame(): HTMLIFrameElement {
-		let element = document.createElement("IFRAME") as HTMLIFrameElement;
+		let element = document.createElement("iframe") as HTMLIFrameElement;
 		StyledFrameFactory.applyGlobalStyles(element);
 		return element;
 	}

@@ -1,4 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
 import {AugmentationPreview} from "../../scripts/clipperUI/components/previewViewer/augmentationPreview";

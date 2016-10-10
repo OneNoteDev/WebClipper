@@ -1,5 +1,4 @@
-﻿/// <reference path="../../typings/main/ambient/qunit/qunit.d.ts" />
-import {Settings} from "../scripts/settings";
+﻿import {Settings} from "../scripts/settings";
 
 declare function require(name: string);
 let settings = require("../settings.json");
@@ -50,11 +49,6 @@ test("helper function checkValueAndDescriptionOnObject should assert when given 
 	ok(!checkValueAndDescriptionOnObject(noValue));
 	ok(!checkValueAndDescriptionOnObject(noDescription));
 	ok(checkValueAndDescriptionOnObject(valid));
-});
-
-test("All entries in setting.json should have a non-empty Value and Description", () => {
-	// Defined as an anonymous function in case we want to validate objects recursively
-	ok(checkValueAndDescriptionOnObject(settings), "An object is missing either a Value or a Description");
 });
 
 test("GetSetting should return undefined when passed the empty String as a key, because no setting can be named the empty string", () => {

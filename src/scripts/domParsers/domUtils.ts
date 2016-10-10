@@ -1,5 +1,8 @@
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-/// <reference path="../../../typings/main/ambient/mithril/mithril.d.ts"/>
+
+// 9/28/2016 - We need to go back and update sanitize-html to the latest .d.ts once 
+// they rename `sanitize` to `sanitizeHtml`, which is the name of the actually exported function
+declare let sanitizeHtml;
 
 import {Constants} from "../constants";
 import {Utils} from "../utils";
@@ -13,34 +16,128 @@ import {VideoExtractorFactory} from "./VideoExtractorFactory";
 export module DomUtils {
 	export module Tags {
 		export const a = "a";
+		export const b = "b";
 		export const applet = "applet";
+		export const article = "article";
 		export const audio = "audio";
 		export const base = "base";
+		export const body = "body";
+		export const br = "br";
 		export const button = "button";
 		export const canvas = "canvas";
 		export const center = "center";
+		export const cite = "cite";
+		export const del = "del";
+		export const div = "div";
+		export const em = "em";
 		export const embed = "embed";
+		export const figure = "figure";
+		export const font = "font";
+		export const h1 = "h1";
+		export const h2 = "h2";
+		export const h3 = "h3";
+		export const h4 = "h4";
+		export const h5 = "h5";
+		export const h6 = "h6";
 		export const head = "head";
+		export const header = "header";
 		export const hr = "hr";
 		export const html = "html";
+		export const i = "i";
 		export const iframe = "iframe";
 		export const img = "img";
 		export const input = "input";
+		export const li = "li";
 		export const link = "link";
+		export const main = "main";
 		export const map = "map";
 		export const menu = "menu";
 		export const menuitem = "menuitem";
 		export const meta = "meta";
 		export const meter = "meter";
 		export const noscript = "noscript";
+		export const object = "object";
+		export const ol = "ol";
+		export const p = "p";
 		export const progress = "progress";
 		export const script = "script";
+		export const span = "span";
 		export const source = "source";
+		export const strike = "strike";
+		export const strong = "strong";
 		export const style = "style";
+		export const sub = "sub";
+		export const sup = "sup";
 		export const svg = "svg";
+		export const table = "table";
+		export const td = "td";
+		export const title = "title";
+		export const tr = "tr";
+		export const u = "u";
+		export const ul = "ul";
 		export const video = "video";
 	}
 
+	// See the OneNote Dev Center API Reference for a list of supported attributes and tags
+	// https://dev.onenote.com/docs#/introduction/html-tag-support-for-pages
+	const attributesAllowedByOnml: { [index: string]: string[] } = {
+		"a": ["href", "name", "target"],
+		"img": ["src"],
+		"*": ["src", "background-color", "color", "font-family", "font-size", "data*", "alt", "height", "width", "style", "id", "type"]
+	};
+
+	const tableTags = [
+		Tags.table,
+		Tags.td,
+		Tags.tr
+	];
+
+	const markupTags = [
+		Tags.b,
+		Tags.em,
+		Tags.strong,
+		Tags.i,
+		Tags.u,
+		Tags.strike,
+		Tags.del,
+		Tags.sup,
+		Tags.sub,
+		Tags.cite,
+		Tags.font
+	];
+
+	const htmlTags = [
+		Tags.html,
+		Tags.head,
+		Tags.title,
+		Tags.meta,
+		Tags.body,
+		Tags.div,
+		Tags.span,
+		Tags.article,
+		Tags.figure,
+		Tags.header,
+		Tags.main,
+		Tags.center,
+		Tags.iframe,
+		Tags.a,
+		Tags.p,
+		Tags.br,
+		Tags.h1,
+		Tags.h2,
+		Tags.h3,
+		Tags.h4,
+		Tags.h5,
+		Tags.h6,
+		Tags.ul,
+		Tags.ol,
+		Tags.li,
+		Tags.img,
+		Tags.object,
+		Tags.video
+	];
+
+	// TODO: write a module test to make sure these tagsNotSupportedInOnml and the tags above have no intersection
 	const tagsNotSupportedInOnml = [
 		Tags.applet,
 		Tags.audio,
@@ -63,14 +160,42 @@ export module DomUtils {
 		Tags.video
 	];
 
-	export function removeElementsNotSupportedInOnml(doc: Document) {
+	/**
+	 * Given an HTML Document in string form, return an HTML Document in string form
+	 * with the attributes and the content between the HTML tags scrubbed, while preserving
+	 * document structure
+	 */
+	export function cleanHtml(contentInHtml: string): string {
+		let allAttributes: string[] = [];
+		for (let key in attributesAllowedByOnml) {
+			if (attributesAllowedByOnml.hasOwnProperty(key)) {
+				allAttributes = allAttributes.concat(attributesAllowedByOnml[key]);
+			}
+		}
+
+		let tags = htmlTags.concat(markupTags).concat(tableTags);
+		let sanitizedHtml = sanitizeHtml(contentInHtml, {
+			allowedTags: tags,
+			allowedAttributes: attributesAllowedByOnml,
+			allowedSchemes: sanitizeHtml.defaults.allowedSchemes.concat(["data"]),
+			allowedClasses: {
+				"*": ["MainArticleContainer"]
+			}
+		});
+
+		return sanitizedHtml;
+	}
+
+	export function removeElementsNotSupportedInOnml(doc: Document): void {
 		// For elements that cannot be converted into something equivalent in ONML, we remove them ...
 		domReplacer(doc, tagsNotSupportedInOnml.join());
 
+		let tagsToTurnIntoDiv = [Tags.main, Tags.article, Tags.figure, Tags.header, Tags.center];
+
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
-		domReplacer(doc, Tags.center, (node: HTMLElement) => {
-			let div = document.createElement("DIV");
-			div.innerHTML = node.innerHTML;
+		domReplacer(doc, tagsToTurnIntoDiv.join(), (node: HTMLElement) => {
+			let div = document.createElement("div");
+			div.innerHTML = DomUtils.cleanHtml(node.innerHTML);
 			return div;
 		});
 	}
@@ -360,7 +485,6 @@ export module DomUtils {
 				// Just passing in the image node won't work as it won't render properly
 				// and the algorithm will think every pixel is (0,0,0,0)
 				let theImg = new Image();
-				theImg.src = img.src;
 
 				// In Firefox, a SecurityError is thrown if the image is not CORS-enabled
 				theImg.crossOrigin = "anonymous";
@@ -372,6 +496,9 @@ export module DomUtils {
 				theImg.onerror = () => {
 					resolve(undefined);
 				};
+
+				// The request is kicked off as soon as the src is set, so it needs to happen last
+				theImg.src = img.src;
 			});
 		});
 	}
@@ -385,7 +512,7 @@ export module DomUtils {
 			return false;
 		}
 
-		let canvas = document.createElement("CANVAS") as HTMLCanvasElement;
+		let canvas = document.createElement("canvas") as HTMLCanvasElement;
 		canvas.width = img.width;
 		canvas.height = img.height;
 

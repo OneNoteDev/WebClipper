@@ -1,9 +1,10 @@
-/// <reference path="../../typings/main/ambient/qunit/qunit.d.ts" />
-
+import {ClientType} from "../scripts/clientType";
 import {Constants} from "../scripts/constants";
 import {Utils} from "../scripts/utils";
 
 import {TooltipType} from "../scripts/clipperUI/tooltipType";
+
+import {HelperFunctions} from "./helperFunctions";
 
 QUnit.module("utils", {});
 
@@ -122,6 +123,52 @@ test("generateSignOutUrl should generate the correct URL given a valid clipperId
 test("generateSignOutUrl should generate the correct URL given a valid clipperId, sessionId, and O365 authType", () => {
 	let newUrl = Utils.generateSignOutUrl("ON-1234-abcd", "session4567", "OrgId");
 	strictEqual(newUrl, Constants.Urls.Authentication.signOutUrl + "?authType=OrgId&clipperId=ON-1234-abcd&userSessionId=session4567");
+});
+
+export module TestConstants {
+	export module LogCategories {
+		export var oneNoteClipperUsage = "OneNoteClipperUsage";
+	}
+	export module Urls {
+		export var clipperFeedbackUrl = "https://www.onenote.com/feedback";
+	}
+}
+
+test("The generated feedback url should be correct with url query values set appropriately", () => {
+	let startingState = HelperFunctions.getMockClipperState();
+	let usid: string = Utils.generateGuid();
+
+	let url = Utils.generateFeedbackUrl(startingState, usid, TestConstants.LogCategories.oneNoteClipperUsage);
+	strictEqual(url.indexOf("#"), -1,
+		"There should be no fragment in the feedback url");
+
+	let splitUrl = url.split("?");
+	let hostAndPath = splitUrl[0];
+	let queryParams = splitUrl[1].split("&");
+
+	strictEqual(hostAndPath, TestConstants.Urls.clipperFeedbackUrl,
+		"The feedback host and path should be correct");
+
+	let expectedQueryParams = {
+		LogCategory: TestConstants.LogCategories.oneNoteClipperUsage,
+		originalUrl: startingState.pageInfo.rawUrl,
+		clipperId: startingState.clientInfo.clipperId,
+		usid: usid,
+		type: ClientType[startingState.clientInfo.clipperType],
+		version: startingState.clientInfo.clipperVersion
+	};
+
+	strictEqual(queryParams.length, 6, "There must be exactly 6 query params");
+
+	for (let i = 0; i < queryParams.length; i++) {
+		let keyValuePair = queryParams[i].split("=");
+		let key = keyValuePair[0];
+		let value = keyValuePair[1];
+		ok(expectedQueryParams.hasOwnProperty(key),
+			"The key " + key + " must exist in the query params");
+		strictEqual(value, expectedQueryParams[key],
+			"The correct value must be assigned to the key " + key);
+	}
 });
 
 test("getFileNameFromUrl should return the file name when the url has a pdf file name", () => {
@@ -245,6 +292,21 @@ test("getQueryValue should return undefined if any of the parameters are undefin
 	strictEqual(Utils.getQueryValue(undefined, "q"), undefined);
 	strictEqual(Utils.getQueryValue("www.website.com/stuff?q=v", ""), undefined);
 	strictEqual(Utils.getQueryValue("", "q"), undefined);
+});
+
+test("getQueryValue should return a valid error if an error is specified.", () => {
+	let url = "https://www.onenote.com/webclipper/auth?error=access_denied&error_description=AADSTS50000:+There+was+an+error+issuing+a+token.&state=abcdef12-6ac8-41bd-0445-f7ef7a4182e7";
+	strictEqual(Utils.getQueryValue(url, Constants.Urls.QueryParams.error), "access_denied");
+});
+
+test("getQueryValue should return a valid error description if an O365 error_description is specified.", () => {
+	let url = "https://www.onenote.com/webclipper/auth?error=access_denied&error_description=AADSTS50000:+There+was+an+error+issuing+a+token.&state=abcdef12-6ac8-41bd-0445-f7ef7a4182e7";
+	strictEqual(Utils.getQueryValue(url, Constants.Urls.QueryParams.errorDescription), "AADSTS50000: There was an error issuing a token.");
+});
+
+test("getQueryValue should return a valid error description if an MSA errorDescription is specified.", () => {
+	let url = "https://www.onenote.com/webclipper/auth?error=access_denied&errorDescription=AADSTS50000:+There+was+an+error+issuing+a+token.&state=abcdef12-6ac8-41bd-0445-f7ef7a4182e7";
+	strictEqual(Utils.getQueryValue(url, Constants.Urls.QueryParams.errorDescription), "AADSTS50000: There was an error issuing a token.");
 });
 
 test("isNumeric should return false when the value is a string", () => {

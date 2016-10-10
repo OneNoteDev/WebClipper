@@ -1,5 +1,3 @@
-/// <reference path="../../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {HelperFunctions} from "../../helperFunctions";
 import {ModeButton} from "../../../scripts/clipperUI/components/modeButton";
 

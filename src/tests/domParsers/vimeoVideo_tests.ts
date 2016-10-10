@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {VideoUtils} from "../../scripts/domParsers/videoUtils";
 import {VimeoVideoExtractor} from "../../scripts/domParsers/vimeoVideoExtractor";
 

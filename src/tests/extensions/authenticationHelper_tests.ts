@@ -1,4 +1,4 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
+import * as sinon from "sinon";
 
 import {AuthenticationHelper} from "../../scripts/extensions/authenticationHelper";
 import {UserInfoData} from "../../scripts/userInfo";

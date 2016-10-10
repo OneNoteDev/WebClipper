@@ -18,13 +18,19 @@ export module VideoUtils {
 	 * the pageUrl's hostname contains the enum string
 	 */
 	export function videoDomainIfSupported(pageUrl: string): string {
-		if (!Utils.onWhitelistedDomain(pageUrl)) {
+		if (!pageUrl) {
 			return;
 		}
 
-		let hostname = Utils.getHostname(pageUrl);
+		let pageUrlAsLowerCase = pageUrl.toLowerCase();
+		if (!Utils.onWhitelistedDomain(pageUrlAsLowerCase)) {
+			return;
+		}
 
-		for (let domain in SupportedVideoDomains) {
+		let hostname = Utils.getHostname(pageUrlAsLowerCase).toLowerCase();
+
+		for (let domainEnum in SupportedVideoDomains) {
+			let domain = SupportedVideoDomains[domainEnum];
 			if (typeof(domain) === "string" && hostname.indexOf(domain.toLowerCase() + ".") > -1) {
 				return domain;
 			}

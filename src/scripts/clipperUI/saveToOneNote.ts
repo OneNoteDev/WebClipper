@@ -7,9 +7,13 @@ import {Utils} from "../utils";
 import {AugmentationModel} from "../contentCapture/augmentationHelper";
 import {PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
 
+import {DomUtils} from "../domParsers/domUtils";
+
 import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
+
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
@@ -45,12 +49,24 @@ export class SaveToOneNote {
 
 			this.addPrimaryContentToPage(page, clipperState.currentMode.get()).then(() => {
 				this.createNewPage(page).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+					this.incrementClipSuccessCount(clipperState);
 					resolve({ responsePackage: responsePackage, annotationAdded: annotationAdded });
 				}, (error: OneNoteApi.RequestError) => {
 					reject(error);
 				});
 			});
 		});
+	}
+
+	/**
+	 * Checks for the 1) data result from creating a new page on clip, and 2) completion of the show ratings prompt calculation
+	 */
+	public static getClipSuccessStatus(clipperState: ClipperState): Status {
+		if (clipperState.showRatingsPrompt && !Utils.isNullOrUndefined(clipperState.showRatingsPrompt.get()) && clipperState.oneNoteApiResult.data) {
+			return Status.Succeeded;
+		}
+
+		return Status.InProgress;
 	}
 
 	private static logPageModifications(clipperState: ClipperState) {
@@ -65,8 +81,8 @@ export class SaveToOneNote {
 		pageModificationsEvent.setCustomProperty(Log.PropertyName.Custom.IsSerif, isAugmentationMode ? clipperState.previewGlobalInfo.serif : notApplicableText);
 
 		if (isAugmentationMode) {
-			let container = document.createElement("DIV");
-			container.innerHTML = clipperState.augmentationPreviewInfo.previewBodyHtml;
+			let container = document.createElement("div");
+			container.innerHTML = DomUtils.cleanHtml(clipperState.augmentationPreviewInfo.previewBodyHtml);
 			let highlightedList = container.getElementsByClassName(Constants.Classes.highlighted);
 			pageModificationsEvent.setCustomProperty(Log.PropertyName.Custom.ContainsAtLeastOneHighlight, highlightedList && highlightedList.length > 0);
 		} else {
@@ -153,8 +169,8 @@ export class SaveToOneNote {
 
 	private static createPostProcessessedHtml(html: string): HTMLElement {
 		// Wrap the preview in in-line styling to persist the styling through the OneNote API
-		let newPreviewBody = document.createElement("DIV");
-		newPreviewBody.innerHTML = html;
+		let newPreviewBody = document.createElement("div");
+		newPreviewBody.innerHTML = DomUtils.cleanHtml(html);
 
 		let fontSize = this.clipperState.previewGlobalInfo.fontSize.toString() + "px";
 		let fontFamilyString = (this.clipperState.previewGlobalInfo.serif) ? "WebClipper.FontFamily.Preview.SerifDefault" : "WebClipper.FontFamily.Preview.SansSerifDefault";
@@ -172,6 +188,16 @@ export class SaveToOneNote {
 
 		this.stripUnwantedUIElements(newPreviewBody);
 		return newPreviewBody;
+	}
+
+	// Adds 1 to the value stored in StorageKeys.numSuccessfulClips and clipperState.numSuccessfulClips
+	private static incrementClipSuccessCount(clipperState: ClipperState): void {
+		let numSuccessfulClips: number = clipperState.numSuccessfulClips.get();
+
+		numSuccessfulClips++;
+
+		Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numSuccessfulClips.toString());
+		clipperState.numSuccessfulClips.set(numSuccessfulClips);
 	}
 
 	// Strips out UI elements that we don't wish to persist to the API

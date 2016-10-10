@@ -1,5 +1,3 @@
-/// <reference path="../../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {PreviewViewerRegionHeader} from "../../../scripts/clipperUI/components/previewViewer/previewViewerRegionHeader";
 
 import {ClipperState} from "../../../scripts/clipperUI/clipperState";

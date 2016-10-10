@@ -119,7 +119,6 @@
 	top: @ClipperUITopRightOffset;
 	right: @ClipperUITopRightOffset;
 	width: 100px;
-	background: @OneNotePurple;
 	background: @OneNotePurpleTransparent;
 	border-radius: @ClipperBorderRadius;
 	box-shadow: @ClipperBoxShadow;
@@ -139,6 +138,13 @@
 		padding-bottom: @ClipperUIInnerPadding - @FooterOffset;
 		text-align: center;
 		width: @ClipperUIWidth - (@ClipperUIInnerPadding*2);
+	}
+}
+
+#regionButton {
+	.icon {
+		// For the region mode button, the icon is a little fatter so we need to reduce padding with the same amount
+		padding-right: 8px; // 12px - 4px
 	}
 }
 

@@ -1,5 +1,3 @@
-/// <reference path="../../../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Constants} from "../../../../scripts/constants";
 
 import {ClipperState} from "../../../../scripts/clipperUI/clipperState";
@@ -367,7 +365,7 @@ test("If the user selects something in the highlightable preview body, then clic
 	let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
 
 	// This id is necessary for the highlighting to be enabled on this element's children
-	let paragraph = document.createElement("P");
+	let paragraph = document.createElement("p");
 	let paragraphId = "para";
 	paragraph.id = paragraphId;
 	let innerText = "Test";
@@ -402,7 +400,7 @@ test("If the user selects something outside the highlightable preview body, then
 	let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
 
 	// This id is necessary for the highlighting to be enabled on this element's children
-	let paragraph = document.createElement("P");
+	let paragraph = document.createElement("p");
 	let paragraphId = "para";
 	paragraph.id = paragraphId;
 	let innerText = "Test";

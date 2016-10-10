@@ -1,5 +1,4 @@
-/// <reference path="../../../../typings/main/ambient/qunit/qunit.d.ts" />
-/// <reference path="../../../../typings/main/ambient/sinon/sinon.d.ts" />
+import * as sinon from "sinon";
 
 import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
 import {Status} from "../../../scripts/clipperUI/status";
