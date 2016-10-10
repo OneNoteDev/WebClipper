@@ -123,6 +123,11 @@ export module HelperFunctions {
 				previewTitleText: "Edited title",
 				serif: false
 			},
+			pdfPreviewInfo: {
+				allPages: true,
+				pagesToShow: [1, 3, 5],
+				shouldAttachPdf: true
+			},
 			augmentationPreviewInfo: {
 				previewBodyHtml: "Edited body"
 			},

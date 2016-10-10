@@ -6,6 +6,12 @@
 	serif?: boolean;
 }
 
+export interface PdfPreviewInfo {
+	allPages?: boolean;
+	pagesToShow?: number[];
+	shouldAttachPdf?: boolean;
+};
+
 export interface PreviewInfo {
 	previewBodyHtml?: string;
 };

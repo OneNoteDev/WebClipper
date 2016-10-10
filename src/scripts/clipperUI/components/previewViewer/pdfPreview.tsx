@@ -28,7 +28,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	getInitialState(): PdfPreviewState {
 		return {
 			allPages: true,
-			pagesToShow: [1, 3, 5],
+			pagesToShow: [0, 2, 4],
 			shouldAttachPdf: false
 		} as PdfPreviewState;
 	}
@@ -103,7 +103,8 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 		// TODO: make sure the range is valid
 		if (!this.state.allPages) {
-			pagesToShow = pagesToShow.map((index) => { return index - 1; });
+			// TODO: parse this when the user actually types it in
+			// pagesToShow = pagesToShow.map((index) => { return index - 1; });
 			dataUrls = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
 		}
 		// let previewImages = [];

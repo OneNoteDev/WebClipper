@@ -1,6 +1,6 @@
 import {ClientInfo} from "../clientInfo";
 import {PageInfo} from "../pageInfo";
-import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
+import {PdfPreviewInfo, PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
 import {UserInfo} from "../userInfo";
 
 import {SmartValue} from "../communicator/smartValue";
@@ -55,6 +55,7 @@ export interface ClipperState {
 	previewGlobalInfo?: PreviewGlobalInfo;
 	augmentationPreviewInfo?: PreviewInfo;
 	bookmarkPreviewInfo?: PreviewInfo;
+	pdfPreviewInfo?: PdfPreviewInfo;
 	selectionPreviewInfo?: PreviewInfo;
 
 	// Save to OneNote status

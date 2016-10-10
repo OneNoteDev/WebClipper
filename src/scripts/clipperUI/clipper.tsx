@@ -642,14 +642,15 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		this.state.setState({ userResult: { status: Status.InProgress, data: this.state.userResult.data } });
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, { callback: (updatedUser: UserInfo) => {
 			if (updatedUser && updatedUser.user) {
-				if (this.state.currentMode.get() === ClipMode.FullPage) {
+				let currentMode = this.state.currentMode.get();
+				if (currentMode === ClipMode.FullPage) {
 					// A page info refresh needs to be triggered if the url has changed right before the clip action
 					Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged, {
 						callback: () => {
 							this.startClip();
 						}
 					});
-				} else if (this.state.currentMode.get() === ClipMode.Bookmark) {
+				} else if (currentMode === ClipMode.Bookmark) {
 					// set the rendered bookmark preview HTML as the exact HTML to send to OneNote
 					let previewBodyHtml = document.getElementById("previewBody").innerHTML;
 					this.state.setState({
@@ -657,6 +658,24 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					});
 
 					this.startClip();
+				} else if (currentMode === ClipMode.Pdf) {
+					// compute what we actually want to send across the wire
+					let pdfPreviewSettings = this.state.pdfPreviewInfo;
+					
+					if (!pdfPreviewSettings.allPages) {
+						let pdfResultSv = this.state.pdfResult.data;
+						let dataUrls = pdfResultSv.get().dataUrls;
+						let pagesToShow = pdfPreviewSettings.pagesToShow;
+						let filteredDataUrls = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+						pdfResultSv.set({
+							dataUrls: filteredDataUrls
+						});
+					}
+					
+					if (!pdfPreviewSettings.shouldAttachPdf) {
+						
+					}
+
 				} else {
 					this.startClip();
 				}
