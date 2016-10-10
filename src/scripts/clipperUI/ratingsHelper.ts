@@ -27,6 +27,7 @@ interface RatingsLoggingInfo {
 	lastBadRatingVersion?: string;
 	lastSeenVersion?: string;
 	numSuccessfulClips?: number;
+	numSuccessfulClipsAnchor?: number;
 	ratingsPromptEnabledForClient?: boolean;
 	usedCachedValue?: boolean;
 }
@@ -172,12 +173,12 @@ export class RatingsHelper {
 
 	/**
 	 * Returns true if ALL of the below applies:
-	 *   * Number of successful clips >= {Constants.Settings.minClipSuccessForRatingsPrompt}
-	 *   * Number of successful clips <= {Constants.Settings.maxClipSuccessForRatingsPrompt}
+	 *   * (Number of successful clips - Anchor clip value) >= {Constants.Settings.minClipSuccessForRatingsPrompt}
+	 *   * (Number of successful clips - Anchor clip value) <= {Constants.Settings.maxClipSuccessForRatingsPrompt}
 	 *
 	 * Public for testing
 	 */
-	public static clipSuccessDelayIsOver(numClips: number): boolean {
+	public static clipSuccessDelayIsOver(numClips: number, anchorClipValue = 0): boolean {
 		if (isNaN(numClips)) {
 			return false;
 		}
@@ -242,6 +243,7 @@ export class RatingsHelper {
 		let lastBadRatingVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingVersion);
 		let lastSeenVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastSeenVersion);
 		let numClipsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips);
+		let numClipsAnchorAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement);
 
 		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsStr)) {
 			logEventInfo.doNotPromptRatings = true;
@@ -250,6 +252,7 @@ export class RatingsHelper {
 
 		let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
 		let numClips: number = parseInt(numClipsAsStr, 10);
+		let numClipsAnchor: number = parseInt(numClipsAnchorAsStr, 10);
 
 		/* tslint:disable:no-null-keyword */
 			// null is the value storage gives back; also, setting to undefined will keep this kvp from being logged at all
@@ -258,10 +261,11 @@ export class RatingsHelper {
 		logEventInfo.lastBadRatingVersion = lastBadRatingVersion;
 		logEventInfo.lastSeenVersion = lastSeenVersion;
 		logEventInfo.numSuccessfulClips = numClips;
+		logEventInfo.numSuccessfulClipsAnchor = numClipsAnchor;
 
 		let badRatingTimingDelayIsOver: boolean = RatingsHelper.badRatingTimingDelayIsOver(lastBadRatingDate, Date.now());
 		let badRatingVersionDelayIsOver: boolean = RatingsHelper.badRatingVersionDelayIsOver(lastBadRatingVersion, lastSeenVersion);
-		let clipSuccessDelayIsOver: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips);
+		let clipSuccessDelayIsOver: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips, numClipsAnchor);
 
 		logEventInfo.badRatingTimingDelayIsOver = badRatingTimingDelayIsOver;
 		logEventInfo.badRatingVersionDelayIsOver = badRatingVersionDelayIsOver;
