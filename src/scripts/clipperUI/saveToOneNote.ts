@@ -136,7 +136,7 @@ export class SaveToOneNote {
 					let previewOptions = clipperState.pdfPreviewInfo;
 					let pdfResult = clipperState.pdfResult.data.get();
 					// let dataUrls = clipperState.pdfResult.data.get().dataUrls;
-					this.addEnhancedUrlContentToPage(page).then(() => {
+					this.addEnhancedUrlContentToPageTwo(page, pdfResult, previewOptions).then(() => {
 						resolve();
 					});
 					break;
@@ -256,33 +256,7 @@ export class SaveToOneNote {
 		return mimePartName;
 	}
 
-	// This function handles posting a PDF to OneNote. We handle the PDF differently based on:
-	//  1. Whether the user wants ALL pages or a subset of pages.
-	//  2. Where the user wants to attach the PDF 
-	private static addEnhancedUrlContentToPageTwo(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer, dataUrls: string[], options: PdfPreviewInfo) {
-		let addAttachment = options.shouldAttachPdf;
-		let allPages = options.allPages;
 
-		
-		if (addAttachment) {
-			let mimePartName = SaveToOneNote.addEnhancedUrlAttachmentToPage(page, arrayBuffer);
-
-			if (allPages) {
-				// This optimization, though it complicates the logic, lets us save on lots of requests
-				SaveToOneNote.renderMimePartNameAsImage(page, mimePartName);
-			} else {
-				// TODO: batch the dataUrl requests with the caveat that the first request can only have 5
-				SaveToOneNote.addDataUrlImagesToPage(page, dataUrls);
-			}
-
-		} else {
-			// TODO: batch the dataUrl requests
-			// construct a POST, followed by a bunch of PATCHes
-			let numRequestsToSend = Math.floor(dataUrls.length / OneNoteApiUtils.Limits.imagesPerRequestLimit);
-			// helper function to split an array into the appropriate pieces
-			SaveToOneNote.addDataUrlImagesToPage(page, dataUrls);
-		}
-	}
 
 	private static addDataUrlImagesToPage(page: OneNoteApi.OneNotePage, dataUrlsToAdd: string[]): void {
 		for (let regionDataUrl of dataUrlsToAdd) {
@@ -326,12 +300,80 @@ export class SaveToOneNote {
 		page.addObjectUrlAsImage(nameToUse);
 	}
 
+	// This function handles posting a PDF to OneNote. We handle the PDF differently based on:
+	//  1. Whether the user wants ALL pages or a subset of pages.
+	//  2. Where the user wants to attach the PDF 
+	private static addEnhancedUrlContentToPageTwo(page: OneNoteApi.OneNotePage, pdfResult: PdfScreenshotResult, options: PdfPreviewInfo) {
+		let addAttachment = options.shouldAttachPdf;
+		let allPages = options.allPages;
+
+		let arrayBuffer = pdfResult.arrayBuffer;
+		let dataUrls = pdfResult.dataUrls;
+
+		let pagesToShow = options.pagesToShow;
+		let filteredDataUrls = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+
+		if (addAttachment) {
+			let mimePartName = SaveToOneNote.addEnhancedUrlAttachmentToPage(page, arrayBuffer);
+
+			if (allPages) {
+				// This optimization, though it complicates the logic, lets us save on lots of requests
+				SaveToOneNote.renderMimePartNameAsImage(page, mimePartName);
+			} else {
+				// TODO: batch the dataUrl requests with the caveat that the first request can only have 5
+				SaveToOneNote.addDataUrlImagesToPage(page, dataUrls);
+			}
+
+		} else {
+			// TODO: batch the dataUrl requests
+			// construct a POST, followed by a bunch of PATCHes
+			let numRequestsToSend = Math.floor(dataUrls.length / OneNoteApiUtils.Limits.imagesPerRequestLimit);
+			// helper function to split an array into the appropriate pieces
+			SaveToOneNote.addDataUrlImagesToPage(page, dataUrls);
+		}
+	}
+
+	// This function takes an array of dataUrls and separates them out into ranges 
+	// so that each can individually be put into a request
+	private createRangesForAppending(dataUrls: string[]): string[][] {
+		let limit = OneNoteApiUtils.Limits.imagesPerRequestLimit;
+		let numRequests = Math.floor(dataUrls.length / limit) + 1;
+		let subranges: string[][];
+		for (let i = 0; i < numRequests; ++i) {
+			let left = i * limit;
+			let right = (i + 1) * limit;
+			subranges.push(dataUrls.slice(left, right));
+		}
+		return subranges;
+	}
+	
+	private createPatchRequestBody(dataUrls: string[]): string {
+		let requestBody = [];
+		dataUrls.forEach((dataUrl) => {
+			let content = "<p><img src=\"" + dataUrl + "\" /></p>&nbsp;";
+			requestBody.push({
+				target: "body",
+				action: "append",
+				content: content
+			});
+		});
+		return JSON.stringify(requestBody);
+	}
+	
+	private static createOneNotePagePatchRequest(): Promise<any> {
+		let headers: { [key: string]: string } = {};
+		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId()
+		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
+		
+	}
+
 	// POST the page to OneNote API
 	private static createNewPage(page: OneNoteApi.OneNotePage): Promise<any> {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(this.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-		return oneNoteApi.createPage(page, this.clipperState.saveLocation);
+		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
+		return oneNoteApi.createPage(page, SaveToOneNote.clipperState.saveLocation);
 	}
 }

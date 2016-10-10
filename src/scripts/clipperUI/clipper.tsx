@@ -661,21 +661,15 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				} else if (currentMode === ClipMode.Pdf) {
 					// compute what we actually want to send across the wire
 					let pdfPreviewSettings = this.state.pdfPreviewInfo;
-					
 					if (!pdfPreviewSettings.allPages) {
 						let pdfResultSv = this.state.pdfResult.data;
 						let dataUrls = pdfResultSv.get().dataUrls;
 						let pagesToShow = pdfPreviewSettings.pagesToShow;
 						let filteredDataUrls = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
-						pdfResultSv.set({
-							dataUrls: filteredDataUrls
-						});
+						// pdfResultSv.set({
+						// 	dataUrls: filteredDataUrls
+						// });
 					}
-					
-					if (!pdfPreviewSettings.shouldAttachPdf) {
-						
-					}
-
 				} else {
 					this.startClip();
 				}
