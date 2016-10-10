@@ -386,6 +386,11 @@ test("badRatingAlreadyOccurred returns true when lastBadRatingDate is a valid nu
 
 // shouldShowRatingsPrompt
 
+// TODO test different settings of ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement:
+//  * does not exist
+//  * exists and combines with ClipperStorageKeys.numSuccessfulClips to stay within valid clip range
+//  * exists but combines with ClipperStorageKeys.numSuccessfulClips to exit valid clip range
+
 test("shouldShowRatingsPrompt returns hardcoded false when clipperState is undefined", () => {
 	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(undefined);
 	strictEqual(shouldShowRatingsPrompt, false);

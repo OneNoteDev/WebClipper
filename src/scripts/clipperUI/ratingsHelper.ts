@@ -182,8 +182,35 @@ export class RatingsHelper {
 			return false;
 		}
 
+		// TODO numClips = number of clips since ratings prompt was enabled for the user's client
+		// handle if numSuccessfulClipsOnFirstRatingsEnablement does not exist (assume 0)
+
 		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt &&
 			numClips <= Constants.Settings.maxClipSuccessForRatingsPrompt;
+	}
+
+	/**
+	 * Sets ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement to be
+	 * the current value of ClipperStorageKeys.numSuccessfulClips, if needed.
+	 *
+	 * The set is "needed" if ALL of the below applies:
+	 *   * The user has not already interacted with the prompt (ClipperStorageKeys.doNotPromptRatings is not set)
+	 *   * ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement has not already been set
+	 *
+	 * Public for testing (TODO)
+	 *
+	 * NOTE OF EXPLANATION: We first check if the user has already interacted with the prompt for backwards compatibility
+	 * with the original implementation of the ratings prompt that did not include this method. It ensures that we will not
+	 * re-raise the prompt for users who have already interacted with it (although it is possible users who didn't interact
+	 * with the original prompt see it up to twice as many times as originally planned).
+	 */
+	public static setNumSuccessfulClipsOnFirstRatingsEnablement(): void {
+		/* TODO let doNotPromptRatingsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
+		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsStr)) {
+			return;
+		}*/
+
+		// TODO if numSuccessfulClipsOnFirstRatingsEnablement does not already exist, perform the copy
 	}
 
 	/**
@@ -208,13 +235,15 @@ export class RatingsHelper {
 			return false;
 		}
 
+		RatingsHelper.setNumSuccessfulClipsOnFirstRatingsEnablement();
+
 		let doNotPromptRatingsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
 		let lastBadRatingDateAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingDate);
 		let lastBadRatingVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingVersion);
 		let lastSeenVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastSeenVersion);
 		let numClipsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips);
 
-		if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
+		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsStr)) {
 			logEventInfo.doNotPromptRatings = true;
 			return false;
 		}
@@ -260,5 +289,9 @@ export class RatingsHelper {
 	private static isValidDate(date: number): boolean {
 		let minimumTimeValue: number = (Constants.Settings.maximumJSTimeValue * -1);
 		return date >= minimumTimeValue && date <= Constants.Settings.maximumJSTimeValue;
+	}
+
+	private static doNotPromptRatingsIsSet(doNotPromptRatingsStr: string): boolean {
+		return !Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true";
 	}
 }
