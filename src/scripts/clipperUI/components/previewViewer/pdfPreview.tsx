@@ -16,7 +16,9 @@ import {Status} from "../../status";
 import {RotatingMessageSpriteAnimation} from "../../components/rotatingMessageSpriteAnimation";
 
 import {PreviewComponentBase} from "./previewComponentBase";
-import {PreviewViewerPdfHeader} from "./previewViewerPdfHeader";
+import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
+
+import * as _ from "lodash";
 
 interface PdfPreviewState {
 	allPages?: boolean;
@@ -49,14 +51,38 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		});
 	}
 
+	// Takes a range of the form 1,3-6,7,8,13,1,3,4,a-b, etc. and then returns an array
+	// corresponding to the numbers in that range. It ignores invalid input, sorts it, and removes duplicates
+	private parsePageRange(text: string): number[] {
+		let initialRange = text.split(",").reduce((previousValue, currentValue) => {
+			let valueToAppend: number[] = [], matches;
+			// The value could be a single digit
+			if (/^\d+$/.test(currentValue)) {
+				valueToAppend = [parseInt(currentValue, 10 /* radix */)];
+				// ... or it could a range of the form [#]-[#]
+			} else if (matches = /^(\d+)-(\d+)$/.exec(currentValue)) {
+				let lhs = parseInt(matches[1], 10), rhs = parseInt(matches[2], 10) + 1;
+				// TODO: what do we do if start > end? This is a behavior question, not an implementation one
+				valueToAppend = _.range(lhs, rhs);
+			}
+			return previousValue = previousValue.concat(valueToAppend);
+		}, []);
+		return _(initialRange).sortBy().sortedUniq().value();
+	}
+
 	onTextChange(text: string) {
+		console.log(this.parsePageRange(text));
 		console.log("text: " + text);
 	}
+
+	// onStopTyping(text: string) {
+	// 	return _.debounce(this.onTextChange, )
+	// }
 
 	protected getHeader(): any {
 		return <PreviewViewerPdfHeader
 				onSelectionChange={this.onSelectionChange.bind(this)}
-				onTextChange={this.onTextChange.bind(this)}
+				onTextChange={_.debounce(this.onTextChange.bind(this), 500)}
 				clipperState={this.props.clipperState} />;
 	}
 

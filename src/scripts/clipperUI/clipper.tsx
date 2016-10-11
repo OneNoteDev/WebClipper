@@ -88,6 +88,11 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			},
 			augmentationPreviewInfo: {},
 			selectionPreviewInfo: {},
+			pdfPreviewInfo: {
+				allPages: false,
+				pagesToShow: [0, 2, 4],
+				shouldAttachPdf: false,
+			},
 
 			showRatingsPrompt: new SmartValue<boolean>(),
 
@@ -176,23 +181,25 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private capturePdfScreenshotContent() {
 		if (this.state.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
-			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.Failed } });
-			this.state.pdfResult.data.set({
-				failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
-			});
+			// this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.Failed } });
 
-			this.state.setState({
-				pdfResult: {
-					data: this.state.pdfResult.data,
-					status: Status.Failed
-				}
-			});
+			// this.state.pdfResult.data.set({
+			// 	failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+			// });
+
+			// this.state.setState({
+			// 	pdfResult: {
+			// 		data: this.state.pdfResult.data,
+			// 		status: Status.Failed
+			// 	}
+			// });
 			return;
 		}
 
 		// console.log(chrome.extension.isAllowedFileSchemeAccess((isAllowed) => { console.log(isAllowed); }));
 		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
 			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
+			// TODO: reverse these calls
 			PDFJS.getDocument(this.state.pageInfo.rawUrl).then((pdf) => {
 				PdfScreenshotHelper.getLocalPdfData(this.state.pageInfo.rawUrl).then((result) => {
 					this.state.pdfResult.data.set(result);
@@ -207,10 +214,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 						failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
 					});
 					this.state.setState({
-					pdfResult: {
-						data: this.state.pdfResult.data,
-						status: Status.Failed
-					}
+						pdfResult: {
+							data: this.state.pdfResult.data,
+							status: Status.Failed
+						}
 					});
 					// The clip action might be waiting on the result, so do this to consistently trigger its callback
 					this.state.pdfResult.data.forceUpdate();
@@ -658,18 +665,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					});
 
 					this.startClip();
-				} else if (currentMode === ClipMode.Pdf) {
-					// compute what we actually want to send across the wire
-					let pdfPreviewSettings = this.state.pdfPreviewInfo;
-					if (!pdfPreviewSettings.allPages) {
-						let pdfResultSv = this.state.pdfResult.data;
-						let dataUrls = pdfResultSv.get().dataUrls;
-						let pagesToShow = pdfPreviewSettings.pagesToShow;
-						let filteredDataUrls = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
-						// pdfResultSv.set({
-						// 	dataUrls: filteredDataUrls
-						// });
-					}
 				} else {
 					this.startClip();
 				}

@@ -44,12 +44,13 @@ export class SaveToOneNote {
 
 			let annotationAdded: boolean = this.addAnnotationToPage(page);
 
-			if (clipperState.currentMode.get() !== ClipMode.Bookmark) {
+			let currentMode = clipperState.currentMode.get();
+			if (currentMode !== ClipMode.Bookmark) {
 				this.addClippedFromUrlToPage(page);
 			}
 
-			this.addPrimaryContentToPage(page, clipperState.currentMode.get()).then(() => {
-				this.createNewPage(page).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+			this.addPrimaryContentToPage(page, currentMode).then(() => {
+				this.createNewPage(page, currentMode).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
 					this.incrementClipSuccessCount(clipperState);
 					resolve({ responsePackage: responsePackage, annotationAdded: annotationAdded });
 				}, (error: OneNoteApi.RequestError) => {
@@ -136,7 +137,7 @@ export class SaveToOneNote {
 					let previewOptions = clipperState.pdfPreviewInfo;
 					let pdfResult = clipperState.pdfResult.data.get();
 					// let dataUrls = clipperState.pdfResult.data.get().dataUrls;
-					this.addEnhancedUrlContentToPageTwo(page, pdfResult, previewOptions).then(() => {
+					this.addEnhancedUrlContentToPage(page).then(() => {
 						resolve();
 					});
 					break;
@@ -256,8 +257,6 @@ export class SaveToOneNote {
 		return mimePartName;
 	}
 
-
-
 	private static addDataUrlImagesToPage(page: OneNoteApi.OneNotePage, dataUrlsToAdd: string[]): void {
 		for (let regionDataUrl of dataUrlsToAdd) {
 			// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
@@ -311,7 +310,7 @@ export class SaveToOneNote {
 		let dataUrls = pdfResult.dataUrls;
 
 		let pagesToShow = options.pagesToShow;
-		let filteredDataUrls = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+		let filteredDataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
 
 		if (addAttachment) {
 			let mimePartName = SaveToOneNote.addEnhancedUrlAttachmentToPage(page, arrayBuffer);
@@ -325,7 +324,7 @@ export class SaveToOneNote {
 			}
 
 		} else {
-			// TODO: batch the dataUrl requests
+			// TODO: batch the dataUrl rquests
 			// construct a POST, followed by a bunch of PATCHes
 			let numRequestsToSend = Math.floor(dataUrls.length / OneNoteApiUtils.Limits.imagesPerRequestLimit);
 			// helper function to split an array into the appropriate pieces
@@ -346,8 +345,8 @@ export class SaveToOneNote {
 		}
 		return subranges;
 	}
-	
-	private createPatchRequestBody(dataUrls: string[]): string {
+
+	private static createPatchRequestBody(dataUrls: string[]): any[] {
 		let requestBody = [];
 		dataUrls.forEach((dataUrl) => {
 			let content = "<p><img src=\"" + dataUrl + "\" /></p>&nbsp;";
@@ -357,23 +356,36 @@ export class SaveToOneNote {
 				content: content
 			});
 		});
-		return JSON.stringify(requestBody);
-	}
-	
-	private static createOneNotePagePatchRequest(): Promise<any> {
-		let headers: { [key: string]: string } = {};
-		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId()
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-		
+		return requestBody;
 	}
 
-	// POST the page to OneNote API
-	private static createNewPage(page: OneNoteApi.OneNotePage): Promise<any> {
+	private static createOneNotePagePatchRequest(): Promise<any> {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-		return oneNoteApi.createPage(page, SaveToOneNote.clipperState.saveLocation);
+
+		let dataUrls = [
+			"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAwCAYAAACFUvPfAAAAg0lEQVRoQ+3UwQnAMBDEQLv/1q6npIOA9DgIyH+BGS++M/Ocn53bpZdeLOkl6JN00h8CzaN5NI+tDSSdtBPon3ZuvEqam7kiaefGq6S5mSuSdm68SpqbuSJp58arpLmZK5J2brxKmpu5ImnnxqukuZkrknZuvEqam7kiaefGq6S5mSteVS6iwW24vQUAAAAASUVORK5CYII="
+		];
+		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
+
+		// https://www.onenote.com/api/v1.0/me/notes/pages//content
+		return oneNoteApi.updatePage("0-f84b3811d7f446429ced509a1073770e!153-9C38937B9074D871!207", JSON.stringify(revisions));
+	}
+
+	// POST the page to OneNote API
+	private static createNewPage(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
+		let headers: { [key: string]: string } = {};
+		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
+		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
+		let saveLocation = SaveToOneNote.clipperState.saveLocation;
+
+		if (clipMode === ClipMode.Pdf) {
+			return SaveToOneNote.createOneNotePagePatchRequest();
+		} else {
+			return oneNoteApi.createPage(page, saveLocation);
+		}
 	}
 }

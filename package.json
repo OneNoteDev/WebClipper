@@ -46,6 +46,7 @@
     "gulp-uglify": "2.0.0",
     "gulp-zip": "3.2.0",
     "json3": "3.3.2",
+    "lodash": "^4.16.4",
     "merge-stream": "1.0.0",
     "mithril": "0.2.5",
     "node-qunit-phantomjs": "1.4.0",
@@ -66,5 +67,8 @@
     "velocity-animate": "1.2.3",
     "vinyl-source-stream": "1.1.0",
     "yargs": "6.0.0"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.14.37"
   }
 }
