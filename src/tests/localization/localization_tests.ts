@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Localization} from "../../scripts/localization/localization";
 
 declare function require(name: string);

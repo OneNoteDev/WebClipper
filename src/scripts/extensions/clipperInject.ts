@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/rangy/rangy.d.ts" />
-
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
@@ -105,8 +103,8 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 						let doc = (new DOMParser()).parseFromString(range.toHtml(), "text/html");
 						DomUtils.toOnml(doc).then(() => {
 							// Selections are prone to not having an outer html element, which can lead to anomalies in preview
-							let divContainer = document.createElement("DIV");
-							divContainer.innerHTML = doc.body.innerHTML;
+							let divContainer = document.createElement("div");
+							divContainer.innerHTML = DomUtils.cleanHtml(doc.body.innerHTML);
 							invokeOptions.invokeDataForMode = divContainer.outerHTML;
 
 							this.sendInvokeOptionsToUi(invokeOptions);
@@ -228,7 +226,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 				this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.escHandler);
 			}
 			if (oldOnKeyDown) {
-				oldOnKeyDown(event);
+				oldOnKeyDown.call(document, event);
 			}
 		};
 

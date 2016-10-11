@@ -1,5 +1,4 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-/// <reference path="../../../typings/main/ambient/sinon/sinon.d.ts" />
+import * as sinon from "sinon";
 
 import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCapture/augmentationHelper";
 
@@ -156,7 +155,7 @@ test("getAugmentationType returns 'Article' for types that we don't support", ()
 });
 
 test("getArticlePreviewElement should return the MainArticleContainer class element if it exists", () => {
-	let mainArticleContainer = document.createElement("DIV") as HTMLHtmlElement;
+	let mainArticleContainer = <any>document.createElement("div") as HTMLHtmlElement;
 	mainArticleContainer.className = "MainArticleContainer";
 	fixture.appendChild(mainArticleContainer);
 

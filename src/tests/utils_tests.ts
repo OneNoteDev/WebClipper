@@ -1,5 +1,3 @@
-/// <reference path="../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {ClientType} from "../scripts/clientType";
 import {Constants} from "../scripts/constants";
 import {Utils} from "../scripts/utils";
@@ -294,6 +292,21 @@ test("getQueryValue should return undefined if any of the parameters are undefin
 	strictEqual(Utils.getQueryValue(undefined, "q"), undefined);
 	strictEqual(Utils.getQueryValue("www.website.com/stuff?q=v", ""), undefined);
 	strictEqual(Utils.getQueryValue("", "q"), undefined);
+});
+
+test("getQueryValue should return a valid error if an error is specified.", () => {
+	let url = "https://www.onenote.com/webclipper/auth?error=access_denied&error_description=AADSTS50000:+There+was+an+error+issuing+a+token.&state=abcdef12-6ac8-41bd-0445-f7ef7a4182e7";
+	strictEqual(Utils.getQueryValue(url, Constants.Urls.QueryParams.error), "access_denied");
+});
+
+test("getQueryValue should return a valid error description if an O365 error_description is specified.", () => {
+	let url = "https://www.onenote.com/webclipper/auth?error=access_denied&error_description=AADSTS50000:+There+was+an+error+issuing+a+token.&state=abcdef12-6ac8-41bd-0445-f7ef7a4182e7";
+	strictEqual(Utils.getQueryValue(url, Constants.Urls.QueryParams.errorDescription), "AADSTS50000: There was an error issuing a token.");
+});
+
+test("getQueryValue should return a valid error description if an MSA errorDescription is specified.", () => {
+	let url = "https://www.onenote.com/webclipper/auth?error=access_denied&errorDescription=AADSTS50000:+There+was+an+error+issuing+a+token.&state=abcdef12-6ac8-41bd-0445-f7ef7a4182e7";
+	strictEqual(Utils.getQueryValue(url, Constants.Urls.QueryParams.errorDescription), "AADSTS50000: There was an error issuing a token.");
 });
 
 test("isNumeric should return false when the value is a string", () => {

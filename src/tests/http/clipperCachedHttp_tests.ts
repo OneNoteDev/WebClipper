@@ -1,4 +1,4 @@
-// /// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
+import * as sinon from "sinon";
 
 import {ClipperCachedHttp} from "../../scripts/http/clipperCachedHttp";
 import {TimeStampedData} from "../../scripts/http/cachedHttp";

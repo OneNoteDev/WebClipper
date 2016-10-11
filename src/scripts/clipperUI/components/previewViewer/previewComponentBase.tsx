@@ -70,8 +70,10 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 	}
 
 	private getPreviewSubtitle(): any {
-		let sourceUrlCitation = Localization.getLocalizedString("WebClipper.FromCitation")
-			.replace("{0}", this.props.clipperState.pageInfo ? this.props.clipperState.pageInfo.rawUrl : "");
+		let sourceUrlCitationPrefix = Localization.getLocalizedString("WebClipper.FromCitation")
+			.replace("{0}", ""); // TODO can we change this loc string to remove the {0}?
+
+		let sourceUrl = this.props.clipperState.pageInfo ? this.props.clipperState.pageInfo.rawUrl : "";
 
 		return (
 			<div id={Constants.Ids.previewSubtitleContainer}>
@@ -80,7 +82,8 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 					: undefined}
 				{this.props.clipperState.currentMode.get() !== ClipMode.Bookmark
 					? <div id={Constants.Ids.previewUrlContainer}>
-						{sourceUrlCitation}
+						{sourceUrlCitationPrefix}
+						<a href={sourceUrl} target="_blank" title={sourceUrl}>{sourceUrl}</a>
 					</div>
 					: undefined}
 			</div>

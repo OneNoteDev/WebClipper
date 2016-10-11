@@ -314,7 +314,7 @@ export module Constants {
 			export var clipperVersion = "clipperVersion";
 			export var correlationId = "correlationId";
 			export var error = "error";
-			export var errorDescription = "errorDescription";
+			export var errorDescription = "error_?description";
 			export var event = "event";
 			export var eventName = "eventName";
 			export var failureId = "failureId";

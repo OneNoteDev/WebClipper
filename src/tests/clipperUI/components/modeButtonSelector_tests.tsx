@@ -1,5 +1,3 @@
-/// <reference path="../../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {AugmentationModel} from "../../../scripts/contentCapture/augmentationHelper";
 
 import {ModeButtonSelector} from "../../../scripts/clipperUI/components/modeButtonSelector";

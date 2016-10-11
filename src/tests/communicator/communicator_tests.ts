@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Communicator, CommDataPackage} from "../../scripts/communicator/communicator";
 import {SmartValue} from "../../scripts/communicator/smartValue";
 import {MockMessageHandler} from "./mockMessageHandler";

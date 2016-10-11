@@ -1,13 +1,7 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
-
 import {BookmarkError, BookmarkHelper, BookmarkResult, MetadataKeyValuePair} from "../../scripts/contentCapture/bookmarkHelper";
-
 import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
-
 import {Utils} from "../../scripts/utils";
-
 import {HelperFunctions} from "../helperFunctions";
 
 QUnit.module("bookmarkHelper", {
@@ -27,7 +21,7 @@ module TestHelper {
 	}
 
 	export function createHTMLMetaElement(attribute: MetadataKeyValuePair, content: string): HTMLMetaElement {
-		let metaElement: HTMLMetaElement = document.createElement("META") as HTMLMetaElement;
+		let metaElement: HTMLMetaElement = document.createElement("meta") as HTMLMetaElement;
 
 		metaElement.setAttribute(attribute.key, attribute.value);
 		if (content) {
@@ -38,7 +32,7 @@ module TestHelper {
 	}
 
 	export function createHTMLImageElement(srcUrl: string): HTMLImageElement {
-		let imgElement: HTMLImageElement = document.createElement("IMG") as HTMLImageElement;
+		let imgElement: HTMLImageElement = document.createElement("img") as HTMLImageElement;
 		if (srcUrl) {
 			imgElement.setAttribute(BookmarkHelper.srcAttrName, srcUrl);
 		}

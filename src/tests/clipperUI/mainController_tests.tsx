@@ -1,5 +1,3 @@
-/// <reference path="../../../typings/main/ambient/qunit/qunit.d.ts" />
-
 import {Constants} from "../../scripts/constants";
 import {HelperFunctions} from "../helperFunctions";
 import {MainController, MainControllerClass, PanelType} from "../../scripts/clipperUI/mainController";

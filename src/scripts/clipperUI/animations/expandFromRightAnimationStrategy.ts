@@ -1,4 +1,3 @@
-/// <reference path="../../../../typings/main/ambient/velocity-animate/velocity-animate.d.ts"/>
 declare var Velocity: jquery.velocity.VelocityStatic;
 
 import {Constants} from "../../constants";
