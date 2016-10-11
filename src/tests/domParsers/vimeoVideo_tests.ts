@@ -1,44 +1,6 @@
 import {VideoUtils} from "../../scripts/domParsers/videoUtils";
 import {VimeoVideoExtractor} from "../../scripts/domParsers/vimeoVideoExtractor";
 
-let supportedYouTubeUrls = [
-	"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-	"https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be&t=30s",
-	"https://www.youtube.com/watch?v=dQw4w9WgXcQ#foo",
-	"https://www.youtube.com/watch?feature=youtu.be&t=30s&v=dQw4w9WgXcQ",
-	"https://m.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be",
-	"https://www.youtube.com/embed/dQw4w9WgXcQ"
-];
-let supportedVimeoUrls = [
-	"https://vimeo.com/45196609",
-	"https://vimeo.com/45196609?autoplay=1",
-	"https://vimeo.com/45196609#t=0",
-	"https://vimeo.com/channels/staffpicks/45196609",
-	"https://vimeo.com/album/45196609/",
-	"https://vimeo.com/album/45196609/page:1",
-	"https://vimeo.com/album/45196609/page:3/sort:preset/format:thumbnail",
-	"https://vimeo.com/album/45196609/sort:preset/format:thumbnail/page:2",
-	"https://vimeo.com/album/45196609/video/45196609",
-	"https://vimeo.com/ondemand/45196609"
-];
-let unsupportedYouTubeUrls = [
-	"https://www.youtube.com/",
-	"https://www.youtube.com/channel/UC38IQsAvIsxxjztdMZQtwHA"
-];
-let unsupportedVimeoUrls = [
-	"https://www.vimeo.com/",
-	"https://vimeo.com/user12402347",
-	"https://vimeo.com/ondemand/reeltoreal", // TODO can we support this one?
-	"https://vimeo.com/45196609/collections/channels"
-];
-
-let unsupportedOtherUrls = [
-	"https://www.hulu.com/",
-	"https://www.google.com/",
-	undefined,
-	""
-];
-
 let pageContentHtmlWrapperPrepend = "<html lang='en'> <body>";
 let pageContentHtmlWrapperAppend = "</body> </html>";
 
