@@ -16,9 +16,6 @@ class PreviewViewerClass<TState, TProp extends ClipperStateProp> extends Compone
 			case ClipMode.Pdf:
 				return <PdfPreview clipperState={state} />;
 			case ClipMode.FullPage:
-				// if (state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-				// 	return <PdfPreview clipperState={state} />;
-				// }
 				return <FullPagePreview	clipperState={state} />;
 			case ClipMode.Region:
 				return <RegionPreview clipperState={state} />;

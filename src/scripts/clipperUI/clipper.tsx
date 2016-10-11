@@ -52,6 +52,8 @@ import {RegionSelector} from "./regionSelector";
 import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
 import {Status} from "./status";
 
+import * as _ from "lodash";
+
 class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private isFullScreen = new SmartValue<boolean>(false);
 
@@ -232,6 +234,11 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					pdfResult: {
 						data: this.state.pdfResult.data,
 						status: Status.Succeeded
+					},
+					pdfPreviewInfo: {
+						allPages: true,
+						pagesToShow: _.range(0, this.state.pdfResult.data.get().dataUrls.length),
+						shouldAttachPdf: false
 					}
 				});
 			}, () => {

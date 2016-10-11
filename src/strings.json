@@ -20,7 +20,7 @@
 	"WebClipper.ClipType.Image.Button": "Image",
 	"WebClipper.ClipType.ImageSnippet.Button": "Image Snippet",
 	"WebClipper.ClipType.MultipleRegions.Button.Tooltip": "Take screenshots of parts of the page you\u0027ll select.",
-	"WebClipper.ClipType.Pdf.Button": "PDF File",
+	"WebClipper.ClipType.Pdf.Button": "PDF Document",
 	"WebClipper.ClipType.Pdf.ProgressLabel": "Clipping PDF File",
 	"WebClipper.ClipType.Pdf.Button.Tooltip": "Take a screenshot of the whole PDF file and save a copy of the attachment.",
 	"WebClipper.ClipType.Product.Button": "Product",

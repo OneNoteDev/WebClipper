@@ -50,7 +50,8 @@ export class SaveToOneNote {
 			}
 
 			this.addPrimaryContentToPage(page, currentMode).then(() => {
-				this.createNewPage(page, currentMode).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+				this.executeApiRequest(page, currentMode).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+				// this.createNewPage(page, currentMode).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
 					this.incrementClipSuccessCount(clipperState);
 					resolve({ responsePackage: responsePackage, annotationAdded: annotationAdded });
 				}, (error: OneNoteApi.RequestError) => {
@@ -332,6 +333,19 @@ export class SaveToOneNote {
 		}
 	}
 
+	createPdfRequestChain(): promise<any> {
+		let clipperState = SaveToOneNote.clipperState;
+	}
+	
+	private dummyProcessImage(dataUrl: string) {
+		return new Promise((resolve, reject) => {
+			setTimeout(() => {
+				console.log("image: " + dataUrl);
+				resolve(dataUrl);
+			}, Math.random() * 1500);
+		});
+	}
+
 	// This function takes an array of dataUrls and separates them out into ranges 
 	// so that each can individually be put into a request
 	private createRangesForAppending(dataUrls: string[]): string[][] {
@@ -374,6 +388,22 @@ export class SaveToOneNote {
 		return oneNoteApi.updatePage("0-f84b3811d7f446429ced509a1073770e!153-9C38937B9074D871!207", JSON.stringify(revisions));
 	}
 
+	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
+		let headers: { [key: string]: string } = {};
+		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
+		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
+		let saveLocation = SaveToOneNote.clipperState.saveLocation;
+
+		if (clipMode === ClipMode.Pdf) {
+			return oneNoteApi.createPage(page, saveLocation).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+				return 
+			});
+		} else {
+			return oneNoteApi.createPage(page, saveLocation);
+		}
+	}
+	
 	// POST the page to OneNote API
 	private static createNewPage(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		let headers: { [key: string]: string } = {};

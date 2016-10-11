@@ -1,6 +1,7 @@
 /// <reference path="../../../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
 import {Constants} from "../../../constants";
+import {PdfPreviewInfo} from "../../../previewInfo";
 import {Utils} from "../../../utils";
 
 import {SmartValue} from "../../../communicator/smartValue";
@@ -20,35 +21,27 @@ import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
 
 import * as _ from "lodash";
 
-interface PdfPreviewState {
-	allPages?: boolean;
-	pagesToShow?: number[];
-	shouldAttachPdf?: boolean;
-}
-
-class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
-	getInitialState(): PdfPreviewState {
-		return {
-			allPages: true,
-			pagesToShow: [0, 2, 4],
-			shouldAttachPdf: false
-		} as PdfPreviewState;
+class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
+	private static scrollListenerAdded: boolean = false;
+	
+	private addScrollListener() {
+		if (!PdfPreview.scrollListenerAdded) {
+			document.getElementById("previewContentContainer").addEventListener("scroll", (ev) => {
+				console.log("scroll me amadeus");
+			});
+		}
+		return;
 	}
 
 	protected getContentBodyForCurrentStatus(): any[] {
 		let state = this.props.clipperState;
 
+		// TODO: should this be if !state.pdfResult ?
 		if (!state.pageInfo) {
 			return [this.getSpinner()];
 		}
 
 		return this.convertPdfResultToContentData(state.pdfResult);
-	}
-
-	onSelectionChange(sel: boolean) {
-		this.setState({
-			allPages: sel
-		});
 	}
 
 	// Takes a range of the form 1,3-6,7,8,13,1,3,4,a-b, etc. and then returns an array
@@ -67,22 +60,50 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 			}
 			return previousValue = previousValue.concat(valueToAppend);
 		}, []);
-		return _(initialRange).sortBy().sortedUniq().value();
+		return _(initialRange).sortBy().sortedUniq().map((page) => { return page - 1; }).value();
+	}
+
+	onSelectionChange(selection: boolean) {
+		// TODO: change this to _.assign, _.extend
+		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
+			allPages: selection
+		} as PdfPreviewInfo);
+
+		this.props.clipperState.setState({
+			pdfPreviewInfo: newPdfPreviewInfo
+		});
 	}
 
 	onTextChange(text: string) {
-		console.log(this.parsePageRange(text));
-		console.log("text: " + text);
+		let pagesToShow = this.parsePageRange(text);
+
+		// TODO: change this to _.assign, _.extend
+		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
+			pagesToShow: pagesToShow
+		} as PdfPreviewInfo);
+
+		this.props.clipperState.setState({
+			pdfPreviewInfo: newPdfPreviewInfo
+		});
 	}
 
-	// onStopTyping(text: string) {
-	// 	return _.debounce(this.onTextChange, )
-	// }
+	onCheckboxChange(checked: boolean) {
+		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
+			shouldAttachPdf: checked
+		} as PdfPreviewInfo);
+
+		this.props.clipperState.setState({
+			pdfPreviewInfo: newPdfPreviewInfo
+		});
+	}
 
 	protected getHeader(): any {
 		return <PreviewViewerPdfHeader
+				shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
+				allPages={this.props.clipperState.pdfPreviewInfo.allPages}
+				onCheckboxChange={this.onCheckboxChange.bind(this)}
 				onSelectionChange={this.onSelectionChange.bind(this)}
-				onTextChange={_.debounce(this.onTextChange.bind(this), 1500)}
+				onTextChange={_.debounce(this.onTextChange.bind(this), 1000)}
 				clipperState={this.props.clipperState} />;
 	}
 
@@ -122,46 +143,32 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 			return;
 		}
 
-		let contentBody = [];
-		console.log("allPages: " + this.state.allPages + ", pagesToShow: " + this.state.pagesToShow.toString());
-		let pagesToShow = this.state.pagesToShow;
 		let dataUrls = this.props.clipperState.pdfResult.data.get().dataUrls;
+		let contentBody = [];
 
-		// TODO: make sure the range is valid
-		if (!this.state.allPages) {
-			// TODO: parse this when the user actually types it in
-			// pagesToShow = pagesToShow.map((index) => { return index - 1; });
-			dataUrls = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+		let imagesToShow = dataUrls;
+		if (!this.props.clipperState.pdfPreviewInfo.allPages) {
+			let pagesToShow = this.props.clipperState.pdfPreviewInfo.pagesToShow;
+			imagesToShow = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
 		}
-		// let previewImages = [];
 
-		// dataUrls.forEach((dataUrl) => {
-		// 	previewImages.push(<img src={dataUrl} className="previewThumbnail"></img>);
-		// });
-		let shouldAttachPdf = this.state.shouldAttachPdf;
+		let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
 
 		switch (result.status) {
 			case Status.Succeeded:
 				// In OneNote we don't display the extension
 				let defaultAttachmentName = "Original.pdf";
 				let fullAttachmentName = this.props.clipperState.pageInfo ? Utils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
-				// contentBody.push(
-				// 	<span className="attachment-overlay">
-				// 		<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
-				// 		<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
-				// 	</span>);
-				// contentBody.push(
-				// 	<div id="pdfPreviewScrollBar">
-				// 		{previewImages}
-				// 	</div>
-				// );
-				// contentBody.push(<div style="padding-top: 10px">);
-				// contentBody.push(<div id="previewImages">);
-				for (let dataUrl of dataUrls) {
+				if (shouldAttachPdf) {
+					contentBody.push(
+						<span className="attachment-overlay">
+							<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
+							<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
+						</span>);
+				}
+				for (let dataUrl of imagesToShow) {
 					contentBody.push(<img className={Constants.Classes.pdfPreviewImage} src={dataUrl}></img>);
 				}
-				// contentBody.push(</div>);
-				// contentBody.push(</div>);
 				break;
 			case Status.NotStarted:
 			case Status.InProgress:

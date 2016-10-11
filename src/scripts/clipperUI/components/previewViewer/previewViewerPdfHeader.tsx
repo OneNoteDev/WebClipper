@@ -5,9 +5,12 @@ import {ClipperStateProp} from "../../clipperState";
 
 import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
 
-interface PdfPreviewProp extends ClipperStateProp {
-	onTextChange: (blah: string) => void;
-	onSelectionChange: (blah: boolean) => void;
+interface PdfPreviewProp {
+	onCheckboxChange: (checked: boolean) => void;
+	onTextChange: (text: string) => void;
+	onSelectionChange: (selection: boolean) => void;
+	allPages: boolean;
+	shouldAttachPdf: boolean;
 };
 
 class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, PdfPreviewProp> {
@@ -19,10 +22,6 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 			PreviewViewerPdfHeaderClass.textAreaListenerAttached = true;
 		}
 		return {};
-	}
-
-	handleOnChange(event: any) {
-		console.log(event);
 	}
 
 	getControlGroups(): ControlGroup[] {
@@ -46,16 +45,6 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		});
 	}
 
-	private getAttachmentCheckbox(): ControlGroup {
-		return {
-			id: "attachmentCheckboxControl",
-			innerElements: [
-				<input id="attachment-checkbox" type="checkbox" value="true"></input>,
-				<label id="attachment-checkbox-label" for="attachment-checkbox"><span>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span></label>
-			]
-		};
-	}
-
 	private handlePageRangeFieldChanged(annotationValue: string) {
 		this.props.onTextChange(annotationValue);
 	}
@@ -75,6 +64,21 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 				<label for="all-pages"><span class="radio-control-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}</span></label>,
 				<input id="all-pages" type="radio" name="pageSelection" value="false" onclick={this.handleRadioButtonClick.bind(this)}></input>,
 				<label for="all-pages"><input type="text" id="rangeInput" name="some" placeholder="e.g. 1-5, 7, 9-12"></input></label>
+			]
+		};
+	}
+
+	private handleCheckboxChange(event: Event) {
+		let target = event.target as HTMLInputElement;
+		this.props.onCheckboxChange(target.checked);
+	}
+
+	private getAttachmentCheckbox(): ControlGroup {
+		return {
+			id: "attachmentCheckboxControl",
+			innerElements: [
+				<input id="attachment-checkbox" type="checkbox" value="true" onchange={this.handleCheckboxChange.bind(this)}></input>,
+				<label id="attachment-checkbox-label" for="attachment-checkbox"><span>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span></label>
 			]
 		};
 	}
