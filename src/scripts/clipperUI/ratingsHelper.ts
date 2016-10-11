@@ -76,7 +76,8 @@ export class RatingsHelper {
 			ClipperStorageKeys.lastBadRatingDate,
 			ClipperStorageKeys.lastBadRatingVersion,
 			ClipperStorageKeys.lastSeenVersion,
-			ClipperStorageKeys.numSuccessfulClips
+			ClipperStorageKeys.numSuccessfulClips,
+			ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement
 		];
 		Clipper.preCacheStoredValues(ratingsPromptStorageKeys);
 	}
@@ -178,16 +179,19 @@ export class RatingsHelper {
 	 *
 	 * Public for testing
 	 */
-	public static clipSuccessDelayIsOver(numClips: number, anchorClipValue = 0): boolean {
+	public static clipSuccessDelayIsOver(numClips: number, anchorClipValue?: number): boolean {
 		if (isNaN(numClips)) {
 			return false;
 		}
 
-		// TODO numClips = number of clips since ratings prompt was enabled for the user's client
-		// handle if numSuccessfulClipsOnFirstRatingsEnablement does not exist (assume 0)
+		if (isNaN(anchorClipValue)) {
+			anchorClipValue = 0;
+		}
 
-		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt &&
-			numClips <= Constants.Settings.maxClipSuccessForRatingsPrompt;
+		let numClipsAdjusted = numClips - anchorClipValue;
+
+		return numClipsAdjusted >= Constants.Settings.minClipSuccessForRatingsPrompt &&
+			numClipsAdjusted <= Constants.Settings.maxClipSuccessForRatingsPrompt;
 	}
 
 	/**
@@ -198,7 +202,7 @@ export class RatingsHelper {
 	 *   * The user has not already interacted with the prompt (ClipperStorageKeys.doNotPromptRatings is not set)
 	 *   * ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement has not already been set
 	 *
-	 * Public for testing (TODO)
+	 * Public for testing
 	 *
 	 * NOTE OF EXPLANATION: We first check if the user has already interacted with the prompt for backwards compatibility
 	 * with the original implementation of the ratings prompt that did not include this method. It ensures that we will not
@@ -206,12 +210,18 @@ export class RatingsHelper {
 	 * with the original prompt see it up to twice as many times as originally planned).
 	 */
 	public static setNumSuccessfulClipsOnFirstRatingsEnablement(): void {
-		/* TODO let doNotPromptRatingsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
-		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsStr)) {
+		let doNotPromptRatingsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
+		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsAsStr)) {
 			return;
-		}*/
+		}
 
-		// TODO if numSuccessfulClipsOnFirstRatingsEnablement does not already exist, perform the copy
+		let numSuccessfulClipsOnFirstRatingsEnablementAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement);
+		if (parseInt(numSuccessfulClipsOnFirstRatingsEnablementAsStr, 10) >= 0) {
+			return;
+		}
+
+		let numSuccessfulClipsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips);
+		Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, numSuccessfulClipsAsStr);
 	}
 
 	/**

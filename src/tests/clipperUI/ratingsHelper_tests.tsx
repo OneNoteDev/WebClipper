@@ -161,7 +161,7 @@ test("clipSuccessDelayIsOver returns true when anchorClipValue is invalid (and d
 
 	for (let anchorClipValue of invalidAnchors) {
 		let over: boolean = RatingsHelper.clipSuccessDelayIsOver(Constants.Settings.minClipSuccessForRatingsPrompt, anchorClipValue);
-		strictEqual(over, false, "anchorClipValue is invalid with value " + anchorClipValue + ", but should be ignored since numClips is valid with value " + Constants.Settings.minClipSuccessForRatingsPrompt);
+		strictEqual(over, true, "anchorClipValue is invalid with value " + anchorClipValue + ", but should be ignored since numClips is valid with value " + Constants.Settings.minClipSuccessForRatingsPrompt);
 	}
 });
 
@@ -530,6 +530,7 @@ test("shouldShowRatingsPrompt returns true when do not prompt ratings is set in 
 
 	Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "invalid");
 	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, "0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 
@@ -544,11 +545,10 @@ test("shouldShowRatingsPrompt returns true when a valid configuration is provide
 		}
 	});
 
-	let outOfRangeValue = Constants.Settings.maxClipSuccessForRatingsPrompt + 1;
-	let validClipRange = (Constants.Settings.maxClipSuccessForRatingsPrompt - Constants.Settings.minClipSuccessForRatingsPrompt);
+	let anchorClipValue = Constants.Settings.maxClipSuccessForRatingsPrompt + 1;
 
-	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (outOfRangeValue + validClipRange).toString());
-	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, outOfRangeValue.toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (anchorClipValue + Constants.Settings.maxClipSuccessForRatingsPrompt).toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, anchorClipValue.toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
@@ -568,6 +568,7 @@ test("shouldShowRatingsPrompt returns false when number of successful clips is b
 	});
 
 	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (Constants.Settings.minClipSuccessForRatingsPrompt - 1).toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, "0");
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
@@ -588,6 +589,7 @@ test("shouldShowRatingsPrompt returns false when last bad rating date is too rec
 	let timeDiffInMs = 1000 * 60 * 60 * 24; // to make last bad rating date 1 day sooner than the min time delay
 
 	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, "0");
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings + timeDiffInMs).toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
@@ -606,6 +608,7 @@ test("shouldShowRatingsPrompt returns false when there has not been a significan
 	});
 
 	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, "0");
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.0.999");
@@ -623,14 +626,10 @@ test("shouldShowRatingsPrompt returns false when (numSuccessfulClips - numSucces
 		}
 	});
 
-	let outOfRangeValue = Constants.Settings.maxClipSuccessForRatingsPrompt + 1;
-	let validClipRange = (Constants.Settings.maxClipSuccessForRatingsPrompt - Constants.Settings.minClipSuccessForRatingsPrompt);
+	let anchorClipValue = Constants.Settings.maxClipSuccessForRatingsPrompt + 1;
 
-	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (outOfRangeValue + validClipRange + 1).toString());
-	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, outOfRangeValue.toString());
-	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
-	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (anchorClipValue + Constants.Settings.maxClipSuccessForRatingsPrompt + 1).toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, anchorClipValue.toString());
 
 	let clipperState = HelperFunctions.getMockClipperState();
 	clipperState.clientInfo.clipperType = ClientType.FirefoxExtension;
