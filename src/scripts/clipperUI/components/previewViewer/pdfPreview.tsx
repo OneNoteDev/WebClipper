@@ -82,7 +82,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	protected getHeader(): any {
 		return <PreviewViewerPdfHeader
 				onSelectionChange={this.onSelectionChange.bind(this)}
-				onTextChange={_.debounce(this.onTextChange.bind(this), 500)}
+				onTextChange={_.debounce(this.onTextChange.bind(this), 1500)}
 				clipperState={this.props.clipperState} />;
 	}
 
