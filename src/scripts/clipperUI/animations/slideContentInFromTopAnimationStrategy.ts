@@ -41,14 +41,14 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 
 	protected doAnimateIn(parentEl: HTMLElement): Promise<void>  {
 		return new Promise<void>((resolve) => {
-			for (let cIndex = 0; cIndex < this.contentToAnimate.length; cIndex++) {
-				let content = this.contentToAnimate[cIndex];
+			for (let contentIndex = 0; contentIndex < this.contentToAnimate.length; contentIndex++) {
+				let content = this.contentToAnimate[contentIndex];
 				let animatables = parentEl.querySelectorAll(content.cssSelector) as NodeListOf<HTMLElement>;
 
-				for (let aIndex = 0; aIndex < animatables.length; aIndex++) {
-					let isLastElementToAnimate: boolean = (cIndex === this.contentToAnimate.length - 1) && (aIndex === animatables.length - 1);
+				for (let animatableIndex = 0; animatableIndex < animatables.length; animatableIndex++) {
+					let isLastElementToAnimate: boolean = (contentIndex === this.contentToAnimate.length - 1) && (animatableIndex === animatables.length - 1);
 
-					this.animateElementIn(animatables[aIndex], content.animateInOptions.slideDownDeltas[aIndex], content.animateInOptions.delaysInMs[aIndex], isLastElementToAnimate)
+					this.animateElementIn(animatables[animatableIndex], content.animateInOptions.slideDownDeltas[animatableIndex], content.animateInOptions.delaysInMs[animatableIndex], isLastElementToAnimate)
 						.then((lastElementFinishedAnimating) => {
 							if (lastElementFinishedAnimating) {
 								resolve();
