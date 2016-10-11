@@ -52,6 +52,7 @@ export class SaveToOneNote {
 			this.addPrimaryContentToPage(page, currentMode).then(() => {
 				this.executeApiRequest(page, currentMode).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
 				// this.createNewPage(page, currentMode).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+					console.log("and we're off");
 					this.incrementClipSuccessCount(clipperState);
 					resolve({ responsePackage: responsePackage, annotationAdded: annotationAdded });
 				}, (error: OneNoteApi.RequestError) => {
@@ -297,7 +298,9 @@ export class SaveToOneNote {
 		}
 		let local = rawUrl.indexOf("file:///") !== -1;
 		let nameToUse = local ? "name:" + mimePartName : this.clipperState.pageInfo.rawUrl;
-		page.addObjectUrlAsImage(nameToUse);
+		if (this.clipperState.pdfPreviewInfo.shouldAttachPdf) {
+			page.addObjectUrlAsImage(nameToUse);
+		}
 	}
 
 	// This function handles posting a PDF to OneNote. We handle the PDF differently based on:
@@ -333,15 +336,23 @@ export class SaveToOneNote {
 		}
 	}
 
-	createPdfRequestChain(): promise<any> {
+	private static createPdfRequestChain(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
+
+		let dummyImages = ["foo", "bar", "baz"];
+		return dummyImages.reduce((chainedPromises, curImage) => {
+			return chainedPromises = chainedPromises.then((previousValue) => {
+				console.log(previousValue);
+				return SaveToOneNote.dummyProcessImage(curImage);
+			});
+		}, SaveToOneNote.createNewPage(page, clipMode));
 	}
-	
-	private dummyProcessImage(dataUrl: string) {
+
+	private static dummyProcessImage(dataUrl: string) {
 		return new Promise((resolve, reject) => {
 			setTimeout(() => {
 				console.log("image: " + dataUrl);
-				resolve(dataUrl);
+				resolve();
 			}, Math.random() * 1500);
 		});
 	}
@@ -396,14 +407,12 @@ export class SaveToOneNote {
 		let saveLocation = SaveToOneNote.clipperState.saveLocation;
 
 		if (clipMode === ClipMode.Pdf) {
-			return oneNoteApi.createPage(page, saveLocation).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
-				return 
-			});
+			return SaveToOneNote.createPdfRequestChain(page, clipMode);
 		} else {
 			return oneNoteApi.createPage(page, saveLocation);
 		}
 	}
-	
+
 	// POST the page to OneNote API
 	private static createNewPage(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		let headers: { [key: string]: string } = {};
@@ -412,10 +421,6 @@ export class SaveToOneNote {
 		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
 		let saveLocation = SaveToOneNote.clipperState.saveLocation;
 
-		if (clipMode === ClipMode.Pdf) {
-			return SaveToOneNote.createOneNotePagePatchRequest();
-		} else {
-			return oneNoteApi.createPage(page, saveLocation);
-		}
+		return oneNoteApi.createPage(page, saveLocation);
 	}
 }

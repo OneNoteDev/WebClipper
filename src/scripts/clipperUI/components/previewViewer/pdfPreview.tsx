@@ -23,7 +23,7 @@ import * as _ from "lodash";
 
 class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	private static scrollListenerAdded: boolean = false;
-	
+
 	private addScrollListener() {
 		if (!PdfPreview.scrollListenerAdded) {
 			document.getElementById("previewContentContainer").addEventListener("scroll", (ev) => {
