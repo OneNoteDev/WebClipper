@@ -77,7 +77,7 @@ export class RatingsHelper {
 			ClipperStorageKeys.lastBadRatingVersion,
 			ClipperStorageKeys.lastSeenVersion,
 			ClipperStorageKeys.numSuccessfulClips,
-			ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement
+			ClipperStorageKeys.numSuccessfulClipsRatingsEnablement
 		];
 		Clipper.preCacheStoredValues(ratingsPromptStorageKeys);
 	}
@@ -195,12 +195,12 @@ export class RatingsHelper {
 	}
 
 	/**
-	 * Sets ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement to be
-	 * the current value of ClipperStorageKeys.numSuccessfulClips, if needed.
+	 * Sets ClipperStorageKeys.numSuccessfulClipsRatingsEnablement to be
+	 * the current value of (ClipperStorageKeys.numSuccessfulClips - 1), if needed.
 	 *
 	 * The set is "needed" if ALL of the below applies:
 	 *   * The user has not already interacted with the prompt (ClipperStorageKeys.doNotPromptRatings is not set)
-	 *   * ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement has not already been set
+	 *   * ClipperStorageKeys.numSuccessfulClipsRatingsEnablement has not already been set
 	 *
 	 * Public for testing
 	 *
@@ -209,19 +209,20 @@ export class RatingsHelper {
 	 * re-raise the prompt for users who have already interacted with it (although it is possible users who didn't interact
 	 * with the original prompt see it up to twice as many times as originally planned).
 	 */
-	public static setNumSuccessfulClipsOnFirstRatingsEnablement(): void {
+	public static setNumSuccessfulClipsRatingsEnablement(): void {
 		let doNotPromptRatingsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
 		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsAsStr)) {
 			return;
 		}
 
-		let numSuccessfulClipsOnFirstRatingsEnablementAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement);
-		if (parseInt(numSuccessfulClipsOnFirstRatingsEnablementAsStr, 10) >= 0) {
+		let numSuccessfulClipsRatingsEnablementAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement);
+		if (parseInt(numSuccessfulClipsRatingsEnablementAsStr, 10) >= 0) {
 			return;
 		}
 
-		let numSuccessfulClipsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips);
-		Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement, numSuccessfulClipsAsStr);
+		let numSuccessfulClips: number = parseInt(Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips), 10);
+		// subtracting 1 below to account for the fact that this set is occuring after one already successful clip
+		Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, (numSuccessfulClips - 1).toString());
 	}
 
 	/**
@@ -246,14 +247,14 @@ export class RatingsHelper {
 			return false;
 		}
 
-		RatingsHelper.setNumSuccessfulClipsOnFirstRatingsEnablement();
+		RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
 
 		let doNotPromptRatingsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
 		let lastBadRatingDateAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingDate);
 		let lastBadRatingVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingVersion);
 		let lastSeenVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastSeenVersion);
 		let numClipsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips);
-		let numClipsAnchorAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsOnFirstRatingsEnablement);
+		let numClipsAnchorAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement);
 
 		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsStr)) {
 			logEventInfo.doNotPromptRatings = true;

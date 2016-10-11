@@ -15,7 +15,7 @@ export module ClipperStorageKeys {
 	export var locale = "locale";
 	export var locStrings = "locStrings";
 	export var numSuccessfulClips = "numSuccessfulClips";
-	export var numSuccessfulClipsOnFirstRatingsEnablement = "numSuccessfulClipsOnFirstRatingsEnablement";
+	export var numSuccessfulClipsRatingsEnablement = "numSuccessfulClipsRatingsEnablement";
 	export var numTimesTooltipHasBeenSeenBase = "numTimesTooltipHasBeenSeen";
 	export var userInformation = "userInformation";
 }
