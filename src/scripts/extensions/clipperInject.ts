@@ -90,6 +90,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 				// Some modes are gated here in the inject for extra processing
 				switch (invokeOptions.invokeMode) {
 					case InvokeMode.ContextTextSelection:
+						// In the case of PDF, the selection is passed to us from the WebExtension API, so we use that instead as Rangy won't work
 						if (invokeOptions.invokeDataForMode) {
 							invokeOptions.invokeDataForMode = this.toScrubbedHtml(invokeOptions.invokeDataForMode);
 							this.sendInvokeOptionsToUi(invokeOptions);
