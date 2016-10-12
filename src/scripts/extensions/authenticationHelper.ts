@@ -55,7 +55,7 @@ export class AuthenticationHelper {
 			let getUserInformationFunction = () => {
 				return new Promise<ResponsePackage<string>>((resolve2, reject2) => {
 					AuthenticationHelper.getClipperInfoCookie(clipperId).then((cookie) => {
-						AuthenticationHelper.retrieveUserInformation(clipperId, cookie).then((result) => {
+						AuthenticationHelper.retrieveUserInformation(clipperId, cookie, this.logger).then((result) => {
 							resolve2(result);
 						}, (errorObject) => {
 							reject2(errorObject);
@@ -136,12 +136,18 @@ export class AuthenticationHelper {
 	/**
 	 * Makes a call to the authentication proxy to retrieve the user's information.
 	 */
-	public static retrieveUserInformation(clipperId: string, cookie: string = undefined): Promise<ResponsePackage<string>> {
+	public static retrieveUserInformation(clipperId: string, cookie: string = undefined, logger: Logger = undefined): Promise<ResponsePackage<string>> {
 		return new Promise<ResponsePackage<string>>((resolve, reject: (error: OneNoteApi.RequestError) => void) => {
 			let userInfoUrl = Utils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
 
+			let retrieveUserInformationEvent = new Log.Event.PromiseEvent(Log.Event.Label.RetrieveUserInformation);
+
+			let correlationId = Utils.generateGuid();
+			retrieveUserInformationEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
+
 			let headers = {};
-			headers["Content-type"] = "application/x-www-form-urlencoded";
+			headers["Content-type"] = "application/www-form-urlencoded";
+			headers[Constants.HeaderValues.correlationId] = correlationId;
 
 			let postData = "";
 			if (!Utils.isNullOrUndefined(cookie)) {
@@ -155,6 +161,10 @@ export class AuthenticationHelper {
 				resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });
 			}, (error: OneNoteApi.RequestError) => {
 				reject(error);
+			}).then(() => {
+				if (!Utils.isNullOrUndefined(logger)) {
+					logger.logEvent(retrieveUserInformationEvent);
+				}
 			});
 		});
 	}
