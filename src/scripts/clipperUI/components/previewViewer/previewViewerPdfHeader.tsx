@@ -78,6 +78,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 			id: "attachmentCheckboxControl",
 			innerElements: [
 				<input id="attachment-checkbox" type="checkbox" value="true" onchange={this.handleCheckboxChange.bind(this)}></input>,
+				<input id="attachment-checkbox-two" type="checkbox" {...this.enableInvoke(this.handleCheckboxChange.bind(this), 0)}></input>,
 				<label id="attachment-checkbox-label" for="attachment-checkbox"><span>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span></label>
 			]
 		};

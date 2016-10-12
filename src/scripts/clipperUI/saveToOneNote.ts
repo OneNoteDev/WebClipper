@@ -315,6 +315,7 @@ export class SaveToOneNote {
 
 		let pagesToShow = options.pagesToShow;
 		let filteredDataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+		let initialDataUrls = filteredDataUrls.slice(0, 5);
 
 		if (addAttachment) {
 			let mimePartName = SaveToOneNote.addEnhancedUrlAttachmentToPage(page, arrayBuffer);
@@ -324,7 +325,9 @@ export class SaveToOneNote {
 				SaveToOneNote.renderMimePartNameAsImage(page, mimePartName);
 			} else {
 				// TODO: batch the dataUrl requests with the caveat that the first request can only have 5
-				SaveToOneNote.addDataUrlImagesToPage(page, dataUrls);
+				// still have to add the rest of the stuff
+				// SaveToOneNote.addDataUrlImagesToPage(page, dataUrls);
+
 			}
 
 		} else {
@@ -339,13 +342,29 @@ export class SaveToOneNote {
 	private static createPdfRequestChain(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
 
-		let dummyImages = ["foo", "bar", "baz"];
-		return dummyImages.reduce((chainedPromises, curImage) => {
-			return chainedPromises = chainedPromises.then((previousValue) => {
-				console.log(previousValue);
-				return SaveToOneNote.dummyProcessImage(curImage);
+		// let dummyImages = ["foo", "bar", "baz"];
+		// return dummyImages.reduce((chainedPromises, curImage) => {
+		// 	return chainedPromises = chainedPromises.then((previousValue) => {
+		// 		console.log(previousValue);
+		// 		return SaveToOneNote.dummyProcessImage(curImage);
+		// 	});
+		// }, SaveToOneNote.createNewPage(page, clipMode));
+
+		let dataUrls = [
+			"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAwCAYAAACFUvPfAAAAg0lEQVRoQ+3UwQnAMBDEQLv/1q6npIOA9DgIyH+BGS++M/Ocn53bpZdeLOkl6JN00h8CzaN5NI+tDSSdtBPon3ZuvEqam7kiaefGq6S5mSuSdm68SpqbuSJp58arpLmZK5J2brxKmpu5ImnnxqukuZkrknZuvEqam7kiaefGq6S5mSteVS6iwW24vQUAAAAASUVORK5CYII="
+		];
+
+		return SaveToOneNote.createNewPage(page, clipMode).then((postPageResponse) => {
+			let pageId = postPageResponse.parsedResponse.id;
+			return SaveToOneNote.getPage(pageId).then((getPageResponse) => {
+				return SaveToOneNote.createOneNotePagePatchRequestTwo(pageId, dataUrls);
 			});
-		}, SaveToOneNote.createNewPage(page, clipMode));
+		});
+		// getPage(then((response: OneNoteApi.ResponsePackage<any>) => {
+		// 	let contentUrl = response.parsedResponse.contentUrl;
+		// 	let pageId = response.parsedResponse.id;
+		// 	return SaveToOneNote.createOneNotePagePatchRequestTwo(pageId, dataUrls);
+		// });
 	}
 
 	private static dummyProcessImage(dataUrl: string) {
@@ -382,6 +401,16 @@ export class SaveToOneNote {
 			});
 		});
 		return requestBody;
+	}
+
+	private static createOneNotePagePatchRequestTwo(pageId: string, dataUrls: string[]): Promise<any> {
+		let headers: { [key: string]: string } = {};
+		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
+		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
+
+		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
+		return oneNoteApi.updatePage(pageId, JSON.stringify(revisions));
 	}
 
 	private static createOneNotePagePatchRequest(): Promise<any> {
@@ -422,5 +451,14 @@ export class SaveToOneNote {
 		let saveLocation = SaveToOneNote.clipperState.saveLocation;
 
 		return oneNoteApi.createPage(page, saveLocation);
+	}
+
+	private static getPage(pageId: string): Promise<any> {
+		let headers: { [key: string]: string } = {};
+		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
+		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
+
+		return oneNoteApi.getPage(pageId);
 	}
 }
