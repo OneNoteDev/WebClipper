@@ -22,11 +22,6 @@ test("videoDomainIfSupported should return undefined on a Vimeo user page", () =
 		"Vimeo user page should not be recognized as a page with a video");
 });
 
-test("videoDomainIfSupported should return undefined on a Vimeo ondemand page", () => {
-	strictEqual(VideoUtils.videoDomainIfSupported("https://vimeo.com/ondemand/reeltoreal"), undefined,
-		"Vimeo ondemand page should not be recognized as a page with a video");
-});
-
 test("videoDomainIfSupported should return undefined on a Vimeo collections page", () => {
 	strictEqual(VideoUtils.videoDomainIfSupported("https://vimeo.com/45196609/collections/channels"), undefined,
 		"Vimeo collections page should not be recognized as a page with a video");
@@ -67,6 +62,13 @@ test("videoDomainIfSupported should return Vimeo if the url represents a video, 
 		let domain = VideoUtils.videoDomainIfSupported(pageUrl);
 		strictEqual(domain, "Vimeo", pageUrl + " should return Vimeo");
 	}
+});
+
+test("videoDomainIfSupported should return Vimeo on a Vimeo ondemand page", () => {
+	strictEqual(VideoUtils.videoDomainIfSupported("https://vimeo.com/ondemand/reeltoreal"), "Vimeo",
+		"Vimeo ondemand page should be recognized as a page with a video");
+	strictEqual(VideoUtils.videoDomainIfSupported("https://vimeo.com/ondemand/"), undefined,
+		"Vimeo ondemand root page should not be recognized as a page with a video");
 });
 
 test("videoDomainIfSupported should correctly return the domain if its a video site, regardless of the url's casing", () => {
