@@ -160,6 +160,8 @@ export class AuthenticationHelper {
 				// The false case is expected behavior if the user has not signed in or credentials have expired
 				resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });
 			}, (error: OneNoteApi.RequestError) => {
+				retrieveUserInformationEvent.setStatus(Log.Status.Failed);
+				retrieveUserInformationEvent.setFailureInfo(error);
 				reject(error);
 			}).then(() => {
 				if (!Utils.isNullOrUndefined(logger)) {
