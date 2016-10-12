@@ -187,11 +187,11 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 						break;
 				}
 
-				if (documentUrlPatternList) {
-					for (let i = 0; i < menus.length; i++) {
+				for (let i = 0; i < menus.length; i++) {
+					if (documentUrlPatternList) {
 						menus[i].documentUrlPatterns = documentUrlPatternList;
-						WebExtension.browser.contextMenus.create(menus[i]);
 					}
+					WebExtension.browser.contextMenus.create(menus[i]);
 				}
 			});
 		});
