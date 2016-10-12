@@ -260,17 +260,20 @@ export module DomUtils {
 		let anchor = doc.createElement("a");
 		anchor.href = doc.URL;
 		if (/\.pdf$/i.test(anchor.pathname)) {
-			// Check if there's a PDF embed element
-			let embedElement = doc.querySelector("embed");
-			if (embedElement && /application\/pdf/i.test((<any>embedElement).type)) {
-				return OneNoteApi.ContentType.EnhancedUrl;
-			}
-
-			// Check if this was a PDF rendered with PDF.js
-			if (window && (<any>window).PDFJS) {
-				return OneNoteApi.ContentType.EnhancedUrl;
-			}
+			return OneNoteApi.ContentType.EnhancedUrl;
 		}
+
+		// Check if there's a PDF embed element
+		let embedElement = doc.querySelector("embed");
+		if (embedElement && /application\/pdf/i.test((<any>embedElement).type)) {
+			return OneNoteApi.ContentType.EnhancedUrl;
+		}
+
+		// Check if this was a PDF rendered with PDF.js
+		if (window && (<any>window).PDFJS) {
+			return OneNoteApi.ContentType.EnhancedUrl;
+		}
+
 		return OneNoteApi.ContentType.Html;
 	}
 
