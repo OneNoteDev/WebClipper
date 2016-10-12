@@ -136,6 +136,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 						// If the tab index is negative, chances are the user is using some sort of PDF plugin,
 						// and the tab object will be invalid. We need to get the parent tab in this scenario.
 						if (tab.index < 0) {
+							// Since we are in a PDF plugin, Rangy won't work, so we rely on WebExtension API to grab pure text
 							invokeOptions.invokeDataForMode = info.selectionText;
 							WebExtension.browser.tabs.query({ active: true, currentWindow: true }, (tabs: W3CTab[]) => {
 								// There will only be one tab that meets this criteria
