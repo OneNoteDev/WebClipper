@@ -172,6 +172,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 						];
 						break;
 					case ClientType.EdgeExtension:
+						// Note that in Edge, the ms-browser-extension:// URL causes the context menus to break.
 						documentUrlPatternList = [
 							"http://*/*",
 							"https://*/*"
