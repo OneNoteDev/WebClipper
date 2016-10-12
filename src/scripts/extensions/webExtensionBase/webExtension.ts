@@ -131,9 +131,16 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 					title: Localization.getLocalizedString("WebClipper.Label.ClipSelectionToOneNote"),
 					contexts: ["selection"],
 					onclick: (info, tab: W3CTab) => {
-						this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, {
-							invokeMode: InvokeMode.ContextTextSelection
-						});
+						let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
+						if (tab.index < 0) {
+							invokeOptions.invokeDataForMode = info.selectionText;
+							WebExtension.browser.tabs.query({ active: true, currentWindow: true }, (tabs: W3CTab[]) => {
+								let parentTab = tabs[0];
+								this.invokeClipperInTab(parentTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+							});
+						} else {
+							this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+						}
 					}
 				}, {
 					title: Localization.getLocalizedString("WebClipper.Label.ClipImageToOneNote"),
@@ -154,7 +161,13 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 					// https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Chrome_incompatibilities
 					// If you include documentUrlPatterns in Firefox, the context menu won't be added!
 					if (!isFirefox) {
-						menus[i].documentUrlPatterns = ["http://*/*", "https://*/*"];
+						menus[i].documentUrlPatterns = [
+							"http://*/*",
+							"https://*/*",
+							"chrome-extension://encfpfilknmenlmjemepncnlbbjlabkc/*", // PDF.js
+							"chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/*", // Ad PDF Viewer
+							"chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/*" // Chrome PDF Viewer
+						];
 					}
 					WebExtension.browser.contextMenus.create(menus[i]);
 				}

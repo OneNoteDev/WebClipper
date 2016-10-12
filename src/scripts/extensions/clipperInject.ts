@@ -90,6 +90,12 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 				// Some modes are gated here in the inject for extra processing
 				switch (invokeOptions.invokeMode) {
 					case InvokeMode.ContextTextSelection:
+						if (invokeOptions.invokeDataForMode) {
+							invokeOptions.invokeDataForMode = this.toScrubbedHtml(invokeOptions.invokeDataForMode);
+							this.sendInvokeOptionsToUi(invokeOptions);
+							break;
+						}
+
 						// Rangy initializes itself on the page load, so we need to initialize it if the user invoked before this happens
 						if (!rangy.initialized && (rangy as any).init) {
 							(rangy as any).init();
@@ -103,10 +109,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 						let doc = (new DOMParser()).parseFromString(range.toHtml(), "text/html");
 						DomUtils.toOnml(doc).then(() => {
 							// Selections are prone to not having an outer html element, which can lead to anomalies in preview
-							let divContainer = document.createElement("div");
-							divContainer.innerHTML = DomUtils.cleanHtml(doc.body.innerHTML);
-							invokeOptions.invokeDataForMode = divContainer.outerHTML;
-
+							invokeOptions.invokeDataForMode = this.toScrubbedHtml(doc.body.innerHTML);
 							this.sendInvokeOptionsToUi(invokeOptions);
 						});
 						break;
@@ -358,6 +361,12 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			this.frame.style.display = "";
 		}
 		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.toggleClipper);
+	}
+
+	private toScrubbedHtml(content: string): string {
+		let divContainer = document.createElement("div");
+		divContainer.innerHTML = DomUtils.cleanHtml(content);
+		return divContainer.outerHTML;
 	}
 
 	private updatePageInfo() {
