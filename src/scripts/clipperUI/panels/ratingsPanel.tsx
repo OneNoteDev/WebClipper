@@ -2,6 +2,8 @@ import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
 import {Utils} from "../../utils";
 
+import {SmartValue} from "../../communicator/smartValue";
+
 import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
@@ -15,8 +17,9 @@ import {Clipper} from "../frontEndGlobals";
 import {RatingsHelper, RatingsPromptStage} from "../ratingsHelper";
 import {Status} from "../status";
 
+import {AnimationState} from "../animations/animationState";
 import {AnimationStrategy} from "../animations/animationStrategy";
-import {SlideFromRightAnimationStrategy} from "../animations/slideFromRightAnimationStrategy";
+import {SlideContentInFromTopAnimationStrategy, ContentToAnimate} from "../animations/slideContentInFromTopAnimationStrategy";
 
 import {SpriteAnimation} from "../components/spriteAnimation";
 
@@ -27,23 +30,54 @@ interface RatingsPanelState {
 	userSelectedRatingsPromptStage?: RatingsPromptStage;
 }
 
-class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStateProp> {
+interface RatingsPanelProp extends ClipperStateProp {
+	animationState: SmartValue<AnimationState>;
+}
+
+class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelProp> {
 	getInitialState(): RatingsPanelState {
 		return {
-			currentRatingsPromptStage: RatingsPromptStage.Init,
-			userSelectedRatingsPromptStage: RatingsPromptStage.Init
+			currentRatingsPromptStage: RatingsPromptStage.Init
 		};
 	}
 
 	/**
-	 * Get the animation strategy for the ratings subpanel of the success panel provided
+	 * Get the panel animation strategy for the ratings subpanel of the success panel provided
 	 */
-	private getAnimationStategy(panel: RatingsPanelClass): AnimationStrategy {
-		return new SlideFromRightAnimationStrategy({
-			extShouldAnimateIn: () => { return panel.state.userSelectedRatingsPromptStage !== panel.state.currentRatingsPromptStage; },
-			extShouldAnimateOut: () => { return false; },
-			onAfterAnimateIn: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage }); }
-		});
+	private getPanelAnimationStrategy(panel: RatingsPanelClass): AnimationStrategy {
+		if (this.props.animationState) {
+			return new SlideContentInFromTopAnimationStrategy({
+				currentAnimationState: this.props.animationState,
+				contentToAnimate: this.getContentToAnimate(),
+				extShouldAnimateIn: () => {
+					return (Utils.isNullOrUndefined(panel.state.userSelectedRatingsPromptStage) ||
+						panel.state.userSelectedRatingsPromptStage === panel.state.currentRatingsPromptStage);
+				},
+				extShouldAnimateOut: () => {
+					return panel.state.userSelectedRatingsPromptStage > panel.state.currentRatingsPromptStage;
+				},
+				onAfterAnimateOut: () => { panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage }); }
+			});
+		}
+	}
+
+	private getContentToAnimate(): ContentToAnimate[] {
+		return [
+			{
+				cssSelector: ".messageLabel",
+				animateInOptions: {
+					slideDownDeltas: [50],
+					delaysInMs: [33]
+				}
+			},
+			{
+				cssSelector: ".dialogButton .wideButtonContainer",
+				animateInOptions: {
+					slideDownDeltas: [48, 48],
+					delaysInMs: [50, 0]
+				}
+			}
+		];
 	}
 
 	/**
@@ -69,7 +103,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 	 * Get appropriate dialog panel buttons for the panel (with its internal states) provided
 	 */
 	private getDialogButtons(panel: RatingsPanelClass): DialogButton[] {
-		let stage: RatingsPromptStage = panel.state.userSelectedRatingsPromptStage;
+		let stage: RatingsPromptStage = panel.state.currentRatingsPromptStage;
 		let clipperState: ClipperState = panel.props.clipperState;
 		let clientType: ClientType = clipperState.clientInfo.clipperType;
 
@@ -93,6 +127,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 								userSelectedRatingsPromptStage: RatingsPromptStage.End
 							});
 						}
+
+						this.forceTransitionIfAnimationsAreOff(panel);
 					}
 				}, {
 						id: Constants.Ids.ratingsButtonInitNo,
@@ -117,6 +153,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 									userSelectedRatingsPromptStage: RatingsPromptStage.End
 								});
 							}
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					});
 				break;
@@ -132,6 +170,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.End
 							});
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					}, {
 						id: Constants.Ids.ratingsButtonRateNo,
@@ -140,6 +180,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.None
 							});
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					});
 				} else {
@@ -161,6 +203,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.End
 							});
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					}, {
 						id: Constants.Ids.ratingsButtonFeedbackNo,
@@ -169,6 +213,8 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 							panel.setState({
 								userSelectedRatingsPromptStage: RatingsPromptStage.None
 							});
+
+							this.forceTransitionIfAnimationsAreOff(panel);
 						}
 					});
 				} else {
@@ -187,16 +233,22 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 		return buttons;
 	}
 
+	private forceTransitionIfAnimationsAreOff(panel: RatingsPanelClass) {
+		if (!panel.props.animationState) {
+			panel.setState({ currentRatingsPromptStage: panel.state.userSelectedRatingsPromptStage });
+		}
+	}
+
 	render() {
 		if (!this.props.clipperState.showRatingsPrompt || !this.props.clipperState.showRatingsPrompt.get()) {
 			return <div />;
 		}
 
-		let message: string = this.getMessage(this.state.userSelectedRatingsPromptStage);
+		let message: string = this.getMessage(this.state.currentRatingsPromptStage);
 
 		if (!Utils.isNullOrUndefined(message)) {
 			let buttons: DialogButton[] = this.getDialogButtons(this);
-			let animationStrategy = this.getAnimationStategy(this);
+			let panelAnimationStrategy = this.getPanelAnimationStrategy(this);
 
 			return (
 				<DialogPanel
@@ -204,7 +256,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, ClipperStatePro
 					buttons={buttons}
 					buttonFontFamily={Localization.FontFamily.Regular}
 					containerId={Constants.Ids.ratingsPromptContainer}
-					animationStrategy={animationStrategy} />
+					panelAnimationStrategy={panelAnimationStrategy} />
 			);
 		}
 

@@ -58,6 +58,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 
 	private getFontSizeGroup(): ControlGroup {
 		return {
+			id: Constants.Ids.fontSizeControl,
 			className: HeaderClasses.Button.relatedButtons,
 			innerElements: [
 				<button className={HeaderClasses.Button.controlButton}
