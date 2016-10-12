@@ -10,12 +10,13 @@ import {Clipper} from "./frontEndGlobals";
 
 import * as Log from "../logging/log";
 
+// ordered by stage progression
 export enum RatingsPromptStage {
-	None,
-	Init,
-	Rate,
-	Feedback,
-	End
+	Init = 0,
+	Rate = 1,
+	Feedback = 2,
+	End = 3,
+	None = 4
 }
 
 interface RatingsLoggingInfo {

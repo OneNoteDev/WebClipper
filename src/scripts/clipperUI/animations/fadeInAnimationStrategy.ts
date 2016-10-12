@@ -4,27 +4,20 @@ import {AnimationState} from "./animationState";
 import {TransitioningAnimationStrategy, TransitioningAnimationStrategyOptions} from "./transitioningAnimationStrategy";
 
 /**
- * Represents an animation where elements transition in by sliding from the right.
- * When transitioning out, elements slide off to the left. The optional callbacks
- * should be used to load in a 'next state' for an element transition after the previous
- * one has been transitioned out.
+ * Represents an animation where elements fade in.
+ * When transitioning out, elements fade away.
  */
-export class SlideFromRightAnimationStrategy extends TransitioningAnimationStrategy<TransitioningAnimationStrategyOptions> {
-	private reverseChildAnimations: boolean;
+export class FadeInAnimationStrategy extends TransitioningAnimationStrategy<TransitioningAnimationStrategyOptions> {
 
 	constructor(options?: TransitioningAnimationStrategyOptions) {
 		super(200 /* animationDuration */, options);
-		this.reverseChildAnimations = true;
 	}
 
 	protected doAnimateIn(el: HTMLElement): Promise<void>  {
 		return new Promise<void>((resolve) => {
-			let horizontalBeginValue = this.reverseChildAnimations ? 20 : -20;
-			el.style.left = horizontalBeginValue + "px";
 			el.style.opacity = "0";
 
 			Velocity.animate(el, {
-				left: 0,
 				opacity: 1
 			}, {
 				complete: () => {
@@ -38,10 +31,7 @@ export class SlideFromRightAnimationStrategy extends TransitioningAnimationStrat
 
 	protected doAnimateOut(el: HTMLElement): Promise<void> {
 		return new Promise<void>((resolve) => {
-			let horizontalEndValue = this.reverseChildAnimations ? -20 : 20;
-
 			Velocity.animate(el, {
-				left: horizontalEndValue,
 				opacity: 0
 			}, {
 				complete: () => {
