@@ -12,11 +12,11 @@ import {Failure, LogDataPackage, LogMethods, NoOp, PropertyName, reportData, unk
 
 export module ErrorUtils {
 	enum ErrorPropertyName {
-		error,
-		statusCode,
-		response,
-		responseHeaders,
-		timeout
+		Error,
+		StatusCode,
+		Response,
+		ResponseHeaders,
+		Timeout
 	}
 
 	export function toString(originalError: OneNoteApi.GenericError): string {
@@ -25,15 +25,15 @@ export module ErrorUtils {
 		}
 
 		let errorToObject: {} = {};
-		errorToObject[ErrorPropertyName[ErrorPropertyName.error]] = originalError.error;
+		errorToObject[ErrorPropertyName[ErrorPropertyName.Error].toLowerCase()] = originalError.error;
 
 		let tryCastError: OneNoteApi.RequestError = <OneNoteApi.RequestError>originalError;
 		if (tryCastError && tryCastError.statusCode !== undefined) {
-			errorToObject[ErrorPropertyName[ErrorPropertyName.statusCode]] = tryCastError.statusCode;
-			errorToObject[ErrorPropertyName[ErrorPropertyName.response]] = tryCastError.response;
-			errorToObject[ErrorPropertyName[ErrorPropertyName.responseHeaders]] = tryCastError.responseHeaders;
+			errorToObject[ErrorPropertyName[ErrorPropertyName.StatusCode].toLowerCase()] = tryCastError.statusCode;
+			errorToObject[ErrorPropertyName[ErrorPropertyName.Response].toLowerCase()] = tryCastError.response;
+			errorToObject[ErrorPropertyName[ErrorPropertyName.ResponseHeaders].toLowerCase()] = tryCastError.responseHeaders;
 			if (tryCastError.timeout !== undefined) {
-				errorToObject[ErrorPropertyName[ErrorPropertyName.timeout]] = tryCastError.timeout;
+				errorToObject[ErrorPropertyName[ErrorPropertyName.Timeout].toLowerCase()] = tryCastError.timeout;
 			}
 		}
 
