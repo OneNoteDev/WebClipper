@@ -42,7 +42,7 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		let state = this.props.clipperState;
 
 		// TODO: should this be if !state.pdfResult ?
-		if (!state.pageInfo) {
+		if (state.pdfResult.status === Status.InProgress) {
 			return [this.getSpinner()];
 		}
 
