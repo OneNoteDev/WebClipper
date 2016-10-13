@@ -159,13 +159,75 @@
 				}
 
 				// PDF
-				.radio-control-label {
-					padding-left: 2px;
-					padding-right: 2px;
+				.pdf-label {
+					padding-left: 24px;
+					padding-right: 6px;
 					font-size: 14px;
 					font-family: @SegoeUi;
 					color: #fff;
 					vertical-align: middle;
+					cursor: pointer;
+					position: relative;
+				}
+
+				.pdf-control {
+					input[type=radio], input[type=checkbox] {
+						position: absolute;
+						z-index: -1;
+						opacity: 0;
+
+						&:hover input ~ .pdf-indicator {
+							background: #ccc;
+						}
+					}
+				}
+
+				.pdf-indicator-two {
+					position: absolute;
+					top: 6px;
+					left: 4px;
+					width: 9px;
+					height: 9px;
+					background-color: white;
+					border-radius: 100%;
+				}
+
+				.pdf-indicator {
+					position: absolute;
+					top: 2px;
+					left: 0;
+					width: 15px;
+					height: 15px;
+					border: 1px groove white;
+
+					&.pdf-checkbox-indicator {
+						background-color: white;
+					}
+
+					&.pdf-radio-indicator {
+						border-radius: 100%;
+					}
+
+					&.pdf-radio-active {
+						background-color: rebeccapurple;
+					}
+				}
+
+				.checkbox {
+					position: absolute;
+					top: 3px;
+					left: 6px;
+					width: 4px;
+					height: 12px;
+					transform: rotate(45deg);
+					border: solid rgba(128, 46, 179, 0.95);
+					background: transparent;
+					border-width: 0 2px 2px 0;
+				}
+
+				#attachmentCheckboxControl {
+					float: right;
+					margin-right: 24px;
 				}
 
 				#rangeInput {
@@ -182,11 +244,7 @@
 					line-height: 20px;
 				}
 
-				#attachment-checkbox-label {
-					color: #fff;
-					font-family: @SegoeUi;
-				}
-
+				// Generic
 				.control-button {
 					text-align: center;
 					vertical-align: middle;
@@ -222,11 +280,12 @@
 					display: inline-block;
 				 }
 
-				.control-button-group, {
+				.control-button-group {
 					margin-top: 12px;
 					margin-bottom: 12px;
 					margin-left: 24px;
 					display: inline-block;
+					position: relative;
 
 					> .control-button:first-child:not(:last-child) {
 						border-top-right-radius: 0;

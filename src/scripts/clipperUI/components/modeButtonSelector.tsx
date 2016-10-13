@@ -26,7 +26,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			return undefined;
 		}
 
-		return <ModeButton imgSrc={Utils.getImageResourceUrl("select.png") }
+		return <ModeButton imgSrc={Utils.getImageResourceUrl("pdf.png") }
 			label={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button")}
 			myMode={ClipMode.Pdf} tabIndex={39} selected={currentMode === ClipMode.Pdf}
 			onModeSelected={this.onModeSelected.bind(this) }

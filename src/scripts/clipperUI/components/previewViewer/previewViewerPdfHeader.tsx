@@ -50,6 +50,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 	}
 
 	private handleRadioButtonClick(event: MouseEvent) {
+		console.log(event);
 		let target = event.target as HTMLInputElement;
 		// console.log(target.value);
 		let value = (target.value.toLowerCase() === "true") ? true : false;
@@ -57,17 +58,21 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 	}
 
 	private getPageRangeGroup(): ControlGroup {
+		// <input id="all-pages" type="radio" value="true" checked={this.props.allPages} onclick={this.handleRadioButtonClick.bind(this)}></input>
+		let allPagesRadioClassName = "pdf-indicator pdf-radio-indicator" + (this.props.allPages ? " pdf-radio-active" : "");
+		let somePagesRadioClassName = "pdf-indicator pdf-radio-indicator" + (!this.props.allPages ? " pdf-radio-active" : "");
 		return {
-			id: "pageRangeControl",
+			id: Constants.Ids.pageRangeControl,
 			innerElements: [
-				<label for="all-pages">
-					<span class="radio-control-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}</span>
-					<input id="all-pages" type="radio" name="pageSelection" value="true" onclick={this.handleRadioButtonClick.bind(this)}></input>
+				<label class="pdf-control pdf-label" {...this.enableInvoke(this.props.onSelectionChange, 190, true)}>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}
+					<div className={allPagesRadioClassName}></div>
+					{this.props.allPages ? <div class="pdf-indicator-two"></div> : ""}
 				</label>,
-				<label for="all-pages">
-					<input id="all-pages" type="radio" name="pageSelection" value="false" onclick={this.handleRadioButtonClick.bind(this)}></input>
-					<input type="text" id="rangeInput" name="some" placeholder="e.g. 1-5, 7, 9-12"></input>
-				</label>
+				<label class="pdf-control pdf-label" {...this.enableInvoke(this.props.onSelectionChange, 190, false)}>
+					<input type="text" id="rangeInput" placeholder="e.g. 1-5, 7, 9-12"></input>
+					<div className={somePagesRadioClassName}></div>
+					{!this.props.allPages ? <div class="pdf-indicator-two"></div> : ""}
+				</label>,
 			]
 		};
 	}
@@ -77,21 +82,15 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		this.props.onCheckboxChange(target.checked);
 	}
 
-	private handleCheckboxChangeTwo(blah: HTMLElement) {
-		console.log(blah);
-	}
-
 	private getAttachmentCheckbox(): ControlGroup {
 		return {
 			id: "attachmentCheckboxControl",
 			innerElements: [
-				<label id="attachment-checkbox-label-two" for="attachment-checkbox-two"><span>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
-					<input id="attachment-checkbox-two" type="checkbox" value="true" {...this.enableInvoke(this.handleCheckboxChangeTwo, 0)}></input>
-				</label>,
-				<div style="position: relative;"><label id="attachment-checkbox-label" for="attachment-checkbox"><span>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
-					<input id="attachment-checkbox" type="checkbox" value="true" onchange={this.handleCheckboxChange.bind(this)}></input>
-					<div class="checkbox-indicator"></div>
-				</label></div>,
+				<label class="pdf-control pdf-checkbox-control pdf-label" for="attachment-checkbox">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}
+					<input id="attachment-checkbox" type="checkbox" checked={this.props.shouldAttachPdf} value="true" onchange={this.handleCheckboxChange.bind(this)}></input>
+					<div class="pdf-indicator pdf-checkbox-indicator"></div>
+					<div class="checkbox"></div>
+				</label>
 			]
 		};
 	}

@@ -123,6 +123,9 @@ export module Constants {
 		export var fullPageControl = "fullPageControl";
 		export var fullPageHeaderTitle = "fullPageHeaderTitle";
 
+		// previewViewerPdfHeader
+		export var pageRangeControl = "pageRangeControl";
+
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";
 		export var addRegionControl = "addRegionControl";
