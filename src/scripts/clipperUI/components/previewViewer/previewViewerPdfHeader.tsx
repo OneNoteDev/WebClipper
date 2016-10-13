@@ -65,13 +65,15 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 			id: Constants.Ids.pageRangeControl,
 			innerElements: [
 				<label class="pdf-control pdf-label" {...this.enableInvoke(this.props.onSelectionChange, 190, true)}>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}
-					<div className={allPagesRadioClassName}></div>
-					{this.props.allPages ? <div class="pdf-indicator-two"></div> : ""}
+					<div class="pdf-indicator pdf-radio-indicator">
+						{this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+					</div>
 				</label>,
 				<label class="pdf-control pdf-label" {...this.enableInvoke(this.props.onSelectionChange, 190, false)}>
+					<div class="pdf-indicator pdf-radio-indicator">
+						{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+					</div>
 					<input type="text" id="rangeInput" placeholder="e.g. 1-5, 7, 9-12"></input>
-					<div className={somePagesRadioClassName}></div>
-					{!this.props.allPages ? <div class="pdf-indicator-two"></div> : ""}
 				</label>,
 			]
 		};
@@ -86,10 +88,9 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		return {
 			id: "attachmentCheckboxControl",
 			innerElements: [
-				<label class="pdf-control pdf-checkbox-control pdf-label" for="attachment-checkbox">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}
-					<input id="attachment-checkbox" type="checkbox" checked={this.props.shouldAttachPdf} value="true" onchange={this.handleCheckboxChange.bind(this)}></input>
+				<label class="pdf-control pdf-checkbox-control pdf-label" {...this.enableInvoke(this.props.onCheckboxChange, 191, !this.props.shouldAttachPdf)}>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}
 					<div class="pdf-indicator pdf-checkbox-indicator"></div>
-					<div class="checkbox"></div>
+					{this.props.shouldAttachPdf ? <div class="checkbox"></div> : ""}
 				</label>
 			]
 		};

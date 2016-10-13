@@ -26,9 +26,14 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 
 	private addScrollListener() {
 		if (!PdfPreview.scrollListenerAdded) {
-			document.getElementById("previewContentContainer").addEventListener("scroll", (ev) => {
-				console.log("scroll me amadeus");
-			});
+			let previewContentContainer = document.getElementById("previewContentContainer");
+			if (!!previewContentContainer) {
+				previewContentContainer.addEventListener("scroll", (ev) => {
+					console.log("scroll me amadeus");
+					console.log(ev);
+				});
+				PdfPreview.scrollListenerAdded = true;
+			}
 		}
 		return;
 	}
@@ -138,6 +143,7 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	}
 
 	private convertPdfResultToContentData(result: DataResult<SmartValue<PdfScreenshotResult>>): any[] {
+		this.addScrollListener();
 		let data = this.props.clipperState.pdfResult.data.get();
 		if (!data) {
 			return;

@@ -160,6 +160,7 @@
 
 				// PDF
 				.pdf-label {
+					margin-right: 3px;
 					padding-left: 24px;
 					padding-right: 6px;
 					font-size: 14px;
@@ -175,17 +176,13 @@
 						position: absolute;
 						z-index: -1;
 						opacity: 0;
-
-						&:hover input ~ .pdf-indicator {
-							background: #ccc;
-						}
 					}
 				}
 
-				.pdf-indicator-two {
+				.pdf-radio-indicator-fill {
 					position: absolute;
-					top: 6px;
-					left: 4px;
+					top: 3px;
+					left: 3px;
 					width: 9px;
 					height: 9px;
 					background-color: white;
@@ -198,18 +195,15 @@
 					left: 0;
 					width: 15px;
 					height: 15px;
-					border: 1px groove white;
 
 					&.pdf-checkbox-indicator {
+						border: 1px groove white;
 						background-color: white;
 					}
 
 					&.pdf-radio-indicator {
+						border: 1px solid white;					
 						border-radius: 100%;
-					}
-
-					&.pdf-radio-active {
-						background-color: rebeccapurple;
 					}
 				}
 
@@ -231,7 +225,7 @@
 				}
 
 				#rangeInput {
-					margin-left: 6px;
+					border-radius: 2px;
 					background-color: rgba(255,255,255,0.20);
 					height: 28px;
 					line-height: 20px;
