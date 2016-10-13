@@ -22,7 +22,7 @@ import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
 import * as _ from "lodash";
 
 class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
-	private static scrollListenerAdded: boolean = false;
+	private static scrollListenerAdded: boolean = true; // done on purpose
 
 	private addScrollListener() {
 		if (!PdfPreview.scrollListenerAdded) {
