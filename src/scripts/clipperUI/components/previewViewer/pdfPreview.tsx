@@ -155,10 +155,22 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		let imagesToShow = dataUrls;
 		if (!this.props.clipperState.pdfPreviewInfo.allPages) {
 			let pagesToShow = this.props.clipperState.pdfPreviewInfo.pagesToShow;
-			imagesToShow = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+			imagesToShow = dataUrls.reduce((runningValue, currentUrl, currentIndex) => {
+				if (pagesToShow.indexOf(currentIndex)) {
+					return runningValue = runningValue.concat([{
+						dataUrl: currentUrl,
+						originalIndex: currentIndex
+					}]);
+				}
+			}, []);
+
+			// imagesToShow = dataUrls.map((dataUrl, index) => { return { dataUrl: dataUrl, index: index }}).filter((dataUrlAndIndex, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
 		}
 
 		let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
+		// imagesToShow = [
+		// 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAwCAYAAACFUvPfAAAAg0lEQVRoQ+3UwQnAMBDEQLv/1q6npIOA9DgIyH+BGS++M/Ocn53bpZdeLOkl6JN00h8CzaN5NI+tDSSdtBPon3ZuvEqam7kiaefGq6S5mSuSdm68SpqbuSJp58arpLmZK5J2brxKmpu5ImnnxqukuZkrknZuvEqam7kiaefGq6S5mSteVS6iwW24vQUAAAAASUVORK5CYII="
+		// ];
 
 		switch (result.status) {
 			case Status.Succeeded:
@@ -173,7 +185,11 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 						</span>);
 				}
 				for (let dataUrl of imagesToShow) {
-					contentBody.push(<img className={Constants.Classes.pdfPreviewImage} src={dataUrl}></img>);
+					contentBody.push(
+						<div style="position: relative;">
+							<img className={Constants.Classes.pdfPreviewImage} src={dataUrl}></img>
+							<div class="overlay"></div>
+						</div>);
 				}
 				break;
 			case Status.NotStarted:
