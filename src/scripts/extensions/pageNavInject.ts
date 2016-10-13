@@ -32,6 +32,9 @@ export class PageNavInject extends FrameInjectBase<FrameInjectOptions> {
 	public static main(options: FrameInjectOptions) {
 		// There is no toggling functionality in the What's New experience
 		if (!document.getElementById(Constants.Ids.clipperPageNavFrame)) {
+			// Rather than using a static field (i.e., traditional singleton pattern), we have to attach
+			// the singleton to the window object because each time we inject a new inject script, they are
+			// sandboxed from each other, so having a static field will not work.
 			(<any>window).pageNavInjectObject = new PageNavInject(options);
 		}
 	}

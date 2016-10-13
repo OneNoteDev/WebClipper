@@ -82,6 +82,7 @@ class UnsupportedBrowserClass {
 
 	render() {
 		if (this.state.localizedStringFetchAttemptCompleted === Status.NotStarted) {
+			// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
 			this.fetchLocalizedStrings(navigator.language || (<any>navigator).userLanguage);
 		}
 
