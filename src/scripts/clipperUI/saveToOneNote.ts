@@ -259,13 +259,6 @@ export class SaveToOneNote {
 		return mimePartName;
 	}
 
-	private static addDataUrlImagesToPage(page: OneNoteApi.OneNotePage, dataUrlsToAdd: string[]): void {
-		for (let regionDataUrl of dataUrlsToAdd) {
-			// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
-			page.addOnml("<p><img src=\"" + regionDataUrl + "\" /></p>&nbsp;");
-		}
-	}
-
 	// Adds @arrayBuffer as an attachment to the OneNotePage.
 	// MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
 	// @returns undefined if @arrayBuffer is above the OneNote MIME Size limit, or the name of the MimePart
@@ -341,47 +334,35 @@ export class SaveToOneNote {
 
 	private static createPdfRequestChain(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
+		let previewOptions = clipperState.pdfPreviewInfo;
+		let dataUrls = clipperState.pdfResult.data.get().dataUrls;
+		let dataUrlRanges: string[][] = [];
 
-		// let dummyImages = ["foo", "bar", "baz"];
-		// return dummyImages.reduce((chainedPromises, curImage) => {
-		// 	return chainedPromises = chainedPromises.then((previousValue) => {
-		// 		console.log(previousValue);
-		// 		return SaveToOneNote.dummyProcessImage(curImage);
-		// 	});
-		// }, SaveToOneNote.createNewPage(page, clipMode));
+		if (!previewOptions.shouldAttachPdf || !previewOptions.allPages) {
+			let pagesToShow = previewOptions.pagesToShow;
+			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+			dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
+		}
 
-		let dataUrls = [
-			"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAwCAYAAACFUvPfAAAAg0lEQVRoQ+3UwQnAMBDEQLv/1q6npIOA9DgIyH+BGS++M/Ocn53bpZdeLOkl6JN00h8CzaN5NI+tDSSdtBPon3ZuvEqam7kiaefGq6S5mSuSdm68SpqbuSJp58arpLmZK5J2brxKmpu5ImnnxqukuZkrknZuvEqam7kiaefGq6S5mSteVS6iwW24vQUAAAAASUVORK5CYII="
-		];
-
-		return SaveToOneNote.createNewPage(page, clipMode).then((postPageResponse) => {
+		return SaveToOneNote.createNewPage(page, clipMode).then((postPageResponse /* should also be a onenote response */) => {
 			let pageId = postPageResponse.parsedResponse.id;
-			return SaveToOneNote.getPage(pageId).then((getPageResponse) => {
-				return SaveToOneNote.createOneNotePagePatchRequestTwo(pageId, dataUrls);
-			});
-		});
-		// getPage(then((response: OneNoteApi.ResponsePackage<any>) => {
-		// 	let contentUrl = response.parsedResponse.contentUrl;
-		// 	let pageId = response.parsedResponse.id;
-		// 	return SaveToOneNote.createOneNotePagePatchRequestTwo(pageId, dataUrls);
-		// });
-	}
-
-	private static dummyProcessImage(dataUrl: string) {
-		return new Promise((resolve, reject) => {
-			setTimeout(() => {
-				console.log("image: " + dataUrl);
-				resolve();
-			}, Math.random() * 1500);
+			return Promise.all([postPageResponse,
+				dataUrlRanges.reduce((chainedPromise, currentValue) => {
+					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
+						return SaveToOneNote.createOneNotePagePatchRequestTwo(pageId, currentValue);
+					});
+					// TODO: Make sure to add a catch so errors in the chain don't get swallowed
+				}, SaveToOneNote.getPage(pageId))
+			]);
 		});
 	}
 
 	// This function takes an array of dataUrls and separates them out into ranges 
 	// so that each can individually be put into a request
-	private createRangesForAppending(dataUrls: string[]): string[][] {
+	private static createRangesForAppending(dataUrls: string[]): string[][] {
 		let limit = OneNoteApiUtils.Limits.imagesPerRequestLimit;
 		let numRequests = Math.floor(dataUrls.length / limit) + 1;
-		let subranges: string[][];
+		let subranges: string[][] = [];
 		for (let i = 0; i < numRequests; ++i) {
 			let left = i * limit;
 			let right = (i + 1) * limit;
@@ -390,7 +371,7 @@ export class SaveToOneNote {
 		return subranges;
 	}
 
-	private static createPatchRequestBody(dataUrls: string[]): any[] {
+	private static createPatchRequestBody(dataUrls: string[]): OneNoteApi.Revision[] {
 		let requestBody = [];
 		dataUrls.forEach((dataUrl) => {
 			let content = "<p><img src=\"" + dataUrl + "\" /></p>&nbsp;";
@@ -401,6 +382,22 @@ export class SaveToOneNote {
 			});
 		});
 		return requestBody;
+	}
+
+	private static addDataUrlImagesToPage(page: OneNoteApi.OneNotePage, dataUrlsToAdd: string[]): void {
+		for (let regionDataUrl of dataUrlsToAdd) {
+			// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
+			page.addOnml("<p><img src=\"" + regionDataUrl + "\" /></p>&nbsp;");
+		}
+	}
+
+	private static dummyProcessImage(dataUrl: string) {
+		return new Promise((resolve, reject) => {
+			setTimeout(() => {
+				console.log("image: " + dataUrl);
+				resolve();
+			}, Math.random() * 1500);
+		});
 	}
 
 	private static createOneNotePagePatchRequestTwo(pageId: string, dataUrls: string[]): Promise<any> {

@@ -716,13 +716,15 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}, { callOnSubscribe: false });
 
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
+			let responsePackage = startClipPackage.responsePackage;
+			let createPageResponse = Array.isArray(responsePackage) ? responsePackage[0] : responsePackage;
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, createPageResponse.request.getResponseHeader(Constants.HeaderValues.correlationId));
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
 
 			// set oneNoteApiResult.data first with status still InProgress, then check for correct status to set
-			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.InProgress } });
+			this.state.setState({ oneNoteApiResult: { data: createPageResponse.parsedResponse, status: Status.InProgress } });
 			let statusToSet: Status = SaveToOneNote.getClipSuccessStatus(this.state);
-			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: statusToSet } });
+			this.state.setState({ oneNoteApiResult: { data: createPageResponse.parsedResponse, status: statusToSet } });
 		}, (error: OneNoteApi.RequestError) => {
 			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
 

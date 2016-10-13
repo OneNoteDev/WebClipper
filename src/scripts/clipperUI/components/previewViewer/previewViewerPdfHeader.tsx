@@ -60,10 +60,14 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		return {
 			id: "pageRangeControl",
 			innerElements: [
-				<input id="all-pages" type="radio" name="pageSelection" value="true" onclick={this.handleRadioButtonClick.bind(this)}></input>,
-				<label for="all-pages"><span class="radio-control-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}</span></label>,
-				<input id="all-pages" type="radio" name="pageSelection" value="false" onclick={this.handleRadioButtonClick.bind(this)}></input>,
-				<label for="all-pages"><input type="text" id="rangeInput" name="some" placeholder="e.g. 1-5, 7, 9-12"></input></label>
+				<label for="all-pages">
+					<span class="radio-control-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}</span>
+					<input id="all-pages" type="radio" name="pageSelection" value="true" onclick={this.handleRadioButtonClick.bind(this)}></input>
+				</label>,
+				<label for="all-pages">
+					<input id="all-pages" type="radio" name="pageSelection" value="false" onclick={this.handleRadioButtonClick.bind(this)}></input>
+					<input type="text" id="rangeInput" name="some" placeholder="e.g. 1-5, 7, 9-12"></input>
+				</label>
 			]
 		};
 	}
@@ -73,13 +77,21 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		this.props.onCheckboxChange(target.checked);
 	}
 
+	private handleCheckboxChangeTwo(blah: HTMLElement) {
+		console.log(blah);
+	}
+
 	private getAttachmentCheckbox(): ControlGroup {
 		return {
 			id: "attachmentCheckboxControl",
 			innerElements: [
-				<input id="attachment-checkbox" type="checkbox" value="true" onchange={this.handleCheckboxChange.bind(this)}></input>,
-				<input id="attachment-checkbox-two" type="checkbox" {...this.enableInvoke(this.handleCheckboxChange.bind(this), 0)}></input>,
-				<label id="attachment-checkbox-label" for="attachment-checkbox"><span>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span></label>
+				<label id="attachment-checkbox-label-two" for="attachment-checkbox-two"><span>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
+					<input id="attachment-checkbox-two" type="checkbox" value="true" {...this.enableInvoke(this.handleCheckboxChangeTwo, 0)}></input>
+				</label>,
+				<div style="position: relative;"><label id="attachment-checkbox-label" for="attachment-checkbox"><span>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
+					<input id="attachment-checkbox" type="checkbox" value="true" onchange={this.handleCheckboxChange.bind(this)}></input>
+					<div class="checkbox-indicator"></div>
+				</label></div>,
 			]
 		};
 	}
