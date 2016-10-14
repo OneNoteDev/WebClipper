@@ -136,9 +136,6 @@ export class SaveToOneNote {
 			switch (clipperState.currentMode.get()) {
 				default:
 				case ClipMode.Pdf:
-					let previewOptions = clipperState.pdfPreviewInfo;
-					let pdfResult = clipperState.pdfResult.data.get();
-					// let dataUrls = clipperState.pdfResult.data.get().dataUrls;
 					this.addEnhancedUrlContentToPage(page).then(() => {
 						resolve();
 					});
@@ -286,12 +283,15 @@ export class SaveToOneNote {
 		if (this.clipperState.pdfResult.status === Status.Succeeded && arrayBuffer) {
 			if (arrayBuffer.byteLength < this.maxMimeSizeLimit) {
 				let attachmentName = Utils.getFileNameFromUrl(this.clipperState.pageInfo.rawUrl, "Original.pdf");
-				mimePartName = page.addAttachment(arrayBuffer, attachmentName);
+				if (this.clipperState.pdfPreviewInfo.shouldAttachPdf) {
+					mimePartName = page.addAttachment(arrayBuffer, attachmentName);
+				}
 			}
 		}
 		let local = rawUrl.indexOf("file:///") !== -1;
 		let nameToUse = local ? "name:" + mimePartName : this.clipperState.pageInfo.rawUrl;
-		if (this.clipperState.pdfPreviewInfo.shouldAttachPdf) {
+		if (this.clipperState.pdfPreviewInfo.shouldAttachPdf && this.clipperState.pdfPreviewInfo.allPages) {
+			// This optimization allows us to render the entire PDF with just the binary, rather than sending dataUrls
 			page.addObjectUrlAsImage(nameToUse);
 		}
 	}

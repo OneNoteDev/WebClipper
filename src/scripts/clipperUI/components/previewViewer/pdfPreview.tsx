@@ -22,7 +22,7 @@ import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
 import * as _ from "lodash";
 
 class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
-	private static scrollListenerAdded: boolean = false;
+	private static scrollListenerAdded: boolean = false; // done on purpose
 
 	private addScrollListener() {
 		if (!PdfPreview.scrollListenerAdded) {
@@ -42,7 +42,7 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		let state = this.props.clipperState;
 
 		// TODO: should this be if !state.pdfResult ?
-		if (!state.pageInfo) {
+		if (state.pdfResult.status === Status.InProgress) {
 			return [this.getSpinner()];
 		}
 
