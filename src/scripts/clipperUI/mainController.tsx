@@ -60,7 +60,7 @@ export interface MainControllerState {
 
 export interface MainControllerProps extends ClipperStateProp {
 	onSignInInvoked: () => void;
-	onSignOutInvoked: () => void;
+	onSignOutInvoked: (authType: string) => void;
 	updateFrameHeight: (newContainerHeight: number) => void;
 	onStartClip: () => void;
 }
@@ -268,18 +268,30 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 						handler: this.props.onStartClip
 					});
 				}
-				buttons.push({
-					id: Constants.Ids.dialogBackButton,
-					label: Localization.getLocalizedString("WebClipper.Action.BackToHome"),
-					handler: () => {
-						this.props.clipperState.setState({
-							oneNoteApiResult: {
-								data: this.props.clipperState.oneNoteApiResult.data,
-								status: Status.NotStarted
+				if (OneNoteApiUtils.requiresSignout(apiResponseCode)) {
+					buttons.push({
+						id: Constants.Ids.dialogSignOutButton,
+						label: Localization.getLocalizedString("WebClipper.Action.SignOut"),
+						handler: () => {
+							if (this.props.onSignOutInvoked) {
+								this.props.onSignOutInvoked(this.props.clipperState.userResult.data.user.authType);
 							}
-						});
-					}
-				});
+						}
+					});
+				} else {
+					buttons.push({
+						id: Constants.Ids.dialogBackButton,
+						label: Localization.getLocalizedString("WebClipper.Action.BackToHome"),
+						handler: () => {
+							this.props.clipperState.setState({
+								oneNoteApiResult: {
+									data: this.props.clipperState.oneNoteApiResult.data,
+									status: Status.NotStarted
+								}
+							});
+						}
+					});
+				}
 
 				return <ErrorDialogPanel message={OneNoteApiUtils.getLocalizedErrorMessage(apiResponseCode) }
 					buttons={buttons} />;
@@ -315,6 +327,14 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		switch (panelType) {
 			case PanelType.ClipOptions:
 			case PanelType.ClippingFailure:
+				let error = this.props.clipperState.oneNoteApiResult.data as OneNoteApi.RequestError;
+				let apiResponseCode: string = OneNoteApiUtils.getApiResponseCode(error);
+				if (OneNoteApiUtils.requiresSignout(apiResponseCode)) {
+					// If the ResponseCode requires a SignOut to fix, then the dialogButton will handle SignOut
+					// so we will not show the footer. If it doesn't require signout, show the Footer
+					return undefined;
+				}
+				/* falls through */
 			case PanelType.SignInNeeded:
 				return <Footer clipperState={this.props.clipperState} onSignOutInvoked={this.props.onSignOutInvoked} />;
 			case PanelType.ClippingSuccess:

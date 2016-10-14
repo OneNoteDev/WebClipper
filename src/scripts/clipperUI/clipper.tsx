@@ -616,6 +616,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private getSignOutState(): ClipperState {
 		let signOutState = this.getResetState();
 		signOutState.saveLocation = undefined;
+		signOutState.userResult = undefined;
 		return signOutState;
 	}
 
