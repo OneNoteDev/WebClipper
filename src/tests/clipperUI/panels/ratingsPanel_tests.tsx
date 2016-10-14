@@ -244,7 +244,7 @@ test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End whe
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// skip to RATE panel
-	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Rate });
+	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
 	m.redraw(true);
 
 	let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
@@ -264,7 +264,7 @@ test("'Rate' click at RatingsPromptStage.Rate not available when rate url does n
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// skip to RATE panel
-	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Rate });
+	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
 	m.redraw(true);
 
 	let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
@@ -288,7 +288,7 @@ test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.No
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// skip to RATE panel
-	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Rate });
+	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
 	m.redraw(true);
 
 	let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
@@ -308,7 +308,7 @@ test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url d
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// skip to RATE panel
-	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Rate });
+	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
 	m.redraw(true);
 
 	let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
@@ -334,7 +334,7 @@ test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// skip to FEEDBACK panel
-	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Feedback });
+	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
 	m.redraw(true);
 
 	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
@@ -356,7 +356,7 @@ test("'Feedback' click at RatingsPromptStage.Feedback not available when feedbac
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// skip to FEEDBACK panel
-	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Feedback });
+	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
 	m.redraw(true);
 
 	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
@@ -382,7 +382,7 @@ test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStag
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// skip to FEEDBACK panel
-	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Feedback });
+	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
 	m.redraw(true);
 
 	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
@@ -404,7 +404,7 @@ test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedba
 	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
 	// skip to FEEDBACK panel
-	controllerInstance.setState({ userSelectedRatingsPromptStage: RatingsPromptStage.Feedback });
+	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
 	m.redraw(true);
 
 	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);

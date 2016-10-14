@@ -3,6 +3,8 @@ declare var Velocity: jquery.velocity.VelocityStatic;
 import {Constants} from "../constants";
 import {Utils} from "../utils";
 
+import {SmartValue} from "../communicator/smartValue";
+
 import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
@@ -18,9 +20,8 @@ import {AnimationHelper} from "./animations/animationHelper";
 import {AnimationState} from "./animations/animationState";
 import {AnimationStrategy} from "./animations/animationStrategy";
 import {ExpandFromRightAnimationStrategy} from "./animations/expandFromRightAnimationStrategy";
-import {SlideFromRightAnimationStrategy} from "./animations/slideFromRightAnimationStrategy";
+import {FadeInAnimationStrategy} from "./animations/fadeInAnimationStrategy";
 import {SlidingHeightAnimationStrategy} from "./animations/slidingHeightAnimationStrategy";
-import {TransitioningAnimationStrategy} from "./animations/transitioningAnimationStrategy";
 
 import {CloseButton} from "./components/closeButton";
 import {Footer} from "./components/footer";
@@ -54,6 +55,7 @@ export enum PanelType {
 
 export interface MainControllerState {
 	currentPanel?: PanelType;
+	ratingsPanelAnimationState?: SmartValue<AnimationState>; // stored for when the ratings subpanel re-renders while the MainController does not
 }
 
 export interface MainControllerProps extends ClipperStateProp {
@@ -109,7 +111,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			onAfterAnimateOut: () => { Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi); }
 		});
 
-		this.panelAnimationStrategy = new SlideFromRightAnimationStrategy({
+		this.panelAnimationStrategy = new FadeInAnimationStrategy({
 			extShouldAnimateIn: () => { return this.state.currentPanel !== PanelType.None; },
 			extShouldAnimateOut: () => { return this.getPanelTypeToShow() !== this.state.currentPanel; },
 			onAfterAnimateOut: () => { this.setState({ currentPanel: this.getPanelTypeToShow() }); },
@@ -284,8 +286,12 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			case PanelType.ClippingSuccess:
 				let panels: any[] = [<SuccessPanel clipperState={this.props.clipperState} />];
 
+				if (!this.state.ratingsPanelAnimationState) {
+					this.state.ratingsPanelAnimationState = new SmartValue<AnimationState>(AnimationState.Out);
+				}
+
 				if (this.props.clipperState.showRatingsPrompt && this.props.clipperState.showRatingsPrompt.get()) {
-					panels.push(<RatingsPanel clipperState={this.props.clipperState} />);
+					panels.push(<RatingsPanel clipperState={this.props.clipperState} animationState={this.state.ratingsPanelAnimationState} />);
 				}
 
 				return panels;

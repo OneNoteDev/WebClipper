@@ -129,9 +129,10 @@ export module Constants {
 		export var regionHeaderTitle = "regionHeaderTitle";
 
 		// previewViewerAugmentationHeader
-		export var highlightControl = "highlightControl";
-		export var highlightButton = "highlightButton";
 		export var decrementFontSize = "decrementFontSize";
+		export var fontSizeControl = "fontSizeControl";
+		export var highlightButton = "highlightButton";
+		export var highlightControl = "highlightControl";
 		export var incrementFontSize = "incrementFontSize";
 		export var serifControl = "serifControl";
 		export var sansSerif = "sansSerif";
@@ -314,7 +315,7 @@ export module Constants {
 			export var clipperVersion = "clipperVersion";
 			export var correlationId = "correlationId";
 			export var error = "error";
-			export var errorDescription = "errorDescription";
+			export var errorDescription = "error_?description";
 			export var event = "event";
 			export var eventName = "eventName";
 			export var failureId = "failureId";

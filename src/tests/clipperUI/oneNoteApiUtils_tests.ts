@@ -182,7 +182,7 @@ test("For known error codes, the appropriate failure message should be returned 
 
 	for (let i = 0; i < codeMessagePairs.length; i++) {
 		strictEqual(OneNoteApiUtils.getLocalizedErrorMessage(codeMessagePairs[i].code), codeMessagePairs[i].message,
-			"Code " + codeMessagePairs[i] + " should be associated with the matching error message");
+			"Code " + codeMessagePairs[i].code + " should be associated with the matching error message");
 	}
 });
 
@@ -192,4 +192,26 @@ test("For unknown error codes, the generic failure message should be returned fr
 		"Unknown code -1 should be associated with the generic error message");
 	strictEqual(OneNoteApiUtils.getLocalizedErrorMessage("47561234"), stringsJson["WebClipper.Error.GenericError"],
 		"Unknown code 47561234 should be associated with the generic error message");
+});
+
+test("For known get notebooks error codes, the appropriate failure message should be returned from getLocalizedErrorMessageForGetNotebooks", () => {
+	let stringsJson = require("../../strings.json");
+	let message = "We couldn't load your notebooks because a list limit was exceeded in OneDrive.\n<a href=\"https://aka.ms/onapi-too-many-items-actionable\">Learn more</a>";
+	let codeMessagePairs = [
+		{ code: "10008", message: message },
+		{ code: "10013", message: message }
+	];
+
+	for (let i = 0; i < codeMessagePairs.length; i++) {
+		strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(codeMessagePairs[i].code), codeMessagePairs[i].message,
+			"Code " + codeMessagePairs[i].code + " should be associated with the matching error message");
+	}
+});
+
+test("For unknown error codes in the get notebooks scenario, the generic get notebooks failure message should be returned from getLocalizedErrorMessageForGetNotebooks", () => {
+	let stringsJson = require("../../strings.json");
+	strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks("-1"), stringsJson["WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage"],
+		"Unknown code -1 should be associated with the generic error message");
+	strictEqual(OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks("99999"), stringsJson["WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage"],
+		"Unknown code 99999 should be associated with the generic error message");
 });
