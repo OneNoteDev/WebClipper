@@ -146,7 +146,7 @@ export class AuthenticationHelper {
 			retrieveUserInformationEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
 
 			let headers = {};
-			headers["Content-type"] = "application/www-form-urlencoded";
+			headers["Content-type"] = "application/x-www-form-urlencoded";
 			headers[Constants.HeaderValues.correlationId] = correlationId;
 
 			let postData = "";
