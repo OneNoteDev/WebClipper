@@ -1,3 +1,5 @@
+import {Constants} from "../../constants";
+
 import {Localization} from "../../localization/localization";
 
 import {ClipperStateProp} from "../clipperState";
@@ -21,7 +23,7 @@ class ClippingPanelWithDelayedMessageClass extends ComponentBase<ClippingPanelWi
 			this.setState({
 				showMessage: true
 			});
-		}, this.props.delay);
+		}, Math.max(this.props.delay, 0));
 	}
 
 	getInitialState(): ClippingPanelWithDelayedMessageState {
@@ -32,7 +34,7 @@ class ClippingPanelWithDelayedMessageClass extends ComponentBase<ClippingPanelWi
 
 	getMessageElement() {
 		return (
-			<span className="actionLabelFont messageLabel"
+			<span className="actionLabelFont messageLabel" id={Constants.Ids.clipProgressDelayedMessage}
 				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }>
 				{this.props.message}
 			</span>

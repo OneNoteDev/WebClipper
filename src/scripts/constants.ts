@@ -56,6 +56,9 @@ export module Constants {
 		// clippingPanel
 		export var clipperApiProgressContainer = "clipperApiProgressContainer";
 
+		// clippingPanel
+		export var clipProgressDelayedMessage = "clipProgressDelayedMessage";
+
 		// dialogPanel
 		export var dialogBackButton = "dialogBackButton";
 		export var dialogButtonContainer = "dialogButtonContainer";
