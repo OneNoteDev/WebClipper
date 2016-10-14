@@ -326,6 +326,7 @@ export class SaveToOneNote {
 		}
 	}
 
+	// This function assumes 	
 	private static createPdfRequestChain(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
 		let previewOptions = clipperState.pdfPreviewInfo;
@@ -393,21 +394,6 @@ export class SaveToOneNote {
 
 		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
 		return oneNoteApi.updatePage(pageId, JSON.stringify(revisions));
-	}
-
-	private static createOneNotePagePatchRequest(): Promise<any> {
-		let headers: { [key: string]: string } = {};
-		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-
-		let dataUrls = [
-			"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAwCAYAAACFUvPfAAAAg0lEQVRoQ+3UwQnAMBDEQLv/1q6npIOA9DgIyH+BGS++M/Ocn53bpZdeLOkl6JN00h8CzaN5NI+tDSSdtBPon3ZuvEqam7kiaefGq6S5mSuSdm68SpqbuSJp58arpLmZK5J2brxKmpu5ImnnxqukuZkrknZuvEqam7kiaefGq6S5mSteVS6iwW24vQUAAAAASUVORK5CYII="
-		];
-		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
-
-		// https://www.onenote.com/api/v1.0/me/notes/pages//content
-		return oneNoteApi.updatePage("0-f84b3811d7f446429ced509a1073770e!153-9C38937B9074D871!207", JSON.stringify(revisions));
 	}
 
 	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {

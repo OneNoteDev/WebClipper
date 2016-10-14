@@ -499,32 +499,27 @@
 					}
 
 					// PDF Preview Content
+					.pdf-preview-image-container {
+						position: relative;
+						display: flex;
+						align-items: center;
+						justify-content: center;
+					}
+
 					.pdf-preview-image {
-						margin-right: auto;
-						margin-left: auto;
-						margin-bottom: 24px;
 						margin-top: 24px;
 						box-shadow: 2px 2px 1px 1px rgba(0,0,0,0.2), -2px 0px 1px 1px rgba(0,0,0,0.2);
 					}
-
 
 					.overlay {
 						width: 104px;
 						height: 104px;
 						background-color: rgba(0,0,0,.65);
 						position: absolute;
-						margin-left: auto;
-						margin-right: auto;
-						margin-top: auto;
-						margin-bottom: auto;
-						top: 0;
-						left: 0;
-						right: 0;
-						bottom: 0;
 						border-radius: 8px;
 						
 						display: flex;
-						text-align: center;
+						align-items: center;
 						justify-content: center;
 					}
 
@@ -532,6 +527,7 @@
 						font-size: 64px;
 						font-family: @SegoeUi;
 						color: white;
+						margin-bottom: 4px;
 					}
 
 					.fade-out {

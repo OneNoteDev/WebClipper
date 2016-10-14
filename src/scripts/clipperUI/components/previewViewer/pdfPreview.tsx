@@ -183,10 +183,10 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 				}
 				for (let dataUrlObject of imagesToShow) {
 					contentBody.push(
-						<div style="position: relative;">
+						<div class="pdf-preview-image-container">
 							<img className={Constants.Classes.pdfPreviewImage} src={dataUrlObject.dataUrl}></img>
 							<div className="overlay">
-								<span class="overlay-number">{dataUrlObject.index}
+								<span class="overlay-number">{dataUrlObject.index + 1}
 								</span>
 							</div>
 						</div>);

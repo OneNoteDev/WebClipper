@@ -90,7 +90,7 @@
 	"WebClipper.Preview.NoContentFound": "No article found. Try another clipping mode.",
 	"WebClipper.Preview.UnableToClipLocalFile": "Local files can only be clipped using Region mode.",
 	"WebClipper.Preview.Header.AddAnotherRegionButtonLabel": "Add another region",
-	"WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel": "All pages",
+	"WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel": "All",
 	"WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel": "Attach PDF",
 	"WebClipper.Preview.Header.SansSerifButtonLabel": "Sans-serif",
 	"WebClipper.Preview.Header.SerifButtonLabel": "Serif",
