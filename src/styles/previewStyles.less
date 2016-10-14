@@ -532,9 +532,9 @@
 					}
 
 					.overlay {
-						width: 16px;
-						height: 16px;
-						background-color: gray;
+						width: 104px;
+						height: 104px;
+						background-color: rgba(0,0,0,.65);
 						position: absolute;
 						margin-left: auto;
 						margin-right: auto;
@@ -544,13 +544,26 @@
 						left: 0;
 						right: 0;
 						bottom: 0;
-						border-radius: 2px;
-						opacity: .5;
+						border-radius: 8px;
+						
+						display: flex;
 						text-align: center;
-						vertical-align: middle;
-						padding: 8px;
+						justify-content: center;
 					}
 
+					.overlay-number {
+						font-size: 64px;
+						font-family: @SegoeUi;
+						color: white;
+					}
+
+					.fade-out {
+						animation: fadeout 4s linear;
+					}
+
+					.fade-in {
+						animation: fadein 4s linear;
+					}
 
 					// Allows the same attachment styling as the WAC
 					.attachment-overlay {

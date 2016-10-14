@@ -21,7 +21,11 @@ import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
 
 import * as _ from "lodash";
 
-class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
+interface PdfPreviewState {
+	fadeIn: boolean;
+}
+
+class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
 	private static scrollListenerAdded: boolean = false; // done on purpose
 
 	private addScrollListener() {
@@ -29,6 +33,9 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 			let previewContentContainer = document.getElementById("previewContentContainer");
 			if (!!previewContentContainer) {
 				previewContentContainer.addEventListener("scroll", (ev) => {
+					this.setState({
+						fadeIn: true
+					});
 					console.log("scroll me amadeus");
 					console.log(ev);
 				});
@@ -152,17 +159,23 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		let dataUrls = this.props.clipperState.pdfResult.data.get().dataUrls;
 		let contentBody = [];
 
-		let imagesToShow = dataUrls;
+		let imagesToShow = dataUrls.map((dataUrl, index) => { return { dataUrl: dataUrl, index: index + 1 }; });
 		if (!this.props.clipperState.pdfPreviewInfo.allPages) {
 			let pagesToShow = this.props.clipperState.pdfPreviewInfo.pagesToShow;
-			imagesToShow = dataUrls.reduce((runningValue, currentUrl, currentIndex) => {
-				if (pagesToShow.indexOf(currentIndex)) {
-					return runningValue = runningValue.concat([{
-						dataUrl: currentUrl,
-						originalIndex: currentIndex
-					}]);
-				}
-			}, []);
+
+			imagesToShow = imagesToShow.filter((dataUrlObject) => {
+				return pagesToShow.indexOf(dataUrlObject.index) !== -1;
+			});
+
+			// imagesToShow = dataUrls.reduce((runningValue, currentUrl, currentIndex) => {
+			// 	if (pagesToShow.indexOf(currentIndex)) {
+			// 		runningValue = runningValue.concat([{
+			// 			dataUrl: currentUrl,
+			// 			originalIndex: currentIndex
+			// 		}]);
+			// 	}
+			// 	return runningValue;
+			// }, []);
 
 			// imagesToShow = dataUrls.map((dataUrl, index) => { return { dataUrl: dataUrl, index: index }}).filter((dataUrlAndIndex, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
 		}
@@ -184,11 +197,14 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 							<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
 						</span>);
 				}
-				for (let dataUrl of imagesToShow) {
+				for (let dataUrlObject of imagesToShow) {
 					contentBody.push(
 						<div style="position: relative;">
-							<img className={Constants.Classes.pdfPreviewImage} src={dataUrl}></img>
-							<div class="overlay"></div>
+							<img className={Constants.Classes.pdfPreviewImage} src={dataUrlObject.dataUrl}></img>
+							<div className={"overlay" + (this.state.fadeIn ? " fade-in" : "")}>
+								<span class="overlay-number">{dataUrlObject.index}
+								</span>
+							</div>
 						</div>);
 				}
 				break;
