@@ -1,3 +1,5 @@
+import {SmartValue} from "../../communicator/smartValue";
+
 import {AnimationHelper} from "./animationHelper";
 import {AnimationState} from "./animationState";
 
@@ -8,28 +10,29 @@ import {AnimationState} from "./animationState";
  */
 export abstract class AnimationStrategy {
 	protected animationDuration: number;
-	protected animationState: AnimationState;
 
-	constructor(animationDuration: number) {
+	private animationState: SmartValue<AnimationState>;
+
+	constructor(animationDuration: number, animationState?: SmartValue<AnimationState>) {
 		this.animationDuration = animationDuration;
-		this.animationState = AnimationState.Stopped;
+		this.animationState = animationState || new SmartValue<AnimationState>(AnimationState.Stopped);
 	}
 
 	protected abstract doAnimate(el: HTMLElement): Promise<void>;
 
 	public getAnimationState(): AnimationState {
-		return this.animationState;
+		return this.animationState.get();
 	}
 
 	public setAnimationState(animationState: AnimationState) {
-		this.animationState = animationState;
+		this.animationState.set(animationState);
 	}
 
 	public animate(el: HTMLElement) {
 		AnimationHelper.stopAnimationsThen(el, () => {
-			this.animationState = AnimationState.Transitioning;
+			this.setAnimationState(AnimationState.Transitioning);
 			this.doAnimate(el).then(() => {
-				this.animationState = AnimationState.Stopped;
+				this.setAnimationState(AnimationState.Stopped);
 			});
 		});
 	}

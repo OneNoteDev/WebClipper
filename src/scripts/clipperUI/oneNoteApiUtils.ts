@@ -64,6 +64,33 @@ export module OneNoteApiUtils {
 		return responseCodeInfo ? responseCodeInfo.message : Localization.getLocalizedString("WebClipper.Error.GenericError");
 	}
 
+	/**
+	 * Retrieves an error message for the response returned from fetching notebooks as HTML.
+	 */
+	export function getLocalizedErrorMessageForGetNotebooks(apiResponseCode: string): string {
+		let fallback = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage");
+
+		// Actionable codes have a message that have a hyperlink to documentation that users can use to solve their issue
+		let actionableResponseCodes = ["10008", "10013"];
+		let responseCodeIsActionable = actionableResponseCodes.indexOf(apiResponseCode) > -1;
+		if (responseCodeIsActionable) {
+			let actionableLink = document.createElement("A") as HTMLAnchorElement;
+			actionableLink.href = "https://aka.ms/onapi-too-many-items-actionable";
+			actionableLink.innerText = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureLinkMessage");
+			let actionableMessageAsHtml = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithExplanation") + "\n" + actionableLink.outerHTML;
+			return actionableMessageAsHtml;
+		}
+
+		// See if there's a specific message we can show
+		let responseCodeInfo = getResponseCodeInformation(apiResponseCode);
+		if (responseCodeInfo && responseCodeInfo.message) {
+			return responseCodeInfo.message;
+		}
+
+		// Fall back to a non-retryable message
+		return fallback;
+	}
+
 	export function isExpected(apiResponseCode: string): boolean {
 		let responseCodeInfo = getResponseCodeInformation(apiResponseCode);
 		return responseCodeInfo ? responseCodeInfo.isExpected : false;
@@ -74,6 +101,9 @@ export module OneNoteApiUtils {
 		return responseCodeInfo ? responseCodeInfo.isRetryable : false;
 	}
 
+	/**
+	 * Retrieves response code information given that the context is in POSTing a clip.
+	 */
 	function getResponseCodeInformation(apiResponseCode: string): { message: string, isRetryable: boolean, isExpected: boolean } {
 		let handledExtendedResponseCodes = {
 			"10001": { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // UnexpectedServerError
@@ -81,7 +111,6 @@ export module OneNoteApiUtils {
 			"10004": { message: Localization.getLocalizedString("WebClipper.Error.PasswordProtected"), isRetryable: false, isExpected: true }, // PasswordProtectedSection
 			"10006": { message: Localization.getLocalizedString("WebClipper.Error.CorruptedSection"), isRetryable: false, isExpected: true }, // CorruptedSection
 			"10007": { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // ServerTooBusy
-			"10008": { message: Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage"), isRetryable: false, isExpected: true }, // SharepointQueryThrottled
 			"19999": { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: false }, // GenericError
 			"20102": { message: Localization.getLocalizedString("WebClipper.Error.ResourceDoesNotExist"), isRetryable: false, isExpected: true }, // ResourceDoesNotExist
 			"30101": { message: Localization.getLocalizedString("WebClipper.Error.QuotaExceeded"), isRetryable: false, isExpected: true }, // OneDriveQuotaExceeded

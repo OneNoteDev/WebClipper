@@ -61,10 +61,58 @@ export module TestConstants {
 	}
 }
 
+// setNumSuccessfulClipsRatingsEnablement
+
+test("setNumSuccessfulClipsRatingsEnablement does not set the value when ClipperStorageKeys.doNotPromptRatings is set", (assert: QUnitAssert) => {
+	let done = assert.async();
+
+	let numClips = 12;
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numClips.toString());
+	Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "true");
+
+	RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
+
+	Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, (numClipsAnchorAsStr: string) => {
+		ok(Utils.isNullOrUndefined(numClipsAnchorAsStr));
+		done();
+	});
+});
+
+test("setNumSuccessfulClipsRatingsEnablement does not overwrite the value when it already exists", (assert: QUnitAssert) => {
+	let done = assert.async();
+
+	let numClips = 12;
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numClips.toString());
+
+	let expectedStorageValue = 999;
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, expectedStorageValue.toString());
+
+	RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
+
+	Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, (numClipsAnchorAsStr: string) => {
+		strictEqual(parseInt(numClipsAnchorAsStr, 10), expectedStorageValue);
+		done();
+	});
+});
+
+test("setNumSuccessfulClipsRatingsEnablement sets the value to (ClipperStorageKeys.numSuccessfulClips - 1) when applicable", (assert: QUnitAssert) => {
+	let done = assert.async();
+
+	let numClips = 12;
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numClips.toString());
+
+	RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
+
+	Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, (numClipsAnchorAsStr: string) => {
+		strictEqual(parseInt(numClipsAnchorAsStr, 10), numClips - 1);
+		done();
+	});
+});
+
 // clipSuccessDelayIsOver
 
 test("clipSuccessDelayIsOver returns false when numClips is invalid", () => {
-	let invalidParams = [undefined, NaN];
+	let invalidParams = [undefined, NaN, -1];
 
 	for (let numClips of invalidParams) {
 		let over: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips);
@@ -87,6 +135,51 @@ test("clipSuccessDelayIsOver returns true when numClips is in range", () => {
 	for (let numClips of validParams) {
 		let over: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips);
 		strictEqual(over, true, "numClips is valid with value " + numClips);
+	}
+});
+
+test("clipSuccessDelayIsOver returns false when anchorClipValue is greater than numClips", () => {
+	let numClips = Constants.Settings.minClipSuccessForRatingsPrompt;
+	let anchorClipValue = numClips + 1;
+	let over: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips, anchorClipValue);
+	strictEqual(over, false, "anchorClipValue should never be greater than numClips");
+});
+
+test("clipSuccessDelayIsOver returns false when anchorClipValue is equal to numClips", () => {
+	let numClips = Constants.Settings.minClipSuccessForRatingsPrompt;
+	let anchorClipValue = numClips;
+	let over: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips, anchorClipValue);
+	strictEqual(over, false, "anchorClipValue should never be equal to numClips");
+});
+
+test("clipSuccessDelayIsOver returns false when (numClips - anchorClipValue) is out of range", () => {
+	let anchorClipValue = 1;
+	let outOfRangeParams = [0, Constants.Settings.minClipSuccessForRatingsPrompt - 1, Constants.Settings.maxClipSuccessForRatingsPrompt + 1];
+
+	for (let outOfRange of outOfRangeParams) {
+		let numClips = outOfRange + anchorClipValue;
+		let over: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips, anchorClipValue);
+		strictEqual(over, false, "(numClips - anchorClipValue) should be out of range. numClips: " + numClips + ". anchorClipValue: " + anchorClipValue);
+	}
+});
+
+test("clipSuccessDelayIsOver returns true when anchorClipValue is invalid (and defaults to 0) but numClips is in range", () => {
+	let invalidAnchors = [undefined, NaN, -1];
+
+	for (let anchorClipValue of invalidAnchors) {
+		let over: boolean = RatingsHelper.clipSuccessDelayIsOver(Constants.Settings.minClipSuccessForRatingsPrompt, anchorClipValue);
+		strictEqual(over, true, "anchorClipValue is invalid with value " + anchorClipValue + ", but should be ignored since numClips is valid with value " + Constants.Settings.minClipSuccessForRatingsPrompt);
+	}
+});
+
+test("clipSuccessDelayIsOver returns true when (numClips - anchorClipValue) is in range", () => {
+	let anchorClipValue = 100;
+	let validParams = [Constants.Settings.minClipSuccessForRatingsPrompt, Constants.Settings.minClipSuccessForRatingsPrompt + 1, Constants.Settings.maxClipSuccessForRatingsPrompt - 1, Constants.Settings.maxClipSuccessForRatingsPrompt];
+
+	for (let outOfRange of validParams) {
+		let numClips = outOfRange + anchorClipValue;
+		let over: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips, anchorClipValue);
+		strictEqual(over, true, "(numClips - anchorClipValue) should be valid. numClips: " + numClips + ". anchorClipValue: " + anchorClipValue);
 	}
 });
 
@@ -444,6 +537,7 @@ test("shouldShowRatingsPrompt returns true when do not prompt ratings is set in 
 
 	Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "invalid");
 	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, "0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
 
@@ -453,17 +547,21 @@ test("shouldShowRatingsPrompt returns true when do not prompt ratings is set in 
 
 test("shouldShowRatingsPrompt returns true when a valid configuration is provided", () => {
 	Settings.setSettingsJsonForTesting({
-		"ChromeExtension_RatingsEnabled": {
+		"FirefoxExtension_RatingsEnabled": {
 			"Value": "true"
 		}
 	});
 
-	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	let anchorClipValue = Constants.Settings.maxClipSuccessForRatingsPrompt + 1;
+
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (anchorClipValue + Constants.Settings.maxClipSuccessForRatingsPrompt).toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, anchorClipValue.toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
+	clipperState.clientInfo.clipperType = ClientType.FirefoxExtension;
 
 	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 	strictEqual(shouldShowRatingsPrompt, true);
@@ -477,6 +575,7 @@ test("shouldShowRatingsPrompt returns false when number of successful clips is b
 	});
 
 	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (Constants.Settings.minClipSuccessForRatingsPrompt - 1).toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, "0");
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
@@ -497,6 +596,7 @@ test("shouldShowRatingsPrompt returns false when last bad rating date is too rec
 	let timeDiffInMs = 1000 * 60 * 60 * 24; // to make last bad rating date 1 day sooner than the min time delay
 
 	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, "0");
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings + timeDiffInMs).toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
@@ -515,11 +615,31 @@ test("shouldShowRatingsPrompt returns false when there has not been a significan
 	});
 
 	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, "0");
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
 	Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.0.999");
 
 	let clipperState = HelperFunctions.getMockClipperState();
+
+	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
+	strictEqual(shouldShowRatingsPrompt, false);
+});
+
+test("shouldShowRatingsPrompt returns false when (numSuccessfulClips - numSuccessfulClipsRatingsEnablement) is out of range", () => {
+	Settings.setSettingsJsonForTesting({
+		"FirefoxExtension_RatingsEnabled": {
+			"Value": "true"
+		}
+	});
+
+	let anchorClipValue = Constants.Settings.maxClipSuccessForRatingsPrompt + 1;
+
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (anchorClipValue + Constants.Settings.maxClipSuccessForRatingsPrompt + 1).toString());
+	Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, anchorClipValue.toString());
+
+	let clipperState = HelperFunctions.getMockClipperState();
+	clipperState.clientInfo.clipperType = ClientType.FirefoxExtension;
 
 	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 	strictEqual(shouldShowRatingsPrompt, false);
