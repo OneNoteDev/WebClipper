@@ -72,7 +72,7 @@ export abstract class SessionLogger extends Logger {
 		}
 
 		if (!this.areContextRequirementsMet()) {
-			this.pushDataPackage(Log.LogMethods.logEvent, arguments);
+			this.pushDataPackage(Log.LogMethods.LogEvent, arguments);
 			return;
 		}
 
@@ -86,7 +86,7 @@ export abstract class SessionLogger extends Logger {
 		}
 
 		if (!this.areContextRequirementsMet()) {
-			this.pushDataPackage(Log.LogMethods.logFailure, arguments);
+			this.pushDataPackage(Log.LogMethods.LogFailure, arguments);
 			return;
 		}
 
@@ -100,7 +100,7 @@ export abstract class SessionLogger extends Logger {
 		}
 
 		if (!this.areContextRequirementsMet()) {
-			this.pushDataPackage(Log.LogMethods.logFunnel, arguments);
+			this.pushDataPackage(Log.LogMethods.LogFunnel, arguments);
 			return;
 		}
 
@@ -109,7 +109,7 @@ export abstract class SessionLogger extends Logger {
 
 	public logSessionStart(): void {
 		if (!this.areContextRequirementsMet()) {
-			this.pushDataPackage(Log.LogMethods.logSessionStart, arguments);
+			this.pushDataPackage(Log.LogMethods.LogSessionStart, arguments);
 			return;
 		}
 
@@ -132,7 +132,7 @@ export abstract class SessionLogger extends Logger {
 
 	public logSessionEnd(endTrigger: Log.Session.EndTrigger): void {
 		if (!this.areContextRequirementsMet()) {
-			this.pushDataPackage(Log.LogMethods.logSessionEnd, arguments);
+			this.pushDataPackage(Log.LogMethods.LogSessionEnd, arguments);
 			return;
 		}
 
@@ -165,7 +165,7 @@ export abstract class SessionLogger extends Logger {
 		}
 
 		if (!this.areContextRequirementsMet()) {
-			this.pushDataPackage(Log.LogMethods.logTrace, arguments);
+			this.pushDataPackage(Log.LogMethods.LogTrace, arguments);
 			return;
 		}
 
@@ -189,7 +189,7 @@ export abstract class SessionLogger extends Logger {
 
 	public logClickEvent(clickId: string): void {
 		if (!this.areContextRequirementsMet()) {
-			this.pushDataPackage(Log.LogMethods.logClickEvent, arguments);
+			this.pushDataPackage(Log.LogMethods.LogClickEvent, arguments);
 			return;
 		}
 
@@ -238,31 +238,31 @@ export abstract class SessionLogger extends Logger {
 
 		this.logQueue.forEach((data: Log.LogDataPackage) => {
 			switch (data.methodName) {
-				case Log.LogMethods.logEvent:
+				case Log.LogMethods.LogEvent:
 					this.logEvent.apply(this, data.methodArgs);
 					break;
-				case Log.LogMethods.logFailure:
+				case Log.LogMethods.LogFailure:
 					this.logFailure.apply(this, data.methodArgs);
 					break;
-				case Log.LogMethods.pushToStream:
+				case Log.LogMethods.PushToStream:
 					this.pushToStream.apply(this, data.methodArgs);
 					break;
-				case Log.LogMethods.logFunnel:
+				case Log.LogMethods.LogFunnel:
 					this.logUserFunnel.apply(this, data.methodArgs);
 					break;
-				case Log.LogMethods.logSessionStart:
+				case Log.LogMethods.LogSessionStart:
 					this.logSessionStart.apply(this, data.methodArgs);
 					break;
-				case Log.LogMethods.logSessionEnd:
+				case Log.LogMethods.LogSessionEnd:
 					this.logSessionEnd.apply(this, data.methodArgs);
 					break;
-				case Log.LogMethods.logClickEvent:
+				case Log.LogMethods.LogClickEvent:
 					this.logClickEvent.apply(this, data.methodArgs);
 					break;
-				case Log.LogMethods.setContextProperty:
+				case Log.LogMethods.SetContextProperty:
 					this.setContextProperty.apply(this, data.methodArgs);
 					break;
-				case Log.LogMethods.logTrace:
+				case Log.LogMethods.LogTrace:
 				/* falls through */
 				default:
 					this.logTrace.apply(this, data.methodArgs);
