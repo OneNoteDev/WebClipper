@@ -54,8 +54,8 @@ export class AuthenticationHelper {
 
 			let getUserInformationFunction = () => {
 				return new Promise<ResponsePackage<string>>((resolve2, reject2) => {
-					AuthenticationHelper.getClipperInfoCookie(clipperId).then((cookie) => {
-						AuthenticationHelper.retrieveUserInformation(clipperId, cookie).then((result) => {
+					this.getClipperInfoCookie(clipperId).then((cookie) => {
+						this.retrieveUserInformation(clipperId, cookie).then((result) => {
 							resolve2(result);
 						}, (errorObject) => {
 							reject2(errorObject);
@@ -92,7 +92,7 @@ export class AuthenticationHelper {
 	 * right now the Edge browser doesn't pass those cookies along properly, so we need to do a little work to make sure things are set
 	 * correctly. This uses the WebExtension APIs to retrieve the needed cookie manually.
 	 */
-	public static getClipperInfoCookie(clipperId: string): Promise<string> {
+	public getClipperInfoCookie(clipperId: string): Promise<string> {
 		return new Promise<string>((resolve) => {
 			// This is to work around a bug in Edge where the cookies.get call doesn't return if the cookie isn't set and there is more
 			// than one tab open.  Basically, we're giving it 3 seconds to return and then giving up.
@@ -115,7 +115,7 @@ export class AuthenticationHelper {
 	 * Similar to getClipperInfoCookie(), The calls from the background process don't delete cookies as well, so we need a way to
 	 * do it manually.  This method essentially forces the delete of the cookies we rely on for authentication.
 	 */
-	public static deleteUserAuthenticationCookies(authType: AuthType): void {
+	public deleteUserAuthenticationCookies(authType: AuthType): void {
 		browser.cookies.remove({ "url": Constants.Urls.serviceDomain, "name": Constants.Cookies.clipperInfo });
 
 		let authenticationDomain = Constants.Urls.msaDomain;
@@ -136,12 +136,18 @@ export class AuthenticationHelper {
 	/**
 	 * Makes a call to the authentication proxy to retrieve the user's information.
 	 */
-	public static retrieveUserInformation(clipperId: string, cookie: string = undefined): Promise<ResponsePackage<string>> {
+	public retrieveUserInformation(clipperId: string, cookie: string = undefined): Promise<ResponsePackage<string>> {
 		return new Promise<ResponsePackage<string>>((resolve, reject: (error: OneNoteApi.RequestError) => void) => {
 			let userInfoUrl = Utils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
 
+			let retrieveUserInformationEvent = new Log.Event.PromiseEvent(Log.Event.Label.RetrieveUserInformation);
+
+			let correlationId = Utils.generateGuid();
+			retrieveUserInformationEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
+
 			let headers = {};
 			headers["Content-type"] = "application/x-www-form-urlencoded";
+			headers[Constants.HeaderValues.correlationId] = correlationId;
 
 			let postData = "";
 			if (!Utils.isNullOrUndefined(cookie)) {
@@ -154,7 +160,11 @@ export class AuthenticationHelper {
 				// The false case is expected behavior if the user has not signed in or credentials have expired
 				resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });
 			}, (error: OneNoteApi.RequestError) => {
+				retrieveUserInformationEvent.setStatus(Log.Status.Failed);
+				retrieveUserInformationEvent.setFailureInfo(error);
 				reject(error);
+			}).then(() => {
+				this.logger.logEvent(retrieveUserInformationEvent);
 			});
 		});
 	}
@@ -162,7 +172,7 @@ export class AuthenticationHelper {
 	/**
 	 * Determines whether or not the given string is valid JSON and has the required elements.
 	 */
-	public static isValidUserInformationJsonString(userInfo: string): boolean {
+	public isValidUserInformationJsonString(userInfo: string): boolean {
 		let userInfoJson: UserInfoData;
 		try {
 			userInfoJson = JSON.parse(userInfo);
