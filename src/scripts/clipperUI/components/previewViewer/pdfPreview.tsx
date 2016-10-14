@@ -21,7 +21,11 @@ import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
 
 import * as _ from "lodash";
 
-class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
+interface PdfPreviewState {
+	fadeIn: boolean;
+}
+
+class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
 	private static scrollListenerAdded: boolean = false; // done on purpose
 
 	private addScrollListener() {
@@ -29,8 +33,7 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 			let previewContentContainer = document.getElementById("previewContentContainer");
 			if (!!previewContentContainer) {
 				previewContentContainer.addEventListener("scroll", (ev) => {
-					console.log("scroll me amadeus");
-					console.log(ev);
+					console.log("scroll handler");
 				});
 				PdfPreview.scrollListenerAdded = true;
 			}
@@ -40,8 +43,6 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 
 	protected getContentBodyForCurrentStatus(): any[] {
 		let state = this.props.clipperState;
-
-		// TODO: should this be if !state.pdfResult ?
 		if (state.pdfResult.status === Status.InProgress) {
 			return [this.getSpinner()];
 		}
@@ -145,17 +146,25 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	private convertPdfResultToContentData(result: DataResult<SmartValue<PdfScreenshotResult>>): any[] {
 		this.addScrollListener();
 		let data = this.props.clipperState.pdfResult.data.get();
-		if (!data) {
+		if (!data || this.props.clipperState.pdfResult.status !== Status.Succeeded) {
 			return;
 		}
 
-		let dataUrls = this.props.clipperState.pdfResult.data.get().dataUrls;
+		let dataUrls = data.dataUrls;
 		let contentBody = [];
 
-		let imagesToShow = dataUrls;
+		let imagesToShow = dataUrls.map((dataUrl, index) => {
+			return {
+				dataUrl: dataUrl,
+				index: index
+			};
+		});
+
 		if (!this.props.clipperState.pdfPreviewInfo.allPages) {
 			let pagesToShow = this.props.clipperState.pdfPreviewInfo.pagesToShow;
-			imagesToShow = dataUrls.filter((page, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+			imagesToShow = imagesToShow.filter((dataUrlObject) => {
+				return pagesToShow.indexOf(dataUrlObject.index) !== -1;
+			});
 		}
 
 		let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
@@ -172,8 +181,15 @@ class PdfPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 							<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
 						</span>);
 				}
-				for (let dataUrl of imagesToShow) {
-					contentBody.push(<img className={Constants.Classes.pdfPreviewImage} src={dataUrl}></img>);
+				for (let dataUrlObject of imagesToShow) {
+					contentBody.push(
+						<div class="pdf-preview-image-container">
+							<img className={Constants.Classes.pdfPreviewImage} src={dataUrlObject.dataUrl}></img>
+							<div className="overlay">
+								<span class="overlay-number">{dataUrlObject.index + 1}
+								</span>
+							</div>
+						</div>);
 				}
 				break;
 			case Status.NotStarted:

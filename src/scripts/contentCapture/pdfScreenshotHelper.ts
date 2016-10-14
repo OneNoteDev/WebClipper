@@ -22,15 +22,16 @@ export class PdfScreenshotHelper {
 		// Never rejects, interesting
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			PDFJS.getDocument(localFileUrl).then((pdf) => {
-				pdf.getData().then((arrayBuffer) => {
-					PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
-						let castedArrayBuffer = <ArrayBuffer>arrayBuffer.buffer;
-						resolve({
-							arrayBuffer: castedArrayBuffer,
-							dataUrls: dataUrls
-						});
-					});
-				});
+				return PdfScreenshotHelper.convertPdfDocumentProxyToPdfScreenShotResult(pdf);
+				// pdf.getData().then((arrayBuffer) => {
+				// 	PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+				// 		let castedArrayBuffer = <ArrayBuffer>arrayBuffer.buffer;
+				// 		resolve({
+				// 			arrayBuffer: castedArrayBuffer,
+				// 			dataUrls: dataUrls
+				// 		});
+				// 	});
+				// });
 			});
 		});
 	}
@@ -60,6 +61,7 @@ export class PdfScreenshotHelper {
 					Clipper.logger.logEvent(getBinaryEvent);
 
 					PDFJS.getDocument(arrayBuffer).then((pdf) => {
+						// return PdfScreenshotHelper.convertPdfDocumentProxyToPdfScreenShotResult(pdf);
 						pdf.getData().then((pdfArrayBuffer) => {
 							PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
 								resolve({
@@ -81,6 +83,19 @@ export class PdfScreenshotHelper {
 			};
 
 			request.send();
+		});
+	}
+
+	private static convertPdfDocumentProxyToPdfScreenShotResult(pdf: PDFDocumentProxy): Promise<PdfScreenshotResult> {
+		return new Promise<PdfScreenshotResult>((resolve, reject) => {
+			return pdf.getData().then((pdfArrayBuffer) => {
+				PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+					resolve({
+						arrayBuffer: pdfArrayBuffer,
+						dataUrls: dataUrls
+					});
+				});
+			});
 		});
 	}
 

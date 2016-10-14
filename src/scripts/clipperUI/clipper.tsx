@@ -91,8 +91,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			augmentationPreviewInfo: {},
 			selectionPreviewInfo: {},
 			pdfPreviewInfo: {
-				allPages: false,
-				pagesToShow: [0, 2, 4],
+				allPages: true,
+				pagesToShow: [],
 				shouldAttachPdf: false,
 			},
 
@@ -182,66 +182,28 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private capturePdfScreenshotContent() {
+		// We don't capture anything. If the type is not EnhancedUrl, the mode will never show.
 		if (this.state.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
-			// this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.Failed } });
-
-			// this.state.pdfResult.data.set({
-			// 	failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
-			// });
-
-			// this.state.setState({
-			// 	pdfResult: {
-			// 		data: this.state.pdfResult.data,
-			// 		status: Status.Failed
-			// 	}
-			// });
 			return;
 		}
 
+		// TODO: mock up experience for people who don't have the allow file access thing checked
 		// console.log(chrome.extension.isAllowedFileSchemeAccess((isAllowed) => { console.log(isAllowed); }));
-		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
-			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
-			// TODO: reverse these calls
-			PDFJS.getDocument(this.state.pageInfo.rawUrl).then((pdf) => {
-				PdfScreenshotHelper.getLocalPdfData(this.state.pageInfo.rawUrl).then((result) => {
-					this.state.pdfResult.data.set(result);
-					this.state.setState({
-						pdfResult: {
-							data: this.state.pdfResult.data,
-							status: Status.Succeeded
-						}
-					});
-				}, () => {
-					this.state.pdfResult.data.set({
-						failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
-					});
-					this.state.setState({
-						pdfResult: {
-							data: this.state.pdfResult.data,
-							status: Status.Failed
-						}
-					});
-					// The clip action might be waiting on the result, so do this to consistently trigger its callback
-					this.state.pdfResult.data.forceUpdate();
-				});
-			});
-		} else {
-			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
-			PdfScreenshotHelper.getPdfData(this.state.pageInfo.rawUrl).then((result) => {
-				// We can't trigger subscribed callbacks using setState so we still have to call set()
-				this.state.pdfResult.data.set(result);
+		// Pseudocode
+		// If network file, send XHR, get bytes back, convert to PDFDocumentProxy
+		// If local file, get bytes back, convert to PDFDocumentProxy
+		this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
+		this.getPdfScreenShotResultFromRawUrl(this.state.pageInfo.rawUrl)
+			.then((pdfScreenshotResult: PdfScreenshotResult) => {
+				this.state.pdfResult.data.set(pdfScreenshotResult);
 				this.state.setState({
 					pdfResult: {
 						data: this.state.pdfResult.data,
 						status: Status.Succeeded
-					},
-					pdfPreviewInfo: {
-						allPages: true,
-						pagesToShow: _.range(0, this.state.pdfResult.data.get().dataUrls.length),
-						shouldAttachPdf: false
 					}
 				});
-			}, () => {
+			})
+			.catch(() => {
 				this.state.pdfResult.data.set({
 					failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
 				});
@@ -254,6 +216,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				// The clip action might be waiting on the result, so do this to consistently trigger its callback
 				this.state.pdfResult.data.forceUpdate();
 			});
+	}
+
+	private getPdfScreenShotResultFromRawUrl(rawUrl: string): Promise<PdfScreenshotResult> {
+		if (rawUrl.indexOf("file:///") === 0) {
+			return PdfScreenshotHelper.getLocalPdfData(rawUrl);
+		} else {
+			return PdfScreenshotHelper.getPdfData(rawUrl);
 		}
 	}
 

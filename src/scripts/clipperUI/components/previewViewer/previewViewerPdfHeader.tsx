@@ -16,15 +16,12 @@ interface PdfPreviewProp {
 class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, PdfPreviewProp> {
 	private static textAreaListenerAttached = false;
 
-	getInitialState() {
+	getControlGroups(): ControlGroup[] {
 		if (!PreviewViewerPdfHeaderClass.textAreaListenerAttached) {
 			this.addTextAreaListener();
 			PreviewViewerPdfHeaderClass.textAreaListenerAttached = true;
 		}
-		return {};
-	}
 
-	getControlGroups(): ControlGroup[] {
 		return [this.getPageRangeGroup(), this.getAttachmentCheckbox()];
 	}
 
@@ -38,27 +35,11 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		});
 	}
 
-	private addRadioButtonListener(element: HTMLElement) {
-		element.addEventListener("click", (event) => {
-			let target = event.target as HTMLInputElement;
-			console.log(target.value);
-		});
-	}
-
 	private handlePageRangeFieldChanged(annotationValue: string) {
 		this.props.onTextChange(annotationValue);
 	}
 
-	private handleRadioButtonClick(event: MouseEvent) {
-		console.log(event);
-		let target = event.target as HTMLInputElement;
-		// console.log(target.value);
-		let value = (target.value.toLowerCase() === "true") ? true : false;
-		this.props.onSelectionChange(value);
-	}
-
 	private getPageRangeGroup(): ControlGroup {
-		// <input id="all-pages" type="radio" value="true" checked={this.props.allPages} onclick={this.handleRadioButtonClick.bind(this)}></input>
 		let allPagesRadioClassName = "pdf-indicator pdf-radio-indicator" + (this.props.allPages ? " pdf-radio-active" : "");
 		let somePagesRadioClassName = "pdf-indicator pdf-radio-indicator" + (!this.props.allPages ? " pdf-radio-active" : "");
 		return {
@@ -79,16 +60,11 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		};
 	}
 
-	private handleCheckboxChange(event: Event) {
-		let target = event.target as HTMLInputElement;
-		this.props.onCheckboxChange(target.checked);
-	}
-
 	private getAttachmentCheckbox(): ControlGroup {
 		return {
-			id: "attachmentCheckboxControl",
+			id: Constants.Ids.attachmentCheckboxControl,
 			innerElements: [
-				<label class="pdf-control pdf-checkbox-control pdf-label" {...this.enableInvoke(this.props.onCheckboxChange, 191, !this.props.shouldAttachPdf)}>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}
+				<label id={Constants.Ids.attachmentCheckboxLabel} class="pdf-control pdf-checkbox-control pdf-label" {...this.enableInvoke(this.props.onCheckboxChange, 191, !this.props.shouldAttachPdf)}>{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}
 					<div class="pdf-indicator pdf-checkbox-indicator"></div>
 					{this.props.shouldAttachPdf ? <div class="checkbox"></div> : ""}
 				</label>

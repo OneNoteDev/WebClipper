@@ -10,12 +10,13 @@ import {Clipper} from "./frontEndGlobals";
 
 import * as Log from "../logging/log";
 
+// ordered by stage progression
 export enum RatingsPromptStage {
-	None,
-	Init,
-	Rate,
-	Feedback,
-	End
+	Init = 0,
+	Rate = 1,
+	Feedback = 2,
+	End = 3,
+	None = 4
 }
 
 interface RatingsLoggingInfo {
@@ -27,6 +28,7 @@ interface RatingsLoggingInfo {
 	lastBadRatingVersion?: string;
 	lastSeenVersion?: string;
 	numSuccessfulClips?: number;
+	numSuccessfulClipsAnchor?: number;
 	ratingsPromptEnabledForClient?: boolean;
 	usedCachedValue?: boolean;
 }
@@ -75,7 +77,8 @@ export class RatingsHelper {
 			ClipperStorageKeys.lastBadRatingDate,
 			ClipperStorageKeys.lastBadRatingVersion,
 			ClipperStorageKeys.lastSeenVersion,
-			ClipperStorageKeys.numSuccessfulClips
+			ClipperStorageKeys.numSuccessfulClips,
+			ClipperStorageKeys.numSuccessfulClipsRatingsEnablement
 		];
 		Clipper.preCacheStoredValues(ratingsPromptStorageKeys);
 	}
@@ -172,18 +175,55 @@ export class RatingsHelper {
 
 	/**
 	 * Returns true if ALL of the below applies:
-	 *   * Number of successful clips >= {Constants.Settings.minClipSuccessForRatingsPrompt}
-	 *   * Number of successful clips <= {Constants.Settings.maxClipSuccessForRatingsPrompt}
+	 *   * (Number of successful clips - Anchor clip value) >= {Constants.Settings.minClipSuccessForRatingsPrompt}
+	 *   * (Number of successful clips - Anchor clip value) <= {Constants.Settings.maxClipSuccessForRatingsPrompt}
 	 *
 	 * Public for testing
 	 */
-	public static clipSuccessDelayIsOver(numClips: number): boolean {
+	public static clipSuccessDelayIsOver(numClips: number, anchorClipValue?: number): boolean {
 		if (isNaN(numClips)) {
 			return false;
 		}
 
-		return numClips >= Constants.Settings.minClipSuccessForRatingsPrompt &&
-			numClips <= Constants.Settings.maxClipSuccessForRatingsPrompt;
+		if (isNaN(anchorClipValue)) {
+			anchorClipValue = 0;
+		}
+
+		let numClipsAdjusted = numClips - anchorClipValue;
+
+		return numClipsAdjusted >= Constants.Settings.minClipSuccessForRatingsPrompt &&
+			numClipsAdjusted <= Constants.Settings.maxClipSuccessForRatingsPrompt;
+	}
+
+	/**
+	 * Sets ClipperStorageKeys.numSuccessfulClipsRatingsEnablement to be
+	 * the current value of (ClipperStorageKeys.numSuccessfulClips - 1), if needed.
+	 *
+	 * The set is "needed" if ALL of the below applies:
+	 *   * The user has not already interacted with the prompt (ClipperStorageKeys.doNotPromptRatings is not set)
+	 *   * ClipperStorageKeys.numSuccessfulClipsRatingsEnablement has not already been set
+	 *
+	 * Public for testing
+	 *
+	 * NOTE OF EXPLANATION: We first check if the user has already interacted with the prompt for backwards compatibility
+	 * with the original implementation of the ratings prompt that did not include this method. It ensures that we will not
+	 * re-raise the prompt for users who have already interacted with it (although it is possible users who didn't interact
+	 * with the original prompt see it up to twice as many times as originally planned).
+	 */
+	public static setNumSuccessfulClipsRatingsEnablement(): void {
+		let doNotPromptRatingsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
+		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsAsStr)) {
+			return;
+		}
+
+		let numSuccessfulClipsRatingsEnablementAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement);
+		if (parseInt(numSuccessfulClipsRatingsEnablementAsStr, 10) >= 0) {
+			return;
+		}
+
+		let numSuccessfulClips: number = parseInt(Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips), 10);
+		// subtracting 1 below to account for the fact that this set is occuring after one already successful clip
+		Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, (numSuccessfulClips - 1).toString());
 	}
 
 	/**
@@ -208,19 +248,23 @@ export class RatingsHelper {
 			return false;
 		}
 
+		RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
+
 		let doNotPromptRatingsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
 		let lastBadRatingDateAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingDate);
 		let lastBadRatingVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingVersion);
 		let lastSeenVersion: string = Clipper.getCachedValue(ClipperStorageKeys.lastSeenVersion);
 		let numClipsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips);
+		let numClipsAnchorAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement);
 
-		if (!Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true") {
+		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsStr)) {
 			logEventInfo.doNotPromptRatings = true;
 			return false;
 		}
 
 		let lastBadRatingDate: number = parseInt(lastBadRatingDateAsStr, 10);
 		let numClips: number = parseInt(numClipsAsStr, 10);
+		let numClipsAnchor: number = parseInt(numClipsAnchorAsStr, 10);
 
 		/* tslint:disable:no-null-keyword */
 			// null is the value storage gives back; also, setting to undefined will keep this kvp from being logged at all
@@ -229,10 +273,11 @@ export class RatingsHelper {
 		logEventInfo.lastBadRatingVersion = lastBadRatingVersion;
 		logEventInfo.lastSeenVersion = lastSeenVersion;
 		logEventInfo.numSuccessfulClips = numClips;
+		logEventInfo.numSuccessfulClipsAnchor = numClipsAnchor;
 
 		let badRatingTimingDelayIsOver: boolean = RatingsHelper.badRatingTimingDelayIsOver(lastBadRatingDate, Date.now());
 		let badRatingVersionDelayIsOver: boolean = RatingsHelper.badRatingVersionDelayIsOver(lastBadRatingVersion, lastSeenVersion);
-		let clipSuccessDelayIsOver: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips);
+		let clipSuccessDelayIsOver: boolean = RatingsHelper.clipSuccessDelayIsOver(numClips, numClipsAnchor);
 
 		logEventInfo.badRatingTimingDelayIsOver = badRatingTimingDelayIsOver;
 		logEventInfo.badRatingVersionDelayIsOver = badRatingVersionDelayIsOver;
@@ -260,5 +305,9 @@ export class RatingsHelper {
 	private static isValidDate(date: number): boolean {
 		let minimumTimeValue: number = (Constants.Settings.maximumJSTimeValue * -1);
 		return date >= minimumTimeValue && date <= Constants.Settings.maximumJSTimeValue;
+	}
+
+	private static doNotPromptRatingsIsSet(doNotPromptRatingsStr: string): boolean {
+		return !Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true";
 	}
 }
