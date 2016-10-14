@@ -1,8 +1,10 @@
 import * as sinon from "sinon";
 
-import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCapture/augmentationHelper";
-
 import {Constants} from "../../scripts/constants";
+
+import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
+
+import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCapture/augmentationHelper";
 
 import {HelperFunctions} from "../helperFunctions";
 
@@ -18,10 +20,14 @@ QUnit.module("augmentationHelper-sinon", {
 		};
 
 		server = sinon.fakeServer.create();
+
+		// The augmentation call waits on the session id, so we need to set this
+		Clipper.sessionId.set("abcde");
 	},
 	afterEach: () => {
 		xhr.restore();
 		server.restore();
+		Clipper.sessionId.set(undefined);
 	}
 });
 

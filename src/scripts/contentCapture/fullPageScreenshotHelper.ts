@@ -26,41 +26,43 @@ export class FullPageScreenshotHelper {
 
 	public static getFullPageScreenshot(pageInfoContentData: string): Promise<FullPageScreenshotResult> {
 		return new Promise<FullPageScreenshotResult>((resolve, reject) => {
-			let fullPageScreenshotEvent = new Log.Event.PromiseEvent(Log.Event.Label.FullPageScreenshotCall);
+			Clipper.getUserSessionIdWhenDefined().then((sessionId) => {
+				let fullPageScreenshotEvent = new Log.Event.PromiseEvent(Log.Event.Label.FullPageScreenshotCall);
 
-			let correlationId = Utils.generateGuid();
-			fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
+				let correlationId = Utils.generateGuid();
+				fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
 
-			let headers = {};
-			headers[Constants.HeaderValues.accept] = "application/json";
-			headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-			headers[Constants.HeaderValues.noAuthKey] = "true";
-			headers[Constants.HeaderValues.correlationId] = correlationId;
-			headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
+				let headers = {};
+				headers[Constants.HeaderValues.accept] = "application/json";
+				headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+				headers[Constants.HeaderValues.noAuthKey] = "true";
+				headers[Constants.HeaderValues.correlationId] = correlationId;
+				headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-			let errorCallback = (error: OneNoteApi.RequestError) => {
-				fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, error.responseHeaders[Constants.HeaderValues.correlationId]);
-				OneNoteApiUtils.logOneNoteApiRequestError(fullPageScreenshotEvent, error);
-			};
+				let errorCallback = (error: OneNoteApi.RequestError) => {
+					fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, error.responseHeaders[Constants.HeaderValues.correlationId]);
+					OneNoteApiUtils.logOneNoteApiRequestError(fullPageScreenshotEvent, error);
+				};
 
-			Http.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((request: XMLHttpRequest) => {
-				if (request.status === 200) {
-					try {
-						resolve(JSON.parse(request.response) as FullPageScreenshotResult);
-						fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, true);
-					} catch (e) {
-						errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
+				Http.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((request: XMLHttpRequest) => {
+					if (request.status === 200) {
+						try {
+							resolve(JSON.parse(request.response) as FullPageScreenshotResult);
+							fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, true);
+						} catch (e) {
+							errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
+							reject();
+						}
+					} else {
+						fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, false);
 						reject();
 					}
-				} else {
-					fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, false);
+				}, (error: OneNoteApi.RequestError) => {
+					errorCallback(error);
 					reject();
-				}
-			}, (error: OneNoteApi.RequestError) => {
-				errorCallback(error);
-				reject();
-			}).then(() => {
-				Clipper.logger.logEvent(fullPageScreenshotEvent);
+				}).then(() => {
+					Clipper.logger.logEvent(fullPageScreenshotEvent);
+				});
 			});
 		});
 	}
