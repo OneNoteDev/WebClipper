@@ -47,6 +47,7 @@
 	"WebClipper.Error.SectionTooLarge": "Your clip can\u0027t be saved here because the section has reached its size limit.",
 	"WebClipper.Error.UserAccountSuspended": "Your clip can\u0027t be saved because your Microsoft account has been suspended.",
 	"WebClipper.Error.UserAccountSuspendedResetText": "Reset Your Account",
+	"WebClipper.Error.UserDoesNotHaveUpdatePermissions": "Please sign out and sign in to give the Web Clipper permission to clip this PDF!",
 	"WebClipper.Error.GenericExpiredTokenRefreshError": "Your login session has ended and we were unable to clip the page. Please sign in again.",
 	"WebClipper.Error.SignInUnsuccessful": "We couldn\u0027t sign you in. Please try again.",
 	"WebClipper.Error.OrphanedWebClipperDetected": "Something went wrong. Please refresh this page, and try to clip again.",

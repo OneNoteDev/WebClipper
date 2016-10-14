@@ -117,7 +117,8 @@ export module OneNoteApiUtils {
 			"30102": { message: Localization.getLocalizedString("WebClipper.Error.SectionTooLarge"), isRetryable: false, isExpected: true }, // SectionTooLarge
 			"30103": { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // CoherencyFailure
 			"30104": { message: Localization.getLocalizedString("WebClipper.Error.UserAccountSuspended"), isRetryable: false, isExpected: true }, // UserAccountSuspended
-			"30105": { message: Localization.getLocalizedString("WebClipper.Error.NotProvisioned"), isRetryable: false, isExpected: true } // OneDriveForBusinessNotProvisioned
+			"30105": { message: Localization.getLocalizedString("WebClipper.Error.NotProvisioned"), isRetryable: false, isExpected: true }, // OneDriveForBusinessNotProvisioned
+			"40004": { message: Localization.getLocalizedString("WebClipper.Error.UserDoesNotHaveUpdatePermission"), isRetryable: false, isExpected: true } // UserOnlyHasCreatePermissions
 		};
 
 		if (!apiResponseCode) {
