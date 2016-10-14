@@ -85,7 +85,16 @@ export class PdfScreenshotHelper {
 	}
 
 	private static convertPdfDocumentProxyToPdfScreenShotResult(pdf: PDFDocumentProxy): Promise<PdfScreenshotResult> {
-
+		return new Promise<PdfScreenshotResult>((resolve, reject) => {
+			pdf.getData().then((pdfArrayBuffer) => {
+				PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+					resolve({
+						arrayBuffer: pdfArrayBuffer,
+						dataUrls: dataUrls
+					});
+				});
+			});
+		});
 	}
 
 	private static convertPdfToDataUrls(pdf: PDFDocumentProxy): Promise<string[]> {

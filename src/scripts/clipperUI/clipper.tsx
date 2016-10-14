@@ -195,18 +195,18 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		// If network file, send XHR, get bytes back, convert to PDFDocumentProxy
 		// If local file, get bytes back, convert to PDFDocumentProxy
-		
-		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
-			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
-			PdfScreenshotHelper.getLocalPdfData(this.state.pageInfo.rawUrl).then((result) => {
-				this.state.pdfResult.data.set(result);
+		this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
+		this.getPdfScreenShotResultFromRawUrl(this.state.pageInfo.rawUrl)
+			.then((pdfScreenshotResult: PdfScreenshotResult) => {
+				this.state.pdfResult.data.set(pdfScreenshotResult);
 				this.state.setState({
 					pdfResult: {
 						data: this.state.pdfResult.data,
 						status: Status.Succeeded
 					}
 				});
-			}, () => {
+			})
+			.catch(() => {
 				this.state.pdfResult.data.set({
 					failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
 				});
@@ -219,37 +219,72 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				// The clip action might be waiting on the result, so do this to consistently trigger its callback
 				this.state.pdfResult.data.forceUpdate();
 			});
+
+
+		// if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
+		// 	this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
+		// 	PdfScreenshotHelper.getLocalPdfData(this.state.pageInfo.rawUrl).then((result) => {
+		// 		this.state.pdfResult.data.set(result);
+		// 		this.state.setState({
+		// 			pdfResult: {
+		// 				data: this.state.pdfResult.data,
+		// 				status: Status.Succeeded
+		// 			}
+		// 		});
+		// 	}, () => {
+		// 		this.state.pdfResult.data.set({
+		// 			failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+		// 		});
+		// 		this.state.setState({
+		// 			pdfResult: {
+		// 				data: this.state.pdfResult.data,
+		// 				status: Status.Failed
+		// 			}
+		// 		});
+		// 		// The clip action might be waiting on the result, so do this to consistently trigger its callback
+		// 		this.state.pdfResult.data.forceUpdate();
+		// 	});
+		// } else {
+		// 	this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
+		// 	PdfScreenshotHelper.getPdfData(this.state.pageInfo.rawUrl).then((result) => {
+		// 		// We can't trigger subscribed callbacks using setState so we still have to call set()
+		// 		this.state.pdfResult.data.set(result);
+		// 		this.state.setState({
+		// 			pdfResult: {
+		// 				data: this.state.pdfResult.data,
+		// 				status: Status.Succeeded
+		// 			},
+		// 			pdfPreviewInfo: {
+		// 				allPages: true,
+		// 				pagesToShow: _.range(0, this.state.pdfResult.data.get().dataUrls.length),
+		// 				shouldAttachPdf: false
+		// 			}
+		// 		});
+		// 	}, () => {
+		// 		this.state.pdfResult.data.set({
+		// 			failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+		// 		});
+		// 		this.state.setState({
+		// 			pdfResult: {
+		// 				data: this.state.pdfResult.data,
+		// 				status: Status.Failed
+		// 			}
+		// 		});
+		// 		// The clip action might be waiting on the result, so do this to consistently trigger its callback
+		// 		this.state.pdfResult.data.forceUpdate();
+		// 	});
+		// }
+	}
+
+	
+	private getPdfScreenShotResultFromRawUrl(rawUrl: string): Promise<PdfScreenshotResult> {
+		if (rawUrl.indexOf("file:///") === 0) {
+			return PdfScreenshotHelper.getLocalPdfData(rawUrl);
 		} else {
-			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
-			PdfScreenshotHelper.getPdfData(this.state.pageInfo.rawUrl).then((result) => {
-				// We can't trigger subscribed callbacks using setState so we still have to call set()
-				this.state.pdfResult.data.set(result);
-				this.state.setState({
-					pdfResult: {
-						data: this.state.pdfResult.data,
-						status: Status.Succeeded
-					},
-					pdfPreviewInfo: {
-						allPages: true,
-						pagesToShow: _.range(0, this.state.pdfResult.data.get().dataUrls.length),
-						shouldAttachPdf: false
-					}
-				});
-			}, () => {
-				this.state.pdfResult.data.set({
-					failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
-				});
-				this.state.setState({
-					pdfResult: {
-						data: this.state.pdfResult.data,
-						status: Status.Failed
-					}
-				});
-				// The clip action might be waiting on the result, so do this to consistently trigger its callback
-				this.state.pdfResult.data.forceUpdate();
-			});
+			return PdfScreenshotHelper.getPdfData(rawUrl);
 		}
 	}
+
 
 	private captureFullPageScreenshotContent() {
 		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
