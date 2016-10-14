@@ -35,7 +35,8 @@ export class FullPageScreenshotHelper {
 			headers[Constants.HeaderValues.accept] = "application/json";
 			headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 			headers[Constants.HeaderValues.noAuthKey] = "true";
-			headers[Constants.HeaderValues.userSessionIdKey] = correlationId;
+			headers[Constants.HeaderValues.correlationId] = correlationId;
+			headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 
 			let errorCallback = (error: OneNoteApi.RequestError) => {
 				fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, error.responseHeaders[Constants.HeaderValues.correlationId]);

@@ -109,7 +109,8 @@ export class AugmentationHelper {
 			let headers = {};
 			headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 			headers[Constants.HeaderValues.noAuthKey] = "true";
-			headers[Constants.HeaderValues.userSessionIdKey] = requestCorrelationId;
+			headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
+			headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 
 			Http.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
 				let parsedResponse: any;
