@@ -1,10 +1,16 @@
 import * as sinon from "sinon";
 
 import {AuthenticationHelper} from "../../scripts/extensions/authenticationHelper";
+import {ClipperData} from "../../scripts/storage/clipperData";
+import {Logger} from "../../scripts/logging/logger";
 import {UserInfoData} from "../../scripts/userInfo";
 
 let xhr: Sinon.SinonFakeXMLHttpRequest;
 let server: Sinon.SinonFakeServer;
+
+let mockClipperData: ClipperData;
+let mockLogger: Logger;
+let authentationHelper;
 
 function getValidUserInformationJson(): UserInfoData {
 	return {
@@ -26,6 +32,10 @@ QUnit.module("authenticationHelper-sinon", {
 		};
 
 		server = sinon.fakeServer.create();
+
+		mockClipperData = sinon.createStubInstance(ClipperData) as any;
+		mockLogger = sinon.createStubInstance(Logger) as any;
+		authentationHelper = new AuthenticationHelper(mockClipperData, mockLogger);
 	},
 	afterEach: () => {
 		xhr.restore();
@@ -45,7 +55,7 @@ test("retrieveUserInformation resolves the response as a json string if it repre
 		JSON.stringify(getValidUserInformationJson())
 	]);
 
-	AuthenticationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
+	authentationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
 		strictEqual(responsePackage.parsedResponse, JSON.stringify(getValidUserInformationJson()),
 			"The user information should be resolved as a json string");
 	}, (error) => {
@@ -65,7 +75,7 @@ test("retrieveUserInformation resolves the response with no parameter if it retu
 		JSON.stringify({})
 	]);
 
-	AuthenticationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
+	authentationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
 		strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
 	}, (error) => {
 		ok(false, "reject should not be called");
@@ -84,7 +94,7 @@ test("retrieveUserInformation resolves the response with no parameter if it retu
 		JSON.stringify("")
 	]);
 
-	AuthenticationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
+	authentationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
 		strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
 	}, (error) => {
 		ok(false, "reject should not be called");
@@ -105,7 +115,7 @@ test("retrieveUserInformation resolves the response with no parameter if it repr
 		JSON.stringify(invalidUserInformation)
 	]);
 
-	AuthenticationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
+	authentationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
 		strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
 	}, (error) => {
 		ok(false, "reject should not be called");
@@ -132,7 +142,7 @@ test("retrieveUserInformation resolves the response with no parameter if it repr
 		JSON.stringify(invalidUserInformation)
 	]);
 
-	AuthenticationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
+	authentationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
 		strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
 	}, (error) => {
 		ok(false, "reject should not be called");
@@ -152,7 +162,7 @@ test("retrieveUserInformation rejects the response with error object if the stat
 		responseMessage
 	]);
 
-	AuthenticationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
+	authentationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
 		ok(false, "resolve should not be called");
 	}, (error) => {
 		let expected = {
@@ -179,7 +189,7 @@ test("retrieveUserInformation rejects the response with error object if the stat
 		responseMessage
 	]);
 
-	AuthenticationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
+	authentationHelper.retrieveUserInformation(clipperId).then((responsePackage) => {
 		ok(false, "resolve should not be called");
 	}, (error) => {
 		let expected = {
@@ -203,97 +213,97 @@ QUnit.module("authenticationHelper", {});
 
 test("A valid userInfo should be validated by isValidUserInformationJsonString", () => {
 	let userInfo = getValidUserInformationJson();
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Valid userInfo should be validated");
 });
 
 test("A null userInfo should be invalidated by isValidUserInformationJsonString", () => {
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(null),
+	ok(!authentationHelper.isValidUserInformationJsonString(null),
 		"Null userInfo should be invalidated");
 });
 
 test("An undefined userInfo should be invalidated by isValidUserInformationJsonString", () => {
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(undefined),
+	ok(!authentationHelper.isValidUserInformationJsonString(undefined),
 		"Undefined userInfo should be invalidated");
 });
 
 test("A non-json-string userInfo should be invalidated by isValidUserInformationJsonString", () => {
-	ok(!AuthenticationHelper.isValidUserInformationJsonString("{}}"),
+	ok(!authentationHelper.isValidUserInformationJsonString("{}}"),
 		"Non-json-string userInfo should be invalidated");
 });
 
 test("Invalid accessToken should be detected by isValidUserInformationJsonString", () => {
 	let userInfo = getValidUserInformationJson();
 	userInfo.accessToken = null;
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(!authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Null accessToken should be seen as invalid");
 	userInfo.accessToken = undefined;
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(!authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Undefined accessToken should be seen as invalid");
 	userInfo.accessToken = "";
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(!authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Empty accessToken should be seen as invalid");
 });
 
 test("Invalid accessTokenExpiration should be detected by isValidUserInformationJsonString", () => {
 	let userInfo = getValidUserInformationJson();
 	userInfo.accessTokenExpiration = 0;
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(!authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"0 accessTokenExpiration should be seen as invalid");
 	userInfo.accessTokenExpiration = -1;
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(!authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"<0 accessTokenExpiration should be seen as invalid");
 });
 
 test("Invalid authType should be detected by isValidUserInformationJsonString", () => {
 	let userInfo = getValidUserInformationJson();
 	userInfo.authType = null;
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(!authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Null authType should be seen as invalid");
 	userInfo.authType = undefined;
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(!authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Undefined authType should be seen as invalid");
 	userInfo.authType = "";
-	ok(!AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(!authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Empty authType should be seen as invalid");
 });
 
 test("Valid cid should be detected by isValidUserInformationJsonString", () => {
 	let userInfo = getValidUserInformationJson();
 	userInfo.cid = null;
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Null cid should be seen as valid");
 	userInfo.cid = undefined;
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Undefined cid should be seen as valid");
 	userInfo.cid = "";
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Empty cid should be seen as valid");
 });
 
 test("Valid emailAddress should be detected by isValidUserInformationJsonString", () => {
 	let userInfo = getValidUserInformationJson();
 	userInfo.emailAddress = null;
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Null emailAddress should be seen as valid");
 	userInfo.emailAddress = undefined;
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Undefined emailAddress should be seen as valid");
 	userInfo.emailAddress = "";
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Empty emailAddress should be seen as valid");
 });
 
 test("Valid fullName should be detected by isValidUserInformationJsonString", () => {
 	let userInfo = getValidUserInformationJson();
 	userInfo.fullName = null;
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Null fullName should be seen as valid");
 	userInfo.fullName = undefined;
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Undefined fullName should be seen as valid");
 	userInfo.fullName = "";
-	ok(AuthenticationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+	ok(authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
 		"Empty fullName should be seen as valid");
 });
 
