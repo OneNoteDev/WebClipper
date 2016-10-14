@@ -330,14 +330,22 @@ export class SaveToOneNote {
 	private static createPdfRequestChain(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
 		let previewOptions = clipperState.pdfPreviewInfo;
+		if (previewOptions.shouldAttachPdf && previewOptions.allPages) {
+			// If we assume the page is well-formed, then the PDF is attached and an object tag referencing it
+			// exists in the post body. This means we don't need to do anything
+			return SaveToOneNote.createNewPage(page, clipMode);
+		}
+
+		// Since we are here, we know we need to send the dataUrls since 
+		// the user either wanted a subset of pages or didn't want the PDF attached
 		let dataUrls = clipperState.pdfResult.data.get().dataUrls;
 		let dataUrlRanges: string[][] = [];
 
-		if (!previewOptions.shouldAttachPdf || !previewOptions.allPages) {
+		if (!previewOptions.allPages) {
 			let pagesToShow = previewOptions.pagesToShow;
 			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
-			dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
 		}
+		dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
 
 		return SaveToOneNote.createNewPage(page, clipMode).then((postPageResponse /* should also be a onenote response */) => {
 			let pageId = postPageResponse.parsedResponse.id;
@@ -346,7 +354,6 @@ export class SaveToOneNote {
 					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
 						return SaveToOneNote.createOneNotePagePatchRequestTwo(pageId, currentValue);
 					});
-					// TODO: Make sure to add a catch so errors in the chain don't get swallowed
 				}, SaveToOneNote.getPage(pageId))
 			]);
 		});

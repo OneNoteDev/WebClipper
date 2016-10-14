@@ -297,8 +297,8 @@ export module Constants {
 	}
 
 	export module Urls {
-		// export var serviceDomain = "https://minint-per7o4f.redmond.corp.microsoft.com";
-		export var serviceDomain = "https://www.onenote.com";
+		export var serviceDomain = "https://minint-per7o4f.redmond.corp.microsoft.com";
+		// export var serviceDomain = "https://www.onenote.com";
 
 		export var augmentationApiUrl = serviceDomain + "/onaugmentation/clipperextract/v1.0/";
 		export var changelogUrl = serviceDomain + "/whatsnext/webclipper";
