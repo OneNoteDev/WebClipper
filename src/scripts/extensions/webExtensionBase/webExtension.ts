@@ -117,10 +117,6 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		});
 	}
 
-	private fxn(info, tab: W3CTab): void {
-		console.log("tesT");
-	}
-
 	private registerContextMenuItems() {
 		// Front-load our localization so our context menu is always localized
 		this.fetchAndStoreLocStrings().then(() => {
@@ -161,7 +157,6 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 						menus[i].documentUrlPatterns = ["http://*/*", "https://*/*"];
 					}
 					WebExtension.browser.contextMenus.create(menus[i]);
-					WebExtension.browser.contextMenus.onClicked.addListener(this.fxn);
 				}
 			});
 		});

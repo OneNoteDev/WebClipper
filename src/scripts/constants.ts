@@ -24,7 +24,7 @@ export module Constants {
 		export var regionSelectionImage = "region-selection-image";
 		export var regionSelectionRemoveButton = "region-selection-remove-button";
 
-		// pdfPreview
+		// pdfPreviewViewer
 		export var pdfPreviewImage = "pdf-preview-image";
 
 		// spriteAnimation
@@ -125,6 +125,10 @@ export module Constants {
 
 		// previewViewerPdfHeader
 		export var pageRangeControl = "pageRangeControl";
+		export var pdfControl = "pdfControl";
+
+		export var attachmentCheckboxControl = "attachmentCheckboxControl";
+		export var attachmentCheckboxLabel = "attachmentCheckboxLabel";
 
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";
@@ -147,10 +151,6 @@ export module Constants {
 		// previewViewerBookmarkHeader
 		export var bookmarkControl = "bookmarkControl";
 		export var bookmarkHeaderTitle = "bookmarkHeaderTitle";
-
-		// previewViewerPdfHeader
-		export var pdfControl = "pdfControl";
-		export var pdfHeaderTitle = "PDF File";
 
 		// ratingsPrompt
 		export var ratingsButtonFeedbackNo = "ratingsButtonFeedbackNo";

@@ -182,23 +182,20 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private capturePdfScreenshotContent() {
+		// We don't capture anything. If the type is not EnhancedUrl, the mode will never show.
 		if (this.state.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
-			// this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.Failed } });
-
-			// this.state.pdfResult.data.set({
-			// 	failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
-			// });
-
-			// this.state.setState({
-			// 	pdfResult: {
-			// 		data: this.state.pdfResult.data,
-			// 		status: Status.Failed
-			// 	}
-			// });
 			return;
 		}
 
+		// TODO: mock up experience for people who don't have the allow file access thing checked
 		// console.log(chrome.extension.isAllowedFileSchemeAccess((isAllowed) => { console.log(isAllowed); }));
+
+
+		// Pseudocode
+
+		// If network file, send XHR, get bytes back, convert to PDFDocumentProxy
+		// If local file, get bytes back, convert to PDFDocumentProxy
+		
 		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
 			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
 			PdfScreenshotHelper.getLocalPdfData(this.state.pageInfo.rawUrl).then((result) => {

@@ -84,6 +84,10 @@ export class PdfScreenshotHelper {
 		});
 	}
 
+	private static convertPdfDocumentProxyToPdfScreenShotResult(pdf: PDFDocumentProxy): Promise<PdfScreenshotResult> {
+
+	}
+
 	private static convertPdfToDataUrls(pdf: PDFDocumentProxy): Promise<string[]> {
 		if (!pdf || !pdf.numPages || pdf.numPages === 0) {
 			return Promise.resolve([]);

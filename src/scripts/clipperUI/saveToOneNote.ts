@@ -129,7 +129,7 @@ export class SaveToOneNote {
 	}
 
 	// Adds the primary page content to the page, which may be async or not
-	private static addPrimaryContentToPage(page: OneNoteApi.OneNotePage, mode: ClipMode, modeArgs?: any): Promise<any> {
+	private static addPrimaryContentToPage(page: OneNoteApi.OneNotePage, mode: ClipMode): Promise<any> {
 		let clipperState = this.clipperState;
 
 		return new Promise((resolve, reject) => {
@@ -141,14 +141,8 @@ export class SaveToOneNote {
 					});
 					break;
 				case ClipMode.FullPage:
-					// if (clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-					// 	this.addEnhancedUrlContentToPage(page).then(() => {
-					// 		resolve();
-					// 	});
-					// } else {
 					page.addHtml(clipperState.pageInfo.contentData);
 					resolve();
-					// }
 					break;
 				case ClipMode.Region:
 					for (let regionDataUrl of clipperState.regionResult.data) {
@@ -389,15 +383,6 @@ export class SaveToOneNote {
 			// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
 			page.addOnml("<p><img src=\"" + regionDataUrl + "\" /></p>&nbsp;");
 		}
-	}
-
-	private static dummyProcessImage(dataUrl: string) {
-		return new Promise((resolve, reject) => {
-			setTimeout(() => {
-				console.log("image: " + dataUrl);
-				resolve();
-			}, Math.random() * 1500);
-		});
 	}
 
 	private static createOneNotePagePatchRequestTwo(pageId: string, dataUrls: string[]): Promise<any> {
