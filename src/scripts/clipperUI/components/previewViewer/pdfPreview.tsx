@@ -153,7 +153,6 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 				return this.props.clipperState.previewGlobalInfo.previewTitleText;
 			case Status.NotStarted:
 			case Status.InProgress:
-				console.log(this.props.clipperState.pdfResult.data.get());
 				return Localization.getLocalizedString("WebClipper.Preview.LoadingMessage");
 			default:
 			case Status.Failed:

@@ -36,9 +36,7 @@ function getMockPdfModeState(): ClipperState {
 	return state;
 }
 
-test("When the ContentType is not EnhancedUrl, figure out what the hell happens", () => {
-	ok(true, "Should never fail");
-});
+QUnit.module("", {});
 
 test("The PDF page header should be displayed in PDF mode", () => {
 	let mockClipperState = getMockPdfModeState();
@@ -125,7 +123,7 @@ test("When the call to get and process the PDF successfully completes, but no da
 		"The preview body should be empty");
 });
 
-test("When 'All Pages' is checked in the page range control, every dataUrl should be rendered into the preview body", () => {
+test("When 'All Pages' is checked in the page range control, every dataUrl should be rendered and not grayed out into the preview body", () => {
 	let clipperState = getMockPdfModeState();
 	clipperState.currentMode.set(ClipMode.Pdf);
 	clipperState.pdfPreviewInfo = {
@@ -142,9 +140,12 @@ test("When 'All Pages' is checked in the page range control, every dataUrl shoul
 		let image = images[index] as HTMLImageElement;
 		strictEqual(image.src, dataUrl, "The images should be rendered in the same order of the dataUrls passed in");
 	});
+
+	let unselectedImages = document.getElementsByClassName(Constants.Classes.unselected);
+	strictEqual(unselectedImages.length, 0, "There should be no unselected images");
 });
 
-test("When 'Page Range' is checked in the page range control, but the range is empty, make sure no images are rendered", () => {
+test("When 'Page Range' is checked in the page range control, but the range is empty, make sure all images are rendered with the unselected class", () => {
 	let clipperState = getMockPdfModeState();
 	clipperState.pdfPreviewInfo = {
 		allPages: false,
@@ -154,10 +155,13 @@ test("When 'Page Range' is checked in the page range control, but the range is e
 	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
 	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
-	strictEqual(images.length, 0, "The number of rendered images should be 0 when the range specified is zero");
+	strictEqual(images.length, pdfDataUrls.length, "The number of rendered images should still be the length of pdfDataUrls, even when the range specified is zero");
+
+	let unselectedImages = document.getElementsByClassName(Constants.Classes.unselected);
+	strictEqual(unselectedImages.length, pdfDataUrls.length, "The number of unselected images should be the length of pdfDataUrls, if the page range specified is empty");
 });
 
-test("When 'Page Range' is checked in the page range control, only the pages specified in the page range should be rendered", () => {
+test("When 'Page Range' is checked in the page range control, only the pages specified in the page range should be rendered, with the rest being unselected", () => {
 	let clipperState = getMockPdfModeState();
 	let pagesToShow = [0, 2]; // TODO: make this a function of pdfDataUrls?
 	clipperState.pdfPreviewInfo = {
@@ -167,17 +171,15 @@ test("When 'Page Range' is checked in the page range control, only the pages spe
 	};
 	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
-	// Todo: how to structure this so I can differentiate between the cases	
-	// ok(document.querySelector("pdf-radio-indicator-fill"), "The Page Range radio control should be filled to indicate it is selected");
-	// ok(!document.querySelector("pdf-radio-indicator-fill"))
-
 	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
-	strictEqual(images.length, pagesToShow.length, "The number of rendered images should match the number of elements in pagesToShow of pdfPreviewInfo");
+	strictEqual(images.length, pdfDataUrls.length, "The number of rendered images should match the number of elements in pagesToShow of pdfPreviewInfo");
 
-	pagesToShow.forEach((imageToShow, index) => {
-		let image = images[index] as HTMLImageElement;
-		strictEqual(image.src, pdfDataUrls[imageToShow], "The images should be rendered in the same order of the dataUrls passed in");
-	});
+	for (let i = 0; i < images.length; ++i) {
+		let image = images[i] as HTMLImageElement;
+		if (pagesToShow.indexOf(i) === -1) {
+			ok(image.classList.contains(Constants.Classes.unselected), "Images that should be grayed out should have unselected in their classList");
+		}
+	}
 });
 
 test("When 'Page Range' is checked in the page control, but there is an invalid page range specified, it gracefully falls back to to only the valid numbers in the range", () => {
@@ -188,9 +190,11 @@ test("When 'Page Range' is checked in the page control, but there is an invalid 
 		pagesToShow: pagesToShow,
 		shouldAttachPdf: false
 	};
+	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
-	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
-	strictEqual(images.length, 1, "The number of rendered images should match the number of VALID elements in pagesToShow of pdfPreviewInfo");
+	let selectionQueryForNotGrayedOutImages = "." + Constants.Classes.pdfPreviewImage + ":not(." + Constants.Classes.unselected + ")";
+	let images = document.querySelectorAll(selectionQueryForNotGrayedOutImages);
+	strictEqual(images.length, 1, "The number of non-grayed out images should match the number of VALID elements in pagesToShow of pdfPreviewInfo");
 });
 
 test("When the attachment checkbox is checked, the preview body should show an attachment", () => {
@@ -200,6 +204,7 @@ test("When the attachment checkbox is checked, the preview body should show an a
 		pagesToShow: [],
 		shouldAttachPdf: true,
 	};
+	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
 	strictEqual(document.getElementsByClassName(Constants.Classes.attachmentOverlay).length, 1, "The attachment overlay should be present in the content body");
 });
@@ -211,6 +216,7 @@ test("When the attachment checkbox isn't checked, there should be no attachment"
 		pagesToShow: [],
 		shouldAttachPdf: false,
 	};
+	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
 	strictEqual(document.getElementsByClassName(Constants.Classes.attachmentOverlay).length, 0, "The attachment overlay should NOT be present in the content body");
 });

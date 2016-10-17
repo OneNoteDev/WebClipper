@@ -362,6 +362,7 @@ test("The augmentation button should have its image set according to the content
 test("In PDF Mode, only the PDF, Region, and Bookmark Mode Buttons should be rendered, and in that order", () => {
 	let startingState = HelperFunctions.getMockClipperState();
 	startingState.currentMode.set(ClipMode.Pdf);
+	startingState.pageInfo.contentType = OneNoteApi.ContentType.EnhancedUrl;
 
 	HelperFunctions.mountToFixture(
 		<ModeButtonSelector clipperState={ startingState } />);
