@@ -104,6 +104,9 @@ export module Constants {
 		export var clipButton = "clipButton";
 		export var clipButtonContainer = "clipButtonContainer";
 
+		// previewViewerPdfHeader
+		export var rangeInput = "rangeInput";
+
 		// previewViewer
 		export var previewBody = "previewBody";
 		export var previewContentContainer = "previewContentContainer";
