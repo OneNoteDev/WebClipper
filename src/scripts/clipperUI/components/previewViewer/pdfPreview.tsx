@@ -22,18 +22,35 @@ import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
 import * as _ from "lodash";
 
 interface PdfPreviewState {
-	fadeIn: boolean;
+	showPageNumbers: boolean;
 }
 
 class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
-	private static scrollListenerAdded: boolean = false; // done on purpose
+	private static scrollListenerAdded: boolean = false;
+	private static scrollListenerTimeout: number;
 
 	private addScrollListener() {
 		if (!PdfPreview.scrollListenerAdded) {
 			let previewContentContainer = document.getElementById("previewContentContainer");
 			if (!!previewContentContainer) {
+				// When we detect a scroll, show page numbers immediately.
+				// When the user doesn't scroll for some period of time, fade them out.
 				previewContentContainer.addEventListener("scroll", (ev) => {
-					console.log("scroll handler");
+					if (Utils.isNumeric(PdfPreview.scrollListenerTimeout)) {
+						clearTimeout(PdfPreview.scrollListenerTimeout);
+					}
+					PdfPreview.scrollListenerTimeout = setTimeout(() => {
+						this.setState({
+							showPageNumbers: false
+						});
+					}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
+
+					// A little optimization to prevent us from calling render a large number of times
+					if (!this.state.showPageNumbers) {
+						this.setState({
+							showPageNumbers: true
+						});
+					}
 				});
 				PdfPreview.scrollListenerAdded = true;
 			}
@@ -174,12 +191,14 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 							<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
 						</span>);
 				}
+
+				let overlayClassName = "overlay" + (this.state.showPageNumbers ? "" : " overlay-hidden");
 				for (let i = 0; i < allImages.length; i++) {
 					let image = allImages[i];
 					contentBody.push(
 						<div class="pdf-preview-image-container">
 							<img className={Constants.Classes.pdfPreviewImage + (image.selected ? "" : " unselected")} src={image.dataUrl}></img>
-							<div className="overlay">
+							<div className={overlayClassName}>
 								<span class="overlay-number">{i + 1}</span>
 							</div>
 						</div>);
