@@ -24,6 +24,7 @@ export module TestConstants {
 	}
 
 	export module Ids {
+		export var pdfButton = "pdfButton";
 		export var fullPageButton = "fullPageButton";
 		export var regionButton = "regionButton";
 		export var augmentationButton = "augmentationButton";
@@ -144,7 +145,7 @@ test("The selection button should appear when invokeMode is set to selection", (
 	let modeButtonSelector = HelperFunctions.getFixture().firstElementChild;
 	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
-	strictEqual(buttonElements.length, 5, "There should be four mode buttons");
+	strictEqual(buttonElements.length, 5, "There should be five mode buttons");
 	strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
 	strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
 	strictEqual(buttonElements[2].id, TestConstants.Ids.augmentationButton, "The third button should be the augmentation button");
@@ -356,4 +357,21 @@ test("The augmentation button should have its image set according to the content
 	let augmentationButton = buttonElements[2];
 	let icon = augmentationButton.getElementsByClassName(TestConstants.Classes.icon)[0] as HTMLImageElement;
 	strictEqual(HelperFunctions.getBaseFileName(icon.src).toLowerCase(), "product");
+});
+
+test("In PDF Mode, only the PDF, Region, and Bookmark Mode Buttons should be rendered, and in that order", () => {
+	let startingState = HelperFunctions.getMockClipperState();
+	startingState.currentMode.set(ClipMode.Pdf);
+
+	HelperFunctions.mountToFixture(
+		<ModeButtonSelector clipperState={ startingState } />);
+
+	let modeButtonSelector = HelperFunctions.getFixture().firstElementChild;
+	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
+
+	strictEqual(buttonElements.length, 3, "Only 3 buttons should be rendered in PDF mode: PDF, Region, and bookmark");
+
+	strictEqual(buttonElements[0].id, TestConstants.Ids.pdfButton, "The first button should be the pdf button");
+	strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
+	strictEqual(buttonElements[2].id, TestConstants.Ids.bookmarkButton, "The third button should be the bookmark button");
 });

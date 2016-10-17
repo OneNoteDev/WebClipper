@@ -71,7 +71,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 			userResult: { status: Status.NotStarted } ,
 			fullPageResult: { status: Status.NotStarted },
-			pdfResult: { status: Status.NotStarted },
+			pdfResult: { data: new SmartValue<PdfScreenshotResult>(), status: Status.NotStarted },
 			regionResult: { status: Status.NotStarted, data: [] },
 			augmentationResult: { status: Status.NotStarted },
 			oneNoteApiResult: { status: Status.NotStarted },

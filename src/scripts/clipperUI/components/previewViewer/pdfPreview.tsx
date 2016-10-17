@@ -43,7 +43,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 	protected getContentBodyForCurrentStatus(): any[] {
 		let state = this.props.clipperState;
-		if (state.pdfResult.status === Status.InProgress) {
+		if (state.pdfResult.status === Status.InProgress || state.pdfResult.status === Status.NotStarted) {
 			return [this.getSpinner()];
 		}
 
@@ -125,16 +125,18 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		let failureMessage: string;
 
 		let previewStatus = this.getStatus();
-		let pageInfo = this.props.clipperState.pageInfo;
+		// let pageInfo = this.props.clipperState.pageInfo;
+		let pdfResult = this.props.clipperState.pdfResult;
 		switch (previewStatus) {
 			case Status.Succeeded:
-				if (pageInfo && pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl &&
-					!this.props.clipperState.fullPageResult.data) {
+				// TODO: verify this is actually what happens
+				if (pdfResult && !pdfResult.data.get()) {
 					return Localization.getLocalizedString("WebClipper.Preview.NoContentFound");
 				}
 				return this.props.clipperState.previewGlobalInfo.previewTitleText;
 			case Status.NotStarted:
 			case Status.InProgress:
+				console.log(this.props.clipperState.pdfResult.data.get());
 				return Localization.getLocalizedString("WebClipper.Preview.LoadingMessage");
 			default:
 			case Status.Failed:
@@ -176,7 +178,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 				let fullAttachmentName = this.props.clipperState.pageInfo ? Utils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
 				if (shouldAttachPdf) {
 					contentBody.push(
-						<span className="attachment-overlay">
+						<span className={Constants.Classes.attachmentOverlay}>
 							<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
 							<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
 						</span>);

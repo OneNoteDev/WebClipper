@@ -22,16 +22,16 @@ export class PdfScreenshotHelper {
 		// Never rejects, interesting
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			PDFJS.getDocument(localFileUrl).then((pdf) => {
-				return PdfScreenshotHelper.convertPdfDocumentProxyToPdfScreenShotResult(pdf);
-				// pdf.getData().then((arrayBuffer) => {
-				// 	PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
-				// 		let castedArrayBuffer = <ArrayBuffer>arrayBuffer.buffer;
-				// 		resolve({
-				// 			arrayBuffer: castedArrayBuffer,
-				// 			dataUrls: dataUrls
-				// 		});
-				// 	});
-				// });
+				// return PdfScreenshotHelper.convertPdfDocumentProxyToPdfScreenShotResult(pdf);
+				return pdf.getData().then((arrayBuffer) => {
+					return PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+						let castedArrayBuffer = <ArrayBuffer>arrayBuffer.buffer;
+						resolve({
+							arrayBuffer: castedArrayBuffer,
+							dataUrls: dataUrls
+						});
+					});
+				});
 			});
 		});
 	}

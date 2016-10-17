@@ -26,6 +26,7 @@ export module Constants {
 
 		// pdfPreviewViewer
 		export var pdfPreviewImage = "pdf-preview-image";
+		export var attachmentOverlay = "attachment-overlay";
 
 		// spriteAnimation
 		export var spinner = "spinner";
