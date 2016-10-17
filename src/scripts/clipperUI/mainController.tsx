@@ -27,6 +27,7 @@ import {CloseButton} from "./components/closeButton";
 import {Footer} from "./components/footer";
 
 import {ClippingPanel} from "./panels/clippingPanel";
+import {ClippingPanelWithDelayedMessage} from "./panels/clippingPanelWithDelayedMessage";
 import {DialogButton, DialogPanel} from "./panels/dialogPanel";
 import {ErrorDialogPanel} from "./panels/errorDialogPanel";
 import {LoadingPanel} from "./panels/loadingPanel";
@@ -256,6 +257,10 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			case PanelType.RegionInstructions:
 				return <RegionSelectingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingToApi:
+				if (this.props.clipperState.currentMode.get() === ClipMode.Pdf) {
+					return <ClippingPanelWithDelayedMessage clipperState={this.props.clipperState}
+						delay={Constants.Settings.pdfClippingMessageDelay} message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")} />;
+				}
 				return <ClippingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingFailure:
 				let error = this.props.clipperState.oneNoteApiResult.data as OneNoteApi.RequestError;

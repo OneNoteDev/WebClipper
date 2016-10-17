@@ -58,6 +58,9 @@ export module Constants {
 		// clippingPanel
 		export var clipperApiProgressContainer = "clipperApiProgressContainer";
 
+		// clippingPanel
+		export var clipProgressDelayedMessage = "clipProgressDelayedMessage";
+
 		// dialogPanel
 		export var dialogBackButton = "dialogBackButton";
 		export var dialogButtonContainer = "dialogButtonContainer";
@@ -364,6 +367,7 @@ export module Constants {
 		export var minimumFontSize = 8;
 		export var minTimeBetweenBadRatings = 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
 		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
+		export var pdfClippingMessageDelay = 5000; // 5 seconds
 		export var timeBetweenDifferentTooltips = 1000 * 60 * 60 * 24 * 7 * 1; // 1 week
 		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 3 weeks
 		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
