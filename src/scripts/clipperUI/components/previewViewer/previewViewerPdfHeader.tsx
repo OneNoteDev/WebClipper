@@ -28,7 +28,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 	private addTextAreaListener() {
 		document.addEventListener("input", (event) => {
 			let element = event.target;
-			let pageRangeField = document.getElementById("rangeInput") as HTMLTextAreaElement;
+			let pageRangeField = document.getElementById(Constants.Ids.rangeInput) as HTMLTextAreaElement;
 			if (!!element && element === pageRangeField) {
 				this.handlePageRangeFieldChanged(pageRangeField.value);
 			}
@@ -54,7 +54,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 					<div class="pdf-indicator pdf-radio-indicator">
 						{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 					</div>
-					<input type="text" id="rangeInput" placeholder="e.g. 1-5, 7, 9-12"></input>
+					<input type="text" id={Constants.Ids.rangeInput} placeholder="e.g. 1-5, 7, 9-12"></input>
 				</label>,
 			]
 		};

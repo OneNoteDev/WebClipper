@@ -167,25 +167,18 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 			return;
 		}
 
-		let dataUrls = data.dataUrls;
-		let contentBody = [];
-
-		let imagesToShow = dataUrls.map((dataUrl, index) => {
+		// Determine which pages should be marked as selected vs unselected
+		let pagesToShow = this.props.clipperState.pdfPreviewInfo.pagesToShow;
+		let allImages = data.dataUrls.map((dataUrl, index) => {
 			return {
 				dataUrl: dataUrl,
-				index: index
+				selected: this.props.clipperState.pdfPreviewInfo.allPages || pagesToShow.indexOf(index) >= 0
 			};
 		});
 
-		if (!this.props.clipperState.pdfPreviewInfo.allPages) {
-			let pagesToShow = this.props.clipperState.pdfPreviewInfo.pagesToShow;
-			imagesToShow = imagesToShow.filter((dataUrlObject) => {
-				return pagesToShow.indexOf(dataUrlObject.index) !== -1;
-			});
-		}
-
 		let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
 
+		let contentBody = [];
 		switch (result.status) {
 			case Status.Succeeded:
 				// In OneNote we don't display the extension
@@ -200,13 +193,13 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 				}
 
 				let overlayClassName = "overlay" + (this.state.showPageNumbers ? "" : " overlay-hidden");
-				for (let dataUrlObject of imagesToShow) {
+				for (let i = 0; i < allImages.length; i++) {
+					let image = allImages[i];
 					contentBody.push(
 						<div class="pdf-preview-image-container">
-							<img className={Constants.Classes.pdfPreviewImage} src={dataUrlObject.dataUrl}></img>
+							<img className={Constants.Classes.pdfPreviewImage + (image.selected ? "" : " unselected")} src={image.dataUrl}></img>
 							<div className={overlayClassName}>
-								<span class="overlay-number">{dataUrlObject.index + 1}
-								</span>
+								<span class="overlay-number">{i + 1}</span>
 							</div>
 						</div>);
 				}

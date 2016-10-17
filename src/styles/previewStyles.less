@@ -508,6 +508,10 @@
 						.pdf-preview-image {
 							margin-top: 24px;
 							box-shadow: 2px 2px 1px 1px rgba(0,0,0,0.2), -2px 0px 1px 1px rgba(0,0,0,0.2);
+
+							&.unselected {
+								opacity: 0.2;
+							}
 						}
 
 						.overlay {
@@ -521,22 +525,22 @@
 							align-items: center;
 							justify-content: center;
 							opacity: 1;
-						}
 
-						.overlay-hidden {
-							// We declare these here to only trigger the transitions on fade-out
-							-webkit-transition: opacity 0.5s ease-in-out;
-							-moz-transition: opacity 0.5s ease-in-out;
-							-o-transition: opacity 0.5s ease-in-out;
-							transition: opacity 0.5s ease-in-out;
-							opacity: 0;
-						}
+							&.overlay-hidden {
+								// We declare these here to only trigger the transitions on fade-out
+								-webkit-transition: opacity 0.5s ease-in-out;
+								-moz-transition: opacity 0.5s ease-in-out;
+								-o-transition: opacity 0.5s ease-in-out;
+								transition: opacity 0.5s ease-in-out;
+								opacity: 0;
+							}
 
-						.overlay-number {
-							font-size: 64px;
-							font-family: @SegoeUi;
-							color: white;
-							margin-bottom: 4px;
+							.overlay-number {
+								font-size: 64px;
+								font-family: @SegoeUi;
+								color: white;
+								margin-bottom: 4px;
+							}
 						}
 					}
 
