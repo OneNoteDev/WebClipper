@@ -362,5 +362,6 @@ export module Constants {
 		export var timeBetweenDifferentTooltips = 1000 * 60 * 60 * 24 * 7 * 1; // 1 week
 		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 3 weeks
 		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
+		export var timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
 	}
 }
