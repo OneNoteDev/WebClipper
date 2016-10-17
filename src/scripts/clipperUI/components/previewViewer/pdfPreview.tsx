@@ -22,18 +22,35 @@ import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
 import * as _ from "lodash";
 
 interface PdfPreviewState {
-	fadeIn: boolean;
+	showPageNumbers: boolean;
 }
 
 class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
-	private static scrollListenerAdded: boolean = false; // done on purpose
+	private static scrollListenerAdded: boolean = false;
+	private static scrollListenerTimeout: number;
 
 	private addScrollListener() {
 		if (!PdfPreview.scrollListenerAdded) {
 			let previewContentContainer = document.getElementById("previewContentContainer");
 			if (!!previewContentContainer) {
+				// When we detect a scroll, show page numbers immediately.
+				// When the user doesn't scroll for some period of time, fade them out.
 				previewContentContainer.addEventListener("scroll", (ev) => {
-					console.log("scroll handler");
+					if (Utils.isNumeric(PdfPreview.scrollListenerTimeout)) {
+						clearTimeout(PdfPreview.scrollListenerTimeout);
+					}
+					PdfPreview.scrollListenerTimeout = setTimeout(() => {
+						this.setState({
+							showPageNumbers: false
+						});
+					}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
+
+					// A little optimization to prevent us from calling render a large number of times
+					if (!this.state.showPageNumbers) {
+						this.setState({
+							showPageNumbers: true
+						});
+					}
 				});
 				PdfPreview.scrollListenerAdded = true;
 			}
@@ -152,25 +169,18 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 			return;
 		}
 
-		let dataUrls = data.dataUrls;
-		let contentBody = [];
-
-		let imagesToShow = dataUrls.map((dataUrl, index) => {
+		// Determine which pages should be marked as selected vs unselected
+		let pagesToShow = this.props.clipperState.pdfPreviewInfo.pagesToShow;
+		let allImages = data.dataUrls.map((dataUrl, index) => {
 			return {
 				dataUrl: dataUrl,
-				index: index
+				selected: this.props.clipperState.pdfPreviewInfo.allPages || pagesToShow.indexOf(index) >= 0
 			};
 		});
 
-		if (!this.props.clipperState.pdfPreviewInfo.allPages) {
-			let pagesToShow = this.props.clipperState.pdfPreviewInfo.pagesToShow;
-			imagesToShow = imagesToShow.filter((dataUrlObject) => {
-				return pagesToShow.indexOf(dataUrlObject.index) !== -1;
-			});
-		}
-
 		let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
 
+		let contentBody = [];
 		switch (result.status) {
 			case Status.Succeeded:
 				// In OneNote we don't display the extension
@@ -183,13 +193,15 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 							<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
 						</span>);
 				}
-				for (let dataUrlObject of imagesToShow) {
+
+				let overlayClassName = "overlay" + (this.state.showPageNumbers ? "" : " overlay-hidden");
+				for (let i = 0; i < allImages.length; i++) {
+					let image = allImages[i];
 					contentBody.push(
 						<div class="pdf-preview-image-container">
-							<img className={Constants.Classes.pdfPreviewImage} src={dataUrlObject.dataUrl}></img>
-							<div className="overlay">
-								<span class="overlay-number">{dataUrlObject.index + 1}
-								</span>
+							<img className={Constants.Classes.pdfPreviewImage + (image.selected ? "" : " unselected")} src={image.dataUrl}></img>
+							<div className={overlayClassName}>
+								<span class="overlay-number">{i + 1}</span>
 							</div>
 						</div>);
 				}
