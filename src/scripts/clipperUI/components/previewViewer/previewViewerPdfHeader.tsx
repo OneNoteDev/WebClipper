@@ -5,7 +5,7 @@ import {ClipperStateProp} from "../../clipperState";
 
 import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
 
-interface PdfPreviewProp {
+interface PdfPreviewProp extends ClipperStateProp {
 	onCheckboxChange: (checked: boolean) => void;
 	onTextChange: (text: string) => void;
 	onSelectionChange: (selection: boolean) => void;
@@ -56,7 +56,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 					<div class="pdf-indicator pdf-radio-indicator">
 						{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 					</div>
-					<input className={invalidClassName} type="text" id={Constants.Ids.rangeInput} placeholder="e.g. 1-5, 7, 9-12"></input>
+					<input className={invalidClassName} type="text" id={Constants.Ids.rangeInput} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange}></input>
 				</label>,
 			]
 		};
