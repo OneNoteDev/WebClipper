@@ -248,9 +248,12 @@ export class SaveToOneNote {
 	// POST the page to OneNote API
 	private static createNewPage(page: OneNoteApi.OneNotePage): Promise<any> {
 		let headers: { [key: string]: string } = {};
+
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(this.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
+
+		let oneNoteApi = new OneNoteApi.OneNoteApi(this.clipperState.userResult.data.user.accessToken, 45000 /* 45ms */, headers);
+
 		return oneNoteApi.createPage(page, this.clipperState.saveLocation);
 	}
 }
