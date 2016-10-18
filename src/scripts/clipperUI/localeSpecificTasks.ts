@@ -33,4 +33,5 @@ try {
 	localeOverride = window.localStorage.getItem(ClipperStorageKeys.displayLanguageOverride);
 } catch (e) { }
 
+// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
 LocaleSpecificTasks.execute(localeOverride || navigator.language || (<any>navigator).userLanguage);

@@ -15,6 +15,9 @@ export class DebugLoggingInject extends InjectBase<InjectOptions> {
 	private debugLogger: Logger;
 
 	public static main(options: InjectOptions) {
+		// Rather than using a static field (i.e., traditional singleton pattern), we have to attach
+		// the singleton to the window object because each time we inject a new inject script, they are
+		// sandboxed from each other, so having a static field will not work.
 		let theWindow = <any>window;
 		if (!theWindow.debugLoggingInjectObject) {
 			theWindow.debugLoggingInjectObject = new DebugLoggingInject(options);

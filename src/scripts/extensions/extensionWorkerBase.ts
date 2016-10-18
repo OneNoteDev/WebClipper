@@ -313,6 +313,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 	protected getLocalizedStringsForBrowser(callback: Function) {
 		let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
+		// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
 		let locale = localeOverride || navigator.language || (<any>navigator).userLanguage;
 		this.getLocalizedStrings(locale, callback);
 	}

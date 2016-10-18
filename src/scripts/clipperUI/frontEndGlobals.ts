@@ -21,6 +21,19 @@ export class Clipper {
 		return Clipper.sessionId.get();
 	}
 
+	public static getUserSessionIdWhenDefined(): Promise<string> {
+		return new Promise<string>((resolve) => {
+			let sessionId = Clipper.sessionId.get();
+			if (sessionId) {
+				resolve(sessionId);
+			} else {
+				Clipper.sessionId.subscribe((definedSessionId: string) => {
+					resolve(definedSessionId);
+				}, { times: 1, callOnSubscribe: false });
+			}
+		});
+	}
+
 	public static getInjectCommunicator(): Communicator {
 		return Clipper.injectCommunicator;
 	}

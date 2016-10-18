@@ -11,33 +11,33 @@ export let unknownValue = "unknown";
 
 export function parseAndLogDataPackage(data: LogDataPackage, logger: Logger) {
 	switch (data.methodName) {
-		case LogMethods.logEvent:
+		case LogMethods.LogEvent:
 			let eventCategory: Event.Category = data.methodArgs[0];
 			let eventData: Event.BaseEventData = data.methodArgs[1];
 			logger.logEvent.apply(logger, [Event.createEvent(eventCategory, eventData)]);
 			break;
-		case LogMethods.logFailure:
+		case LogMethods.LogFailure:
 			logger.logFailure.apply(logger, data.methodArgs);
 			break;
-		case LogMethods.pushToStream:
+		case LogMethods.PushToStream:
 			logger.pushToStream.apply(logger, data.methodArgs);
 			break;
-		case LogMethods.logFunnel:
+		case LogMethods.LogFunnel:
 			logger.logUserFunnel.apply(logger, data.methodArgs);
 			break;
-		case LogMethods.logSessionStart:
+		case LogMethods.LogSessionStart:
 			logger.logSessionStart.apply(logger, data.methodArgs);
 			break;
-		case LogMethods.logSessionEnd:
+		case LogMethods.LogSessionEnd:
 			logger.logSessionEnd.apply(logger, data.methodArgs);
 			break;
-		case LogMethods.logClickEvent:
+		case LogMethods.LogClickEvent:
 			logger.logClickEvent.apply(logger, data.methodArgs);
 			break;
-		case LogMethods.setContextProperty:
+		case LogMethods.SetContextProperty:
 			logger.setContextProperty.apply(logger, data.methodArgs);
 			break;
-		case LogMethods.logTrace:
+		case LogMethods.LogTrace:
 		/* falls through */
 		default:
 			logger.logTrace.apply(logger, data.methodArgs);

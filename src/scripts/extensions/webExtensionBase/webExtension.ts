@@ -131,9 +131,21 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 					title: Localization.getLocalizedString("WebClipper.Label.ClipSelectionToOneNote"),
 					contexts: ["selection"],
 					onclick: (info, tab: W3CTab) => {
-						this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, {
-							invokeMode: InvokeMode.ContextTextSelection
-						});
+						let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
+
+						// If the tab index is negative, chances are the user is using some sort of PDF plugin,
+						// and the tab object will be invalid. We need to get the parent tab in this scenario.
+						if (tab.index < 0) {
+							// Since we are in a PDF plugin, Rangy won't work, so we rely on WebExtension API to grab pure text
+							invokeOptions.invokeDataForMode = info.selectionText;
+							WebExtension.browser.tabs.query({ active: true, currentWindow: true }, (tabs: W3CTab[]) => {
+								// There will only be one tab that meets this criteria
+								let parentTab = tabs[0];
+								this.invokeClipperInTab(parentTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+							});
+						} else {
+							this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+						}
 					}
 				}, {
 					title: Localization.getLocalizedString("WebClipper.Label.ClipImageToOneNote"),
@@ -147,14 +159,37 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 					}
 				}];
 
-				let isFirefox = this.clientInfo.get().clipperType === ClientType.FirefoxExtension;
+				let documentUrlPatternList: string[];
+
+				switch (this.clientInfo.get().clipperType) {
+					case ClientType.ChromeExtension:
+						documentUrlPatternList = [
+							"http://*/*",
+							"https://*/*",
+							"chrome-extension://encfpfilknmenlmjemepncnlbbjlabkc/*", // PDF.js
+							"chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/*", // Ad PDF Viewer
+							"chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/*" // Chrome PDF Viewer
+						];
+						break;
+					case ClientType.EdgeExtension:
+						// Note that in Edge, the ms-browser-extension:// URL causes the context menus to break.
+						documentUrlPatternList = [
+							"http://*/*",
+							"https://*/*"
+						];
+						break;
+					case ClientType.FirefoxExtension:
+						// Note that documentUrlPatterns is not supported in Firefox as of 07/22/16
+						// https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Chrome_incompatibilities
+						// If you include documentUrlPatterns in Firefox, the context menu won't be added!
+						break;
+					default:
+						break;
+				}
 
 				for (let i = 0; i < menus.length; i++) {
-					// Note that documentUrlPatterns is not supported in Firefox as of 07/22/16
-					// https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Chrome_incompatibilities
-					// If you include documentUrlPatterns in Firefox, the context menu won't be added!
-					if (!isFirefox) {
-						menus[i].documentUrlPatterns = ["http://*/*", "https://*/*"];
+					if (documentUrlPatternList) {
+						menus[i].documentUrlPatterns = documentUrlPatternList;
 					}
 					WebExtension.browser.contextMenus.create(menus[i]);
 				}
