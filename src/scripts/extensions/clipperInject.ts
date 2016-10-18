@@ -21,6 +21,8 @@ import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
 
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
+import {InitializableRangyStatic} from "../typingsExtends/initializableRangyStatic";
+
 import {Frame, StyledFrameFactory} from "./styledFrameFactory";
 import {FrameInjectBase} from "./frameInjectBase";
 import {FrameInjectOptions} from "./injectOptions";
@@ -32,6 +34,8 @@ export interface ClipperInjectOptions extends FrameInjectOptions {
 	enableRegionClipping: boolean;
 	useInlineBackgroundWorker?: boolean;
 }
+
+declare let rangy: InitializableRangyStatic;
 
 /**
  * Loads up the Clipper iframe and manages it
@@ -48,6 +52,9 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 	 * Called to toggle the clipper's visibility, or to invoke it if it does not exist
 	 */
 	public static main(oneNoteClipperOptions: ClipperInjectOptions): ClipperInject {
+		// Rather than using a static field (i.e., traditional singleton pattern), we have to attach
+		// the singleton to the window object because each time we inject a new inject script, they are
+		// sandboxed from each other, so having a static field will not work.
 		let oneNoteInjectBaseObject = (<any>window).oneNoteInjectBaseObject as ClipperInject;
 		if (!!document.getElementById(Constants.Ids.clipperUiFrame) && oneNoteInjectBaseObject) {
 			// The page could have changed between invokes e.g., single page apps
@@ -90,9 +97,16 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 				// Some modes are gated here in the inject for extra processing
 				switch (invokeOptions.invokeMode) {
 					case InvokeMode.ContextTextSelection:
+						// In the case of PDF, the selection is passed to us from the WebExtension API, so we use that instead as Rangy won't work
+						if (invokeOptions.invokeDataForMode) {
+							invokeOptions.invokeDataForMode = this.toScrubbedHtml(invokeOptions.invokeDataForMode);
+							this.sendInvokeOptionsToUi(invokeOptions);
+							break;
+						}
+
 						// Rangy initializes itself on the page load, so we need to initialize it if the user invoked before this happens
-						if (!rangy.initialized && (rangy as any).init) {
-							(rangy as any).init();
+						if (!rangy.initialized && rangy.init) {
+							rangy.init();
 						}
 
 						// We get the selection here as the WebExtension API only allows us to get text
@@ -103,10 +117,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 						let doc = (new DOMParser()).parseFromString(range.toHtml(), "text/html");
 						DomUtils.toOnml(doc).then(() => {
 							// Selections are prone to not having an outer html element, which can lead to anomalies in preview
-							let divContainer = document.createElement("div");
-							divContainer.innerHTML = DomUtils.cleanHtml(doc.body.innerHTML);
-							invokeOptions.invokeDataForMode = divContainer.outerHTML;
-
+							invokeOptions.invokeDataForMode = this.toScrubbedHtml(doc.body.innerHTML);
 							this.sendInvokeOptionsToUi(invokeOptions);
 						});
 						break;
@@ -358,6 +369,12 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			this.frame.style.display = "";
 		}
 		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.toggleClipper);
+	}
+
+	private toScrubbedHtml(content: string): string {
+		let divContainer = document.createElement("div");
+		divContainer.innerHTML = DomUtils.cleanHtml(content);
+		return divContainer.outerHTML;
 	}
 
 	private updatePageInfo() {

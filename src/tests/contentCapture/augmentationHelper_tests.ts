@@ -1,8 +1,10 @@
 import * as sinon from "sinon";
 
-import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCapture/augmentationHelper";
-
 import {Constants} from "../../scripts/constants";
+
+import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
+
+import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCapture/augmentationHelper";
 
 import {HelperFunctions} from "../helperFunctions";
 
@@ -18,10 +20,15 @@ QUnit.module("augmentationHelper-sinon", {
 		};
 
 		server = sinon.fakeServer.create();
+		server.respondImmediately = true;
+
+		// The augmentation call waits on the session id, so we need to set this
+		Clipper.sessionId.set("abcde");
 	},
 	afterEach: () => {
 		xhr.restore();
 		server.restore();
+		Clipper.sessionId.set(undefined);
 	}
 });
 
@@ -50,7 +57,6 @@ test("makeAugmentationRequest should return the parsed response and the original
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("makeAugmentationRequest should return the error object in the rejected promise if the status code is not 200", (assert: QUnitAssert) => {
@@ -75,7 +81,6 @@ test("makeAugmentationRequest should return the error object in the rejected pro
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("makeAugmentationRequest should return the error object in the rejected promise if the status code is 200, but the response cannot be parsed as json", (assert: QUnitAssert) => {
@@ -105,7 +110,6 @@ test("makeAugmentationRequest should return the error object in the rejected pro
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 let fixture: HTMLDivElement;

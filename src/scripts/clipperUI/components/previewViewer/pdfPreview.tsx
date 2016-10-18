@@ -23,7 +23,8 @@ import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
 import * as _ from "lodash";
 
 interface PdfPreviewState {
-	showPageNumbers: boolean;
+	showPageNumbers?: boolean;
+	invalidRange?: boolean;
 }
 
 class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
@@ -101,6 +102,17 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		this.props.clipperState.setState({
 			pdfPreviewInfo: newPdfPreviewInfo
 		});
+
+		let pagesToShow = StringUtils.parsePageRange(text);
+		if (!pagesToShow) {
+			this.setState({
+				invalidRange: true
+			});
+		} else {
+			this.setState({
+				invalidRange: false
+			});
+		}
 	}
 
 	onCheckboxChange(checked: boolean) {
@@ -115,6 +127,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 	protected getHeader(): any {
 		return <PreviewViewerPdfHeader
+			invalidRange={this.state.invalidRange}
 			shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
 			allPages={this.props.clipperState.pdfPreviewInfo.allPages}
 			onCheckboxChange={this.onCheckboxChange.bind(this)}
@@ -162,6 +175,11 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 		// Determine which pages should be marked as selected vs unselected
 		let pagesToShow = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
+		if (!pagesToShow) {
+			pagesToShow = [];
+		}
+		pagesToShow = pagesToShow.map((ind) => { return ind - 1; });
+
 		let allImages = data.dataUrls.map((dataUrl, index) => {
 			return {
 				dataUrl: dataUrl,

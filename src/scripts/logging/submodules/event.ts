@@ -45,6 +45,7 @@ export module Event {
 		PostToOneNoteApi,
 		ProcessPdfIntoDataUrls,
 		RefreshUserToken,
+		RetrieveUserInformation,
 		TooltipImpression,
 		UserInfoUpdated,
 		WaitOnBinaryRequestBeforePdfClip,

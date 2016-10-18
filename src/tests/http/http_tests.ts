@@ -14,6 +14,7 @@ QUnit.module("http", {
 		};
 
 		server = sinon.fakeServer.create();
+		server.respondImmediately = true;
 	},
 	afterEach: () => {
 		xhr.restore();
@@ -34,7 +35,6 @@ test("When get is called with valid parameters and the server returns 200, the r
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When get is called with valid parameters and the server returns 204 when the caller specified that its a valid response code, the request should be returned in the resolve", (assert: QUnitAssert) => {
@@ -50,7 +50,6 @@ test("When get is called with valid parameters and the server returns 204 when t
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When get is called with valid parameters and the server returns non-200 2XX, the promise should be rejected with the request error object", (assert: QUnitAssert) => {
@@ -79,7 +78,6 @@ test("When get is called with valid parameters and the server returns non-200 2X
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When get is called with an undefined url, an Error should be thrown", () => {
@@ -120,7 +118,6 @@ test("When get is called with valid parameters and the server returns 4XX, the p
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When get is called with valid parameters and the server returns 5XX, the promise should be rejected with the request error object", (assert: QUnitAssert) => {
@@ -149,7 +146,6 @@ test("When get is called with valid parameters and the server returns 5XX, the p
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When post is called with valid parameters and the server returns 200, the request should be returned in the resolve", (assert: QUnitAssert) => {
@@ -165,7 +161,6 @@ test("When post is called with valid parameters and the server returns 200, the 
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When post is called with data as an empty string and the server returns 200, the request should be returned in the resolve", (assert: QUnitAssert) => {
@@ -181,7 +176,6 @@ test("When post is called with data as an empty string and the server returns 20
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When post is called with valid parameters and the server returns 204 when the caller specified that its a valid response code, the request should be returned in the resolve", (assert: QUnitAssert) => {
@@ -197,7 +191,6 @@ test("When post is called with valid parameters and the server returns 204 when 
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When post is called with valid parameters and the server returns non-200 2XX, the promise should be rejected with the request error object", (assert: QUnitAssert) => {
@@ -226,7 +219,6 @@ test("When post is called with valid parameters and the server returns non-200 2
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When post is called with an undefined url, an Error should be thrown", () => {
@@ -273,7 +265,6 @@ test("When post is called with valid parameters and the server returns 4XX, the 
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("When post is called with valid parameters and the server returns 5XX, the promise should be rejected with the request error object", (assert: QUnitAssert) => {
@@ -302,5 +293,4 @@ test("When post is called with valid parameters and the server returns 5XX, the 
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
