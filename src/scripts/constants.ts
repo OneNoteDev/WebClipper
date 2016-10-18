@@ -25,9 +25,12 @@ export module Constants {
 		export var regionSelectionRemoveButton = "region-selection-remove-button";
 
 		// pdfPreviewViewer
-		export var pdfPreviewImage = "pdf-preview-image";
 		export var attachmentOverlay = "attachment-overlay";
+		export var pdfPreviewImage = "pdf-preview-image";
 		export var unselected = "unselected";
+
+		export var localPdfPanelTitle = "local-pdf-panel-title";
+		export var localPdfPanelSubtitle = "local-pdf-panel-subtitle";
 
 		// spriteAnimation
 		export var spinner = "spinner";
@@ -133,6 +136,7 @@ export module Constants {
 		export var fullPageHeaderTitle = "fullPageHeaderTitle";
 
 		// previewViewerPdfHeader
+		export var localPdfFileTitle = "localPdfFileTitle";
 		export var pageRangeControl = "pageRangeControl";
 		export var pdfControl = "pdfControl";
 

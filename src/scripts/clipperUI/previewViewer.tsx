@@ -1,4 +1,6 @@
-import {ClipMode} from "./clipMode";
+import { Localization } from "../localization/localization";
+
+import { ClipMode } from "./clipMode";
 import {ClipperStateProp} from "./clipperState";
 import {ComponentBase} from "./componentBase";
 
@@ -16,7 +18,13 @@ class PreviewViewerClass<TState, TProp extends ClipperStateProp> extends Compone
 		switch (state.currentMode.get()) {
 			case ClipMode.Pdf:
 				if (state.pdfPreviewInfo.showLocalFilePanel) {
-					return <LocalFilePanel clipperState={state} />;
+					let title = Localization.getLocalizedString("WebClipper.ClipType.Pdf.AskPermissionToClipLocalFile");
+					let subtitle = Localization.getLocalizedString("WebClipper.ClipType.Pdf.InstructionsForClippingLocalFiles");
+					let header = Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button");
+					return <LocalFilePanel
+						title={title}
+						subtitle={subtitle}
+						header={header} />;
 				}
 				return <PdfPreview clipperState={state} />;
 			case ClipMode.FullPage:

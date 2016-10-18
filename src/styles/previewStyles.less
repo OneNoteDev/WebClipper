@@ -94,10 +94,10 @@
 				}
 
 				// TODO: Remove when this is replaced with full page features
-				#fullPageControl, #bookmarkControl, #regionControl {
+				#fullPageControl, #bookmarkControl, #regionControl, {
 					height: 32px;
 
-					#fullPageHeaderTitle, #bookmarkHeaderTitle, #regionHeaderTitle {
+					#fullPageHeaderTitle, #bookmarkHeaderTitle, #regionHeaderTitle, #localPdfFileTitle {
 						font-size: @OneNoteH3Size;
 						cursor: default;
 						line-height: 32px;
@@ -316,6 +316,24 @@
 					&.in-progress {
 						background-color: @PreviewHeaderContainerBackground;
 					}
+				}
+
+				&.local-pdf-file-content-container {
+					background-color: @OneNotePurpleTransparent;
+				}
+
+				.local-pdf-panel-title {
+					font-size: 24px;
+					text-align: center;
+					color: white;
+					padding: 60px 40px 20px 40px;
+				}
+
+				.local-pdf-panel-subtitle {
+					font-size: 16px;
+					text-align: center;
+					color: white;
+					padding: 40px 40px 60px 40px;
 				}
 
 				#previewHeaderContainer {

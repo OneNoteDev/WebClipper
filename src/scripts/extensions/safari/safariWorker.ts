@@ -113,7 +113,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 
 	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (isAllowed: boolean) => void): void {
 		// TODO: test on Safari
-		callback(false);
+		callback(true);
 	}
 
 	/**
