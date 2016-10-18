@@ -92,7 +92,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			selectionPreviewInfo: {},
 			pdfPreviewInfo: {
 				allPages: true,
-				pagesToShow: [],
+				selectedPageRange: "",
 				shouldAttachPdf: false,
 			},
 
