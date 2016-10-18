@@ -240,7 +240,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 							}
 						}
 
-						let redirectUrl = (<any>details).url;
+						let redirectUrl = details.url;
 						let error = Utils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.error);
 						let errorDescription = Utils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.errorDescription);
 						if (error || errorDescription) {
