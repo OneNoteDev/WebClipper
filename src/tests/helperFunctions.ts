@@ -127,7 +127,7 @@ export module HelperFunctions {
 			},
 			pdfPreviewInfo: {
 				allPages: true,
-				pagesToShow: [1, 3, 5],
+				selectedPageRange: "1,3,5",
 				shouldAttachPdf: true
 			},
 			augmentationPreviewInfo: {

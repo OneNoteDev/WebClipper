@@ -1,3 +1,5 @@
+import * as _ from "lodash";
+
 export module StringUtils {
 	// Takes a range of the form 1,3-6,7,8,13,1,3,4,a-b, etc. and then returns an array
 	// corresponding to the numbers in that range. It ignores invalid input, sorts it, and removes duplicates

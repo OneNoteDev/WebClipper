@@ -2,6 +2,7 @@
 
 import {Constants} from "../constants";
 import {Settings} from "../settings";
+import {StringUtils} from "../stringUtils";
 import {Utils} from "../utils";
 
 import {AugmentationModel} from "../contentCapture/augmentationHelper";
@@ -298,7 +299,7 @@ export class SaveToOneNote {
 		let arrayBuffer = pdfResult.arrayBuffer;
 		let dataUrls = pdfResult.dataUrls;
 
-		let pagesToShow = options.pagesToShow;
+		let pagesToShow = StringUtils.parsePageRange(options.selectedPageRange);
 		let filteredDataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
 		let initialDataUrls = filteredDataUrls.slice(0, 5);
 
@@ -340,7 +341,7 @@ export class SaveToOneNote {
 		let dataUrlRanges: string[][] = [];
 
 		if (!previewOptions.allPages) {
-			let pagesToShow = previewOptions.pagesToShow;
+			let pagesToShow = StringUtils.parsePageRange(previewOptions.selectedPageRange);
 			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
 		}
 		dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);

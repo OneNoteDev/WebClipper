@@ -2,6 +2,7 @@
 
 import {Constants} from "../../../constants";
 import {PdfPreviewInfo} from "../../../previewInfo";
+import {StringUtils} from "../../../stringUtils";
 import {Utils} from "../../../utils";
 
 import {SmartValue} from "../../../communicator/smartValue";
@@ -67,25 +68,6 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		return this.convertPdfResultToContentData(state.pdfResult);
 	}
 
-	// Takes a range of the form 1,3-6,7,8,13,1,3,4,a-b, etc. and then returns an array
-	// corresponding to the numbers in that range. It ignores invalid input, sorts it, and removes duplicates
-	private parsePageRange(text: string): number[] {
-		let initialRange = text.split(",").reduce((previousValue, currentValue) => {
-			let valueToAppend: number[] = [], matches;
-			// The value could be a single digit
-			if (/^\d+$/.test(currentValue)) {
-				valueToAppend = [parseInt(currentValue, 10 /* radix */)];
-				// ... or it could a range of the form [#]-[#]
-			} else if (matches = /^(\d+)-(\d+)$/.exec(currentValue)) {
-				let lhs = parseInt(matches[1], 10), rhs = parseInt(matches[2], 10) + 1;
-				// TODO: what do we do if start > end? This is a behavior question, not an implementation one
-				valueToAppend = _.range(lhs, rhs);
-			}
-			return previousValue = previousValue.concat(valueToAppend);
-		}, []);
-		return _(initialRange).sortBy().sortedUniq().map((page) => { return page - 1; }).value();
-	}
-
 	onSelectionChange(selection: boolean) {
 		// TODO: change this to _.assign, _.extend
 		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
@@ -98,11 +80,9 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	}
 
 	onTextChange(text: string) {
-		let pagesToShow = this.parsePageRange(text);
-
 		// TODO: change this to _.assign, _.extend
 		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
-			pagesToShow: pagesToShow
+			selectedPageRange: text
 		} as PdfPreviewInfo);
 
 		this.props.clipperState.setState({
@@ -122,12 +102,12 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 	protected getHeader(): any {
 		return <PreviewViewerPdfHeader
-				shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
-				allPages={this.props.clipperState.pdfPreviewInfo.allPages}
-				onCheckboxChange={this.onCheckboxChange.bind(this)}
-				onSelectionChange={this.onSelectionChange.bind(this)}
-				onTextChange={_.debounce(this.onTextChange.bind(this), 1000)}
-				clipperState={this.props.clipperState} />;
+			shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
+			allPages={this.props.clipperState.pdfPreviewInfo.allPages}
+			onCheckboxChange={this.onCheckboxChange.bind(this)}
+			onSelectionChange={this.onSelectionChange.bind(this)}
+			onTextChange={this.onTextChange.bind(this)}
+			clipperState={this.props.clipperState} />;
 	}
 
 	protected getStatus(): Status {
@@ -169,7 +149,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		}
 
 		// Determine which pages should be marked as selected vs unselected
-		let pagesToShow = this.props.clipperState.pdfPreviewInfo.pagesToShow;
+		let pagesToShow = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
 		let allImages = data.dataUrls.map((dataUrl, index) => {
 			return {
 				dataUrl: dataUrl,

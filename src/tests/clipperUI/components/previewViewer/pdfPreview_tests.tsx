@@ -30,7 +30,7 @@ function getMockPdfModeState(): ClipperState {
 
 	state.pdfPreviewInfo = {
 		allPages: true,
-		pagesToShow: [],
+		selectedPageRange: "",
 		shouldAttachPdf: false,
 	};
 	return state;
@@ -128,7 +128,7 @@ test("When 'All Pages' is checked in the page range control, every dataUrl shoul
 	clipperState.currentMode.set(ClipMode.Pdf);
 	clipperState.pdfPreviewInfo = {
 		allPages: true,
-		pagesToShow: [0, 2],
+		selectedPageRange: "1,3",
 		shouldAttachPdf: false
 	};
 	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
@@ -149,7 +149,7 @@ test("When 'Page Range' is checked in the page range control, but the range is e
 	let clipperState = getMockPdfModeState();
 	clipperState.pdfPreviewInfo = {
 		allPages: false,
-		pagesToShow: [],
+		selectedPageRange: "",
 		shouldAttachPdf: false
 	};
 	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
@@ -163,10 +163,9 @@ test("When 'Page Range' is checked in the page range control, but the range is e
 
 test("When 'Page Range' is checked in the page range control, only the pages specified in the page range should be rendered, with the rest being unselected", () => {
 	let clipperState = getMockPdfModeState();
-	let pagesToShow = [0, 2]; // TODO: make this a function of pdfDataUrls?
 	clipperState.pdfPreviewInfo = {
 		allPages: false,
-		pagesToShow: pagesToShow,
+		selectedPageRange: "1,3",
 		shouldAttachPdf: false
 	};
 	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
@@ -174,34 +173,34 @@ test("When 'Page Range' is checked in the page range control, only the pages spe
 	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
 	strictEqual(images.length, pdfDataUrls.length, "The number of rendered images should match the number of elements in pagesToShow of pdfPreviewInfo");
 
+	let expectedSelectedIndexes = [0, 2];
 	for (let i = 0; i < images.length; ++i) {
 		let image = images[i] as HTMLImageElement;
-		if (pagesToShow.indexOf(i) === -1) {
+		if (expectedSelectedIndexes.indexOf(i) === -1) {
 			ok(image.classList.contains(Constants.Classes.unselected), "Images that should be grayed out should have unselected in their classList");
 		}
 	}
 });
 
-test("When 'Page Range' is checked in the page control, but there is an invalid page range specified, it gracefully falls back to to only the valid numbers in the range", () => {
+test("When 'Page Range' is checked in the page control, but there is a negative page range specified, we should treat this as an invalid selection and unselect all the pages", () => {
 	let clipperState = getMockPdfModeState();
-	let pagesToShow = [-1, 2, 5]; // TODO: make this a function of pdfDataUrls?
 	clipperState.pdfPreviewInfo = {
 		allPages: false,
-		pagesToShow: pagesToShow,
+		selectedPageRange: "-1,2",
 		shouldAttachPdf: false
 	};
 	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
 	let selectionQueryForNotGrayedOutImages = "." + Constants.Classes.pdfPreviewImage + ":not(." + Constants.Classes.unselected + ")";
 	let images = document.querySelectorAll(selectionQueryForNotGrayedOutImages);
-	strictEqual(images.length, 1, "The number of non-grayed out images should match the number of VALID elements in pagesToShow of pdfPreviewInfo");
+	strictEqual(images.length, 0, "All pages should be grayed out");
 });
 
 test("When the attachment checkbox is checked, the preview body should show an attachment", () => {
 	let clipperState = getMockPdfModeState();
 	clipperState.pdfPreviewInfo = {
 		allPages: true,
-		pagesToShow: [],
+		selectedPageRange: "",
 		shouldAttachPdf: true,
 	};
 	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
@@ -213,7 +212,7 @@ test("When the attachment checkbox isn't checked, there should be no attachment"
 	let clipperState = getMockPdfModeState();
 	clipperState.pdfPreviewInfo = {
 		allPages: true,
-		pagesToShow: [],
+		selectedPageRange: "",
 		shouldAttachPdf: false,
 	};
 	HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
