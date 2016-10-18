@@ -37,6 +37,7 @@
 	"WebClipper.ClipType.Selection.Button.Tooltip": "Clip the selection you made on the web page.",
 	"WebClipper.ClipType.Selection.ProgressLabel": "Clipping Selection",
 	"WebClipper.Error.NoOpError":  "Sorry, we can\u0027t clip this page right now",
+	"WebClipper.Error.ConflictingExtension": "Your PDF viewer or another extension might be blocking the OneNote Web Clipper. You could temporarily disable the following extension and try clipping again.",
 	"WebClipper.Error.CannotClipPage": "Sorry, this type of page can\u0027t be clipped.",
 	"WebClipper.Error.CorruptedSection": "Your clip can\u0027t be saved here because the section is corrupt.",
 	"WebClipper.Error.GenericError": "Something went wrong. Please try clipping the page again.",

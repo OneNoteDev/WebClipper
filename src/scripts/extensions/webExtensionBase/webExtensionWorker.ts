@@ -9,6 +9,8 @@ import {Utils} from "../../utils";
 import {Communicator} from "../../communicator/communicator";
 import {SmartValue} from "../../communicator/smartValue";
 
+import {Localization} from "../../localization/localization";
+
 import * as Log from "../../logging/log";
 
 import {ClipperData} from "../../storage/clipperData";
@@ -24,6 +26,7 @@ import {InvokeSource} from "../invokeSource";
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
+import {WebExtensionNotifications} from "./webExtensionNotifications";
 
 type Tab = chrome.tabs.Tab;
 type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
@@ -96,9 +99,32 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						},
 						clientInfo: this.clientInfo
 					});
-					// In Firefox, alert() is not callable from the background, so it looks like we have to no-op here
-					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
-						InjectHelper.alertUserOfUnclippablePage();
+
+					// TODO This is only available on Chrome so far? Firefox doesn't seem to have pdf addons and only makes its built-in one available.
+					let extensionUrlRegex = /^chrome-extension:\/\/(\w+)\W/;
+					if (this.clientInfo.get().clipperType === ClientType.ChromeExtension && extensionUrlRegex.test(this.tab.url)) {
+						let extensionId = this.tab.url.match(extensionUrlRegex)[1];
+						let extensionUrl = "https://chrome.google.com/webstore/detail/" + extensionId;
+
+						WebExtensionNotifications.setButtonListener((notificationId, buttonIndex) => {
+							if (notificationId === Constants.Extension.NotificationIds.conflictingExtension && buttonIndex === 0) {
+								window.open(extensionUrl);
+								WebExtension.browser.notifications.clear(Constants.Extension.NotificationIds.conflictingExtension);
+							}
+						});
+
+						WebExtension.browser.notifications.create(Constants.Extension.NotificationIds.conflictingExtension, {
+							type: "basic",
+							title: Localization.getLocalizedString("WebClipper.Label.OneNoteWebClipper"),
+							message: Localization.getLocalizedString("WebClipper.Error.ConflictingExtension"),
+							buttons: [{ title: extensionUrl }],
+							iconUrl: "icons/icon-256.png"
+						});
+					} else {
+						// In Firefox, alert() is not callable from the background, so it looks like we have to no-op here
+						if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
+							InjectHelper.alertUserOfUnclippablePage();
+						}
 					}
 					resolve(false);
 				} else {
