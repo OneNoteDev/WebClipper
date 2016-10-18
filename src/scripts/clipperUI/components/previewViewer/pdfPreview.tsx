@@ -28,36 +28,49 @@ interface PdfPreviewState {
 }
 
 class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
-	private static scrollListenerAdded: boolean = false;
+	private static latestScrollListener: (event: UIEvent) => void;
 	private static scrollListenerTimeout: number;
 
-	private addScrollListener() {
-		if (!PdfPreview.scrollListenerAdded) {
-			let previewContentContainer = document.getElementById("previewContentContainer");
-			if (!!previewContentContainer) {
-				// When we detect a scroll, show page numbers immediately.
-				// When the user doesn't scroll for some period of time, fade them out.
-				previewContentContainer.addEventListener("scroll", (ev) => {
-					if (Utils.isNumeric(PdfPreview.scrollListenerTimeout)) {
-						clearTimeout(PdfPreview.scrollListenerTimeout);
-					}
-					PdfPreview.scrollListenerTimeout = setTimeout(() => {
-						this.setState({
-							showPageNumbers: false
-						});
-					}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
+	constructor(props: ClipperStateProp) {
+		super(props);
+		// We need to do this on every constructor to ensure the reference to the state
+		// object is correct
+		this.addScrollListener();
+	}
 
-					// A little optimization to prevent us from calling render a large number of times
-					if (!this.state.showPageNumbers) {
-						this.setState({
-							showPageNumbers: true
-						});
-					}
-				});
-				PdfPreview.scrollListenerAdded = true;
-			}
+	getInitialState(): PdfPreviewState {
+		return {
+			showPageNumbers: false
+		};
+	}
+
+	private addScrollListener() {
+		if (PdfPreview.latestScrollListener) {
+			window.removeEventListener("scroll", PdfPreview.latestScrollListener, true);
 		}
-		return;
+		// When we detect a scroll, show page numbers immediately.
+		// When the user doesn't scroll for some period of time, fade them out.
+		PdfPreview.latestScrollListener = (event) => {
+			let element = event.target as HTMLElement;
+			if (!!element && element.id === Constants.Ids.previewContentContainer) {
+				if (Utils.isNumeric(PdfPreview.scrollListenerTimeout)) {
+					clearTimeout(PdfPreview.scrollListenerTimeout);
+				}
+				PdfPreview.scrollListenerTimeout = setTimeout(() => {
+					this.setState({
+						showPageNumbers: false
+					});
+				}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
+
+				// A little optimization to prevent us from calling render a large number of times
+				if (!this.state.showPageNumbers) {
+					this.setState({
+						showPageNumbers: true
+					});
+				}
+			}
+		};
+		window.addEventListener("scroll", PdfPreview.latestScrollListener, true /* allows the listener to listen to all elements */);
 	}
 
 	protected getContentBodyForCurrentStatus(): any[] {
@@ -156,7 +169,6 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	}
 
 	private convertPdfResultToContentData(result: DataResult<SmartValue<PdfScreenshotResult>>): any[] {
-		this.addScrollListener();
 		let data = this.props.clipperState.pdfResult.data.get();
 		if (!data || this.props.clipperState.pdfResult.status !== Status.Succeeded) {
 			return;
