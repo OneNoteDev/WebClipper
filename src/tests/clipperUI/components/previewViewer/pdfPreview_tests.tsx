@@ -36,7 +36,7 @@ function getMockPdfModeState(): ClipperState {
 	return state;
 }
 
-QUnit.module("", {});
+QUnit.module("pdfPreview", {});
 
 test("The PDF page header should be displayed in PDF mode", () => {
 	let mockClipperState = getMockPdfModeState();

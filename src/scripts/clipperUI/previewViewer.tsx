@@ -7,13 +7,17 @@ import {BookmarkPreview} from "./components/previewViewer/bookmarkPreview";
 import {FullPagePreview} from "./components/previewViewer/fullPagePreview";
 import {PdfPreview} from "./components/previewViewer/pdfPreview";
 import {RegionPreview} from "./components/previewViewer/regionPreview";
-import {SelectionPreview} from "./components/previewViewer/selectionPreview";
+import { SelectionPreview } from "./components/previewViewer/selectionPreview";
+import { LocalFilePanel } from "./components/previewViewer/localFilePanel";
 
 class PreviewViewerClass<TState, TProp extends ClipperStateProp> extends ComponentBase<TState, TProp> {
 	render() {
 		let state = this.props.clipperState;
 		switch (state.currentMode.get()) {
 			case ClipMode.Pdf:
+				if (state.pdfPreviewInfo.showLocalFilePanel) {
+					return <LocalFilePanel clipperState={state} />;
+				}
 				return <PdfPreview clipperState={state} />;
 			case ClipMode.FullPage:
 				return <FullPagePreview	clipperState={state} />;

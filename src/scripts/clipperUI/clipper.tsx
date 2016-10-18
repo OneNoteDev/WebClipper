@@ -187,9 +187,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			return;
 		}
 
-		// TODO: mock up experience for people who don't have the allow file access thing checked
-		// console.log(chrome.extension.isAllowedFileSchemeAccess((isAllowed) => { console.log(isAllowed); }));
-		// Pseudocode
 		// If network file, send XHR, get bytes back, convert to PDFDocumentProxy
 		// If local file, get bytes back, convert to PDFDocumentProxy
 		this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
@@ -431,6 +428,16 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				}
 				this.state.setState({ fetchLocStringStatus: Status.Succeeded });
 			}
+		});
+
+		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.isAllowedFileSchemeAccess, () => {
+			let newPreviewInfo = Utils.createUpdatedObject(this.state.pdfPreviewInfo, {
+				showLocalFilePanel: true
+			});
+
+			this.state.setState({
+				pdfPreviewInfo: newPreviewInfo
+			});
 		});
 
 		Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {

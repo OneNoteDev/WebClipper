@@ -51,8 +51,6 @@ export class SaveToOneNote {
 
 			this.addPrimaryContentToPage(page, currentMode).then(() => {
 				this.executeApiRequest(page, currentMode).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
-				// this.createNewPage(page, currentMode).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
-					console.log("and we're off");
 					this.incrementClipSuccessCount(clipperState);
 					resolve({ responsePackage: responsePackage, annotationAdded: annotationAdded });
 				}, (error: OneNoteApi.RequestError) => {

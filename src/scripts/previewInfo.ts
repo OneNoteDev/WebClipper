@@ -10,6 +10,7 @@ export interface PdfPreviewInfo {
 	allPages?: boolean;
 	pagesToShow?: number[];
 	shouldAttachPdf?: boolean;
+	showLocalFilePanel?: boolean;
 };
 
 export interface PreviewInfo {
