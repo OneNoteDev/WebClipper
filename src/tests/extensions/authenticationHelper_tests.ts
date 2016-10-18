@@ -32,6 +32,7 @@ QUnit.module("authenticationHelper-sinon", {
 		};
 
 		server = sinon.fakeServer.create();
+		server.respondImmediately = true;
 
 		mockClipperData = sinon.createStubInstance(ClipperData) as any;
 		mockLogger = sinon.createStubInstance(Logger) as any;
@@ -63,7 +64,6 @@ test("retrieveUserInformation resolves the response as a json string if it repre
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("retrieveUserInformation resolves the response with no parameter if it returns an empty object", (assert: QUnitAssert) => {
@@ -82,7 +82,6 @@ test("retrieveUserInformation resolves the response with no parameter if it retu
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("retrieveUserInformation resolves the response with no parameter if it returns an empty string", (assert: QUnitAssert) => {
@@ -101,7 +100,6 @@ test("retrieveUserInformation resolves the response with no parameter if it retu
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("retrieveUserInformation resolves the response with no parameter if it represents incomplete user information", (assert: QUnitAssert) => {
@@ -122,7 +120,6 @@ test("retrieveUserInformation resolves the response with no parameter if it repr
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("retrieveUserInformation resolves the response with no parameter if it represents empty user information", (assert: QUnitAssert) => {
@@ -149,7 +146,6 @@ test("retrieveUserInformation resolves the response with no parameter if it repr
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("retrieveUserInformation rejects the response with error object if the status code is 4XX", (assert: QUnitAssert) => {
@@ -176,7 +172,6 @@ test("retrieveUserInformation rejects the response with error object if the stat
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("retrieveUserInformation rejects the response with error object if the status code is 5XX", (assert: QUnitAssert) => {
@@ -204,7 +199,6 @@ test("retrieveUserInformation rejects the response with error object if the stat
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 QUnit.module("authenticationHelper", {});
