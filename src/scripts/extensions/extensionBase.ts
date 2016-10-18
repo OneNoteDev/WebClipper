@@ -41,7 +41,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
-	protected static version = "3.2.8";
+	protected static version = "3.2.9";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
@@ -122,6 +122,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	protected fetchAndStoreLocStrings(): Promise<{}> {
+		// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
 		let locale = navigator.language || (<any>navigator).userLanguage;
 
 		return new Promise<{}>((resolve, reject) => {

@@ -263,13 +263,16 @@ export module DomUtils {
 			return OneNoteApi.ContentType.EnhancedUrl;
 		}
 
-		// Check if there's a PDF embed element
-		let embedElement = doc.querySelector("embed");
+		// Check if there's a PDF embed element. We cast the element to any because the type
+		// property is not recognized in Typescript despite being part of the HTML5 standard.
+		// Additionally, Edge does not seem to respect this standard as of 10/13/16.
+		let embedElement = doc.querySelector("embed") as HTMLEmbedElement;
 		if (embedElement && /application\/pdf/i.test((<any>embedElement).type)) {
 			return OneNoteApi.ContentType.EnhancedUrl;
 		}
 
-		// Check if this was a PDF rendered with PDF.js
+		// Check if this was a PDF rendered with PDF.js. With PDF.js, the PDFJS object will be
+		// added to the window object.
 		if (window && (<any>window).PDFJS) {
 			return OneNoteApi.ContentType.EnhancedUrl;
 		}

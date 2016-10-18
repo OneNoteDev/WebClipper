@@ -200,6 +200,7 @@ QUnit.module("sectionPicker-sinon", {
 		};
 
 		server = sinon.fakeServer.create();
+		server.respondImmediately = true;
 	},
 	afterEach: () => {
 		xhr.restore();
@@ -223,14 +224,6 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	};
 	initializeClipperStorage(JSON.stringify(mockNotebooks), JSON.stringify(mockSection), defaultUserInfoAsJsonString);
 
-	let component = <SectionPicker
-		onPopupToggle={() => {}}
-		clipperState={clipperState} />;
-	let controllerInstance = HelperFunctions.mountToFixture(component);
-	let retrievePromise = controllerInstance.retrieveAndUpdateNotebookAndSectionSelection();
-	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
-		"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
-
 	// After retrieving fresh notebooks, the storage should be updated with the fresh notebooks (although it's the same in this case)
 	let freshNotebooks = HelperFunctions.getMockNotebooks();
 	let responseJson = {
@@ -239,7 +232,13 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	};
 	server.respondWith([200, {}, JSON.stringify(responseJson)]);
 
-	retrievePromise.then((response) => {
+	let component = <SectionPicker onPopupToggle={() => {}} clipperState={clipperState} />;
+	let controllerInstance = HelperFunctions.mountToFixture(component);
+
+	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
+		"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
+
+	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response) => {
 		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
 			Clipper.getStoredValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
 				strictEqual(notebooks, JSON.stringify(freshNotebooks),
@@ -258,8 +257,6 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	}, (error) => {
 		ok(false, "reject should not be called");
 	});
-
-	server.respond();
 });
 
 test("retrieveAndUpdateNotebookAndSectionSelection should update states correctly when there's notebook and curSection information found in storage," +
@@ -282,7 +279,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		onPopupToggle={() => {}}
 		clipperState={clipperState} />;
 	let controllerInstance = HelperFunctions.mountToFixture(component);
-	let retrievePromise = controllerInstance.retrieveAndUpdateNotebookAndSectionSelection();
+
 	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
 		"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
@@ -295,7 +292,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	};
 	server.respondWith([200, {}, JSON.stringify(responseJson)]);
 
-	retrievePromise.then((response: SectionPickerState) => {
+	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
 			Clipper.getStoredValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
 				strictEqual(notebooks, JSON.stringify(freshNotebooks),
@@ -315,8 +312,6 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	}, (error) => {
 		ok(false, "reject should not be called");
 	});
-
-	server.respond();
 });
 
 test("retrieveAndUpdateNotebookAndSectionSelection should update states correctly when there's notebook, but no curSection information found in storage," +
@@ -334,7 +329,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		onPopupToggle={() => {}}
 		clipperState={clipperState} />;
 	let controllerInstance = HelperFunctions.mountToFixture(component);
-	let retrievePromise = controllerInstance.retrieveAndUpdateNotebookAndSectionSelection();
+
 	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: undefined }),
 		"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
@@ -353,7 +348,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		section: mockNotebooks[0].sections[0]
 	};
 
-	retrievePromise.then((response: SectionPickerState) => {
+	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
 			Clipper.getStoredValue(ClipperStorageKeys.currentSelectedSection, (curSection) => {
 				strictEqual(notebooks, JSON.stringify(freshNotebooks),
@@ -373,8 +368,6 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	}, (error) => {
 		ok(false, "reject should not be called");
 	});
-
-	server.respond();
 });
 
 test("retrieveAndUpdateNotebookAndSectionSelection should update states correctly when there's notebook, but no curSection information found in storage," +
@@ -392,7 +385,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		onPopupToggle={() => {}}
 		clipperState={clipperState} />;
 	let controllerInstance = HelperFunctions.mountToFixture(component);
-	let retrievePromise = controllerInstance.retrieveAndUpdateNotebookAndSectionSelection();
+
 	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: undefined }),
 		"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
@@ -435,7 +428,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		};
 		server.respondWith([200, {}, JSON.stringify(responseJson)]);
 
-		retrievePromise.then((response: SectionPickerState) => {
+		controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 			Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
 				Clipper.getStoredValue(ClipperStorageKeys.currentSelectedSection, (curSection2) => {
 					strictEqual(notebooks, JSON.stringify(freshNotebooks),
@@ -456,13 +449,12 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 			ok(false, "reject should not be called");
 		});
 	});
-
-	server.respond();
 });
 
 test("retrieveAndUpdateNotebookAndSectionSelection should update states correctly when there's notebook and curSection information found in storage," +
 	" and then information is found on the server, but that selected section no longer exists.", (assert: QUnitAssert) => {
 	let done = assert.async();
+
 	let clipperState = HelperFunctions.getMockClipperState();
 
 	// Set up the storage mock
@@ -478,7 +470,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		onPopupToggle={() => {}}
 		clipperState={clipperState} />;
 	let controllerInstance = HelperFunctions.mountToFixture(component);
-	let retrievePromise = controllerInstance.retrieveAndUpdateNotebookAndSectionSelection();
+
 	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
 		"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
@@ -491,7 +483,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	};
 	server.respondWith([200, {}, JSON.stringify(responseJson)]);
 
-	retrievePromise.then((response: SectionPickerState) => {
+	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
 			Clipper.getStoredValue(ClipperStorageKeys.currentSelectedSection, (curSection2) => {
 				strictEqual(notebooks, JSON.stringify(freshNotebooks),
@@ -510,8 +502,6 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	}, (error) => {
 		ok(false, "reject should not be called");
 	});
-
-	server.respond();
 });
 
 test("retrieveAndUpdateNotebookAndSectionSelection should update states correctly when there's notebook and curSection information found in storage," +
@@ -533,7 +523,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		onPopupToggle={() => {}}
 		clipperState={clipperState} />;
 	let controllerInstance = HelperFunctions.mountToFixture(component);
-	let retrievePromise = controllerInstance.retrieveAndUpdateNotebookAndSectionSelection();
+
 	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
 		"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
@@ -544,10 +534,9 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	};
 	server.respondWith([200, {}, JSON.stringify(responseJson)]);
 
-	retrievePromise.then((response: SectionPickerState) => {
+	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		ok(false, "resolve should not be called");
-	},
-	(error) => {
+	}, (error) => {
 		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks,
 		(notebooks) => {
 			Clipper.getStoredValue(ClipperStorageKeys.currentSelectedSection,
@@ -570,8 +559,6 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 			});
 		});
 	});
-
-	server.respond();
 });
 
 test("retrieveAndUpdateNotebookAndSectionSelection should update states correctly when there's notebook and curSection information found in storage," +
@@ -593,7 +580,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		onPopupToggle={() => {}}
 		clipperState={clipperState} />;
 	let controllerInstance = HelperFunctions.mountToFixture(component);
-	let retrievePromise = controllerInstance.retrieveAndUpdateNotebookAndSectionSelection();
+
 	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
 		"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
@@ -601,7 +588,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 	let responseJson = {};
 	server.respondWith([404, {}, JSON.stringify(responseJson)]);
 
-	retrievePromise.then((response: SectionPickerState) => {
+	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		ok(false, "resolve should not be called");
 	}, (error) => {
 		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
@@ -620,8 +607,6 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 			});
 		});
 	});
-
-	server.respond();
 });
 
 test("retrieveAndUpdateNotebookAndSectionSelection should update states correctly when there's no notebook and curSection information found in storage," +
@@ -637,15 +622,15 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		onPopupToggle={() => {}}
 		clipperState={clipperState} />;
 	let controllerInstance = HelperFunctions.mountToFixture(component);
-	let retrievePromise = controllerInstance.retrieveAndUpdateNotebookAndSectionSelection();
-	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: undefined, status: Status.InProgress, curSection: undefined }),
-		"After the component is mounted, the state should be updated to reflect that the attempt to get notebooks is still underway");
+
+	strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: undefined, status: Status.NotStarted, curSection: undefined }),
+		"After the component is mounted, the state should be updated to reflect that notebooks and current section are not found in storage");
 
 	// After retrieving fresh undefined notebooks, the storage should not be updated with the undefined value, but should still keep the old cached information
 	let responseJson = {};
 	server.respondWith([404, {}, JSON.stringify(responseJson)]);
 
-	retrievePromise.then((response: SectionPickerState) => {
+	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		ok(false, "resolve should not be called");
 	}, (error) => {
 		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
@@ -664,12 +649,11 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 			});
 		});
 	});
-
-	server.respond();
 });
 
 test("fetchFreshNotebooks should parse out @odata.context from the raw 200 response and return the notebook object list and XHR in the resolve", (assert: QUnitAssert) => {
 	let done = assert.async();
+
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	let notebooks = HelperFunctions.getMockNotebooks();
@@ -688,13 +672,12 @@ test("fetchFreshNotebooks should parse out @odata.context from the raw 200 respo
 		ok(false, "reject should not be called");
 	}).then(() => {
 		done();
-		});
-
-	server.respond();
+	});
 });
 
 test("fetchFreshNotebooks should parse out @odata.context from the raw 201 response and return the notebook object list and XHR in the resolve", (assert: QUnitAssert) => {
 	let done = assert.async();
+
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	let notebooks = HelperFunctions.getMockNotebooks();
@@ -714,11 +697,11 @@ test("fetchFreshNotebooks should parse out @odata.context from the raw 201 respo
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("fetchFreshNotebooks should reject with the error object and a copy of the response if the status code is 4XX", (assert: QUnitAssert) => {
 	let done = assert.async();
+
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	let responseJson = {
@@ -745,11 +728,11 @@ test("fetchFreshNotebooks should reject with the error object and a copy of the 
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("fetchFreshNotebooks should reject with the error object and an API response code if one is returned by the API", (assert: QUnitAssert) => {
 	let done = assert.async();
+
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	let responseJson = {
@@ -770,10 +753,7 @@ test("fetchFreshNotebooks should reject with the error object and an API respons
 
 	server.respondWith([expected.statusCode, expected.responseHeaders, expected.response]);
 
-	let freshNotebooks: Promise<OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>>;
-	freshNotebooks = controllerInstance.fetchFreshNotebooks("sessionId");
-
-	freshNotebooks.then((responsePackage: OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>) => {
+	controllerInstance.fetchFreshNotebooks("sessionId").then((responsePackage: OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>) => {
 		ok(false, "resolve should not be called");
 	}, (error: OneNoteApi.RequestError) => {
 		deepEqual(error, expected, "The error object should be rejected");
@@ -781,11 +761,11 @@ test("fetchFreshNotebooks should reject with the error object and an API respons
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 test("fetchFreshNotebooks should reject with the error object and a copy of the response if the status code is 5XX", (assert: QUnitAssert) => {
 	let done = assert.async();
+
 	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
 
 	let responseJson = {
@@ -810,7 +790,6 @@ test("fetchFreshNotebooks should reject with the error object and a copy of the 
 	}).then(() => {
 		done();
 	});
-	server.respond();
 });
 
 QUnit.module("sectionPicker-static", {});

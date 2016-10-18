@@ -19,43 +19,43 @@ export class CommunicatorLoggerPure extends Logger {
 		}
 
 		// We need to send the event category as well so that the other side knows which one it is
-		this.sendDataPackage(Log.LogMethods.logEvent, [event.getEventCategory(), event.getEventData()]);
+		this.sendDataPackage(Log.LogMethods.LogEvent, [event.getEventCategory(), event.getEventData()]);
 	}
 
 	public logFailure(label: Log.Failure.Label, failureType: Log.Failure.Type, failureInfo?: OneNoteApi.GenericError, id?: string): void {
-		this.sendDataPackage(Log.LogMethods.logFailure, arguments);
+		this.sendDataPackage(Log.LogMethods.LogFailure, arguments);
 	}
 
 	public logUserFunnel(label: Log.Funnel.Label): void {
-		this.sendDataPackage(Log.LogMethods.logFunnel, arguments);
+		this.sendDataPackage(Log.LogMethods.LogFunnel, arguments);
 	}
 
 	public logSessionStart(): void {
-		this.sendDataPackage(Log.LogMethods.logSessionStart, arguments);
+		this.sendDataPackage(Log.LogMethods.LogSessionStart, arguments);
 	}
 
 	public logSessionEnd(endTrigger: Log.Session.EndTrigger): void {
-		this.sendDataPackage(Log.LogMethods.logSessionEnd, arguments);
+		this.sendDataPackage(Log.LogMethods.LogSessionEnd, arguments);
 	}
 
 	public logTrace(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): void {
 		if (message) {
-			this.sendDataPackage(Log.LogMethods.logTrace, [label, level, message]);
+			this.sendDataPackage(Log.LogMethods.LogTrace, [label, level, message]);
 		} else {
-			this.sendDataPackage(Log.LogMethods.logTrace, [label, level]);
+			this.sendDataPackage(Log.LogMethods.LogTrace, [label, level]);
 		}
 	}
 
 	public pushToStream(label: Log.Event.Label, value: any): void {
-		this.sendDataPackage(Log.LogMethods.pushToStream, arguments);
+		this.sendDataPackage(Log.LogMethods.PushToStream, arguments);
 	}
 
 	public logClickEvent(clickId: string): void {
-		this.sendDataPackage(Log.LogMethods.logClickEvent, arguments);
+		this.sendDataPackage(Log.LogMethods.LogClickEvent, arguments);
 	}
 
 	public setContextProperty(key: Log.Context.Custom | string, value: string): void {
-		this.sendDataPackage(Log.LogMethods.setContextProperty, arguments);
+		this.sendDataPackage(Log.LogMethods.SetContextProperty, arguments);
 	}
 
 	private sendDataPackage(methodName: Log.LogMethods, args: IArguments | Array<any>): void {
