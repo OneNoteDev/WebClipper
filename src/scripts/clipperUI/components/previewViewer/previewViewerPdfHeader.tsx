@@ -11,6 +11,7 @@ interface PdfPreviewProp {
 	onSelectionChange: (selection: boolean) => void;
 	allPages: boolean;
 	shouldAttachPdf: boolean;
+	invalidRange: boolean;
 };
 
 class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, PdfPreviewProp> {
@@ -35,13 +36,14 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		});
 	}
 
-	private handlePageRangeFieldChanged(annotationValue: string) {
-		this.props.onTextChange(annotationValue);
+	private handlePageRangeFieldChanged(pageRange: string) {
+		this.props.onTextChange(pageRange);
 	}
 
 	private getPageRangeGroup(): ControlGroup {
 		let allPagesRadioClassName = "pdf-indicator pdf-radio-indicator" + (this.props.allPages ? " pdf-radio-active" : "");
 		let somePagesRadioClassName = "pdf-indicator pdf-radio-indicator" + (!this.props.allPages ? " pdf-radio-active" : "");
+		let invalidClassName = this.props.invalidRange ? "invalid" : "";
 		return {
 			id: Constants.Ids.pageRangeControl,
 			innerElements: [
@@ -54,7 +56,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 					<div class="pdf-indicator pdf-radio-indicator">
 						{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 					</div>
-					<input type="text" id={Constants.Ids.rangeInput} placeholder="e.g. 1-5, 7, 9-12"></input>
+					<input className={invalidClassName} type="text" id={Constants.Ids.rangeInput} placeholder="e.g. 1-5, 7, 9-12"></input>
 				</label>,
 			]
 		};

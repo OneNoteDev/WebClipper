@@ -2,7 +2,8 @@
 
 import {Constants} from "../../../constants";
 import {PdfPreviewInfo} from "../../../previewInfo";
-import {Utils} from "../../../utils";
+import { StringUtils } from "../../../stringUtils";
+import { Utils } from "../../../utils";
 
 import {SmartValue} from "../../../communicator/smartValue";
 
@@ -22,7 +23,8 @@ import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
 import * as _ from "lodash";
 
 interface PdfPreviewState {
-	showPageNumbers: boolean;
+	showPageNumbers?: boolean;
+	invalidRange?: boolean;
 }
 
 class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
@@ -67,24 +69,24 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		return this.convertPdfResultToContentData(state.pdfResult);
 	}
 
-	// Takes a range of the form 1,3-6,7,8,13,1,3,4,a-b, etc. and then returns an array
-	// corresponding to the numbers in that range. It ignores invalid input, sorts it, and removes duplicates
-	private parsePageRange(text: string): number[] {
-		let initialRange = text.split(",").reduce((previousValue, currentValue) => {
-			let valueToAppend: number[] = [], matches;
-			// The value could be a single digit
-			if (/^\d+$/.test(currentValue)) {
-				valueToAppend = [parseInt(currentValue, 10 /* radix */)];
-				// ... or it could a range of the form [#]-[#]
-			} else if (matches = /^(\d+)-(\d+)$/.exec(currentValue)) {
-				let lhs = parseInt(matches[1], 10), rhs = parseInt(matches[2], 10) + 1;
-				// TODO: what do we do if start > end? This is a behavior question, not an implementation one
-				valueToAppend = _.range(lhs, rhs);
-			}
-			return previousValue = previousValue.concat(valueToAppend);
-		}, []);
-		return _(initialRange).sortBy().sortedUniq().map((page) => { return page - 1; }).value();
-	}
+	// // Takes a range of the form 1,3-6,7,8,13,1,3,4,a-b, etc. and then returns an array
+	// // corresponding to the numbers in that range. It ignores invalid input, sorts it, and removes duplicates
+	// private parsePageRange(text: string): number[] {
+	// 	let initialRange = text.split(",").reduce((previousValue, currentValue) => {
+	// 		let valueToAppend: number[] = [], matches;
+	// 		// The value could be a single digit
+	// 		if (/^\d+$/.test(currentValue)) {
+	// 			valueToAppend = [parseInt(currentValue, 10 /* radix */)];
+	// 			// ... or it could a range of the form [#]-[#]
+	// 		} else if (matches = /^(\d+)-(\d+)$/.exec(currentValue)) {
+	// 			let lhs = parseInt(matches[1], 10), rhs = parseInt(matches[2], 10) + 1;
+	// 			// TODO: what do we do if start > end? This is a behavior question, not an implementation one
+	// 			valueToAppend = _.range(lhs, rhs);
+	// 		}
+	// 		return previousValue = previousValue.concat(valueToAppend);
+	// 	}, []);
+	// 	return _(initialRange).sortBy().sortedUniq().map((page) => { return page - 1; }).value();
+	// }
 
 	onSelectionChange(selection: boolean) {
 		// TODO: change this to _.assign, _.extend
@@ -98,7 +100,14 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	}
 
 	onTextChange(text: string) {
-		let pagesToShow = this.parsePageRange(text);
+		let pagesToShow = StringUtils.parsePageRange(text);
+
+		if (!pagesToShow) {
+			this.setState({
+				invalidRange: true
+			});
+			return;
+		}
 
 		// TODO: change this to _.assign, _.extend
 		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
@@ -107,6 +116,9 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 		this.props.clipperState.setState({
 			pdfPreviewInfo: newPdfPreviewInfo
+		});
+		this.setState({
+			invalidRange: false,
 		});
 	}
 
@@ -122,6 +134,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 	protected getHeader(): any {
 		return <PreviewViewerPdfHeader
+				invalidRange={this.state.invalidRange}
 				shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
 				allPages={this.props.clipperState.pdfPreviewInfo.allPages}
 				onCheckboxChange={this.onCheckboxChange.bind(this)}
