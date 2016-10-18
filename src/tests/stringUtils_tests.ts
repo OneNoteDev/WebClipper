@@ -56,3 +56,10 @@ test("A range that has numbers out of order, such as 1,5-3 should return undefin
 	let ret = StringUtils.parsePageRange("5-3");
 	ok(!ret);
 });
+
+test("Ranges that have 0 anywhere in them should be invalid", () => {
+	ok(!StringUtils.parsePageRange("0"));
+	ok(!StringUtils.parsePageRange("0-5"));
+	ok(!StringUtils.parsePageRange("5-0"));
+	ok(!StringUtils.parsePageRange("1,3,4,0"));
+});

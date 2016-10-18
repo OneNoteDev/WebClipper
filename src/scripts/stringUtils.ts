@@ -24,12 +24,16 @@ export module StringUtils {
 			let currentValue = splitText[i].trim();
 
 			if (/^\d+$/.test(currentValue)) {
-				valueToAppend = [parseInt(currentValue, 10 /* radix */)];
+				let digit = parseInt(currentValue, 10 /* radix */);
+				if (digit === 0) {
+					return undefined;
+				}
+				valueToAppend = [digit];
 				// ... or it could a range of the form [#]-[#]
 			} else if (matches = /^(\d+)\s*-\s*(\d+)$/.exec(currentValue)) {
 				let lhs = parseInt(matches[1], 10), rhs = parseInt(matches[2], 10) + 1;
 				// Disallow ranges like 5-3, or 10-1
-				if (lhs >= rhs) {
+				if (lhs >= rhs || lhs === 0 || rhs === 0) {
 					return undefined;
 				}
 				valueToAppend = _.range(lhs, rhs);

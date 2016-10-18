@@ -196,7 +196,6 @@ test("When 'Page Range' is checked in the page control, but there is a negative 
 	strictEqual(images.length, 0, "All pages should be grayed out");
 });
 
-
 test("When the attachment checkbox is checked, the preview body should show an attachment", () => {
 	let clipperState = getMockPdfModeState();
 	clipperState.pdfPreviewInfo = {
