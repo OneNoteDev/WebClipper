@@ -94,15 +94,6 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	}
 
 	onTextChange(text: string) {
-		let pagesToShow = StringUtils.parsePageRange(text);
-
-		if (!pagesToShow) {
-			this.setState({
-				invalidRange: true
-			});
-			return;
-		}
-
 		// TODO: change this to _.assign, _.extend
 		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
 			selectedPageRange: text
@@ -111,9 +102,17 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		this.props.clipperState.setState({
 			pdfPreviewInfo: newPdfPreviewInfo
 		});
-		this.setState({
-			invalidRange: false,
-		});
+
+		let pagesToShow = StringUtils.parsePageRange(text);
+		if (!pagesToShow) {
+			this.setState({
+				invalidRange: true
+			});
+		} else {
+			this.setState({
+				invalidRange: false
+			});
+		}
 	}
 
 	onCheckboxChange(checked: boolean) {
