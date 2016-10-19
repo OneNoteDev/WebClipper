@@ -6,6 +6,7 @@ export module Funnel {
 		AuthAlreadySignedIn,
 		AuthAttempted,
 		AuthSignInCompleted,
+		AuthSignInFailed,
 		ClipAttempted,
 		Interact,
 		ViewInWac,

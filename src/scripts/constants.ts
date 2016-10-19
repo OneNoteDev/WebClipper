@@ -173,6 +173,10 @@ export module Constants {
 		export var signInLogo = "signInLogo";
 		export var signInMessageLabelContainer = "signInMessageLabelContainer";
 		export var signInText = "signInText";
+		export var signInToggleErrorInformationText = "signInToggleErrorInformationText";
+		export var signInErrorDescriptionContainer = "signInErrorDescriptionContainer";
+		export var signInErrorDebugInformationContainer = "signInErrorDebugInformationContainer";
+		export var signInErrorDebugInformationList = "signInErrorDebugInformationList";
 
 		// successPanel
 		export var clipperSuccessContainer = "clipperSuccessContainer";

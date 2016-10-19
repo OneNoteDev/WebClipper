@@ -1,24 +1,34 @@
+import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
 import {AuthType, UpdateReason} from "../../userInfo";
 import {Utils} from "../../utils";
 
 import {Localization} from "../../localization/localization";
 
+import {Clipper} from "../frontEndGlobals";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {Status} from "../status";
+
+interface SignInPanelState {
+	errorDescriptionShowing: boolean;
+}
 
 interface SignInPanelProps extends ClipperStateProp {
 	onSignInInvoked: (authType: AuthType) => void;
 }
 
-class SignInPanelClass extends ComponentBase<{}, SignInPanelProps> {
+class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps> {
 	onSignInMsa() {
 		this.props.onSignInInvoked(AuthType.Msa);
 	}
 
 	onSignInOrgId() {
 		this.props.onSignInInvoked(AuthType.OrgId);
+	}
+
+	getInitialState() {
+		return { errorDescriptionShowing: false };
 	}
 
 	getSignInDescription(): string {
@@ -40,6 +50,10 @@ class SignInPanelClass extends ComponentBase<{}, SignInPanelProps> {
 		}
 	}
 
+	errorDescriptionControlHandler() {
+		this.setState({ errorDescriptionShowing: !this.state.errorDescriptionShowing });
+	}
+
 	render() {
 		let signInDescription = this.getSignInDescription();
 
@@ -59,6 +73,34 @@ class SignInPanelClass extends ComponentBase<{}, SignInPanelProps> {
 							{signInDescription}
 						</span>
 					</div>
+					<div className="signInErrorToggleInformation">
+						<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
+							<span class={Constants.Ids.signInToggleErrorInformationText}
+								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+								{this.state.errorDescriptionShowing
+									? Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulLessInformation")
+									: Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulMoreInformation")
+								}
+							</span>
+						</a>
+					</div>
+					{this.state.errorDescriptionShowing
+						? (<div className="signInErrorDescription">
+							<span className={Constants.Ids.signInErrorDescriptionContainer}
+								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+								{this.props.clipperState.userResult.data.errorDescription}
+								AADSTS65005: The application OneNote Web Clipper is currently not supported for your company my.****.**.uk. Your company is currently in an unmanaged state and needs an Administrator to claim ownership of the company by DNS validation of my.****.**.uk before the application OneNote Web Clipper can be provisioned.
+						</span>
+							<div className={Constants.Ids.signInErrorDebugInformationContainer}
+								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+								<ul className={Constants.Ids.signInErrorDebugInformationList}>
+									<li>{ClientType[this.props.clipperState.clientInfo.clipperType]}: {this.props.clipperState.clientInfo.clipperVersion}</li>
+									<li>ID: {this.props.clipperState.clientInfo.clipperId}</li>
+									<li>USID: {Clipper.getUserSessionId()}</li>
+								</ul>
+							</div>
+						</div>) : undefined
+					}
 					<a id={Constants.Ids.signInButtonMsa} {...this.enableInvoke(this.onSignInMsa, 1)}>
 						<div className="wideButtonContainer">
 							<span className="wideButtonFont wideActionButton"
