@@ -47,4 +47,9 @@ export module StringUtils {
 
 		return _(range).sortBy().sortedUniq().value();
 	}
+
+	export function countPageRange(text: string): number {
+		let pages = parsePageRange(text);
+		return pages ? pages.length : 0;
+	}
 }

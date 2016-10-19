@@ -92,6 +92,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			selectionPreviewInfo: {},
 			pdfPreviewInfo: {
 				allPages: true,
+				localFilesAllowed: true,
 				selectedPageRange: "",
 				shouldAttachPdf: false,
 			},
@@ -430,9 +431,14 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		});
 
-		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.isAllowedFileSchemeAccess, () => {
+		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.extensionNotAllowedToAccessLocalFiles, () => {
+			// We only want to log one time per session
+			if (this.state.pdfPreviewInfo.localFilesAllowed) {
+				Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.LocalFilesNotAllowedPanelShown));
+			}
+
 			let newPreviewInfo = Utils.createUpdatedObject(this.state.pdfPreviewInfo, {
-				showLocalFilePanel: true
+				localFilesAllowed: false
 			});
 
 			this.state.setState({
