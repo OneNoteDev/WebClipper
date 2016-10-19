@@ -259,7 +259,8 @@ export class SaveToOneNote {
 	}
 
 	/**
-	 * Appends the PDF attachment if enabled by the user, then appends the user's desired PDF pages to the page.
+	 * Appends the PDF attachment to the page if enabled by the user. Currently we don't append any PDF pages here as we will do it purely as
+	 * PATCH requests later on
 	 */
 	private static addEnhancedUrlContentToPageHelper(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer) {
 		// Impose MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
@@ -273,13 +274,6 @@ export class SaveToOneNote {
 				}
 			}
 		}
-		let local = rawUrl.indexOf("file:///") !== -1;
-		let nameToUse = local ? "name:" + mimePartName : this.clipperState.pageInfo.rawUrl;
-		if (this.clipperState.pdfPreviewInfo.shouldAttachPdf && this.clipperState.pdfPreviewInfo.allPages) {
-			// This optimization allows us to render the entire PDF with just the binary, rather than sending dataUrls
-			// TODO: incorrect. This will fail on big pdfs.
-			page.addObjectUrlAsImage(nameToUse);
-		}
 	}
 
 	/**
@@ -287,7 +281,7 @@ export class SaveToOneNote {
 	 */
 	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		if (clipMode === ClipMode.Pdf) {
-			return SaveToOneNote.createPdfRequestChain(page, clipMode);
+			return SaveToOneNote.patchPdfPages(page, clipMode);
 		}
 
 		let saveLocation = SaveToOneNote.clipperState.saveLocation;
@@ -295,18 +289,12 @@ export class SaveToOneNote {
 	}
 
 	/**
-	 * Splits up the user's desired PDF pages into seperate requests, and then chains them all to be sent to
-	 * OneNote. This is done by initially creating a page with a POST request with the first 5 pages, then divides up
-	 * the remaining pages as evenly as possible into separate PATCH requests of max 30 pages each
+	 * Splits up the user's desired PDF pages into groups of <= 30 pages as evenly as possible, and then chains
+	 * them all to be sent to OneNote as PATCH requests.
 	 */
-	private static createPdfRequestChain(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
+	private static patchPdfPages(page: OneNoteApi.OneNotePage): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
 		let previewOptions = clipperState.pdfPreviewInfo;
-		if (previewOptions.shouldAttachPdf && previewOptions.allPages) {
-			// If we assume the page is well-formed, then the PDF is attached and an object tag referencing it
-			// exists in the post body. This means we don't need to do anything
-			return SaveToOneNote.createNewPage(page, clipMode);
-		}
 
 		// Since we are here, we know we need to send the dataUrls since 
 		// the user either wanted a subset of pages or didn't want the PDF attached
@@ -323,7 +311,7 @@ export class SaveToOneNote {
 		}
 		dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
 
-		return SaveToOneNote.createNewPage(page, clipMode).then((postPageResponse /* should also be a onenote response */) => {
+		return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
 			let pageId = postPageResponse.parsedResponse.id;
 			return Promise.all([postPageResponse,
 				dataUrlRanges.reduce((chainedPromise, currentValue) => {
