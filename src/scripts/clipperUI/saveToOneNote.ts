@@ -342,6 +342,10 @@ export class SaveToOneNote {
 
 		if (!previewOptions.allPages) {
 			let pagesToShow = StringUtils.parsePageRange(previewOptions.selectedPageRange);
+			if (!pagesToShow) {
+				// This should not happen, as the user should not be able to clip if there is an invalid page range
+				pagesToShow = [];
+			}
 			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
 		}
 		dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
