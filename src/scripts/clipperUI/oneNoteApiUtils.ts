@@ -131,4 +131,18 @@ export module OneNoteApiUtils {
 		}
 		return handledExtendedResponseCodes[apiResponseCode];
 	}
+
+	export function createPatchRequestBody(dataUrls: string[]): OneNoteApi.Revision[] {
+		let requestBody = [];
+		dataUrls.forEach((dataUrl) => {
+			let content = "<p><img src=\"" + dataUrl + "\" /></p>&nbsp;";
+			requestBody.push({
+				target: "body",
+				action: "append",
+				content: content
+			});
+		});
+		return requestBody;
+	}
+
 }

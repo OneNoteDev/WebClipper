@@ -1,6 +1,7 @@
 import {ClientInfo} from "../clientInfo";
 import {PageInfo} from "../pageInfo";
 import {PdfPreviewInfo, PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
+import {StringUtils} from "../stringUtils";
 import {UserInfo} from "../userInfo";
 
 import {SmartValue} from "../communicator/smartValue";
@@ -81,6 +82,15 @@ export module ClipperStateHelperFunctions {
 		let currentMode = clipperState.currentMode.get();
 		switch (currentMode) {
 			case ClipMode.Pdf:
+				// The clip button is disabled in PDF mode if:
+				// 	1. The user is trying to clip a local file but they haven't granted us access
+				// 	2. The user has specified an invalid range AND they have the page range mode selected
+				let pages = StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange);
+				if (!clipperState.pdfPreviewInfo.localFilesAllowed) {
+					return false;
+				} else if (!clipperState.pdfPreviewInfo.allPages && (!pages || pages.length === 0)) {
+					return false;
+				}
 				return true;
 			case ClipMode.FullPage:
 				// The pdf and full page screenshots are only needed for preview. In the case of pdf, binary downloads

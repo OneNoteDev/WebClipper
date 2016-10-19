@@ -113,6 +113,8 @@ export module Constants {
 		export var clipButtonContainer = "clipButtonContainer";
 
 		// previewViewerPdfHeader
+		export var radioAllPagesLabel = "radioAllPagesLabel";
+		export var radioPageSelection = "radioPageSelection";
 		export var rangeInput = "rangeInput";
 
 		// previewViewer
