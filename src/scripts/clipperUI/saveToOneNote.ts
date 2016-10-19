@@ -399,7 +399,7 @@ export class SaveToOneNote {
 		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
 
 		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
-		return oneNoteApi.updatePage(pageId, JSON.stringify(revisions));
+		return oneNoteApi.updatePage(pageId, revisions);
 	}
 
 	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
