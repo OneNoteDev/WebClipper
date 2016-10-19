@@ -323,8 +323,9 @@ export class SaveToOneNote {
 		let dataUrlRanges: string[][] = [];
 
 		if (!previewOptions.allPages) {
-			let pagesToShow = StringUtils.parsePageRange(previewOptions.selectedPageRange);
-			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+			// We need to adjust the index as the user counts from 1 and not 0
+			let selectedPageIndexes = StringUtils.parsePageRange(previewOptions.selectedPageRange).map((i) => i - 1);
+			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return selectedPageIndexes.indexOf(pageIndex) !== -1; });
 		}
 		dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
 
