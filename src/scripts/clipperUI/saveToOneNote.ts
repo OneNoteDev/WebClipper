@@ -277,6 +277,7 @@ export class SaveToOneNote {
 		let nameToUse = local ? "name:" + mimePartName : this.clipperState.pageInfo.rawUrl;
 		if (this.clipperState.pdfPreviewInfo.shouldAttachPdf && this.clipperState.pdfPreviewInfo.allPages) {
 			// This optimization allows us to render the entire PDF with just the binary, rather than sending dataUrls
+			// TODO: incorrect. This will fail on big pdfs.
 			page.addObjectUrlAsImage(nameToUse);
 		}
 	}
