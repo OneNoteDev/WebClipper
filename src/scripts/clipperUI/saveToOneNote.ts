@@ -285,17 +285,12 @@ export class SaveToOneNote {
 	 * Executes the request(s) needed to save the clip to OneNote
 	 */
 	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
-		let headers: { [key: string]: string } = {};
-		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-		let saveLocation = SaveToOneNote.clipperState.saveLocation;
-
 		if (clipMode === ClipMode.Pdf) {
 			return SaveToOneNote.createPdfRequestChain(page, clipMode);
-		} else {
-			return oneNoteApi.createPage(page, saveLocation);
 		}
+
+		let saveLocation = SaveToOneNote.clipperState.saveLocation;
+		return SaveToOneNote.getApiInstance().createPage(page, saveLocation);
 	}
 
 	/**
@@ -360,13 +355,8 @@ export class SaveToOneNote {
 	 * page with the images
 	 */
 	private static createOneNotePagePatchRequest(pageId: string, dataUrls: string[]): Promise<any> {
-		let headers: { [key: string]: string } = {};
-		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-
 		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
-		return oneNoteApi.updatePage(pageId, revisions);
+		return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
 	}
 
 	/**
@@ -389,24 +379,24 @@ export class SaveToOneNote {
 	 * Sends a GET request for the specified pageId
 	 */
 	private static getPage(pageId: string): Promise<any> {
-		let headers: { [key: string]: string } = {};
-		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-
-		return oneNoteApi.getPage(pageId);
+		return SaveToOneNote.getApiInstance().getPage(pageId);
 	}
 
 	/**
 	 * POST the page to OneNote API
 	 */
 	private static createNewPage(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
+		let saveLocation = SaveToOneNote.clipperState.saveLocation;
+		return SaveToOneNote.getApiInstance().createPage(page, saveLocation);
+	}
+
+	/**
+	 * Gets the instance of the API based on the current user's authorization token
+	 */
+	private static getApiInstance(): OneNoteApi.OneNoteApi {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-		let saveLocation = SaveToOneNote.clipperState.saveLocation;
-
-		return oneNoteApi.createPage(page, saveLocation);
+		return new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
 	}
 }
