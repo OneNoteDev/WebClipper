@@ -342,6 +342,10 @@ export class SaveToOneNote {
 
 		if (!previewOptions.allPages) {
 			let pagesToShow = StringUtils.parsePageRange(previewOptions.selectedPageRange);
+			if (!pagesToShow) {
+				// This should not happen, as the user should not be able to clip if there is an invalid page range
+				pagesToShow = [];
+			}
 			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
 		}
 		dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
@@ -399,7 +403,7 @@ export class SaveToOneNote {
 		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
 
 		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
-		return oneNoteApi.updatePage(pageId, JSON.stringify(revisions));
+		return oneNoteApi.updatePage(pageId, revisions);
 	}
 
 	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
