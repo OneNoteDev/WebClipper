@@ -86,7 +86,7 @@ export module ClipperStateHelperFunctions {
 				// 	1. The user is trying to clip a local file but they haven't granted us access
 				// 	2. The user has specified an invalid range AND they have the page range mode selected
 				let pages = StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange);
-				if (clipperState.pdfPreviewInfo.showLocalFilePanel) {
+				if (!clipperState.pdfPreviewInfo.localFilesAllowed) {
 					return false;
 				} else if (!clipperState.pdfPreviewInfo.allPages && (!pages || pages.length === 0)) {
 					return false;

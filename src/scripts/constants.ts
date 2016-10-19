@@ -265,7 +265,7 @@ export module Constants {
 		export var invokeClipperFromPageNav = "INVOKE_CLIPPER_FROM_PAGE_NAV";
 		export var invokeDebugLogging = "INVOKE_DEBUG_LOGGING";
 		export var invokePageNav = "INVOKE_PAGE_NAV";
-		export var isAllowedFileSchemeAccess = "IS_ALLOWED_FILE_SCHEME_ACCESS";
+		export var extensionNotAllowedToAccessLocalFiles = "EXTENSION_NOT_ALLOWED_TO_ACCESS_LOCAL_FILES";
 		export var noOpTracker = "NO_OP_TRACKER";
 		export var onSpaNavigate = "ON_SPA_NAVIGATE";
 		export var refreshPage = "REFRESH_PAGE";
