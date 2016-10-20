@@ -54,9 +54,9 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 						{this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 					</div>
 				</label>,
-				<label class="pdf-control pdf-label">
+				<label id={Constants.Ids.radioPageRangeLabel} class="pdf-control pdf-label" {...this.enableInvoke(this.props.onSelectionChange, 191, false)}>
 					{this.props.allPages ? Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel") : ""}
-					<div id={Constants.Ids.radioPageSelection} class="pdf-indicator pdf-radio-indicator" {...this.enableInvoke(this.props.onSelectionChange, 191, false)}>
+					<div  class="pdf-indicator pdf-radio-indicator" >
 						{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 					</div>
 					{!this.props.allPages ? <input type="text" id={Constants.Ids.rangeInput} className={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange}

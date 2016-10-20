@@ -114,7 +114,7 @@ export module Constants {
 
 		// previewViewerPdfHeader
 		export var radioAllPagesLabel = "radioAllPagesLabel";
-		export var radioPageSelection = "radioPageSelection";
+		export var radioPageRangeLabel = "radioPageRangeLabel";
 		export var rangeInput = "rangeInput";
 
 		// previewViewer
