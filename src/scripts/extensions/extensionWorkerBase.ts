@@ -198,7 +198,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 		this.isAllowedFileSchemeAccessBrowserSpecific((isAllowed) => {
 			if (!isAllowed) {
-				this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.isAllowedFileSchemeAccess);
+				this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.extensionNotAllowedToAccessLocalFiles);
 			}
 		});
 

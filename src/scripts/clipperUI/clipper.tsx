@@ -92,6 +92,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			selectionPreviewInfo: {},
 			pdfPreviewInfo: {
 				allPages: true,
+				localFilesAllowed: true,
 				selectedPageRange: "",
 				shouldAttachPdf: false,
 			},
@@ -187,32 +188,35 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			return;
 		}
 
-		// If network file, send XHR, get bytes back, convert to PDFDocumentProxy
-		// If local file, get bytes back, convert to PDFDocumentProxy
-		this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
-		this.getPdfScreenShotResultFromRawUrl(this.state.pageInfo.rawUrl)
-			.then((pdfScreenshotResult: PdfScreenshotResult) => {
-				this.state.pdfResult.data.set(pdfScreenshotResult);
-				this.state.setState({
-					pdfResult: {
-						data: this.state.pdfResult.data,
-						status: Status.Succeeded
-					}
+		// The PDF isn't going to change on the same url, so we avoid multiple GETs in the same page
+		if (this.state.pdfResult.status === Status.NotStarted) {
+			// If network file, send XHR, get bytes back, convert to PDFDocumentProxy
+			// If local file, get bytes back, convert to PDFDocumentProxy
+			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
+			this.getPdfScreenShotResultFromRawUrl(this.state.pageInfo.rawUrl)
+				.then((pdfScreenshotResult: PdfScreenshotResult) => {
+					this.state.pdfResult.data.set(pdfScreenshotResult);
+					this.state.setState({
+						pdfResult: {
+							data: this.state.pdfResult.data,
+							status: Status.Succeeded
+						}
+					});
+				})
+				.catch(() => {
+					this.state.pdfResult.data.set({
+						failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+					});
+					this.state.setState({
+						pdfResult: {
+							data: this.state.pdfResult.data,
+							status: Status.Failed
+						}
+					});
+					// The clip action might be waiting on the result, so do this to consistently trigger its callback
+					this.state.pdfResult.data.forceUpdate();
 				});
-			})
-			.catch(() => {
-				this.state.pdfResult.data.set({
-					failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
-				});
-				this.state.setState({
-					pdfResult: {
-						data: this.state.pdfResult.data,
-						status: Status.Failed
-					}
-				});
-				// The clip action might be waiting on the result, so do this to consistently trigger its callback
-				this.state.pdfResult.data.forceUpdate();
-			});
+		}
 	}
 
 	private getPdfScreenShotResultFromRawUrl(rawUrl: string): Promise<PdfScreenshotResult> {
@@ -430,9 +434,14 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		});
 
-		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.isAllowedFileSchemeAccess, () => {
+		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.extensionNotAllowedToAccessLocalFiles, () => {
+			// We only want to log one time per session
+			if (this.state.pdfPreviewInfo.localFilesAllowed) {
+				Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.LocalFilesNotAllowedPanelShown));
+			}
+
 			let newPreviewInfo = Utils.createUpdatedObject(this.state.pdfPreviewInfo, {
-				showLocalFilePanel: true
+				localFilesAllowed: false
 			});
 
 			this.state.setState({

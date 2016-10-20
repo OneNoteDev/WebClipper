@@ -238,6 +238,8 @@ export class SaveToOneNote {
 	// Adds the given binary to the page if it is below the MIME size limit, then adds it as an image
 	private static addEnhancedUrlContentToPageHelper(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer) {
 		// Impose MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
+		this.logPdfOptions();
+
 		let rawUrl = this.clipperState.pageInfo.rawUrl;
 		let mimePartName: string;
 		if (this.clipperState.pdfResult.status === Status.Succeeded && arrayBuffer) {
@@ -256,6 +258,22 @@ export class SaveToOneNote {
 		}
 	}
 
+	// Note this is called only after we finish waiting on the pdf request
+	private static logPdfOptions() {
+		let clipPdfEvent = new Log.Event.BaseEvent(Log.Event.Label.ClipPdfOptions);
+
+		let pdfInfo = this.clipperState.pdfPreviewInfo;
+		clipPdfEvent.setCustomProperty(Log.PropertyName.Custom.PdfAllPagesClipped, pdfInfo.allPages);
+		clipPdfEvent.setCustomProperty(Log.PropertyName.Custom.PdfAttachmentClipped, pdfInfo.shouldAttachPdf);
+		clipPdfEvent.setCustomProperty(Log.PropertyName.Custom.PdfIsLocalFile, this.clipperState.pageInfo.rawUrl.indexOf("file:///") === 0);
+
+		let totalPageCount = this.clipperState.pdfResult.data.get().dataUrls.length;
+		clipPdfEvent.setCustomProperty(Log.PropertyName.Custom.PdfFileSelectedPageCount, Math.min(totalPageCount, StringUtils.countPageRange(pdfInfo.selectedPageRange)));
+		clipPdfEvent.setCustomProperty(Log.PropertyName.Custom.PdfFileTotalPageCount, totalPageCount);
+
+		Clipper.logger.logEvent(clipPdfEvent);
+	}
+
 	// This function assumes 	
 	private static createPdfRequestChain(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
@@ -272,12 +290,10 @@ export class SaveToOneNote {
 		let dataUrlRanges: string[][] = [];
 
 		if (!previewOptions.allPages) {
-			let pagesToShow = StringUtils.parsePageRange(previewOptions.selectedPageRange);
-			if (!pagesToShow) {
-				// This should not happen, as the user should not be able to clip if there is an invalid page range
-				pagesToShow = [];
-			}
-			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return pagesToShow.indexOf(pageIndex) !== -1; });
+			// We need to adjust the index as the user counts from 1 and not 0
+			let selectedPageIndexes = StringUtils.parsePageRange(previewOptions.selectedPageRange).map((i) => i - 1);
+			selectedPageIndexes = selectedPageIndexes ? selectedPageIndexes.map((i) => i - 1) : [];
+			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return selectedPageIndexes.indexOf(pageIndex) !== -1; });
 		}
 		dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
 
@@ -318,13 +334,6 @@ export class SaveToOneNote {
 			});
 		});
 		return requestBody;
-	}
-
-	private static addDataUrlImagesToPage(page: OneNoteApi.OneNotePage, dataUrlsToAdd: string[]): void {
-		for (let regionDataUrl of dataUrlsToAdd) {
-			// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
-			page.addOnml("<p><img src=\"" + regionDataUrl + "\" /></p>&nbsp;");
-		}
 	}
 
 	private static createOneNotePagePatchRequestTwo(pageId: string, dataUrls: string[]): Promise<any> {
