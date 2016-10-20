@@ -31,6 +31,7 @@ export interface StartClipPackage {
 export class SaveToOneNote {
 	private static clipperState: ClipperState;
 	private static maxMimeSizeLimit = 24900000;
+	private static maxImagesPerRequest = 15;
 
 	/**
 	 * Checks for the 1) data result from creating a new page on clip, and 2) completion of the show ratings prompt calculation
@@ -259,13 +260,12 @@ export class SaveToOneNote {
 	}
 
 	/**
-	 * Appends the PDF attachment to the page if enabled by the user. Currently we don't append any PDF pages here as we will do it purely as
-	 * PATCH requests later on
+	 * Appends the PDF attachment to the page if enabled by the user
 	 */
 	private static addEnhancedUrlContentToPageHelper(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer) {
-		// Impose MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
 		this.logPdfOptions();
 
+		// Attach PDF if applicable. Impose MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
 		let rawUrl = this.clipperState.pageInfo.rawUrl;
 		let mimePartName: string;
 		if (this.clipperState.pdfResult.status === Status.Succeeded && arrayBuffer) {
@@ -278,16 +278,20 @@ export class SaveToOneNote {
 		}
 	}
 
-	/**
-	 * Executes the request(s) needed to save the clip to OneNote
-	 */
-	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
-		if (clipMode === ClipMode.Pdf) {
-			return SaveToOneNote.patchPdfPages(page);
+	private static getAllPdfPageIndexesToBeSent(): number[] {
+		if (this.clipperState.pdfPreviewInfo.allPages) {
+			// TODO optimize
+			let allIndexes = [];
+			for (let i = 0; i < this.clipperState.pdfResult.data.get().dataUrls.length; i++) {
+				allIndexes.push(i);
+			}
+			return allIndexes;
 		}
+		return StringUtils.parsePageRange(this.clipperState.pdfPreviewInfo.selectedPageRange);
+	}
 
-		let saveLocation = SaveToOneNote.clipperState.saveLocation;
-		return SaveToOneNote.getApiInstance().createPage(page, saveLocation);
+	private static getDataUrlsForPageIndexes(indexes: number[]): string[] {
+		return this.clipperState.pdfResult.data.get().dataUrls.filter((value, index) => indexes.indexOf(index) >= 0);
 	}
 
 	// Note this is called only after we finish waiting on the pdf request
@@ -307,32 +311,43 @@ export class SaveToOneNote {
 	}
 
 	/**
-	 * Splits up the user's desired PDF pages into groups of <= 30 pages as evenly as possible, and then chains
-	 * them all to be sent to OneNote as PATCH requests.
+	 * Executes the request(s) needed to save the clip to OneNote
+	 */
+	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
+		if (clipMode === ClipMode.Pdf) {
+			return SaveToOneNote.patchPdfPages(page);
+		}
+
+		let saveLocation = SaveToOneNote.clipperState.saveLocation;
+		return SaveToOneNote.getApiInstance().createPage(page, saveLocation);
+	}
+
+	/**
+	 * Starting from the 31st PDF page, divides the remaining PDF pages as evenly as possible, where each
+	 * group has <= 30 pages, and then chains them all to be sent to OneNote as PATCH requests. Simply
+	 * resolves if there are no PDF pages to PATCH.
 	 */
 	private static patchPdfPages(page: OneNoteApi.OneNotePage): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
 		let previewOptions = clipperState.pdfPreviewInfo;
 
-		// Since we are here, we know we need to send the dataUrls since 
-		// the user either wanted a subset of pages or didn't want the PDF attached
-		let dataUrls = clipperState.pdfResult.data.get().dataUrls;
-		let dataUrlRanges: string[][] = [];
-
-		if (!previewOptions.allPages) {
-			// We need to adjust the index as the user counts from 1 and not 0
-			let selectedPageIndexes = StringUtils.parsePageRange(previewOptions.selectedPageRange).map((i) => i - 1);
-			selectedPageIndexes = selectedPageIndexes ? selectedPageIndexes.map((i) => i - 1) : [];
-			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return selectedPageIndexes.indexOf(pageIndex) !== -1; });
+		// Note the first 5/30 pages have already been POSTed in the page creation
+		let indexesToBePatched = SaveToOneNote.getAllPdfPageIndexesToBeSent();
+		if (indexesToBePatched.length === 0) {
+			return new Promise<any>((resolve) => { resolve(); });
 		}
-		dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
+		let dataUrlRanges = SaveToOneNote.createRangesForAppending(indexesToBePatched);
 
 		return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
 			let pageId = postPageResponse.parsedResponse.id;
 			return Promise.all([postPageResponse,
 				dataUrlRanges.reduce((chainedPromise, currentValue) => {
 					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
-						return SaveToOneNote.createOneNotePagePatchRequest(pageId, currentValue);
+						return new Promise((resolve) => {
+							setTimeout(() => {
+								SaveToOneNote.createOneNotePagePatchRequest(pageId, currentValue).then(() => { resolve(); });
+							}, 4000 /* hardcoded delay TODO: move to constant */);
+						});
 					});
 				}, SaveToOneNote.getPage(pageId))
 			]);
@@ -340,19 +355,45 @@ export class SaveToOneNote {
 	}
 
 	/**
-	 * Given an array of dataUrls, separates them out into ranges as evenly as possible so that each grouping can
+	 * Given an array of indexes, separates them out into dataUrl ranges as evenly as possible so that each grouping can
 	 * individually be put into a request
 	 */
-	private static createRangesForAppending(dataUrls: string[]): string[][] {
-		let limit = OneNoteApiUtils.Limits.imagesPerRequestLimit;
-		let numRequests = Math.floor(dataUrls.length / limit) + 1;
-		let subranges: string[][] = [];
-		for (let i = 0; i < numRequests; ++i) {
-			let left = i * limit;
-			let right = (i + 1) * limit;
-			subranges.push(dataUrls.slice(left, right));
+	private static createRangesForAppending(indexes: number[]): string[][] {
+		let bucketCounts = SaveToOneNote.createBucketCounts(indexes.length, SaveToOneNote.maxImagesPerRequest);
+		let ranges: string[][] = [];
+		let sliceStart = 0;
+		for (let i = 0; i < bucketCounts.length; i++) {
+			let sliceEnd = sliceStart + bucketCounts[i];
+			ranges.push(indexes.slice(sliceStart, sliceEnd).map((index) => this.clipperState.pdfResult.data.get().dataUrls[index]));
+			sliceStart = sliceEnd;
 		}
-		return subranges;
+		return ranges;
+	}
+
+	private static createBucketCounts(numItems: number, maxPerBucket: number): number[] {
+		if (numItems <= maxPerBucket) {
+			return [numItems];
+		}
+
+		// Calculate the smallest divisor where the largest bucket is size <= maxPerBucket
+		let divisor = 2;
+		let integerDivideResult: number;
+		let remainder: number;
+		while (true) {
+			integerDivideResult = Math.floor(numItems / divisor);
+			remainder = numItems % divisor;
+			if (integerDivideResult + (remainder === 0 ? 0 : 1) <= maxPerBucket) {
+				break;
+			}
+			divisor++;
+		}
+
+		let bucketCounts: number[] = [];
+		for (let i = 0; i < divisor; i++) {
+			bucketCounts.push(integerDivideResult + (i < remainder ? 1 : 0));
+		}
+		console.log(bucketCounts);
+		return bucketCounts;
 	}
 
 	/**
