@@ -287,7 +287,7 @@ export class SaveToOneNote {
 			}
 			return allIndexes;
 		}
-		return StringUtils.parsePageRange(this.clipperState.pdfPreviewInfo.selectedPageRange);
+		return StringUtils.parsePageRange(this.clipperState.pdfPreviewInfo.selectedPageRange).map((indexFromOne) => indexFromOne - 1);
 	}
 
 	private static getDataUrlsForPageIndexes(indexes: number[]): string[] {
