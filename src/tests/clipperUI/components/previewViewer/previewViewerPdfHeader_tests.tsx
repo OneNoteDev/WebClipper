@@ -38,7 +38,7 @@ test("Given that the user selected all pages, the tabbing should flow from all p
 
 	let elementsInExpectedTabOrder = [
 		{ name: Constants.Ids.radioAllPagesLabel, elem: document.getElementById(Constants.Ids.radioAllPagesLabel) },
-		{ name: Constants.Ids.radioPageSelection, elem: document.getElementById(Constants.Ids.radioPageSelection) },
+		{ name: Constants.Ids.radioPageRangeLabel, elem: document.getElementById(Constants.Ids.radioPageRangeLabel) },
 		{ name: Constants.Ids.attachmentCheckboxLabel, elem: document.getElementById(Constants.Ids.attachmentCheckboxLabel) }
 	];
 
@@ -64,7 +64,7 @@ test("Given that the user selected page ranges, the tabbing should flow from all
 
 	let elementsInExpectedTabOrder = [
 		{ name: Constants.Ids.radioAllPagesLabel, elem: document.getElementById(Constants.Ids.radioAllPagesLabel) },
-		{ name: Constants.Ids.radioPageSelection, elem: document.getElementById(Constants.Ids.radioPageSelection) },
+		{ name: Constants.Ids.radioPageRangeLabel, elem: document.getElementById(Constants.Ids.radioPageRangeLabel) },
 		{ name: Constants.Ids.rangeInput, elem: document.getElementById(Constants.Ids.rangeInput) },
 		{ name: Constants.Ids.attachmentCheckboxLabel, elem: document.getElementById(Constants.Ids.attachmentCheckboxLabel) }
 	];

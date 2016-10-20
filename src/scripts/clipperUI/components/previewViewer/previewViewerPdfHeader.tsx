@@ -12,6 +12,7 @@ export interface PreviewViewerPdfHeaderProp extends ClipperStateProp {
 	allPages: boolean;
 	shouldAttachPdf: boolean;
 	invalidRange: boolean;
+	enabled: boolean;
 };
 
 class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, PreviewViewerPdfHeaderProp> {
@@ -53,9 +54,9 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 						{this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 					</div>
 				</label>,
-				<label class="pdf-control pdf-label">
+				<label id={Constants.Ids.radioPageRangeLabel} class="pdf-control pdf-label" {...this.enableInvoke(this.props.onSelectionChange, 191, false)}>
 					{this.props.allPages ? Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel") : ""}
-					<div id={Constants.Ids.radioPageSelection} class="pdf-indicator pdf-radio-indicator" {...this.enableInvoke(this.props.onSelectionChange, 191, false)}>
+					<div  class="pdf-indicator pdf-radio-indicator" >
 						{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 					</div>
 					{!this.props.allPages ? <input type="text" id={Constants.Ids.rangeInput} className={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange}
@@ -72,7 +73,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 				<label id={Constants.Ids.attachmentCheckboxLabel} class="pdf-control pdf-checkbox-control pdf-label" {...this.enableInvoke(this.props.onCheckboxChange, 193, !this.props.shouldAttachPdf) }>
 					{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel") }
 					<div class="pdf-indicator pdf-checkbox-indicator"></div>
-					{this.props.shouldAttachPdf ? <div class="checkbox"></div> : ""}
+					{this.props.shouldAttachPdf && this.props.enabled ? <div class="checkbox"></div> : ""}
 				</label>
 			]
 		};
