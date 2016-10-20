@@ -9,19 +9,19 @@ import {BookmarkPreview} from "./components/previewViewer/bookmarkPreview";
 import {FullPagePreview} from "./components/previewViewer/fullPagePreview";
 import {PdfPreview} from "./components/previewViewer/pdfPreview";
 import {RegionPreview} from "./components/previewViewer/regionPreview";
-import { SelectionPreview } from "./components/previewViewer/selectionPreview";
-import { LocalFilePanel } from "./components/previewViewer/localFilePanel";
+import {SelectionPreview} from "./components/previewViewer/selectionPreview";
+import {LocalFilesNotAllowedPanel} from "./components/previewViewer/localFilesNotAllowedPanel";
 
 class PreviewViewerClass<TState, TProp extends ClipperStateProp> extends ComponentBase<TState, TProp> {
 	render() {
 		let state = this.props.clipperState;
 		switch (state.currentMode.get()) {
 			case ClipMode.Pdf:
-				if (state.pdfPreviewInfo.showLocalFilePanel) {
+				if (!state.pdfPreviewInfo.localFilesAllowed) {
 					let title = Localization.getLocalizedString("WebClipper.ClipType.Pdf.AskPermissionToClipLocalFile");
 					let subtitle = Localization.getLocalizedString("WebClipper.ClipType.Pdf.InstructionsForClippingLocalFiles");
 					let header = Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button");
-					return <LocalFilePanel
+					return <LocalFilesNotAllowedPanel
 						title={title}
 						subtitle={subtitle}
 						header={header} />;
