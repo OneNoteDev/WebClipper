@@ -11,7 +11,8 @@ import {ComponentBase} from "../componentBase";
 import {Status} from "../status";
 
 interface SignInPanelState {
-	errorDescriptionShowing: boolean;
+	signInFailureDetected?: boolean;
+	errorDescriptionShowing?: boolean;
 }
 
 interface SignInPanelProps extends ClipperStateProp {
@@ -28,7 +29,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 	}
 
 	getInitialState() {
-		return { errorDescriptionShowing: false };
+		return { signInFailureDetected: false, errorDescriptionShowing: false };
 	}
 
 	getSignInDescription(): string {
@@ -39,6 +40,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 
 		switch (this.props.clipperState.userResult.data.updateReason) {
 			case UpdateReason.SignInAttempt:
+				this.setState({ signInFailureDetected: true });
 				return Localization.getLocalizedString("WebClipper.Error.SignInUnsuccessful");
 			case UpdateReason.TokenRefreshForPendingClip:
 				return Localization.getLocalizedString("WebClipper.Error.GenericExpiredTokenRefreshError");
@@ -73,18 +75,20 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 							{signInDescription}
 						</span>
 					</div>
-					<div className="signInErrorToggleInformation">
-						<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
-							<span class={Constants.Ids.signInToggleErrorInformationText}
-								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-								{this.state.errorDescriptionShowing
-									? Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulLessInformation")
-									: Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulMoreInformation")
-								}
-							</span>
-						</a>
-					</div>
-					{this.state.errorDescriptionShowing
+					{this.state.signInFailureDetected
+						? (<div className="signInErrorToggleInformation">
+							<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
+								<span class={Constants.Ids.signInToggleErrorInformationText}
+									style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+									{this.state.errorDescriptionShowing
+										? Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulLessInformation")
+										: Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulMoreInformation")
+									}
+								</span>
+							</a>
+						</div>) : undefined
+					}
+					{(this.state.signInFailureDetected && this.state.errorDescriptionShowing)
 						? (<div className="signInErrorDescription">
 							<span className={Constants.Ids.signInErrorDescriptionContainer}
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
