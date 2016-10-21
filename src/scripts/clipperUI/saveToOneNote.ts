@@ -1,5 +1,6 @@
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
+import {ArrayUtils} from "../arrayUtils";
 import {Constants} from "../constants";
 import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
@@ -366,9 +367,10 @@ export class SaveToOneNote {
 	/**
 	 * Given an array of indexes, separates them out into dataUrl ranges as evenly as possible so that each grouping can
 	 * individually be put into a request
+	 * TODO move to ArrayUtils
 	 */
 	private static createRangesForAppending(indexes: number[]): string[][] {
-		let bucketCounts = SaveToOneNote.createBucketCounts(indexes.length, SaveToOneNote.maxImagesPerPatchRequest);
+		let bucketCounts = ArrayUtils.createEvenBuckets(indexes.length, SaveToOneNote.maxImagesPerPatchRequest);
 		let ranges: string[][] = [];
 		let sliceStart = 0;
 		for (let i = 0; i < bucketCounts.length; i++) {
@@ -377,32 +379,6 @@ export class SaveToOneNote {
 			sliceStart = sliceEnd;
 		}
 		return ranges;
-	}
-
-	// TODO test
-	private static createBucketCounts(numItems: number, maxPerBucket: number): number[] {
-		if (numItems <= maxPerBucket) {
-			return [numItems];
-		}
-
-		// Calculate the smallest divisor where the largest bucket is size <= maxPerBucket
-		let divisor = 2;
-		let integerDivideResult: number;
-		let remainder: number;
-		while (true) {
-			integerDivideResult = Math.floor(numItems / divisor);
-			remainder = numItems % divisor;
-			if (integerDivideResult + (remainder === 0 ? 0 : 1) <= maxPerBucket) {
-				break;
-			}
-			divisor++;
-		}
-
-		let bucketCounts: number[] = [];
-		for (let i = 0; i < divisor; i++) {
-			bucketCounts.push(integerDivideResult + (i < remainder ? 1 : 0));
-		}
-		return bucketCounts;
 	}
 
 	/**
