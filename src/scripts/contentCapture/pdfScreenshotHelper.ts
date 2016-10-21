@@ -18,6 +18,24 @@ export interface PdfScreenshotResult extends CaptureFailureInfo {
 }
 
 export class PdfScreenshotHelper {
+	public static getLocalPdfData(localFileUrl: string): Promise<PdfScreenshotResult> {
+		// Never rejects, interesting
+		return new Promise<PdfScreenshotResult>((resolve, reject) => {
+			PDFJS.getDocument(localFileUrl).then((pdf) => {
+				// return PdfScreenshotHelper.convertPdfDocumentProxyToPdfScreenShotResult(pdf);
+				return pdf.getData().then((arrayBuffer) => {
+					return PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+						let castedArrayBuffer = <ArrayBuffer>arrayBuffer.buffer;
+						resolve({
+							arrayBuffer: castedArrayBuffer,
+							dataUrls: dataUrls
+						});
+					});
+				});
+			});
+		});
+	}
+
 	public static getPdfData(url: string): Promise<PdfScreenshotResult> {
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetBinaryRequest);
@@ -43,10 +61,13 @@ export class PdfScreenshotHelper {
 					Clipper.logger.logEvent(getBinaryEvent);
 
 					PDFJS.getDocument(arrayBuffer).then((pdf) => {
-						PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
-							resolve({
-								arrayBuffer: arrayBuffer,
-								dataUrls: dataUrls
+						// return PdfScreenshotHelper.convertPdfDocumentProxyToPdfScreenShotResult(pdf);
+						pdf.getData().then((pdfArrayBuffer) => {
+							PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+								resolve({
+									arrayBuffer: arrayBuffer,
+									dataUrls: dataUrls
+								});
 							});
 						});
 					});
@@ -62,6 +83,19 @@ export class PdfScreenshotHelper {
 			};
 
 			request.send();
+		});
+	}
+
+	private static convertPdfDocumentProxyToPdfScreenShotResult(pdf: PDFDocumentProxy): Promise<PdfScreenshotResult> {
+		return new Promise<PdfScreenshotResult>((resolve, reject) => {
+			return pdf.getData().then((pdfArrayBuffer) => {
+				PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
+					resolve({
+						arrayBuffer: pdfArrayBuffer,
+						dataUrls: dataUrls
+					});
+				});
+			});
 		});
 	}
 

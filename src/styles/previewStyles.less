@@ -93,8 +93,13 @@
 					user-select: none;
 				}
 
+				#localPdfFileTitle {
+					line-height: 32px;
+					font-size: @OneNoteH3Size;
+				}
+
 				// TODO: Remove when this is replaced with full page features
-				#fullPageControl, #bookmarkControl, #regionControl {
+				#fullPageControl, #bookmarkControl, #regionControl, {
 					height: 32px;
 
 					#fullPageHeaderTitle, #bookmarkHeaderTitle, #regionHeaderTitle {
@@ -141,15 +146,15 @@
 					}
 				}
 
-				#fontSizeControl {
+				#incrementFontSize, #decrementFontSize {
 					img {
 						width: 18px;
 						height: 18px;
 					}
+				}
 
-					#incrementFontSize {
-						margin-left: 6px;
-					}
+				#incrementFontSize {
+					margin-left: 6px;
 				}
 
 				#serifControl {
@@ -167,6 +172,118 @@
 					}
 				}
 
+				// PDF
+				.pdf-label {
+					margin-right: 3px;
+					padding-left: 24px;
+					padding-right: 6px;
+					font-size: 14px;
+					font-family: @SegoeUi;
+					color: #fff;
+					vertical-align: middle;
+					cursor: pointer;
+					position: relative;
+
+					&:last-child {
+						margin-left: 6px;
+					}
+				}
+
+				.pdf-control {
+					input[type=radio], input[type=checkbox] {
+						position: absolute;
+						z-index: -1;
+						opacity: 0;
+					}
+				}
+
+				.pdf-radio-indicator-fill {
+					position: absolute;
+					top: 3px;
+					left: 3px;
+					width: 9px;
+					height: 9px;
+					background-color: white;
+					border-radius: 100%;
+				}
+
+				.pdf-indicator {
+					position: absolute;
+					top: 2px;
+					left: 0;
+					width: 15px;
+					height: 15px;
+
+					&.pdf-checkbox-indicator {
+						border: 1px solid white;
+						border-radius: 2px;
+						background-color: @OneNotePurpleTransparent;
+					}
+
+					&.pdf-radio-indicator {
+						border: 1px solid white;
+						border-radius: 100%;
+					}
+				}
+
+				.checkbox {
+					position: absolute;
+					top: 3px;
+					left: 6px;
+					width: 4px;
+					height: 11px;
+					transform: rotate(45deg);
+					border: 1px solid white;
+					background: transparent;
+					border-width: 0 1px 1px 0;
+				}
+
+				#attachmentCheckboxControl {
+					float: right;
+					margin-right: 24px;
+				}
+
+				#rangeInput {
+					border-radius: 2px;
+					background-color:  @DarkBackgroundColor;
+					height: 26px;
+					line-height: 20px;
+					padding-left: 6px;
+					width: 128px;
+					border: none;
+					font-family: @SegoeUi;
+					font-size: 14px;
+					color: rgba(255,255,255,0.70);
+					line-height: 20px;
+					outline: none;
+					
+					&.invalid {
+						border: #b94a48 1px solid;
+						height: 24px;
+					}
+
+					&::-webkit-input-placeholder {
+						font-style: italic;
+						color: @ClipperLightFontColor;
+					}
+
+					&:-moz-placeholder {
+						font-style: italic;
+						color: @ClipperLightFontColor;
+					}
+
+					&::-moz-placeholder {
+						font-style: italic;
+						color: @ClipperLightFontColor;
+					}
+
+					&:-ms-input-placeholder {
+						font-style: italic;
+						color: @ClipperLightFontColor;
+					}
+				}
+
+				// Generic
 				.control-button {
 					text-align: center;
 					vertical-align: middle;
@@ -202,11 +319,12 @@
 					display: inline-block;
 				 }
 
-				.control-button-group, {
+				.control-button-group {
 					margin-top: 12px;
 					margin-bottom: 12px;
 					margin-left: 24px;
 					display: inline-block;
+					position: relative;
 
 					> .control-button:first-child:not(:last-child) {
 						border-top-right-radius: 0;
@@ -243,6 +361,24 @@
 					&.in-progress {
 						background-color: @PreviewHeaderContainerBackground;
 					}
+				}
+
+				&.local-pdf-file-content-container {
+					background-color: @OneNotePurpleTransparent;
+				}
+
+				.local-pdf-panel-title {
+					font-size: 24px;
+					text-align: center;
+					color: white;
+					padding: 60px 40px 20px 40px;
+				}
+
+				.local-pdf-panel-subtitle {
+					font-size: 16px;
+					text-align: center;
+					color: white;
+					padding: 40px 40px 60px 40px;
 				}
 
 				#previewHeaderContainer {
@@ -422,6 +558,56 @@
 							position: absolute;
 							top: -5px;
 							left: -5px;
+						}
+					}
+
+					// PDF Preview Content
+					.pdf-preview-image-container {
+						position: relative;
+						display: flex;
+						align-items: center;
+						justify-content: center;
+
+						.pdf-preview-image {
+							margin-top: 24px;
+							box-shadow: 0px 0px 10px lightgray;
+
+							&.unselected {
+								opacity: 0.3;
+							}
+						}
+
+						&:last-child {
+							margin-bottom: 24px;
+						}
+
+						.overlay {
+							width: 104px;
+							height: 104px;
+							background-color: rgba(0,0,0,.65);
+							position: absolute;
+							border-radius: 8px;
+							
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							opacity: 1;
+
+							&.overlay-hidden {
+								// We declare these here to only trigger the transitions on fade-out
+								-webkit-transition: opacity 0.5s ease-in-out;
+								-moz-transition: opacity 0.5s ease-in-out;
+								-o-transition: opacity 0.5s ease-in-out;
+								transition: opacity 0.5s ease-in-out;
+								opacity: 0;
+							}
+
+							.overlay-number {
+								font-size: 64px;
+								font-family: @SegoeUi;
+								color: white;
+								margin-bottom: 4px;
+							}
 						}
 					}
 
