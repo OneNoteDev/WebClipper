@@ -24,6 +24,7 @@
 		"<all_urls>",
 		"activeTab",
 		"contextMenus",
+		"notifications",
 		"tabs",
 		"webRequest",
 		"webRequestBlocking",

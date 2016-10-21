@@ -25,6 +25,7 @@
 		"<all_urls>",
 		"activeTab",
 		"contextMenus",
+		"notifications",
 		"cookies",
 		"tabs",
 		"webRequest",
