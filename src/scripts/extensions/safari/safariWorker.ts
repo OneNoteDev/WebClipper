@@ -131,11 +131,12 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 
 	private launchSafariPopup(url: string, autoCloseDestinationUrl: string, waitForClose = false): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			let redirectOccurred = false;
 			let newWindow = safari.application.openBrowserWindow();
 			newWindow.activeTab.url = url;
 
 			if (waitForClose) {
+				let redirectOccurred = false;
+
 				let errorObject;
 				let redirectListener = (event) => {
 					if (event && event.target && event.target.url && !event.target.url.toLowerCase().indexOf(autoCloseDestinationUrl)) {
