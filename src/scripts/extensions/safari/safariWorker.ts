@@ -56,7 +56,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
 		let signInUrl = Utils.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
-		return this.launchSafariPopupAndWaitForClose(signInUrl, Constants.Urls.Authentication.authRedirectUrl);
+		return this.launchSafariPopup(signInUrl, Constants.Urls.Authentication.authRedirectUrl, true);
 	}
 
 	/**
@@ -67,7 +67,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		let signOutUrl = Utils.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		// The signout doesn't work in an iframe in the Safari background page, so we need to launch a popup instead
-		this.launchSafariPopupAndWaitForClose(signOutUrl, Constants.Urls.Authentication.authRedirectUrl);
+		this.launchSafariPopup(signOutUrl, Constants.Urls.Authentication.authRedirectUrl);
 	}
 
 	/**
@@ -129,34 +129,36 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		});
 	}
 
-	private launchSafariPopupAndWaitForClose(url: string, autoCloseDestinationUrl: string): Promise<boolean> {
+	private launchSafariPopup(url: string, autoCloseDestinationUrl: string, waitForClose = false): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
 			let redirectOccurred = false;
 			let newWindow = safari.application.openBrowserWindow();
 			newWindow.activeTab.url = url;
 
-			let errorObject;
-			let redirectListener = (event) => {
-				if (event && event.target && event.target.url && !event.target.url.toLowerCase().indexOf(autoCloseDestinationUrl)) {
-					redirectOccurred = true;
+			if (waitForClose) {
+				let errorObject;
+				let redirectListener = (event) => {
+					if (event && event.target && event.target.url && !event.target.url.toLowerCase().indexOf(autoCloseDestinationUrl)) {
+						redirectOccurred = true;
 
-					let error = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.error);
-					let errorDescription = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.errorDescription);
-					if (error || errorDescription) {
-						errorObject = { error: error, errorDescription: errorDescription };
+						let error = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.error);
+						let errorDescription = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.errorDescription);
+						if (error || errorDescription) {
+							errorObject = { error: error, errorDescription: errorDescription };
+						}
+
+						newWindow.removeEventListener(redirectListener);
+						newWindow.close();
 					}
+				};
+				newWindow.addEventListener("navigate", redirectListener);
 
-					newWindow.removeEventListener(redirectListener);
-					newWindow.close();
-				}
-			};
-			newWindow.addEventListener("navigate", redirectListener);
-
-			let closeListener = (event) => {
-				errorObject ? reject(errorObject) : resolve(redirectOccurred);
-				newWindow.removeEventListener(closeListener);
-			};
-			newWindow.addEventListener("close", closeListener);
+				let closeListener = (event) => {
+					errorObject ? reject(errorObject) : resolve(redirectOccurred);
+					newWindow.removeEventListener(closeListener);
+				};
+				newWindow.addEventListener("close", closeListener);
+			}
 		});
 	}
 }
