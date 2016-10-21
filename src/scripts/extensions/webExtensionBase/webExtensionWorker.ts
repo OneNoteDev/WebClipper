@@ -189,6 +189,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (allowed: boolean) => void): void {
 		if (!WebExtension.browser.extension.isAllowedFileSchemeAccess) {
 			callback(true);
+			return;
 		}
 
 		WebExtension.browser.extension.isAllowedFileSchemeAccess((isAllowed) => {
