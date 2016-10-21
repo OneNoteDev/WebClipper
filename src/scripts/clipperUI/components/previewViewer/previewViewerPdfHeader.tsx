@@ -12,7 +12,6 @@ export interface PreviewViewerPdfHeaderProp extends ClipperStateProp {
 	allPages: boolean;
 	shouldAttachPdf: boolean;
 	invalidRange: boolean;
-	enabled: boolean;
 };
 
 class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, PreviewViewerPdfHeaderProp> {
@@ -73,7 +72,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 				<label id={Constants.Ids.attachmentCheckboxLabel} class="pdf-control pdf-checkbox-control pdf-label" {...this.enableInvoke(this.props.onCheckboxChange, 193, !this.props.shouldAttachPdf) }>
 					{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel") }
 					<div class="pdf-indicator pdf-checkbox-indicator"></div>
-					{this.props.shouldAttachPdf && this.props.enabled ? <div class="checkbox"></div> : ""}
+					{this.props.shouldAttachPdf ? <div class="checkbox"></div> : ""}
 				</label>
 			]
 		};

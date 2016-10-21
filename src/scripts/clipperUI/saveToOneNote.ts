@@ -1,5 +1,6 @@
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
+import {ArrayUtils} from "../arrayUtils";
 import {Constants} from "../constants";
 import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
@@ -23,15 +24,30 @@ import {ClipperState} from "./clipperState";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {Status} from "./status";
 
+import * as _ from "lodash";
+
 export interface StartClipPackage {
 	responsePackage: OneNoteApi.ResponsePackage<any>;
 	annotationAdded: boolean;
 }
 
 export class SaveToOneNote {
-	// Shared across various helper methods
 	private static clipperState: ClipperState;
+
+	// Used by PDF mode
 	private static maxMimeSizeLimit = 24900000;
+	private static maxImagesPerPatchRequest = 15;
+	private static timeBetweenPatchRequests = 5000;
+
+	/**
+	 * Checks for the 1) data result from creating a new page on clip, and 2) completion of the show ratings prompt calculation
+	 */
+	public static getClipSuccessStatus(clipperState: ClipperState): Status {
+		if (clipperState.showRatingsPrompt && !Utils.isNullOrUndefined(clipperState.showRatingsPrompt.get()) && clipperState.oneNoteApiResult.data) {
+			return Status.Succeeded;
+		}
+		return Status.InProgress;
+	}
 
 	public static startClip(clipperState: ClipperState): Promise<StartClipPackage | OneNoteApi.RequestError> {
 		this.logPageModifications(clipperState);
@@ -62,16 +78,9 @@ export class SaveToOneNote {
 	}
 
 	/**
-	 * Checks for the 1) data result from creating a new page on clip, and 2) completion of the show ratings prompt calculation
+	 * Logs modifications made by the user to customize their clip. TODO: Split this up so that we only log options common
+	 * across all modes (i.e., don't use "Not Applicable")
 	 */
-	public static getClipSuccessStatus(clipperState: ClipperState): Status {
-		if (clipperState.showRatingsPrompt && !Utils.isNullOrUndefined(clipperState.showRatingsPrompt.get()) && clipperState.oneNoteApiResult.data) {
-			return Status.Succeeded;
-		}
-
-		return Status.InProgress;
-	}
-
 	private static logPageModifications(clipperState: ClipperState) {
 		let isAugmentationMode = clipperState.currentMode.get() === ClipMode.Augmentation;
 		let notApplicableText = "Not Applicable";
@@ -95,6 +104,10 @@ export class SaveToOneNote {
 		Clipper.logger.logEvent(pageModificationsEvent);
 	}
 
+	/**
+	 * If augmentation mode was used, returns the augmentation results metadata;
+	 * undefined otherwise.
+	 */
 	private static getMetaData() {
 		if (this.clipperState.currentMode.get() === ClipMode.Augmentation &&
 			this.clipperState.augmentationResult.data
@@ -104,7 +117,9 @@ export class SaveToOneNote {
 		return undefined;
 	}
 
-	// Adds the annotation if there is one
+	/**
+	 * If an annotation was specified, appends it to the given page; does nothing otherwise
+	 */
 	private static addAnnotationToPage(page: OneNoteApi.OneNotePage): boolean {
 		let annotationAdded = this.clipperState.previewGlobalInfo.annotation && this.clipperState.previewGlobalInfo.annotation !== "";
 		if (annotationAdded) {
@@ -118,7 +133,9 @@ export class SaveToOneNote {
 		return annotationAdded;
 	}
 
-	// Adds the clipped URL citation
+	/**
+	 * Appends the "Clipped from: <url>" text to the given page
+	 */
 	private static addClippedFromUrlToPage(page: OneNoteApi.OneNotePage): void {
 		let sourceUrlCitation = Localization.getLocalizedString("WebClipper.FromCitation")
 			.replace("{0}", '<a href="' + (this.clipperState.pageInfo.rawUrl) + '">' + this.clipperState.pageInfo.rawUrl + "</a>");
@@ -127,7 +144,10 @@ export class SaveToOneNote {
 		page.addOnml(formattedCitation.outerHTML);
 	}
 
-	// Adds the primary page content to the page, which may be async or not
+	/**
+	 * Appends content to the page, depending on the clip mode and options that the user
+	 * specified.
+	 */
 	private static addPrimaryContentToPage(page: OneNoteApi.OneNotePage, mode: ClipMode): Promise<any> {
 		let clipperState = this.clipperState;
 
@@ -169,6 +189,9 @@ export class SaveToOneNote {
 		});
 	}
 
+	/**
+	 * Adds styling around the given HTML as an inline style to reflect the options the user selected
+	 */
 	private static createPostProcessessedHtml(html: string): HTMLElement {
 		// Wrap the preview in in-line styling to persist the styling through the OneNote API
 		let newPreviewBody = document.createElement("div");
@@ -192,7 +215,9 @@ export class SaveToOneNote {
 		return newPreviewBody;
 	}
 
-	// Adds 1 to the value stored in StorageKeys.numSuccessfulClips and clipperState.numSuccessfulClips
+	/**
+	 * Adds 1 to the value stored in StorageKeys.numSuccessfulClips and clipperState.numSuccessfulClips
+	 */
 	private static incrementClipSuccessCount(clipperState: ClipperState): void {
 		let numSuccessfulClips: number = clipperState.numSuccessfulClips.get();
 
@@ -202,7 +227,9 @@ export class SaveToOneNote {
 		clipperState.numSuccessfulClips.set(numSuccessfulClips);
 	}
 
-	// Strips out UI elements that we don't wish to persist to the API
+	/**
+	 * Strips out UI elements in the preview that we don't wish to persist to the API
+	 */
 	private static stripUnwantedUIElements(elem: HTMLElement) {
 		// Getting a list of buttons and deleting them one-by-one does not work due to a weird index/dereference issue, so we do it this way
 		while (true) {
@@ -214,7 +241,9 @@ export class SaveToOneNote {
 		}
 	}
 
-	// Adds the enhanced url content to the page. If it is still being retrieved, wait for it to finish first.
+	/**
+	 * Adds the enhanced url content to the page. If it is still being retrieved, wait for it to finish first.
+	 */
 	private static addEnhancedUrlContentToPage(page: OneNoteApi.OneNotePage): Promise<any> {
 		let clipperState = this.clipperState;
 
@@ -235,11 +264,13 @@ export class SaveToOneNote {
 		});
 	}
 
-	// Adds the given binary to the page if it is below the MIME size limit, then adds it as an image
+	/**
+	 * Appends the PDF attachment to the page if enabled by the user
+	 */
 	private static addEnhancedUrlContentToPageHelper(page: OneNoteApi.OneNotePage, arrayBuffer: ArrayBuffer) {
-		// Impose MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
 		this.logPdfOptions();
 
+		// Attach PDF if applicable. Impose MIME size limit: https://msdn.microsoft.com/en-us/library/office/dn655137.aspx
 		let rawUrl = this.clipperState.pageInfo.rawUrl;
 		let mimePartName: string;
 		if (this.clipperState.pdfResult.status === Status.Succeeded && arrayBuffer) {
@@ -250,12 +281,17 @@ export class SaveToOneNote {
 				}
 			}
 		}
-		let local = rawUrl.indexOf("file:///") !== -1;
-		let nameToUse = local ? "name:" + mimePartName : this.clipperState.pageInfo.rawUrl;
-		if (this.clipperState.pdfPreviewInfo.shouldAttachPdf && this.clipperState.pdfPreviewInfo.allPages) {
-			// This optimization allows us to render the entire PDF with just the binary, rather than sending dataUrls
-			page.addObjectUrlAsImage(nameToUse);
+	}
+
+	private static getAllPdfPageIndexesToBeSent(): number[] {
+		if (this.clipperState.pdfPreviewInfo.allPages) {
+			return _.range(this.clipperState.pdfResult.data.get().dataUrls.length);
 		}
+		return StringUtils.parsePageRange(this.clipperState.pdfPreviewInfo.selectedPageRange).map((indexFromOne) => indexFromOne - 1);
+	}
+
+	private static getDataUrlsForPageIndexes(indexes: number[]): string[] {
+		return this.clipperState.pdfResult.data.get().dataUrls.filter((value, index) => indexes.indexOf(index) >= 0);
 	}
 
 	// Note this is called only after we finish waiting on the pdf request
@@ -274,55 +310,73 @@ export class SaveToOneNote {
 		Clipper.logger.logEvent(clipPdfEvent);
 	}
 
-	// This function assumes 	
-	private static createPdfRequestChain(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
+	/**
+	 * Executes the request(s) needed to save the clip to OneNote
+	 */
+	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
+		if (clipMode === ClipMode.Pdf) {
+			return SaveToOneNote.patchPdfPages(page);
+		}
+
+		let saveLocation = SaveToOneNote.clipperState.saveLocation;
+		return SaveToOneNote.getApiInstance().createPage(page, saveLocation);
+	}
+
+	/**
+	 * Starting from the 31st PDF page, divides the remaining PDF pages as evenly as possible, where each
+	 * group has <= 30 pages, and then chains them all to be sent to OneNote as PATCH requests. Simply
+	 * resolves if there are no PDF pages to PATCH.
+	 */
+	private static patchPdfPages(page: OneNoteApi.OneNotePage): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
 		let previewOptions = clipperState.pdfPreviewInfo;
-		if (previewOptions.shouldAttachPdf && previewOptions.allPages) {
-			// If we assume the page is well-formed, then the PDF is attached and an object tag referencing it
-			// exists in the post body. This means we don't need to do anything
-			return SaveToOneNote.createNewPage(page, clipMode);
+
+		let indexesToBePatched = SaveToOneNote.getAllPdfPageIndexesToBeSent();
+		if (indexesToBePatched.length === 0) {
+			return new Promise<any>((resolve) => { resolve(); });
 		}
 
-		// Since we are here, we know we need to send the dataUrls since 
-		// the user either wanted a subset of pages or didn't want the PDF attached
-		let dataUrls = clipperState.pdfResult.data.get().dataUrls;
-		let dataUrlRanges: string[][] = [];
+		let dataUrlRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest)
+			.map((partition) => partition.map((index) => this.clipperState.pdfResult.data.get().dataUrls[index]));
 
-		if (!previewOptions.allPages) {
-			// We need to adjust the index as the user counts from 1 and not 0
-			let selectedPageIndexes = StringUtils.parsePageRange(previewOptions.selectedPageRange).map((i) => i - 1);
-			selectedPageIndexes = selectedPageIndexes ? selectedPageIndexes : [];
-			dataUrls = dataUrls.filter((dataUrl, pageIndex) => { return selectedPageIndexes.indexOf(pageIndex) !== -1; });
-		}
-		dataUrlRanges = SaveToOneNote.createRangesForAppending(dataUrls);
-
-		return SaveToOneNote.createNewPage(page, clipMode).then((postPageResponse /* should also be a onenote response */) => {
+		// TODO this assumes that we don't fail any of the responses!
+		return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
 			let pageId = postPageResponse.parsedResponse.id;
+
+			// After the page creation, we can just kick off the first PATCH immediately
+			let timeBetweenPatchRequests = 1000;
 			return Promise.all([postPageResponse,
 				dataUrlRanges.reduce((chainedPromise, currentValue) => {
 					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
-						return SaveToOneNote.createOneNotePagePatchRequestTwo(pageId, currentValue);
+						return new Promise((resolve) => {
+							// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
+							// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
+							// processed in the order that they were sent.
+							setTimeout(() => {
+								SaveToOneNote.createOneNotePagePatchRequest(pageId, currentValue).then(() => {
+									timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
+									resolve();
+								});
+							}, timeBetweenPatchRequests);
+						});
 					});
 				}, SaveToOneNote.getPage(pageId))
 			]);
 		});
 	}
 
-	// This function takes an array of dataUrls and separates them out into ranges 
-	// so that each can individually be put into a request
-	private static createRangesForAppending(dataUrls: string[]): string[][] {
-		let limit = OneNoteApiUtils.Limits.imagesPerRequestLimit;
-		let numRequests = Math.floor(dataUrls.length / limit) + 1;
-		let subranges: string[][] = [];
-		for (let i = 0; i < numRequests; ++i) {
-			let left = i * limit;
-			let right = (i + 1) * limit;
-			subranges.push(dataUrls.slice(left, right));
-		}
-		return subranges;
+	/**
+	 * Given an array of dataUrls and the pageId, creates and sends the request to append the pages to the specified
+	 * page with the images
+	 */
+	private static createOneNotePagePatchRequest(pageId: string, dataUrls: string[]): Promise<any> {
+		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
+		return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
 	}
 
+	/**
+	 * Creates the PATCH request body as ONML with the given image dataUrls
+	 */
 	private static createPatchRequestBody(dataUrls: string[]): OneNoteApi.Revision[] {
 		let requestBody = [];
 		dataUrls.forEach((dataUrl) => {
@@ -336,47 +390,28 @@ export class SaveToOneNote {
 		return requestBody;
 	}
 
-	private static createOneNotePagePatchRequestTwo(pageId: string, dataUrls: string[]): Promise<any> {
-		let headers: { [key: string]: string } = {};
-		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-
-		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
-		return oneNoteApi.updatePage(pageId, revisions);
-	}
-
-	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
-		let headers: { [key: string]: string } = {};
-		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-		let saveLocation = SaveToOneNote.clipperState.saveLocation;
-
-		if (clipMode === ClipMode.Pdf) {
-			return SaveToOneNote.createPdfRequestChain(page, clipMode);
-		} else {
-			return oneNoteApi.createPage(page, saveLocation);
-		}
-	}
-
-	// POST the page to OneNote API
-	private static createNewPage(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
-		let headers: { [key: string]: string } = {};
-		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-		let saveLocation = SaveToOneNote.clipperState.saveLocation;
-
-		return oneNoteApi.createPage(page, saveLocation);
-	}
-
+	/**
+	 * Sends a GET request for the specified pageId
+	 */
 	private static getPage(pageId: string): Promise<any> {
+		return SaveToOneNote.getApiInstance().getPage(pageId);
+	}
+
+	/**
+	 * POST the page to OneNote API
+	 */
+	private static createNewPage(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
+		let saveLocation = SaveToOneNote.clipperState.saveLocation;
+		return SaveToOneNote.getApiInstance().createPage(page, saveLocation);
+	}
+
+	/**
+	 * Gets the instance of the API based on the current user's authorization token
+	 */
+	private static getApiInstance(): OneNoteApi.OneNoteApi {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		let oneNoteApi = new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-
-		return oneNoteApi.getPage(pageId);
+		return new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
 	}
 }
