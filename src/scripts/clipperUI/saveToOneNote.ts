@@ -36,7 +36,7 @@ export class SaveToOneNote {
 
 	// Used by PDF mode
 	private static maxMimeSizeLimit = 24900000;
-	private static maxImagesPerPatchRequest = 20;
+	private static maxImagesPerPatchRequest = 15;
 	private static timeBetweenPatchRequests = 5000;
 
 	/**
@@ -331,11 +331,11 @@ export class SaveToOneNote {
 		let clipperState = SaveToOneNote.clipperState;
 		let previewOptions = clipperState.pdfPreviewInfo;
 
-		// Note the first 5/30 pages have already been POSTed in the page creation
 		let indexesToBePatched = SaveToOneNote.getAllPdfPageIndexesToBeSent();
 		if (indexesToBePatched.length === 0) {
 			return new Promise<any>((resolve) => { resolve(); });
 		}
+
 		let dataUrlRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest)
 			.map((partition) => partition.map((index) => this.clipperState.pdfResult.data.get().dataUrls[index]));
 
@@ -344,7 +344,7 @@ export class SaveToOneNote {
 			let pageId = postPageResponse.parsedResponse.id;
 
 			// After the page creation, we can just kick off the first PATCH immediately
-			let timeBetweenPatchRequests = 0;
+			let timeBetweenPatchRequests = 1000;
 			return Promise.all([postPageResponse,
 				dataUrlRanges.reduce((chainedPromise, currentValue) => {
 					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
