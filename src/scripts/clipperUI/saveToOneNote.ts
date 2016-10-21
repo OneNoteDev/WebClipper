@@ -336,7 +336,8 @@ export class SaveToOneNote {
 		if (indexesToBePatched.length === 0) {
 			return new Promise<any>((resolve) => { resolve(); });
 		}
-		let dataUrlRanges = SaveToOneNote.createRangesForAppending(indexesToBePatched);
+		let dataUrlRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest)
+			.map((partition) => partition.map((index) => this.clipperState.pdfResult.data.get().dataUrls[index]));
 
 		// TODO this assumes that we don't fail any of the responses!
 		return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
@@ -362,23 +363,6 @@ export class SaveToOneNote {
 				}, SaveToOneNote.getPage(pageId))
 			]);
 		});
-	}
-
-	/**
-	 * Given an array of indexes, separates them out into dataUrl ranges as evenly as possible so that each grouping can
-	 * individually be put into a request
-	 * TODO move to ArrayUtils
-	 */
-	private static createRangesForAppending(indexes: number[]): string[][] {
-		let bucketCounts = ArrayUtils.createEvenBuckets(indexes.length, SaveToOneNote.maxImagesPerPatchRequest);
-		let ranges: string[][] = [];
-		let sliceStart = 0;
-		for (let i = 0; i < bucketCounts.length; i++) {
-			let sliceEnd = sliceStart + bucketCounts[i];
-			ranges.push(indexes.slice(sliceStart, sliceEnd).map((index) => this.clipperState.pdfResult.data.get().dataUrls[index]));
-			sliceStart = sliceEnd;
-		}
-		return ranges;
 	}
 
 	/**

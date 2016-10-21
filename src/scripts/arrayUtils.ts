@@ -1,6 +1,6 @@
 export module ArrayUtils {
 	/**
-	 * Given a specified number of items, returns a list of bucket counts where buckets
+	 * Given a specified number of items, returns a array of bucket counts where buckets
 	 * are as evenly divided as possible, and every bucket contains no more than maxPerBucket
 	 * items.
 	 */
@@ -24,8 +24,26 @@ export module ArrayUtils {
 
 		let bucketCounts: number[] = [];
 		for (let i = 0; i < divisor; i++) {
+			// If there is a remainder, we need to distribute the extra items among the first few buckets
 			bucketCounts.push(integerDivideResult + (i < remainder ? 1 : 0));
 		}
 		return bucketCounts;
+	}
+
+	/**
+	 * Given an array of items, bucket them into partitions where buckets are as evenly
+	 * divided as possible, and every bucket contains no more than maxPerBucket items.
+	 * Also retains the ordering of the items when partitions are flattened.
+	 */
+	export function partition(items: any[], maxPerBucket: number): any[][] {
+		let bucketCounts = ArrayUtils.createEvenBuckets(items.length, maxPerBucket);
+		let partitions: any[][] = [];
+		let sliceStart = 0;
+		for (let i = 0; i < bucketCounts.length; i++) {
+			let sliceEnd = sliceStart + bucketCounts[i];
+			partitions.push(items.slice(sliceStart, sliceEnd));
+			sliceStart = sliceEnd;
+		}
+		return partitions;
 	}
 }
