@@ -23,6 +23,8 @@ import {ClipperState} from "./clipperState";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {Status} from "./status";
 
+import * as _ from "lodash";
+
 export interface StartClipPackage {
 	responsePackage: OneNoteApi.ResponsePackage<any>;
 	annotationAdded: boolean;
@@ -30,8 +32,11 @@ export interface StartClipPackage {
 
 export class SaveToOneNote {
 	private static clipperState: ClipperState;
+
+	// Used by PDF mode
 	private static maxMimeSizeLimit = 24900000;
-	private static maxImagesPerRequest = 15;
+	private static maxImagesPerPatchRequest = 20;
+	private static timeBetweenPatchRequests = 5000;
 
 	/**
 	 * Checks for the 1) data result from creating a new page on clip, and 2) completion of the show ratings prompt calculation
@@ -40,7 +45,6 @@ export class SaveToOneNote {
 		if (clipperState.showRatingsPrompt && !Utils.isNullOrUndefined(clipperState.showRatingsPrompt.get()) && clipperState.oneNoteApiResult.data) {
 			return Status.Succeeded;
 		}
-
 		return Status.InProgress;
 	}
 
@@ -280,12 +284,7 @@ export class SaveToOneNote {
 
 	private static getAllPdfPageIndexesToBeSent(): number[] {
 		if (this.clipperState.pdfPreviewInfo.allPages) {
-			// TODO optimize
-			let allIndexes = [];
-			for (let i = 0; i < this.clipperState.pdfResult.data.get().dataUrls.length; i++) {
-				allIndexes.push(i);
-			}
-			return allIndexes;
+			return _.range(this.clipperState.pdfResult.data.get().dataUrls.length);
 		}
 		return StringUtils.parsePageRange(this.clipperState.pdfPreviewInfo.selectedPageRange).map((indexFromOne) => indexFromOne - 1);
 	}
@@ -338,15 +337,25 @@ export class SaveToOneNote {
 		}
 		let dataUrlRanges = SaveToOneNote.createRangesForAppending(indexesToBePatched);
 
+		// TODO this assumes that we don't fail any of the responses!
 		return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
 			let pageId = postPageResponse.parsedResponse.id;
+
+			// After the page creation, we can just kick off the first PATCH immediately
+			let timeBetweenPatchRequests = 0;
 			return Promise.all([postPageResponse,
 				dataUrlRanges.reduce((chainedPromise, currentValue) => {
 					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
 						return new Promise((resolve) => {
+							// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
+							// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
+							// processed in the order that they were sent.
 							setTimeout(() => {
-								SaveToOneNote.createOneNotePagePatchRequest(pageId, currentValue).then(() => { resolve(); });
-							}, 4000 /* hardcoded delay TODO: move to constant */);
+								SaveToOneNote.createOneNotePagePatchRequest(pageId, currentValue).then(() => {
+									timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
+									resolve();
+								});
+							}, timeBetweenPatchRequests);
 						});
 					});
 				}, SaveToOneNote.getPage(pageId))
@@ -359,7 +368,7 @@ export class SaveToOneNote {
 	 * individually be put into a request
 	 */
 	private static createRangesForAppending(indexes: number[]): string[][] {
-		let bucketCounts = SaveToOneNote.createBucketCounts(indexes.length, SaveToOneNote.maxImagesPerRequest);
+		let bucketCounts = SaveToOneNote.createBucketCounts(indexes.length, SaveToOneNote.maxImagesPerPatchRequest);
 		let ranges: string[][] = [];
 		let sliceStart = 0;
 		for (let i = 0; i < bucketCounts.length; i++) {
@@ -370,6 +379,7 @@ export class SaveToOneNote {
 		return ranges;
 	}
 
+	// TODO test
 	private static createBucketCounts(numItems: number, maxPerBucket: number): number[] {
 		if (numItems <= maxPerBucket) {
 			return [numItems];
@@ -392,7 +402,6 @@ export class SaveToOneNote {
 		for (let i = 0; i < divisor; i++) {
 			bucketCounts.push(integerDivideResult + (i < remainder ? 1 : 0));
 		}
-		console.log(bucketCounts);
 		return bucketCounts;
 	}
 
