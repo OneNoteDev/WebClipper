@@ -100,7 +100,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						clientInfo: this.clientInfo
 					});
 
-					// TODO This is only available on Chrome so far? Firefox doesn't seem to have pdf addons and only makes its built-in one available.
+					// The ability to get a store link from the url is only available to Chrome so far (as of 10/21/16)
 					let extensionUrlRegex = /^chrome-extension:\/\/(\w+)\W/;
 					if (this.clientInfo.get().clipperType === ClientType.ChromeExtension && extensionUrlRegex.test(this.tab.url)) {
 						let extensionId = this.tab.url.match(extensionUrlRegex)[1];
