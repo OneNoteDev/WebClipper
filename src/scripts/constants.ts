@@ -46,6 +46,12 @@ export module Constants {
 		export var clipperInfo = "ClipperInfo";
 	}
 
+	export module Extension {
+		export module NotificationIds {
+			export var conflictingExtension = "conflictingExtension";
+		}
+	}
+
 	export module Ids {
 		// annotationInput
 		export var annotationContainer = "annotationContainer";

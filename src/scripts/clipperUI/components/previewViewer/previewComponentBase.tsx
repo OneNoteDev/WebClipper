@@ -157,7 +157,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 						<div id={Constants.Ids.previewContentContainer} className={inProgressClassIfApplicable + " " + this.getPreviewContentContainerClass() } >
 							{this.isTitleEnabled() ? <div id={Constants.Ids.previewHeaderContainer}>
 								{this.getPreviewTitle(contentTitle, titleIsEditable, inProgressClassIfApplicable)}
-								{clipButtonEnabled ? this.getPreviewSubtitle() : undefined}
+								{this.getPreviewSubtitle() }
 							</div> : ""}
 							<div
 								style={previewStyle}
