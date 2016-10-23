@@ -56,7 +56,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
 		let signInUrl = Utils.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
-		return this.launchSafariPopup(signInUrl, Constants.Urls.Authentication.authRedirectUrl, true);
+		return this.launchSafariPopup(signInUrl, Constants.Urls.Authentication.authRedirectUrl);
 	}
 
 	/**
@@ -67,7 +67,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		let signOutUrl = Utils.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		// The signout doesn't work in an iframe in the Safari background page, so we need to launch a popup instead
-		this.launchSafariPopup(signOutUrl, Constants.Urls.Authentication.authRedirectUrl);
+		this.launchSafariPopup(signOutUrl);
 	}
 
 	/**
@@ -129,16 +129,18 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		});
 	}
 
-	private launchSafariPopup(url: string, autoCloseDestinationUrl: string, waitForClose = false): Promise<boolean> {
+	/**
+	 * Launches a new tab and navigates to the given url. If autoCloseDestinationUrl is defined, then a
+	 * listener is set that will wait until the given URL is navigated to, the window is closed.
+	 */
+	private launchSafariPopup(url: string, autoCloseDestinationUrl: string = undefined): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
 			let newWindow = safari.application.openBrowserWindow();
-			newWindow.activeTab.url = url;
+			let redirectOccurred = false;
+			let errorObject;
 
-			if (waitForClose) {
-				let redirectOccurred = false;
-
-				let errorObject;
-				let redirectListener = (event) => {
+			if (!Utils.isNullOrUndefined(autoCloseDestinationUrl)) {
+				newWindow.addEventListener("navigate", (event) => {
 					if (event && event.target && event.target.url && !event.target.url.toLowerCase().indexOf(autoCloseDestinationUrl)) {
 						redirectOccurred = true;
 
@@ -148,18 +150,18 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 							errorObject = { error: error, errorDescription: errorDescription };
 						}
 
-						newWindow.removeEventListener(redirectListener);
-						newWindow.close();
+						if (newWindow.visible) {
+							newWindow.close();
+						}
 					}
-				};
-				newWindow.addEventListener("navigate", redirectListener);
+				});
 
-				let closeListener = (event) => {
+				newWindow.addEventListener("close", (event) => {
 					errorObject ? reject(errorObject) : resolve(redirectOccurred);
-					newWindow.removeEventListener(closeListener);
-				};
-				newWindow.addEventListener("close", closeListener);
+				});
 			}
+
+			newWindow.activeTab.url = url;
 		});
 	}
 }
