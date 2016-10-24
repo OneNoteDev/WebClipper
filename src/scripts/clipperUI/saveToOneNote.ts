@@ -379,11 +379,9 @@ export class SaveToOneNote {
 	 * page with the images
 	 */
 	private static createOneNotePagePatchRequest(pageId: string, pdf: PDFDocumentProxy, pageRange: number[]): Promise<any> {
-		return new Promise<any>((resolve) => {
-			return SaveToOneNote.getDataUrlsForPdfPageRange(pdf, pageRange).then((dataUrls) => {
-				let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
-				return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
-			});
+		return SaveToOneNote.getDataUrlsForPdfPageRange(pdf, pageRange).then((dataUrls) => {
+			let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
+			return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
 		});
 	}
 
