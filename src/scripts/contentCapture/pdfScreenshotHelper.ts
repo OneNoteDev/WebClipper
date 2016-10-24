@@ -12,30 +12,19 @@ import {PageInfo} from "../pageInfo";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
 
+type ViewportDimensions = {
+	height: number;
+	width: number;
+}
+
 export interface PdfScreenshotResult extends CaptureFailureInfo {
 	pdf?: PDFDocumentProxy;
-	viewportDimensions?: {
-		height: number,
-		width: number
-	}[];
+	viewportDimensions?: ViewportDimensions[];
 }
 
 export class PdfScreenshotHelper {
-	public static getLocalPdfData(localFileUrl: string): Promise<PdfScreenshotResult> {
-		// Never rejects, interesting
-		return new Promise<PdfScreenshotResult>((resolve, reject) => {
-			PDFJS.getDocument(localFileUrl).then((pdf) => {
-				return pdf.getData().then((arrayBuffer) => {
-					return PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
-						let castedArrayBuffer = <ArrayBuffer>arrayBuffer.buffer;
-						resolve({
-							arrayBuffer: castedArrayBuffer,
-							dataUrls: dataUrls
-						});
-					});
-				});
-			});
-		});
+	public static getLocalPdfData(localUrl: string): Promise<PdfScreenshotResult> {
+		return PdfScreenshotHelper.getPdfScreenshotResult(localUrl);
 	}
 
 	public static getPdfData(url: string): Promise<PdfScreenshotResult> {
@@ -62,15 +51,8 @@ export class PdfScreenshotHelper {
 					getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.ByteLength, arrayBuffer.byteLength);
 					Clipper.logger.logEvent(getBinaryEvent);
 
-					PDFJS.getDocument(arrayBuffer).then((pdf) => {
-						pdf.getData().then((pdfArrayBuffer) => {
-							PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
-								resolve({
-									arrayBuffer: arrayBuffer,
-									dataUrls: dataUrls
-								});
-							});
-						});
+					PdfScreenshotHelper.getPdfScreenshotResult(arrayBuffer).then((pdfScreenshotResult) => {
+						resolve(pdfScreenshotResult);
 					});
 				} else {
 					errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
@@ -84,6 +66,40 @@ export class PdfScreenshotHelper {
 			};
 
 			request.send();
+		});
+	}
+
+	private static getPdfScreenshotResult(source: string | Uint8Array | PDFSource): Promise<PdfScreenshotResult> {
+		// Never rejects, interesting
+		return new Promise<PdfScreenshotResult>((resolve, reject) => {
+			PDFJS.getDocument(source).then((pdf) => {
+				PdfScreenshotHelper.getPageViewportData(pdf).then((viewportDimensions) => {
+					resolve({
+						pdf: pdf,
+						viewportDimensions: viewportDimensions
+					});
+				});
+			});
+		});
+	}
+
+	private static getPageViewportData(pdf: PDFDocumentProxy): Promise<ViewportDimensions[]> {
+		let dimensions: ViewportDimensions[] = new Array(pdf.numPages);
+		return new Promise((resolve) => {
+			for (let i = 0; i < pdf.numPages; i++) {
+				// Pages start at index 1
+				pdf.getPage(i + 1).then((page) => {
+					let viewport = page.getViewport(1 /* scale */);
+					dimensions[i] = {
+						height: viewport.height,
+						width: viewport.width
+					};
+
+					if (PdfScreenshotHelper.isArrayComplete(dimensions)) {
+						resolve(dimensions);
+					}
+				});
+			}
 		});
 	}
 
@@ -129,7 +145,7 @@ export class PdfScreenshotHelper {
 	}
 
 	// We have to use this instead of Array.prototype.every because it doesn't work
-	private static isArrayComplete(arr: string[]): boolean {
+	private static isArrayComplete(arr: any[]): boolean {
 		for (let i = 0; i < arr.length; i++) {
 			if (!arr[i]) {
 				return false;
