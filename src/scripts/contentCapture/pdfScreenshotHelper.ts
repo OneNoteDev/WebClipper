@@ -137,4 +137,38 @@ export class PdfScreenshotHelper {
 		}
 		return true;
 	}
+
+	public static getDataUrlsForPdfPageRange(pdf: PDFDocumentProxy, range: number[]): Promise<string[]> {
+		let numPages = range.length;
+		let dataUrls = new Array(numPages);
+		return new Promise<string[]>((resolve) => {
+			for (let i = 0; i < numPages; i++) {
+				let currentPage = range[i];
+				// Pages start at index 1
+				pdf.getPage(currentPage + 1).then((page) => {
+					let viewport = page.getViewport(1 /* scale */);
+					let canvas = document.createElement("canvas") as HTMLCanvasElement;
+					let context = canvas.getContext("2d");
+					canvas.height = viewport.height;
+					canvas.width = viewport.width;
+
+					let renderContext = {
+						canvasContext: context,
+						viewport: viewport
+					};
+
+					// Rendering is async so results may come back in any order
+					page.render(renderContext).then(() => {
+						dataUrls[i] = canvas.toDataURL();
+						if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
+							// getBinaryEvent.stopTimer();
+							// getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
+							// Clipper.logger.logEvent(getBinaryEvent);
+							resolve(dataUrls);
+						}
+					});
+				});
+			}
+		});
+	}
 }

@@ -331,6 +331,7 @@ export class SaveToOneNote {
 	private static patchPdfPages(page: OneNoteApi.OneNotePage): Promise<any> {
 		let clipperState = SaveToOneNote.clipperState;
 		let previewOptions = clipperState.pdfPreviewInfo;
+		let pdfDocumentProxy = clipperState.pdfResult.data.get().pdf;
 
 		let indexesToBePatched = SaveToOneNote.getAllPdfPageIndexesToBeSent();
 		if (indexesToBePatched.length === 0) {
@@ -338,8 +339,11 @@ export class SaveToOneNote {
 		}
 
 		console.log(ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest));
-		let dataUrlRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest)
-			.map((partition) => partition.map((index) => this.clipperState.pdfResult.data.get().dataUrls[index]));
+		let indexesToBePatchedRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest);
+		// let dataUrlRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest)
+			// .map((partition) => partition.map((index) => this.clipperState.pdfResult.data.get().dataUrls[index]));
+		
+		// All that exists in pdfResult is pdfDocumentProxy
 
 		// TODO this assumes that we don't fail any of the responses!
 		return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
@@ -348,14 +352,14 @@ export class SaveToOneNote {
 			// As of 10/21/16, the page sometimes does not exist after the 200 is returned, so we wait a bit
 			let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
 			return Promise.all([postPageResponse,
-				dataUrlRanges.reduce((chainedPromise, currentValue) => {
+				indexesToBePatchedRanges.reduce((chainedPromise, currentRange) => {
 					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
 						return new Promise((resolve) => {
 							// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
 							// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
 							// processed in the order that they were sent.
 							setTimeout(() => {
-								SaveToOneNote.createOneNotePagePatchRequest(pageId, currentValue).then(() => {
+								SaveToOneNote.createOneNotePagePatchRequest(pageId, pdfDocumentProxy, currentRange).then(() => {
 									timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 									resolve();
 								});
@@ -371,9 +375,13 @@ export class SaveToOneNote {
 	 * Given an array of dataUrls and the pageId, creates and sends the request to append the pages to the specified
 	 * page with the images
 	 */
-	private static createOneNotePagePatchRequest(pageId: string, dataUrls: string[]): Promise<any> {
-		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
-		return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
+	private static createOneNotePagePatchRequest(pageId: string, pdf: PDFDocumentProxy, pageRange: number[]): Promise<any> {
+		return new Promise<any>((resolve) => {
+			SaveToOneNote.getDataUrlsForPdfPageRange(pdf, pageRange).then((dataUrls) => {
+				let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
+				return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
+			});
+		});
 	}
 
 	/**
