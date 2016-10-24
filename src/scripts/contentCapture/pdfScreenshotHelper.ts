@@ -12,7 +12,7 @@ import {PageInfo} from "../pageInfo";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
 
-type ViewportDimensions = {
+export type ViewportDimensions = {
 	height: number;
 	width: number;
 }
