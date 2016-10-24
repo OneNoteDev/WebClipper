@@ -255,8 +255,10 @@ export class SaveToOneNote {
 				clipperState.pdfResult.data.subscribe((pdfResult: PdfScreenshotResult) => {
 					Clipper.logger.logEvent(waitOnBinaryBeforePdfClipEvent);
 
-					this.addEnhancedUrlContentToPageHelper(page, pdfResult.arrayBuffer);
-					resolve();
+					pdfResult.pdf.getData().then((buffer) => {
+						this.addEnhancedUrlContentToPageHelper(page, buffer);
+						resolve();
+					});
 				}, { times: 1, callOnSubscribe: false });
 			} else {
 				this.addEnhancedUrlContentToPageHelper(page, clipperState.pdfResult.data.get().arrayBuffer);
@@ -286,14 +288,14 @@ export class SaveToOneNote {
 
 	private static getAllPdfPageIndexesToBeSent(): number[] {
 		if (this.clipperState.pdfPreviewInfo.allPages) {
-			return _.range(this.clipperState.pdfResult.data.get().dataUrls.length);
+			return _.range(this.clipperState.pdfResult.data.get().viewportDimensions.length);
 		}
 		return StringUtils.parsePageRange(this.clipperState.pdfPreviewInfo.selectedPageRange).map((indexFromOne) => indexFromOne - 1);
 	}
 
-	private static getDataUrlsForPageIndexes(indexes: number[]): string[] {
-		return this.clipperState.pdfResult.data.get().dataUrls.filter((value, index) => indexes.indexOf(index) >= 0);
-	}
+	// private static getDataUrlsForPageIndexes(indexes: number[]): string[] {
+	// 	return this.clipperState.pdfResult.data.get().dataUrls.filter((value, index) => indexes.indexOf(index) >= 0);
+	// }
 
 	// Note this is called only after we finish waiting on the pdf request
 	private static logPdfOptions() {
@@ -304,7 +306,7 @@ export class SaveToOneNote {
 		clipPdfEvent.setCustomProperty(Log.PropertyName.Custom.PdfAttachmentClipped, pdfInfo.shouldAttachPdf);
 		clipPdfEvent.setCustomProperty(Log.PropertyName.Custom.PdfIsLocalFile, this.clipperState.pageInfo.rawUrl.indexOf("file:///") === 0);
 
-		let totalPageCount = this.clipperState.pdfResult.data.get().dataUrls.length;
+		let totalPageCount = this.clipperState.pdfResult.data.get().viewportDimensions.length;
 		clipPdfEvent.setCustomProperty(Log.PropertyName.Custom.PdfFileSelectedPageCount, Math.min(totalPageCount, StringUtils.countPageRange(pdfInfo.selectedPageRange)));
 		clipPdfEvent.setCustomProperty(Log.PropertyName.Custom.PdfFileTotalPageCount, totalPageCount);
 
@@ -342,7 +344,6 @@ export class SaveToOneNote {
 		let indexesToBePatchedRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest);
 		// let dataUrlRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest)
 			// .map((partition) => partition.map((index) => this.clipperState.pdfResult.data.get().dataUrls[index]));
-		
 		// All that exists in pdfResult is pdfDocumentProxy
 
 		// TODO this assumes that we don't fail any of the responses!
