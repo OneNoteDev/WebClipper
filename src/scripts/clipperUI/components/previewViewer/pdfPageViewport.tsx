@@ -10,8 +10,11 @@ interface PdfPageViewportProp {
 
 class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
 	public render() {
+		let styleString = "background-color: pink; ";
+		styleString += "height: " + this.props.viewportDimensions.height + "px;";
+		styleString += "width: " + this.props.viewportDimensions.width + "px;";
 		return (
-			<div data-pageIndex={this.props.index} height={this.props.viewportDimensions.height} width={this.props.viewportDimensions.width} style="background-color: pink;">
+			<div data-pageindex={this.props.index} style={styleString}>
 				{this.props.imgUrl ? <img src={this.props.imgUrl}></img> : undefined}
 			</div>
 		);

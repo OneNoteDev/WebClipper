@@ -284,7 +284,7 @@ export module DomUtils {
 	 * Return the best CanonicalUrl for the document
 	 * Some sites mistakenly declare multiple canonical urls. Pick the shortest one.
 	 * (Most canonical urls involve stripping away directory index, fragments, query
-	 * variables etc. hence we pick the shortest one as it is likely to be correct.)
+	 * letiables etc. hence we pick the shortest one as it is likely to be correct.)
 	 */
 	export function fetchCanonicalUrl(doc: Document): string {
 		let canonicalLinkDeclarations = doc.querySelectorAll("link[rel=canonical]");
@@ -933,5 +933,13 @@ export module DomUtils {
 			(<HTMLElement>oldNode).removeAttribute("class");
 			return oldNode;
 		});
+	}
+
+	function isScrolledIntoPartialView(el: HTMLElement): boolean {
+		let elemTop = el.getBoundingClientRect().top;
+		let elemBottom = el.getBoundingClientRect().bottom;
+
+		let isVisible = elemTop < window.innerHeight && elemBottom >= 0;
+		return isVisible;
 	}
 }

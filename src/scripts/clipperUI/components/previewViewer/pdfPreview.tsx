@@ -45,7 +45,8 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 	getInitialState(): PdfPreviewState {
 		return {
-			showPageNumbers: false
+			showPageNumbers: false,
+			renderedPages: {}
 		};
 	}
 
@@ -53,21 +54,20 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	 * Determines which pages are in view of the preview and updates the state with their indexes
 	 */
 	private updateRenderedPages() {
-		let allPages = document.querySelectorAll("div[data-pageIndex]");
+		let allPages = document.querySelectorAll("div[data-pageindex]");
 		let pagesToRender: number[] = [];
 
 		// Naive
 		for (let i = 0; i < allPages.length; i++) {
 			let currentPage = allPages[i] as HTMLDivElement;
 			if (this.pageIsVisible(currentPage)) {
-				// TODO type this
-				// renderedPages[(currentPage.dataset as any).pageIndex] = "blah"; // TODO
-				pagesToRender.push(i);
+				pagesToRender.push((currentPage.dataset as any).pageindex);
 			}
 		}
 
 		// TODO asynchronously get data urls, then setState when complete
 		this.setStateWithDataUrls(pagesToRender).then((renderedPages) => {
+			console.log(renderedPages);
 			this.setState({
 				renderedPages: renderedPages
 			});
@@ -147,6 +147,8 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 					this.setState({
 						showPageNumbers: false
 					});
+					// TODO piggybacking this for now
+					this.updateRenderedPages();
 				}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
 
 				// A little optimization to prevent us from calling render a large number of times
@@ -154,7 +156,6 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 					this.setState({
 						showPageNumbers: true
 					});
-					this.updateRenderedPages();
 				}
 			}
 		};
