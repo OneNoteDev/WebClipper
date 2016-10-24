@@ -934,4 +934,12 @@ export module DomUtils {
 			return oldNode;
 		});
 	}
+
+	function isScrolledIntoPartialView(el: HTMLElement): boolean {
+		var elemTop = el.getBoundingClientRect().top;
+		var elemBottom = el.getBoundingClientRect().bottom;
+
+		var isVisible = elemTop < window.innerHeight && elemBottom >= 0;
+		return isVisible;
+	}
 }
