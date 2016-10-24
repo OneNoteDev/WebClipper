@@ -193,7 +193,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			// If network file, send XHR, get bytes back, convert to PDFDocumentProxy
 			// If local file, get bytes back, convert to PDFDocumentProxy
 			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
-			this.getPdfScreenShotResultFromRawUrl(this.state.pageInfo.rawUrl)
+			this.getPdfScreenshotResultFromRawUrl(this.state.pageInfo.rawUrl)
 				.then((pdfScreenshotResult: PdfScreenshotResult) => {
 					this.state.pdfResult.data.set(pdfScreenshotResult);
 					this.state.setState({
@@ -219,7 +219,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}
 	}
 
-	private getPdfScreenShotResultFromRawUrl(rawUrl: string): Promise<PdfScreenshotResult> {
+	private getPdfScreenshotResultFromRawUrl(rawUrl: string): Promise<PdfScreenshotResult> {
 		if (rawUrl.indexOf("file:///") === 0) {
 			return PdfScreenshotHelper.getLocalPdfData(rawUrl);
 		} else {
