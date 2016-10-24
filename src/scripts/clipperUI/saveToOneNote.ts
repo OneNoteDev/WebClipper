@@ -261,8 +261,10 @@ export class SaveToOneNote {
 					});
 				}, { times: 1, callOnSubscribe: false });
 			} else {
-				this.addEnhancedUrlContentToPageHelper(page, clipperState.pdfResult.data.get().arrayBuffer);
-				resolve();
+				clipperState.pdfResult.data.get().pdf.getData().then((buffer) => {
+					this.addEnhancedUrlContentToPageHelper(page, buffer);
+					resolve();
+				});
 			}
 		});
 	}
@@ -378,7 +380,7 @@ export class SaveToOneNote {
 	 */
 	private static createOneNotePagePatchRequest(pageId: string, pdf: PDFDocumentProxy, pageRange: number[]): Promise<any> {
 		return new Promise<any>((resolve) => {
-			SaveToOneNote.getDataUrlsForPdfPageRange(pdf, pageRange).then((dataUrls) => {
+			return SaveToOneNote.getDataUrlsForPdfPageRange(pdf, pageRange).then((dataUrls) => {
 				let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
 				return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
 			});
@@ -424,5 +426,39 @@ export class SaveToOneNote {
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 		return new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
+	}
+
+	private static getDataUrlsForPdfPageRange(pdf: PDFDocumentProxy, range: number[]): Promise<string[]> {
+		let numPages = range.length;
+		let dataUrls = new Array(numPages);
+		return new Promise<string[]>((resolve) => {
+			for (let i = 0; i < numPages; i++) {
+				let currentPage = range[i];
+				// Pages start at index 1
+				pdf.getPage(currentPage + 1).then((page) => {
+					let viewport = page.getViewport(1 /* scale */);
+					let canvas = document.createElement("canvas") as HTMLCanvasElement;
+					let context = canvas.getContext("2d");
+					canvas.height = viewport.height;
+					canvas.width = viewport.width;
+
+					let renderContext = {
+						canvasContext: context,
+						viewport: viewport
+					};
+
+					// Rendering is async so results may come back in any order
+					page.render(renderContext).then(() => {
+						dataUrls[i] = canvas.toDataURL();
+						if (ArrayUtils.isArrayComplete(dataUrls)) {
+							// getBinaryEvent.stopTimer();
+							// getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
+							// Clipper.logger.logEvent(getBinaryEvent);
+							resolve(dataUrls);
+						}
+					});
+				});
+			}
+		});
 	}
 }

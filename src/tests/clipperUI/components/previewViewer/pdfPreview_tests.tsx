@@ -23,8 +23,8 @@ function getMockPdfModeState(): ClipperState {
 	state.currentMode.set(ClipMode.Pdf);
 
 	state.pdfResult.data.set({
-		arrayBuffer: new ArrayBuffer(10),
-		dataUrls: pdfDataUrls
+		pdf: undefined,
+		viewportDimensions: [{ width: 1, height: 1 }]
 	});
 	state.pdfResult.status = Status.Succeeded;
 

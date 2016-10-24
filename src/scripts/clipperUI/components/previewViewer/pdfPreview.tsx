@@ -180,9 +180,9 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		}
 		pagesToShow = pagesToShow.map((ind) => { return ind - 1; });
 
-		let allImages = data.dataUrls.map((dataUrl, index) => {
+		let allImages = data.viewportDimensions.map((dataUrl, index) => {
 			return {
-				dataUrl: dataUrl,
+				dataUrl: "abc",
 				selected: this.props.clipperState.pdfPreviewInfo.allPages || pagesToShow.indexOf(index) >= 0
 			};
 		});
