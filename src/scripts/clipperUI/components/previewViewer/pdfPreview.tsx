@@ -35,6 +35,7 @@ interface PdfPreviewState {
 class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
 	private static latestScrollListener: (event: UIEvent) => void;
 	private static scrollListenerTimeout: number;
+	private initPageRenderCalled: boolean = false;
 
 	constructor(props: ClipperStateProp) {
 		super(props);
@@ -52,6 +53,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 	/**
 	 * Determines which pages are in view of the preview and updates the state with their indexes
+	 * TODO rename
 	 */
 	private updateRenderedPages() {
 		let allPages = document.querySelectorAll("div[data-pageindex]");
@@ -64,6 +66,8 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 				pagesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10) + 1);
 			}
 		}
+
+		// TODO, to get n pages above and below the pages in the view port, prepend and append to pagesToRender
 
 		this.setStateWithDataUrls(pagesToRender).then((renderedPages) => {
 			this.setState({
@@ -269,6 +273,15 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		let contentBody = [];
 		switch (result.status) {
 			case Status.Succeeded:
+				if (!this.initPageRenderCalled) {
+					this.initPageRenderCalled = true;
+					this.setStateWithDataUrls([1, 2, 3]).then((renderedPages) => {
+						this.setState({
+							renderedPages: renderedPages
+						});
+					});
+				}
+
 				// In OneNote we don't display the extension
 				let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
 				let defaultAttachmentName = "Original.pdf";
