@@ -17,6 +17,7 @@ import {Status} from "../../status";
 
 import {RotatingMessageSpriteAnimation} from "../../components/rotatingMessageSpriteAnimation";
 
+import {PdfPreviewAttachment} from "./pdfPreviewAttachment";
 import {PdfPreviewPage} from "./pdfPreviewPage";
 import {PreviewComponentBase} from "./previewComponentBase";
 import {PreviewViewerPdfHeader} from "./previewViewerPdfHeader";
@@ -67,7 +68,15 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 			}
 		}
 
-		// TODO, to get n pages above and below the pages in the view port, prepend and append to pagesToRender
+		if (pagesToRender.length > 0) {
+			let first = pagesToRender[0];
+			let extraPagesToPrepend = _.range(Math.max(first - Constants.Settings.pdfExtraPageLoadEachSide, 1), first);
+
+			let last = pagesToRender[pagesToRender.length - 1];
+			let extraPagesToAppend = _.range(last, Math.min(last + Constants.Settings.pdfExtraPageLoadEachSide, this.props.clipperState.pdfResult.data.get().pdf.numPages)).map((index) => index + 1);
+
+			pagesToRender = extraPagesToPrepend.concat(pagesToRender).concat(extraPagesToAppend);
+		}
 
 		this.setStateWithDataUrls(pagesToRender).then((renderedPages) => {
 			this.setState({
@@ -85,29 +94,38 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		let renderedPages: IndexToDataUrlMap = {};
 
 		return new Promise<IndexToDataUrlMap>((resolve) => {
+			let resolveIfDone = () => {
+				if (this.isRenderedPagesObjComplete(renderedPages, pagesToRender)) {
+					resolve(renderedPages);
+				}
+			};
+
 			for (let i = 0; i < pagesToRender.length; i++) {
 				let pageToRender = pagesToRender[i];
-				this.props.clipperState.pdfResult.data.get().pdf.getPage(pageToRender).then((page) => {
-					let viewport = page.getViewport(1 /* scale */);
-					let canvas = document.createElement("canvas") as HTMLCanvasElement;
-					let context = canvas.getContext("2d");
-					canvas.height = viewport.height;
-					canvas.width = viewport.width;
+				if (this.state.renderedPages[pageToRender]) {
+					// Optimization: we already have the data url for this page in state, so no point going through the proxy
+					renderedPages[pageToRender] = this.state.renderedPages[pageToRender];
+					resolveIfDone();
+				} else {
+					this.props.clipperState.pdfResult.data.get().pdf.getPage(pageToRender).then((page) => {
+						let viewport = page.getViewport(1 /* scale */);
+						let canvas = document.createElement("canvas") as HTMLCanvasElement;
+						let context = canvas.getContext("2d");
+						canvas.height = viewport.height;
+						canvas.width = viewport.width;
 
-					let renderContext = {
-						canvasContext: context,
-						viewport: viewport
-					};
+						let renderContext = {
+							canvasContext: context,
+							viewport: viewport
+						};
 
-					// Rendering is async so results may come back in any order
-					page.render(renderContext).then(() => {
-						renderedPages[pageToRender] = canvas.toDataURL();
-						// If object is complete, TODO: make neater
-						if (this.isRenderedPagesObjComplete(renderedPages, pagesToRender)) {
-							resolve(renderedPages);
-						}
+						// Rendering is async so results may come back in any order
+						page.render(renderContext).then(() => {
+							renderedPages[pageToRender] = canvas.toDataURL();
+							resolveIfDone();
+						});
 					});
-				});
+				}
 			}
 		});
 	}
@@ -287,11 +305,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 				let defaultAttachmentName = "Original.pdf";
 				let fullAttachmentName = this.props.clipperState.pageInfo ? Utils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
 				if (shouldAttachPdf) {
-					contentBody.push(
-						<span className={Constants.Classes.attachmentOverlay}>
-							<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
-							<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
-						</span>);
+					contentBody.push(<PdfPreviewAttachment name={fullAttachmentName.split(".")[0]}/>);
 				}
 
 				contentBody = contentBody.concat(this.getPageComponents());

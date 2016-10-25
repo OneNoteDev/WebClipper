@@ -21,11 +21,6 @@ let stringsJson = require("../../../../strings.json");
 function getMockPdfModeState(): ClipperState {
 	let state = HelperFunctions.getMockClipperState() as ClipperState;
 	state.currentMode.set(ClipMode.Pdf);
-
-	// state.pdfResult.data.set({
-	// 	arrayBuffer: new ArrayBuffer(10),
-	// 	dataUrls: pdfDataUrls
-	// });
 	state.pdfResult.status = Status.Succeeded;
 
 	state.pdfPreviewInfo = {
