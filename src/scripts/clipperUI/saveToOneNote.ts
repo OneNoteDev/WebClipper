@@ -357,7 +357,7 @@ export class SaveToOneNote {
 			return Promise.all([postPageResponse,
 				indexesToBePatchedRanges.reduce((chainedPromise, currentRange) => {
 					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
-						return new Promise((resolve) => {
+						return new Promise((resolve, reject) => {
 							// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
 							// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
 							// processed in the order that they were sent.
@@ -365,6 +365,8 @@ export class SaveToOneNote {
 								SaveToOneNote.createOneNotePagePatchRequest(pageId, pdfDocumentProxy, currentRange).then(() => {
 									timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 									resolve();
+								}).catch((error) => {
+									reject(error);
 								});
 							}, timeBetweenPatchRequests);
 						});
