@@ -17,7 +17,7 @@ import {Status} from "../../status";
 
 import {RotatingMessageSpriteAnimation} from "../../components/rotatingMessageSpriteAnimation";
 
-import {PdfPageViewport} from "./pdfPageViewport";
+import {PdfPreviewPage} from "./pdfPreviewPage";
 import {PreviewComponentBase} from "./previewComponentBase";
 import {PreviewViewerPdfHeader} from "./previewViewerPdfHeader";
 
@@ -28,7 +28,7 @@ type IndexToDataUrlMap = { [index: number]: string; }
 interface PdfPreviewState {
 	showPageNumbers?: boolean;
 	invalidRange?: boolean; // TODO this is probably a duplication of info
-	renderedPages?: IndexToDataUrlMap;
+	renderedPages?: IndexToDataUrlMap; // This is indexed from 1
 }
 
 // TODO change name to PdfPreviewClass
@@ -61,7 +61,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		for (let i = 0; i < allPages.length; i++) {
 			let currentPage = allPages[i] as HTMLDivElement;
 			if (this.pageIsVisible(currentPage)) {
-				pagesToRender.push((currentPage.dataset as any).pageindex);
+				pagesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10) + 1);
 			}
 		}
 
@@ -84,7 +84,8 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 		return new Promise<IndexToDataUrlMap>((resolve) => {
 			for (let i = 0; i < pagesToRender.length; i++) {
-				this.props.clipperState.pdfResult.data.get().pdf.getPage(i + 1).then((page) => {
+				let pageToRender = pagesToRender[i];
+				this.props.clipperState.pdfResult.data.get().pdf.getPage(pageToRender).then((page) => {
 					let viewport = page.getViewport(1 /* scale */);
 					let canvas = document.createElement("canvas") as HTMLCanvasElement;
 					let context = canvas.getContext("2d");
@@ -98,7 +99,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 					// Rendering is async so results may come back in any order
 					page.render(renderContext).then(() => {
-						renderedPages[i] = canvas.toDataURL();
+						renderedPages[pageToRender] = canvas.toDataURL();
 						// If object is complete, TODO: make neater
 						if (this.isRenderedPagesObjComplete(renderedPages, pagesToRender)) {
 							resolve(renderedPages);
@@ -124,9 +125,17 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	private getPageComponents(): any[] {
 		let pages = [];
 		let pdfResult = this.props.clipperState.pdfResult.data.get();
+
+		// Determine which pages should be marked as selected vs unselected
+		let pagesToShow = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
+		if (!pagesToShow) {
+			pagesToShow = [];
+		}
+		pagesToShow = pagesToShow.map((ind) => { return ind - 1; });
+
 		for (let i = 0; i < pdfResult.pdf.numPages; i++) {
-			pages.push(<PdfPageViewport
-				viewportDimensions={pdfResult.viewportDimensions[i]} imgUrl={this.state.renderedPages[i]} index={i} />);
+			pages.push(<PdfPreviewPage showPageNumber={this.state.showPageNumbers} isSelected={this.props.clipperState.pdfPreviewInfo.allPages || pagesToShow.indexOf(i) >= 0}
+				viewportDimensions={pdfResult.viewportDimensions[i]} imgUrl={this.state.renderedPages[i + 1]} index={i} />);
 		}
 		return pages;
 	}
@@ -257,53 +266,22 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	}
 
 	private convertPdfResultToContentData(result: DataResult<SmartValue<PdfScreenshotResult>>): any[] {
-		// let data = this.props.clipperState.pdfResult.data.get();
-		// if (!data || this.props.clipperState.pdfResult.status !== Status.Succeeded) {
-		// 	return;
-		// }
-
-		// // Determine which pages should be marked as selected vs unselected
-		// let pagesToShow = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
-		// if (!pagesToShow) {
-		// 	pagesToShow = [];
-		// }
-		// pagesToShow = pagesToShow.map((ind) => { return ind - 1; });
-
-		// let allImages = data.dataUrls.map((dataUrl, index) => {
-		// 	return {
-		// 		dataUrl: dataUrl,
-		// 		selected: this.props.clipperState.pdfPreviewInfo.allPages || pagesToShow.indexOf(index) >= 0
-		// 	};
-		// });
-
-		// let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
-
 		let contentBody = [];
 		switch (result.status) {
 			case Status.Succeeded:
-				// // In OneNote we don't display the extension
-				// let defaultAttachmentName = "Original.pdf";
-				// let fullAttachmentName = this.props.clipperState.pageInfo ? Utils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
-				// if (shouldAttachPdf) {
-				// 	contentBody.push(
-				// 		<span className={Constants.Classes.attachmentOverlay}>
-				// 			<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
-				// 			<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
-				// 		</span>);
-				// }
+				// In OneNote we don't display the extension
+				let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
+				let defaultAttachmentName = "Original.pdf";
+				let fullAttachmentName = this.props.clipperState.pageInfo ? Utils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
+				if (shouldAttachPdf) {
+					contentBody.push(
+						<span className={Constants.Classes.attachmentOverlay}>
+							<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
+							<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
+						</span>);
+				}
 
-				// let overlayClassName = "overlay" + (this.state.showPageNumbers ? "" : " overlay-hidden");
-				// for (let i = 0; i < allImages.length; i++) {
-				// 	let image = allImages[i];
-				// 	contentBody.push(
-				// 		<div class="pdf-preview-image-container">
-				// 			<img className={Constants.Classes.pdfPreviewImage + (image.selected ? "" : " unselected")} src={image.dataUrl}></img>
-				// 			<div className={overlayClassName}>
-				// 				<span class="overlay-number">{i + 1}</span>
-				// 			</div>
-				// 		</div>);
-				// }
-				contentBody = this.getPageComponents();
+				contentBody = contentBody.concat(this.getPageComponents());
 				break;
 			case Status.NotStarted:
 			case Status.InProgress:
