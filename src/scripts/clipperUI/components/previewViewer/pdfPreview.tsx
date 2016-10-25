@@ -28,8 +28,8 @@ type IndexToDataUrlMap = { [index: number]: string; }
 
 interface PdfPreviewState {
 	showPageNumbers?: boolean;
-	invalidRange?: boolean; // TODO this is probably a duplication of info
-	renderedPages?: IndexToDataUrlMap; // This is indexed from 1
+	invalidRange?: boolean;
+	renderedPages?: IndexToDataUrlMap;
 }
 
 // TODO change name to PdfPreviewClass
@@ -52,11 +52,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		};
 	}
 
-	/**
-	 * Determines which pages are in view of the preview and updates the state with their indexes
-	 * TODO rename
-	 */
-	private updateRenderedPages() {
+	private setDataUrlsOfImagesInViewportInState() {
 		let allPages = document.querySelectorAll("div[data-pageindex]");
 		let pagesToRender: number[] = [];
 
@@ -83,11 +79,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 			pagesToRender = extraPagesToPrepend.concat(pagesToRender).concat(extraPagesToAppend);
 		}
 
-		this.setStateWithDataUrls(pagesToRender).then((renderedPages) => {
-			this.setState({
-				renderedPages: renderedPages
-			});
-		});
+		this.setDataUrlsOfImagesInState(pagesToRender);
 	}
 
 	private pageIsVisible(element: HTMLElement): boolean {
@@ -95,7 +87,15 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		return rect.top <= window.innerHeight && rect.bottom >= 0;
 	}
 
-	private setStateWithDataUrls(pagesToRender: number[]): Promise<IndexToDataUrlMap> {
+	private setDataUrlsOfImagesInState(pagesToRender) {
+		this.fetchDataUrlsForPages(pagesToRender).then((renderedPages) => {
+			this.setState({
+				renderedPages: renderedPages
+			});
+		});
+	}
+
+	private fetchDataUrlsForPages(pagesToRender: number[]): Promise<IndexToDataUrlMap> {
 		let renderedPages: IndexToDataUrlMap = {};
 
 		return new Promise<IndexToDataUrlMap>((resolve) => {
@@ -181,9 +181,9 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 					this.setState({
 						showPageNumbers: false
 					});
-					// TODO piggybacking this for now
+					// We piggyback the scroll listener to determine what pages the user is looking at, then render them
 					if (this.props.clipperState.pdfResult.status === Status.Succeeded) {
-						this.updateRenderedPages();
+						this.setDataUrlsOfImagesInViewportInState();
 					}
 				}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
 
@@ -297,12 +297,9 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		switch (result.status) {
 			case Status.Succeeded:
 				if (!this.initPageRenderCalled) {
+					// Load the first n pages as soon as we are able to
 					this.initPageRenderCalled = true;
-					this.setStateWithDataUrls([1, 2, 3]).then((renderedPages) => {
-						this.setState({
-							renderedPages: renderedPages
-						});
-					});
+					this.setDataUrlsOfImagesInState(_.range(Constants.Settings.pdfInitialPageLoadCount).map((index) => index + 1));
 				}
 
 				// In OneNote we don't display the extension
