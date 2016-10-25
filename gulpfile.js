@@ -204,7 +204,8 @@ gulp.task("tslint", function() {
 			formatter: "verbose"
 		}))
 		.pipe(tslint.report({
-			emitError: false
+			emitError: false,
+			summarizeFailureOutput: true
 		}))
 });
 
