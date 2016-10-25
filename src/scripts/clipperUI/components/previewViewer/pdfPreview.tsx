@@ -32,8 +32,7 @@ interface PdfPreviewState {
 	renderedPages?: IndexToDataUrlMap;
 }
 
-// TODO change name to PdfPreviewClass
-class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
+class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
 	private static latestScrollListener: (event: UIEvent) => void;
 	private static scrollListenerTimeout: number;
 	private initPageRenderCalled: boolean = false;
@@ -166,18 +165,18 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	}
 
 	private addScrollListener() {
-		if (PdfPreview.latestScrollListener) {
-			window.removeEventListener("scroll", PdfPreview.latestScrollListener, true);
+		if (PdfPreviewClass.latestScrollListener) {
+			window.removeEventListener("scroll", PdfPreviewClass.latestScrollListener, true);
 		}
 		// When we detect a scroll, show page numbers immediately.
 		// When the user doesn't scroll for some period of time, fade them out.
-		PdfPreview.latestScrollListener = (event) => {
+		PdfPreviewClass.latestScrollListener = (event) => {
 			let element = event.target as HTMLElement;
 			if (!!element && element.id === Constants.Ids.previewContentContainer) {
-				if (Utils.isNumeric(PdfPreview.scrollListenerTimeout)) {
-					clearTimeout(PdfPreview.scrollListenerTimeout);
+				if (Utils.isNumeric(PdfPreviewClass.scrollListenerTimeout)) {
+					clearTimeout(PdfPreviewClass.scrollListenerTimeout);
 				}
-				PdfPreview.scrollListenerTimeout = setTimeout(() => {
+				PdfPreviewClass.scrollListenerTimeout = setTimeout(() => {
 					this.setState({
 						showPageNumbers: false
 					});
@@ -196,7 +195,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 			}
 		};
 		// TODO does this work on touch and pageup/down too?
-		window.addEventListener("scroll", PdfPreview.latestScrollListener, true /* allows the listener to listen to all elements */);
+		window.addEventListener("scroll", PdfPreviewClass.latestScrollListener, true /* allows the listener to listen to all elements */);
 	}
 
 	protected getContentBodyForCurrentStatus(): any[] {
@@ -334,5 +333,5 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	}
 }
 
-let component = PdfPreview.componentize();
+let component = PdfPreviewClass.componentize();
 export {component as PdfPreview};
