@@ -65,9 +65,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 			}
 		}
 
-		// TODO asynchronously get data urls, then setState when complete
 		this.setStateWithDataUrls(pagesToRender).then((renderedPages) => {
-			console.log(renderedPages);
 			this.setState({
 				renderedPages: renderedPages
 			});
@@ -157,7 +155,9 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 						showPageNumbers: false
 					});
 					// TODO piggybacking this for now
-					this.updateRenderedPages();
+					if (this.props.clipperState.pdfResult.status === Status.Succeeded) {
+						this.updateRenderedPages();
+					}
 				}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
 
 				// A little optimization to prevent us from calling render a large number of times
@@ -168,6 +168,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 				}
 			}
 		};
+		// TODO does this work on touch and pageup/down too?
 		window.addEventListener("scroll", PdfPreview.latestScrollListener, true /* allows the listener to listen to all elements */);
 	}
 
@@ -246,7 +247,6 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		let failureMessage: string;
 
 		let previewStatus = this.getStatus();
-		// let pageInfo = this.props.clipperState.pageInfo;
 		let pdfResult = this.props.clipperState.pdfResult;
 		switch (previewStatus) {
 			case Status.Succeeded:
