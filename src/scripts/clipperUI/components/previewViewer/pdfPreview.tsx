@@ -54,19 +54,24 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	 * Determines which pages are in view of the preview and updates the state with their indexes
 	 */
 	private updateRenderedPages() {
+		console.log("updating them rendered pages");
 		let allPages = document.querySelectorAll("div[data-pageindex]");
 		let pagesToRender: number[] = [];
 
+		let t0 = new Date();
 		// Naive
 		for (let i = 0; i < allPages.length; i++) {
 			let currentPage = allPages[i] as HTMLDivElement;
 			if (this.pageIsVisible(currentPage)) {
-				pagesToRender.push((currentPage.dataset as any).pageindex);
+				pagesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10));
 			}
 		}
+		let t1 = new Date();
+		console.log(pagesToRender, " took " + (t1.getTime() - t0.getTime()) + " milliseconds");
 
 		// TODO asynchronously get data urls, then setState when complete
 		this.setStateWithDataUrls(pagesToRender).then((renderedPages) => {
+			console.log("beautiful morning");
 			console.log(renderedPages);
 			this.setState({
 				renderedPages: renderedPages
@@ -84,7 +89,8 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 		return new Promise<IndexToDataUrlMap>((resolve) => {
 			for (let i = 0; i < pagesToRender.length; i++) {
-				this.props.clipperState.pdfResult.data.get().pdf.getPage(i + 1).then((page) => {
+				let pageIndex = pagesToRender[i];
+				this.props.clipperState.pdfResult.data.get().pdf.getPage(pageIndex + 1).then((page) => {
 					let viewport = page.getViewport(1 /* scale */);
 					let canvas = document.createElement("canvas") as HTMLCanvasElement;
 					let context = canvas.getContext("2d");
@@ -98,8 +104,9 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 
 					// Rendering is async so results may come back in any order
 					page.render(renderContext).then(() => {
-						renderedPages[i] = canvas.toDataURL();
+						renderedPages[pageIndex] = canvas.toDataURL();
 						// If object is complete, TODO: make neater
+						console.log("rendering that ish");
 						if (this.isRenderedPagesObjComplete(renderedPages, pagesToRender)) {
 							resolve(renderedPages);
 						}
