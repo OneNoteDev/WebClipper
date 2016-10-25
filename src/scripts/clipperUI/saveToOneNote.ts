@@ -295,10 +295,6 @@ export class SaveToOneNote {
 		return StringUtils.parsePageRange(this.clipperState.pdfPreviewInfo.selectedPageRange).map((indexFromOne) => indexFromOne - 1);
 	}
 
-	// private static getDataUrlsForPageIndexes(indexes: number[]): string[] {
-	// 	return this.clipperState.pdfResult.data.get().dataUrls.filter((value, index) => indexes.indexOf(index) >= 0);
-	// }
-
 	// Note this is called only after we finish waiting on the pdf request
 	private static logPdfOptions() {
 		let clipPdfEvent = new Log.Event.BaseEvent(Log.Event.Label.ClipPdfOptions);

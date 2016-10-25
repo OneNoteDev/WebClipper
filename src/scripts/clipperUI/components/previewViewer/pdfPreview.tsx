@@ -68,6 +68,7 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 			}
 		}
 
+		// Pad pages to each end of the list to increase the scroll distance before the user hits a blank page
 		if (pagesToRender.length > 0) {
 			let first = pagesToRender[0];
 			let extraPagesToPrepend = _.range(Math.max(first - Constants.Settings.pdfExtraPageLoadEachSide, 1), first);
