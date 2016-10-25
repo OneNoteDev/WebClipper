@@ -63,11 +63,7 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		for (let i = 0; i < allPages.length; i++) {
 			let currentPage = allPages[i] as HTMLDivElement;
 			if (this.pageIsVisible(currentPage)) {
-<<<<<<< HEAD
-				pagesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10));
-=======
 				pagesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10) + 1);
->>>>>>> 9732e252facb6ecab50dc3dcab4d997f12ae513a
 			}
 		}
 		let t1 = new Date();
