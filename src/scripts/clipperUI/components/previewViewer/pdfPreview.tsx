@@ -60,11 +60,16 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		let allPages = document.querySelectorAll("div[data-pageindex]");
 		let pagesToRender: number[] = [];
 
-		// Naive
+		// TODO: this is a naive algorithm. Can be improved with binary search, or an approximation for O(1)
+		let foundPageInViewport = false;
 		for (let i = 0; i < allPages.length; i++) {
 			let currentPage = allPages[i] as HTMLDivElement;
 			if (this.pageIsVisible(currentPage)) {
 				pagesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10) + 1);
+				foundPageInViewport = true;
+			} else if (foundPageInViewport) {
+				// There will be no more pages in viewport from this point onwards, terminate early
+				break;
 			}
 		}
 
