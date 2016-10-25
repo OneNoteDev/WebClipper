@@ -47,7 +47,9 @@ export module ArrayUtils {
 		return partitions;
 	}
 
-	// We have to use this instead of Array.prototype.every because it doesn't work
+	/**
+	 * Given an array, returns true if all items are defined; false otherwise.
+	 */
 	export function isArrayComplete(arr: any[]): boolean {
 		for (let i = 0; i < arr.length; i++) {
 			if (!arr[i]) {

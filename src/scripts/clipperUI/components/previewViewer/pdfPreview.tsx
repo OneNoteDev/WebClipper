@@ -8,7 +8,7 @@ import {Utils} from "../../../utils";
 import {SmartValue} from "../../../communicator/smartValue";
 
 import {FullPageScreenshotResult} from "../../../contentCapture/fullPageScreenshotHelper";
-import {PdfScreenshotResult} from "../../../contentCapture/pdfScreenshotHelper";
+import {PdfScreenshotHelper, PdfScreenshotResult} from "../../../contentCapture/pdfScreenshotHelper";
 
 import {Localization} from "../../../localization/localization";
 
@@ -111,23 +111,9 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 					renderedPages[pageToRender] = this.state.renderedPages[pageToRender];
 					resolveIfDone();
 				} else {
-					this.props.clipperState.pdfResult.data.get().pdf.getPage(pageToRender).then((page) => {
-						let viewport = page.getViewport(1 /* scale */);
-						let canvas = document.createElement("canvas") as HTMLCanvasElement;
-						let context = canvas.getContext("2d");
-						canvas.height = viewport.height;
-						canvas.width = viewport.width;
-
-						let renderContext = {
-							canvasContext: context,
-							viewport: viewport
-						};
-
-						// Rendering is async so results may come back in any order
-						page.render(renderContext).then(() => {
-							renderedPages[pageToRender] = canvas.toDataURL();
-							resolveIfDone();
-						});
+					PdfScreenshotHelper.getPdfPageAsDataUrl(this.props.clipperState.pdfResult.data.get().pdf, pageToRender).then((dataUrl) => {
+						renderedPages[pageToRender] = dataUrl;
+						resolveIfDone();
 					});
 				}
 			}

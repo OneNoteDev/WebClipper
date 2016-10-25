@@ -69,6 +69,27 @@ export class PdfScreenshotHelper {
 		});
 	}
 
+	public static getPdfPageAsDataUrl(pdf: PDFDocumentProxy, pageNumber: number): Promise<string> {
+		return new Promise<string>((resolve) => {
+			pdf.getPage(pageNumber).then((page) => {
+				let viewport = page.getViewport(1 /* scale */);
+				let canvas = document.createElement("canvas") as HTMLCanvasElement;
+				let context = canvas.getContext("2d");
+				canvas.height = viewport.height;
+				canvas.width = viewport.width;
+
+				let renderContext = {
+					canvasContext: context,
+					viewport: viewport
+				};
+
+				page.render(renderContext).then(() => {
+					resolve(canvas.toDataURL());
+				});
+			});
+		});
+	}
+
 	private static getPdfScreenshotResult(source: string | Uint8Array | PDFSource): Promise<PdfScreenshotResult> {
 		// Never rejects, interesting
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
@@ -116,29 +137,15 @@ export class PdfScreenshotHelper {
 		return new Promise<string[]>((resolve) => {
 			for (let i = 0; i < pdf.numPages; i++) {
 				// Pages start at index 1
-				pdf.getPage(i + 1).then((page) => {
-					let viewport = page.getViewport(1 /* scale */);
-					let canvas = document.createElement("canvas") as HTMLCanvasElement;
-					let context = canvas.getContext("2d");
-					canvas.height = viewport.height;
-					canvas.width = viewport.width;
+				this.getPdfPageAsDataUrl(pdf, i + 1).then((dataUrl) => {
+					dataUrls[i] = dataUrl;
+					if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
+						getBinaryEvent.stopTimer();
+						getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
+						Clipper.logger.logEvent(getBinaryEvent);
 
-					let renderContext = {
-						canvasContext: context,
-						viewport: viewport
-					};
-
-					// Rendering is async so results may come back in any order
-					page.render(renderContext).then(() => {
-						dataUrls[i] = canvas.toDataURL();
-						if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
-							getBinaryEvent.stopTimer();
-							getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
-							Clipper.logger.logEvent(getBinaryEvent);
-
-							resolve(dataUrls);
-						}
-					});
+						resolve(dataUrls);
+					}
 				});
 			}
 		});
