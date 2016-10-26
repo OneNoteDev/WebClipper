@@ -376,16 +376,6 @@ export class SaveToOneNote {
 		});
 	}
 
-	// private static retry(fxn: Function, numRetries: number): Function {
-	// 	return () => {
-
-	// 	}
-	// }
-	
-	// private static retry(fxn: () => Promise<any>, numRetries: number, args: Object): Promise => {
-
-	// }
-	
 	private static sendOneNotePagePatchRequestWithRetries(pageId: string, dataUrls: string[], numRetries: number): Promise<any> {
 		return SaveToOneNote.sendOneNotePagePatchRequest(pageId, dataUrls).catch((error) => {
 					if (numRetries >= 1) {
