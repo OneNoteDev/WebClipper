@@ -108,7 +108,49 @@ test("When the call to the PDF is in progress, the preview should indicate that 
 		"The spinner should be present in the preview body");
 });
 
-test("When 'All Pages' is checked in the page range control, every dataUrl should be rendered and not grayed out into the preview body", () => {
+test("When no data urls are present in state, a canvas should be rendered for every page, but the image should not be rendered", () => {
+	let clipperState = getMockPdfModeState();
+	let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
+	HelperFunctions.simulateAction(() => {
+		pdfPreview.state.renderedPageIndexes = {};
+	});
+
+	let imagesCanvases = document.getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas);
+	strictEqual(imagesCanvases.length, pdfDataUrls.length, "There should be a canvas for every page in the pdf");
+
+	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
+	strictEqual(images.length, 0, "There should no pdf images rendered");
+});
+
+test("When data urls are present in state, a canvas should be rendered for every page, as well as images", () => {
+	let clipperState = getMockPdfModeState();
+	let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
+	HelperFunctions.simulateAction(() => {
+		pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
+	});
+
+	let imagesCanvases = document.getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas);
+	strictEqual(imagesCanvases.length, pdfDataUrls.length, "There should be a canvas for every page in the pdf");
+
+	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
+	strictEqual(images.length, pdfDataUrls.length, "There should be an img for every page in the pdf");
+});
+
+test("When a subset of data urls are present in state, a canvas should be rendered for every page, and every image for each page in the subset", () => {
+	let clipperState = getMockPdfModeState();
+	let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
+	HelperFunctions.simulateAction(() => {
+		pdfPreview.state.renderedPageIndexes = { "0": MockPdfValues.pageDataUrls[0] };
+	});
+
+	let imagesCanvases = document.getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas);
+	strictEqual(imagesCanvases.length, pdfDataUrls.length, "There should be a canvas for every page in the pdf");
+
+	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
+	strictEqual(images.length, 1, "There should be an img for every data url present");
+});
+
+test("When 'All Pages' is checked in the page range control, all pages should not be grayed out", () => {
 	let clipperState = getMockPdfModeState();
 	clipperState.currentMode.set(ClipMode.Pdf);
 	clipperState.pdfPreviewInfo = {
@@ -121,20 +163,11 @@ test("When 'All Pages' is checked in the page range control, every dataUrl shoul
 		pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 	});
 
-	let imagesCanvases = document.getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas);
-	strictEqual(imagesCanvases.length, pdfDataUrls.length, "The number of rendered image canvases should match the number of pages");
-
-	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
-	pdfDataUrls.forEach((dataUrl, index) => {
-		let image = images[index] as HTMLImageElement;
-		strictEqual(image.src, dataUrl, "The images should be rendered in the same order of the dataUrls passed in");
-	});
-
 	let unselectedImages = document.getElementsByClassName(Constants.Classes.unselected);
 	strictEqual(unselectedImages.length, 0, "There should be no unselected images");
 });
 
-test("When 'Page Range' is checked in the page range control, but the range is empty, make sure all images are rendered with the unselected class", () => {
+test("When 'Page Range' is checked in the page range control, but the range is empty, all pages should be grayed out", () => {
 	let clipperState = getMockPdfModeState();
 	clipperState.pdfPreviewInfo = {
 		allPages: false,
@@ -146,17 +179,11 @@ test("When 'Page Range' is checked in the page range control, but the range is e
 		pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 	});
 
-	let imagesCanvases = document.getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas);
-	strictEqual(imagesCanvases.length, pdfDataUrls.length, "The number of rendered image canvases should match the number of pages");
-
-	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
-	strictEqual(images.length, pdfDataUrls.length, "The number of rendered images should still be the length of pdfDataUrls, even when the range specified is zero");
-
 	let unselectedImages = document.getElementsByClassName(Constants.Classes.unselected);
 	strictEqual(unselectedImages.length, pdfDataUrls.length, "The number of unselected images should be the length of pdfDataUrls, if the page range specified is empty");
 });
 
-test("When 'Page Range' is checked in the page range control, only the pages specified in the page range should be rendered, with the rest being unselected", () => {
+test("When 'Page Range' is checked in the page range control, pages outside that range should be grayed out", () => {
 	let clipperState = getMockPdfModeState();
 	clipperState.pdfPreviewInfo = {
 		allPages: false,
@@ -167,18 +194,15 @@ test("When 'Page Range' is checked in the page range control, only the pages spe
 	HelperFunctions.simulateAction(() => {
 		pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 	});
-
 	let imagesCanvases = document.getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas);
-	strictEqual(imagesCanvases.length, pdfDataUrls.length, "The number of rendered image canvases should match the number of pages");
-
-	let images = document.getElementsByClassName(Constants.Classes.pdfPreviewImage);
-	strictEqual(images.length, pdfDataUrls.length, "The number of rendered images should match the number of elements in pagesToShow of pdfPreviewInfo");
 
 	let expectedSelectedIndexes = [0, 2];
 	for (let i = 0; i < imagesCanvases.length; ++i) {
 		let imageCanvas = imagesCanvases[i] as HTMLImageElement;
 		if (expectedSelectedIndexes.indexOf(i) === -1) {
-			ok(imageCanvas.classList.contains(Constants.Classes.unselected), "Images that should be grayed out should have unselected in their classList");
+			ok(imageCanvas.classList.contains(Constants.Classes.unselected), "Images in the range should be grayed out");
+		} else {
+			ok(!imageCanvas.classList.contains(Constants.Classes.unselected), "Images not in the range should not be grayed out");
 		}
 	}
 });
@@ -194,9 +218,6 @@ test("When 'Page Range' is checked in the page control, but there is a negative 
 	HelperFunctions.simulateAction(() => {
 		pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 	});
-
-	let imagesCanvases = document.getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas);
-	strictEqual(imagesCanvases.length, pdfDataUrls.length, "The number of rendered image canvases should match the number of pages");
 
 	let selectionQueryForNotGrayedOutImages = "." + Constants.Classes.pdfPreviewImageCanvas + ":not(." + Constants.Classes.unselected + ")";
 	let selectedImageCanvases = document.querySelectorAll(selectionQueryForNotGrayedOutImages);
@@ -243,5 +264,3 @@ test("When the pdf screenshot response is a failure, the preview should display 
 		"The title of the page should be displayed in the preview title");
 	ok(previewHeaderInput.readOnly);
 });
-
-// TODO add tests where the data urls have not been loaded yet
