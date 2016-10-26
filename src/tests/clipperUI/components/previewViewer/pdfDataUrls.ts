@@ -4,4 +4,4 @@ let string2 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEcAAAD4CAYAAAC+LPu
 
 let pdfDataUrls: string[] = [string0, string1, string2];
 
-export { pdfDataUrls };
+export {pdfDataUrls};

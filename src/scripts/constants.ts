@@ -27,6 +27,7 @@ export module Constants {
 		// pdfPreviewViewer
 		export var attachmentOverlay = "attachment-overlay";
 		export var pdfPreviewImage = "pdf-preview-image";
+		export var pdfPreviewImageCanvas = "pdf-preview-image-canvas";
 		export var unselected = "unselected";
 
 		export var localPdfPanelTitle = "local-pdf-panel-title";

@@ -106,7 +106,7 @@ export module HelperFunctions {
 				status: Status.NotStarted
 			},
 			pdfResult: {
-				data: new SmartValue<PdfScreenshotResult>(),
+				data: new SmartValue<PdfScreenshotResult>({}),
 				status: Status.NotStarted
 			},
 			regionResult: {
