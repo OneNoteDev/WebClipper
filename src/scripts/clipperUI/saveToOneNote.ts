@@ -362,7 +362,7 @@ export class SaveToOneNote {
 							// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
 							// processed in the order that they were sent.
 							setTimeout(() => {
-								SaveToOneNote.createOneNotePagePatchRequest(pageId, pdfDocumentProxy, currentRange).then(() => {
+								SaveToOneNote.createAndSendOneNotePagePatchRequestWithRetries(pageId, pdfDocumentProxy, currentRange, 3).then(() => {
 									timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 									resolve();
 								}).catch((error) => {
@@ -374,6 +374,18 @@ export class SaveToOneNote {
 				}, SaveToOneNote.getPage(pageId))
 			]);
 		});
+	}
+
+	private static createAndSendOneNotePagePatchRequestWithRetries(pageId: string, pdf: PDFDocumentProxy, pageRange: number[], numRetries: number): Promise<any> {
+		console.log("numRetries: " + numRetries);
+		return SaveToOneNote.createOneNotePagePatchRequest(pageId, pdf, pageRange)
+				.catch((error) => {
+					if (numRetries >= 1) {
+						return SaveToOneNote.createAndSendOneNotePagePatchRequestWithRetries(pageId, pdf, pageRange, numRetries - 1);
+					} else {
+						return Promise.reject(error);
+					}
+				});
 	}
 
 	/**
