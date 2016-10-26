@@ -391,9 +391,9 @@ export class SaveToOneNote {
 	 * Given a list of page indexes, creates and sends the request to append the pages to the specified
 	 * page with the images
 	 */
-	private static createOneNotePagePatchRequest(pageId: string, pageRange: number[]): Promise<any> {
+	private static createOneNotePagePatchRequest(pageId: string, pageIndices: number[]): Promise<any> {
 		let pdf = this.clipperState.pdfResult.data.get().pdf;
-		return pdf.getPageListAsDataUrls(pageRange).then((dataUrls) => {
+		return pdf.getPageListAsDataUrls(pageIndices).then((dataUrls) => {
 			return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest);
 		});
 	}
