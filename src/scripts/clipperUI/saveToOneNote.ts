@@ -362,7 +362,7 @@ export class SaveToOneNote {
 							// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
 							// processed in the order that they were sent.
 							setTimeout(() => {
-								SaveToOneNote.createAndSendOneNotePagePatchRequestWithRetries(pageId, pdfDocumentProxy, currentRange, 3).then(() => {
+								SaveToOneNote.createOneNotePagePatchRequest(pageId, pdfDocumentProxy, currentRange).then(() => {
 									timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 									resolve();
 								}).catch((error) => {
