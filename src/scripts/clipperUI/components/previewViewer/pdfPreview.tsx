@@ -7,6 +7,8 @@ import {Utils} from "../../../utils";
 
 import {SmartValue} from "../../../communicator/smartValue";
 
+import {DomUtils} from "../../../domParsers/domUtils";
+
 import {FullPageScreenshotResult} from "../../../contentCapture/fullPageScreenshotHelper";
 import {PdfScreenshotHelper, PdfScreenshotResult} from "../../../contentCapture/pdfScreenshotHelper";
 
@@ -51,48 +53,99 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		};
 	}
 
-	private setDataUrlsOfImagesInViewportInState() {
-		let allPages = document.querySelectorAll("div[data-pageindex]");
-		let pageIndexesToRender: number[] = [];
+	private searchForVisiblePageBoundary(allPages: NodeListOf<Element>, initPageIndex: number, incrementer: number): number {
+		let pageIndexToTest = initPageIndex;
+		let guessAtPageBoundary = allPages[pageIndexToTest] as HTMLDivElement;
 
-		// TODO: this is a naive algorithm. Can be improved with binary search, or an approximation for O(1)
-		let foundPageInViewport = false;
-		for (let i = 0; i < allPages.length; i++) {
-			let currentPage = allPages[i] as HTMLDivElement;
-			if (this.pageIsVisible(currentPage)) {
-				pageIndexesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10 /* radix */));
-				foundPageInViewport = true;
-			} else if (foundPageInViewport) {
-				// There will be no more pages in viewport from this point onwards, terminate early
-				break;
+		while (guessAtPageBoundary && this.pageIsVisible(guessAtPageBoundary)) {
+			pageIndexToTest += incrementer;
+			guessAtPageBoundary = allPages[pageIndexToTest] as HTMLDivElement;
+		}
+
+		// result of adding last incrementer was a non-visible page, so return the page num from before that
+		return Math.max(pageIndexToTest -= incrementer, 0);
+	}
+
+	/**
+	 * Get an approximation of the centermost visible page currently in the viewport (based on scroll percentage).
+	 * If the page is indeed in the viewport, search up and down for the visible page boundaries.
+	 * If the page approximation was incorrect and the page is not visible, begin a fan-out search of the area around the approximate page
+	 * for a visible page. When a visible page boundary is found, find the other visible page boundary.
+	 */
+	private getIndicesOfVisiblePages(): number[] {
+		let allPages = document.querySelectorAll("div[data-pageindex]");
+
+		const initGuessAtCurrentPageIndexer: number = Math.floor(DomUtils.getScrollPercent(document.getElementById("previewContentContainer"), true /* asDecimalValue */) * (allPages.length - 1));
+		// console.warn("initGuessAtCurrentPageIndexer:", initGuessAtCurrentPageIndexer, "isVisible:", this.pageIsVisible(allPages[initGuessAtCurrentPageIndexer] as HTMLDivElement));
+
+		let firstVisiblePageIndexer: number;
+		let lastVisiblePageIndexer: number;
+		if (this.pageIsVisible(allPages[initGuessAtCurrentPageIndexer] as HTMLDivElement)) {
+			firstVisiblePageIndexer = this.searchForVisiblePageBoundary(allPages, initGuessAtCurrentPageIndexer, -1);
+			lastVisiblePageIndexer = this.searchForVisiblePageBoundary(allPages, initGuessAtCurrentPageIndexer, 1);
+		} else {
+			let incrementer = 1;
+			let guessAtVisiblePageIndexer = initGuessAtCurrentPageIndexer + incrementer;
+			let guessAtVisiblePageBoundary = allPages[guessAtVisiblePageIndexer] as HTMLDivElement;
+
+			while (!this.pageIsVisible(guessAtVisiblePageBoundary)) {
+				if (incrementer > 0) {
+					incrementer *= -1;
+				} else {
+					incrementer = (incrementer * -1) + 1;
+				}
+
+				guessAtVisiblePageIndexer = initGuessAtCurrentPageIndexer + incrementer;
+
+				guessAtVisiblePageBoundary = allPages[guessAtVisiblePageIndexer] as HTMLDivElement;
+			}
+
+			if (incrementer > 0) {
+				firstVisiblePageIndexer = guessAtVisiblePageIndexer;
+				lastVisiblePageIndexer = this.searchForVisiblePageBoundary(allPages, firstVisiblePageIndexer, 1);
+			} else {
+				lastVisiblePageIndexer = guessAtVisiblePageIndexer;
+				firstVisiblePageIndexer = this.searchForVisiblePageBoundary(allPages, lastVisiblePageIndexer, -1);
 			}
 		}
-		let t1 = new Date();
+
+		// console.warn("visible page indices:", firstVisiblePageIndexer, lastVisiblePageIndexer, _.range(firstVisiblePageIndexer, lastVisiblePageIndexer + 1));
+
+		// _.range does not include the end number, so add 1
+		return _.range(firstVisiblePageIndexer, lastVisiblePageIndexer + 1);
+	}
+
+	private setDataUrlsOfImagesInViewportInState() {
+		let pageIndicesToRender: number[] = this.getIndicesOfVisiblePages();
 
 		// Pad pages to each end of the list to increase the scroll distance before the user hits a blank page
-		if (pageIndexesToRender.length > 0) {
-			let first = pageIndexesToRender[0];
+		if (pageIndicesToRender.length > 0) {
+			let first = pageIndicesToRender[0];
 			let extraPagesToPrepend = _.range(Math.max(first - Constants.Settings.pdfExtraPageLoadEachSide, 0), first);
 
-			let afterLast = pageIndexesToRender[pageIndexesToRender.length - 1] + 1;
+			let afterLast = pageIndicesToRender[pageIndicesToRender.length - 1] + 1;
 			let extraPagesToAppend = _.range(afterLast, Math.min(afterLast + Constants.Settings.pdfExtraPageLoadEachSide, this.props.clipperState.pdfResult.data.get().pdf.numPages()));
 
-			pageIndexesToRender = extraPagesToPrepend.concat(pageIndexesToRender).concat(extraPagesToAppend);
+			pageIndicesToRender = extraPagesToPrepend.concat(pageIndicesToRender).concat(extraPagesToAppend);
 		}
 
-		this.setDataUrlsOfImagesInState(pageIndexesToRender);
+		this.setDataUrlsOfImagesInState(pageIndicesToRender);
 	}
 
 	private pageIsVisible(element: HTMLElement): boolean {
+		if (!element) {
+			return false;
+		}
+
 		let rect = element.getBoundingClientRect();
 		return rect.top <= window.innerHeight && rect.bottom >= 0;
 	}
 
-	private setDataUrlsOfImagesInState(pageIndexesToRender: number[]) {
-		this.props.clipperState.pdfResult.data.get().pdf.getPageListAsDataUrls(pageIndexesToRender).then((dataUrls) => {
+	private setDataUrlsOfImagesInState(pageIndicesToRender: number[]) {
+		this.props.clipperState.pdfResult.data.get().pdf.getPageListAsDataUrls(pageIndicesToRender).then((dataUrls) => {
 			let renderedIndexes: IndexToDataUrlMap = {};
 			for (let i = 0; i < dataUrls.length; i++) {
-				renderedIndexes[pageIndexesToRender[i]] = dataUrls[i];
+				renderedIndexes[pageIndicesToRender[i]] = dataUrls[i];
 			}
 			this.setState({
 				renderedPageIndexes: renderedIndexes
