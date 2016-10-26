@@ -306,9 +306,9 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		switch (result.status) {
 			case Status.Succeeded:
 				if (!this.initPageRenderCalled) {
-					// Load the first n pages as soon as we are able to
+					// Load the first n pages (or fewer if numPages < n) as soon as we are able to
 					this.initPageRenderCalled = true;
-					this.setDataUrlsOfImagesInState(_.range(Constants.Settings.pdfInitialPageLoadCount));
+					this.setDataUrlsOfImagesInState(_.range(Math.min(Constants.Settings.pdfInitialPageLoadCount, result.data.get().pdf.numPages())));
 				}
 
 				// In OneNote we don't display the extension
