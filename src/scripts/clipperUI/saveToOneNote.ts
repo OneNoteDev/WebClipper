@@ -7,7 +7,7 @@ import {StringUtils} from "../stringUtils";
 import {Utils} from "../utils";
 
 import {AugmentationModel} from "../contentCapture/augmentationHelper";
-import {PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
+import {PdfScreenshotHelper, PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
 
 import {DomUtils} from "../domParsers/domUtils";
 
@@ -35,7 +35,6 @@ export class SaveToOneNote {
 	private static clipperState: ClipperState;
 
 	// Used by PDF mode
-	private static maxMimeSizeLimit = 24900000;
 	private static maxImagesPerPatchRequest = 15;
 	private static timeBeforeFirstPatch = 1000;
 	private static timeBetweenPatchRequests = 5000;
@@ -279,7 +278,7 @@ export class SaveToOneNote {
 		let rawUrl = this.clipperState.pageInfo.rawUrl;
 		let mimePartName: string;
 		if (this.clipperState.pdfResult.status === Status.Succeeded && arrayBuffer) {
-			if (arrayBuffer.byteLength < this.maxMimeSizeLimit) {
+			if (arrayBuffer.byteLength < Constants.Settings.maximumMimeSizeLimit) {
 				let attachmentName = Utils.getFileNameFromUrl(this.clipperState.pageInfo.rawUrl, "Original.pdf");
 				if (this.clipperState.pdfPreviewInfo.shouldAttachPdf) {
 					mimePartName = page.addAttachment(arrayBuffer, attachmentName);
@@ -294,10 +293,6 @@ export class SaveToOneNote {
 		}
 		return StringUtils.parsePageRange(this.clipperState.pdfPreviewInfo.selectedPageRange).map((indexFromOne) => indexFromOne - 1);
 	}
-
-	// private static getDataUrlsForPageIndexes(indexes: number[]): string[] {
-	// 	return this.clipperState.pdfResult.data.get().dataUrls.filter((value, index) => indexes.indexOf(index) >= 0);
-	// }
 
 	// Note this is called only after we finish waiting on the pdf request
 	private static logPdfOptions() {
@@ -344,25 +339,21 @@ export class SaveToOneNote {
 
 		console.log(ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest));
 		let indexesToBePatchedRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest);
-		// let dataUrlRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest)
-			// .map((partition) => partition.map((index) => this.clipperState.pdfResult.data.get().dataUrls[index]));
-		// All that exists in pdfResult is pdfDocumentProxy
 
-		// TODO this assumes that we don't fail any of the responses!
 		return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
 			let pageId = postPageResponse.parsedResponse.id;
 
 			// As of 10/21/16, the page sometimes does not exist after the 200 is returned, so we wait a bit
 			let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
 			return Promise.all([postPageResponse,
-				indexesToBePatchedRanges.reduce((chainedPromise, currentRange) => {
+				indexesToBePatchedRanges.reduce((chainedPromise, currentIndexesRange) => {
 					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
 						return new Promise((resolve, reject) => {
 							// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
 							// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
 							// processed in the order that they were sent.
 							setTimeout(() => {
-								SaveToOneNote.createOneNotePagePatchRequest(pageId, pdfDocumentProxy, currentRange).then(() => {
+								SaveToOneNote.createOneNotePagePatchRequest(pageId, pdfDocumentProxy, currentIndexesRange.map(x => x + 1)).then(() => {
 									timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 									resolve();
 								}).catch((error) => {
@@ -391,7 +382,7 @@ export class SaveToOneNote {
 	 * page with the images
 	 */
 	private static createOneNotePagePatchRequest(pageId: string, pdf: PDFDocumentProxy, pageRange: number[]): Promise<any> {
-		return SaveToOneNote.getDataUrlsForPdfPageRange(pdf, pageRange).then((dataUrls) => {
+		return PdfScreenshotHelper.getDataUrlsForPdfPageRange(pdf, pageRange).then((dataUrls) => {
 			return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest);
 		});
 	}
@@ -451,39 +442,5 @@ export class SaveToOneNote {
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 		return new OneNoteApi.OneNoteApi(SaveToOneNote.clipperState.userResult.data.user.accessToken, undefined /* timeout */, headers);
-	}
-
-	private static getDataUrlsForPdfPageRange(pdf: PDFDocumentProxy, range: number[]): Promise<string[]> {
-		let numPages = range.length;
-		let dataUrls = new Array(numPages);
-		return new Promise<string[]>((resolve) => {
-			for (let i = 0; i < numPages; i++) {
-				let currentPage = range[i];
-				// Pages start at index 1
-				pdf.getPage(currentPage + 1).then((page) => {
-					let viewport = page.getViewport(1 /* scale */);
-					let canvas = document.createElement("canvas") as HTMLCanvasElement;
-					let context = canvas.getContext("2d");
-					canvas.height = viewport.height;
-					canvas.width = viewport.width;
-
-					let renderContext = {
-						canvasContext: context,
-						viewport: viewport
-					};
-
-					// Rendering is async so results may come back in any order
-					page.render(renderContext).then(() => {
-						dataUrls[i] = canvas.toDataURL();
-						if (ArrayUtils.isArrayComplete(dataUrls)) {
-							// getBinaryEvent.stopTimer();
-							// getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
-							// Clipper.logger.logEvent(getBinaryEvent);
-							resolve(dataUrls);
-						}
-					});
-				});
-			}
-		});
 	}
 }

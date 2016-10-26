@@ -8,7 +8,7 @@ import {Utils} from "../../../utils";
 import {SmartValue} from "../../../communicator/smartValue";
 
 import {FullPageScreenshotResult} from "../../../contentCapture/fullPageScreenshotHelper";
-import {PdfScreenshotResult} from "../../../contentCapture/pdfScreenshotHelper";
+import {PdfScreenshotHelper, PdfScreenshotResult} from "../../../contentCapture/pdfScreenshotHelper";
 
 import {Localization} from "../../../localization/localization";
 
@@ -17,6 +17,7 @@ import {Status} from "../../status";
 
 import {RotatingMessageSpriteAnimation} from "../../components/rotatingMessageSpriteAnimation";
 
+import {PdfPreviewAttachment} from "./pdfPreviewAttachment";
 import {PdfPreviewPage} from "./pdfPreviewPage";
 import {PreviewComponentBase} from "./previewComponentBase";
 import {PreviewViewerPdfHeader} from "./previewViewerPdfHeader";
@@ -27,14 +28,14 @@ type IndexToDataUrlMap = { [index: number]: string; }
 
 interface PdfPreviewState {
 	showPageNumbers?: boolean;
-	invalidRange?: boolean; // TODO this is probably a duplication of info
-	renderedPages?: IndexToDataUrlMap; // This is indexed from 1
+	invalidRange?: boolean;
+	renderedPages?: IndexToDataUrlMap;
 }
 
-// TODO change name to PdfPreviewClass
-class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
+class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
 	private static latestScrollListener: (event: UIEvent) => void;
 	private static scrollListenerTimeout: number;
+	private initPageRenderCalled: boolean = false;
 
 	constructor(props: ClipperStateProp) {
 		super(props);
@@ -50,33 +51,36 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		};
 	}
 
-	/**
-	 * Determines which pages are in view of the preview and updates the state with their indexes
-	 */
-	private updateRenderedPages() {
-		console.log("updating them rendered pages");
+	private setDataUrlsOfImagesInViewportInState() {
 		let allPages = document.querySelectorAll("div[data-pageindex]");
 		let pagesToRender: number[] = [];
 
-		let t0 = new Date();
-		// Naive
+		// TODO: this is a naive algorithm. Can be improved with binary search, or an approximation for O(1)
+		let foundPageInViewport = false;
 		for (let i = 0; i < allPages.length; i++) {
 			let currentPage = allPages[i] as HTMLDivElement;
 			if (this.pageIsVisible(currentPage)) {
 				pagesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10) + 1);
+				foundPageInViewport = true;
+			} else if (foundPageInViewport) {
+				// There will be no more pages in viewport from this point onwards, terminate early
+				break;
 			}
 		}
 		let t1 = new Date();
-		console.log(pagesToRender, " took " + (t1.getTime() - t0.getTime()) + " milliseconds");
 
-		// TODO asynchronously get data urls, then setState when complete
-		this.setStateWithDataUrls(pagesToRender).then((renderedPages) => {
-			console.log("beautiful morning");
-			console.log(renderedPages);
-			this.setState({
-				renderedPages: renderedPages
-			});
-		});
+		// Pad pages to each end of the list to increase the scroll distance before the user hits a blank page
+		if (pagesToRender.length > 0) {
+			let first = pagesToRender[0];
+			let extraPagesToPrepend = _.range(Math.max(first - Constants.Settings.pdfExtraPageLoadEachSide, 1), first);
+
+			let last = pagesToRender[pagesToRender.length - 1];
+			let extraPagesToAppend = _.range(last, Math.min(last + Constants.Settings.pdfExtraPageLoadEachSide, this.props.clipperState.pdfResult.data.get().pdf.numPages)).map((index) => index + 1);
+
+			pagesToRender = extraPagesToPrepend.concat(pagesToRender).concat(extraPagesToAppend);
+		}
+
+		this.setDataUrlsOfImagesInState(pagesToRender);
 	}
 
 	private pageIsVisible(element: HTMLElement): boolean {
@@ -84,34 +88,36 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		return rect.top <= window.innerHeight && rect.bottom >= 0;
 	}
 
-	private setStateWithDataUrls(pagesToRender: number[]): Promise<IndexToDataUrlMap> {
+	private setDataUrlsOfImagesInState(pagesToRender) {
+		this.fetchDataUrlsForPages(pagesToRender).then((renderedPages) => {
+			this.setState({
+				renderedPages: renderedPages
+			});
+		});
+	}
+
+	private fetchDataUrlsForPages(pagesToRender: number[]): Promise<IndexToDataUrlMap> {
 		let renderedPages: IndexToDataUrlMap = {};
 
 		return new Promise<IndexToDataUrlMap>((resolve) => {
+			let resolveIfDone = () => {
+				if (this.isRenderedPagesObjComplete(renderedPages, pagesToRender)) {
+					resolve(renderedPages);
+				}
+			};
+
 			for (let i = 0; i < pagesToRender.length; i++) {
 				let pageToRender = pagesToRender[i];
-				this.props.clipperState.pdfResult.data.get().pdf.getPage(pageToRender).then((page) => {
-					let viewport = page.getViewport(1 /* scale */);
-					let canvas = document.createElement("canvas") as HTMLCanvasElement;
-					let context = canvas.getContext("2d");
-					canvas.height = viewport.height;
-					canvas.width = viewport.width;
-
-					let renderContext = {
-						canvasContext: context,
-						viewport: viewport
-					};
-
-					// Rendering is async so results may come back in any order
-					page.render(renderContext).then(() => {
-						renderedPages[pageToRender] = canvas.toDataURL();
-						// If object is complete, TODO: make neater
-						console.log("rendering that ish");
-						if (this.isRenderedPagesObjComplete(renderedPages, pagesToRender)) {
-							resolve(renderedPages);
-						}
+				if (this.state.renderedPages[pageToRender]) {
+					// Optimization: we already have the data url for this page in state, so no point going through the proxy
+					renderedPages[pageToRender] = this.state.renderedPages[pageToRender];
+					resolveIfDone();
+				} else {
+					PdfScreenshotHelper.getPdfPageAsDataUrl(this.props.clipperState.pdfResult.data.get().pdf, pageToRender).then((dataUrl) => {
+						renderedPages[pageToRender] = dataUrl;
+						resolveIfDone();
 					});
-				});
+				}
 			}
 		});
 	}
@@ -147,23 +153,25 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	}
 
 	private addScrollListener() {
-		if (PdfPreview.latestScrollListener) {
-			window.removeEventListener("scroll", PdfPreview.latestScrollListener, true);
+		if (PdfPreviewClass.latestScrollListener) {
+			window.removeEventListener("scroll", PdfPreviewClass.latestScrollListener, true);
 		}
 		// When we detect a scroll, show page numbers immediately.
 		// When the user doesn't scroll for some period of time, fade them out.
-		PdfPreview.latestScrollListener = (event) => {
+		PdfPreviewClass.latestScrollListener = (event) => {
 			let element = event.target as HTMLElement;
 			if (!!element && element.id === Constants.Ids.previewContentContainer) {
-				if (Utils.isNumeric(PdfPreview.scrollListenerTimeout)) {
-					clearTimeout(PdfPreview.scrollListenerTimeout);
+				if (Utils.isNumeric(PdfPreviewClass.scrollListenerTimeout)) {
+					clearTimeout(PdfPreviewClass.scrollListenerTimeout);
 				}
-				PdfPreview.scrollListenerTimeout = setTimeout(() => {
+				PdfPreviewClass.scrollListenerTimeout = setTimeout(() => {
 					this.setState({
 						showPageNumbers: false
 					});
-					// TODO piggybacking this for now
-					this.updateRenderedPages();
+					// We piggyback the scroll listener to determine what pages the user is looking at, then render them
+					if (this.props.clipperState.pdfResult.status === Status.Succeeded) {
+						this.setDataUrlsOfImagesInViewportInState();
+					}
 				}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
 
 				// A little optimization to prevent us from calling render a large number of times
@@ -174,7 +182,8 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 				}
 			}
 		};
-		window.addEventListener("scroll", PdfPreview.latestScrollListener, true /* allows the listener to listen to all elements */);
+		// TODO does this work on touch and pageup/down too?
+		window.addEventListener("scroll", PdfPreviewClass.latestScrollListener, true /* allows the listener to listen to all elements */);
 	}
 
 	protected getContentBodyForCurrentStatus(): any[] {
@@ -252,7 +261,6 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		let failureMessage: string;
 
 		let previewStatus = this.getStatus();
-		// let pageInfo = this.props.clipperState.pageInfo;
 		let pdfResult = this.props.clipperState.pdfResult;
 		switch (previewStatus) {
 			case Status.Succeeded:
@@ -275,16 +283,18 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 		let contentBody = [];
 		switch (result.status) {
 			case Status.Succeeded:
+				if (!this.initPageRenderCalled) {
+					// Load the first n pages as soon as we are able to
+					this.initPageRenderCalled = true;
+					this.setDataUrlsOfImagesInState(_.range(Constants.Settings.pdfInitialPageLoadCount).map((index) => index + 1));
+				}
+
 				// In OneNote we don't display the extension
 				let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
 				let defaultAttachmentName = "Original.pdf";
 				let fullAttachmentName = this.props.clipperState.pageInfo ? Utils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
 				if (shouldAttachPdf) {
-					contentBody.push(
-						<span className={Constants.Classes.attachmentOverlay}>
-							<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
-							<div className="file-name">{fullAttachmentName.split(".")[0]}</div>
-						</span>);
+					contentBody.push(<PdfPreviewAttachment name={fullAttachmentName.split(".")[0]}/>);
 				}
 
 				contentBody = contentBody.concat(this.getPageComponents());
@@ -312,5 +322,5 @@ class PdfPreview extends PreviewComponentBase<PdfPreviewState, ClipperStateProp>
 	}
 }
 
-let component = PdfPreview.componentize();
+let component = PdfPreviewClass.componentize();
 export {component as PdfPreview};

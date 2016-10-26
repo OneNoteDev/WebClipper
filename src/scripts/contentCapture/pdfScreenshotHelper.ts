@@ -20,6 +20,7 @@ export type ViewportDimensions = {
 export interface PdfScreenshotResult extends CaptureFailureInfo {
 	pdf?: PDFDocumentProxy;
 	viewportDimensions?: ViewportDimensions[];
+	byteLength?: number;
 }
 
 export class PdfScreenshotHelper {
@@ -52,6 +53,7 @@ export class PdfScreenshotHelper {
 					Clipper.logger.logEvent(getBinaryEvent);
 
 					PdfScreenshotHelper.getPdfScreenshotResult(arrayBuffer).then((pdfScreenshotResult) => {
+						pdfScreenshotResult.byteLength = arrayBuffer.byteLength;
 						resolve(pdfScreenshotResult);
 					});
 				} else {
@@ -66,6 +68,43 @@ export class PdfScreenshotHelper {
 			};
 
 			request.send();
+		});
+	}
+
+	public static getDataUrlsForPdfPageRange(pdf: PDFDocumentProxy, pageNumbers: number[]): Promise<string[]> {
+		let numPages = pageNumbers.length;
+		let dataUrls = new Array(numPages);
+		return new Promise<string[]>((resolve) => {
+			for (let i = 0; i < numPages; i++) {
+				let currentPage = pageNumbers[i];
+				this.getPdfPageAsDataUrl(pdf, currentPage).then((dataUrl) => {
+					dataUrls[i] = dataUrl;
+					if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
+						resolve(dataUrls);
+					}
+				});
+			}
+		});
+	}
+
+	public static getPdfPageAsDataUrl(pdf: PDFDocumentProxy, pageNumber: number): Promise<string> {
+		return new Promise<string>((resolve) => {
+			pdf.getPage(pageNumber).then((page) => {
+				let viewport = page.getViewport(1 /* scale */);
+				let canvas = document.createElement("canvas") as HTMLCanvasElement;
+				let context = canvas.getContext("2d");
+				canvas.height = viewport.height;
+				canvas.width = viewport.width;
+
+				let renderContext = {
+					canvasContext: context,
+					viewport: viewport
+				};
+
+				page.render(renderContext).then(() => {
+					resolve(canvas.toDataURL());
+				});
+			});
 		});
 	}
 
@@ -116,29 +155,15 @@ export class PdfScreenshotHelper {
 		return new Promise<string[]>((resolve) => {
 			for (let i = 0; i < pdf.numPages; i++) {
 				// Pages start at index 1
-				pdf.getPage(i + 1).then((page) => {
-					let viewport = page.getViewport(1 /* scale */);
-					let canvas = document.createElement("canvas") as HTMLCanvasElement;
-					let context = canvas.getContext("2d");
-					canvas.height = viewport.height;
-					canvas.width = viewport.width;
+				this.getPdfPageAsDataUrl(pdf, i + 1).then((dataUrl) => {
+					dataUrls[i] = dataUrl;
+					if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
+						getBinaryEvent.stopTimer();
+						getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
+						Clipper.logger.logEvent(getBinaryEvent);
 
-					let renderContext = {
-						canvasContext: context,
-						viewport: viewport
-					};
-
-					// Rendering is async so results may come back in any order
-					page.render(renderContext).then(() => {
-						dataUrls[i] = canvas.toDataURL();
-						if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
-							getBinaryEvent.stopTimer();
-							getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
-							Clipper.logger.logEvent(getBinaryEvent);
-
-							resolve(dataUrls);
-						}
-					});
+						resolve(dataUrls);
+					}
 				});
 			}
 		});
@@ -152,39 +177,5 @@ export class PdfScreenshotHelper {
 			}
 		}
 		return true;
-	}
-
-	public static getDataUrlsForPdfPageRange(pdf: PDFDocumentProxy, range: number[]): Promise<string[]> {
-		let numPages = range.length;
-		let dataUrls = new Array(numPages);
-		return new Promise<string[]>((resolve) => {
-			for (let i = 0; i < numPages; i++) {
-				let currentPage = range[i];
-				// Pages start at index 1
-				pdf.getPage(currentPage + 1).then((page) => {
-					let viewport = page.getViewport(1 /* scale */);
-					let canvas = document.createElement("canvas") as HTMLCanvasElement;
-					let context = canvas.getContext("2d");
-					canvas.height = viewport.height;
-					canvas.width = viewport.width;
-
-					let renderContext = {
-						canvasContext: context,
-						viewport: viewport
-					};
-
-					// Rendering is async so results may come back in any order
-					page.render(renderContext).then(() => {
-						dataUrls[i] = canvas.toDataURL();
-						if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
-							// getBinaryEvent.stopTimer();
-							// getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
-							// Clipper.logger.logEvent(getBinaryEvent);
-							resolve(dataUrls);
-						}
-					});
-				});
-			}
-		});
 	}
 }

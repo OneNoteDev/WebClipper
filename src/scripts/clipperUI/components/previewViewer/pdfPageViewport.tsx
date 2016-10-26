@@ -9,16 +9,20 @@ export interface PdfPageViewportProp {
 }
 
 class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
-	private getDimensionsAsStyleString(): string {
-		let styleString = "height: " + this.props.viewportDimensions.height + "px;";
-		styleString += "width: " + this.props.viewportDimensions.width + "px;";
-		return styleString;
+	private getContainerDimensionsStyle(): string {
+		return "max-width: " + this.props.viewportDimensions.width + "px;";
+	}
+
+	private getPlaceholderDimensionsStyle(): string {
+		return "padding-bottom: " + ((this.props.viewportDimensions.height / this.props.viewportDimensions.width) * 100) + "%;";
 	}
 
 	public render() {
 		return (
-			<div data-pageindex={this.props.index} style={this.getDimensionsAsStyleString()}>
-				{this.props.imgUrl ? <img src={this.props.imgUrl}></img> : undefined}
+			<div data-pageindex={this.props.index} style={this.getContainerDimensionsStyle()}>
+				{this.props.imgUrl ?
+					<img src={this.props.imgUrl}></img> :
+					<div style={this.getPlaceholderDimensionsStyle()}></div>}
 			</div>
 		);
 	}
