@@ -16,7 +16,7 @@ interface SpriteAnimationState {
 
 class RotatingMessageSpriteAnimationClass extends ComponentBase<SpriteAnimationState, RotatingMessageSpriteAnimationProps> {
 	render() {
-		let shouldDisplayMessage = this.props.shouldDisplayMessage ? this.props.shouldDisplayMessage : true;
+		let shouldDisplayMessage = "shouldDisplayMessage" in this.props ? this.props.shouldDisplayMessage : true;
 		return (
 			<div>
 				<SpriteAnimation
