@@ -29,7 +29,7 @@ type IndexToDataUrlMap = { [index: number]: string; }
 interface PdfPreviewState {
 	showPageNumbers?: boolean;
 	invalidRange?: boolean;
-	renderedPages?: IndexToDataUrlMap;
+	renderedPageIndexes?: IndexToDataUrlMap;
 }
 
 class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperStateProp> {
@@ -47,20 +47,20 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	getInitialState(): PdfPreviewState {
 		return {
 			showPageNumbers: false,
-			renderedPages: {}
+			renderedPageIndexes: {}
 		};
 	}
 
 	private setDataUrlsOfImagesInViewportInState() {
 		let allPages = document.querySelectorAll("div[data-pageindex]");
-		let pagesToRender: number[] = [];
+		let pageIndexesToRender: number[] = [];
 
 		// TODO: this is a naive algorithm. Can be improved with binary search, or an approximation for O(1)
 		let foundPageInViewport = false;
 		for (let i = 0; i < allPages.length; i++) {
 			let currentPage = allPages[i] as HTMLDivElement;
 			if (this.pageIsVisible(currentPage)) {
-				pagesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10) + 1);
+				pageIndexesToRender.push(parseInt((currentPage.dataset as any).pageindex, 10 /* radix */));
 				foundPageInViewport = true;
 			} else if (foundPageInViewport) {
 				// There will be no more pages in viewport from this point onwards, terminate early
@@ -69,17 +69,17 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		}
 
 		// Pad pages to each end of the list to increase the scroll distance before the user hits a blank page
-		if (pagesToRender.length > 0) {
-			let first = pagesToRender[0];
-			let extraPagesToPrepend = _.range(Math.max(first - Constants.Settings.pdfExtraPageLoadEachSide, 1), first);
+		if (pageIndexesToRender.length > 0) {
+			let first = pageIndexesToRender[0];
+			let extraPagesToPrepend = _.range(Math.max(first - Constants.Settings.pdfExtraPageLoadEachSide, 0), first);
 
-			let last = pagesToRender[pagesToRender.length - 1];
-			let extraPagesToAppend = _.range(last, Math.min(last + Constants.Settings.pdfExtraPageLoadEachSide, this.props.clipperState.pdfResult.data.get().pdf.numPages)).map((index) => index + 1);
+			let afterLast = pageIndexesToRender[pageIndexesToRender.length - 1] + 1;
+			let extraPagesToAppend = _.range(afterLast, Math.min(afterLast + Constants.Settings.pdfExtraPageLoadEachSide, this.props.clipperState.pdfResult.data.get().pdf.numPages()));
 
-			pagesToRender = extraPagesToPrepend.concat(pagesToRender).concat(extraPagesToAppend);
+			pageIndexesToRender = extraPagesToPrepend.concat(pageIndexesToRender).concat(extraPagesToAppend);
 		}
 
-		this.setDataUrlsOfImagesInState(pagesToRender);
+		this.setDataUrlsOfImagesInState(pageIndexesToRender);
 	}
 
 	private pageIsVisible(element: HTMLElement): boolean {
@@ -87,47 +87,16 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		return rect.top <= window.innerHeight && rect.bottom >= 0;
 	}
 
-	private setDataUrlsOfImagesInState(pagesToRender) {
-		this.fetchDataUrlsForPages(pagesToRender).then((renderedPages) => {
+	private setDataUrlsOfImagesInState(pageIndexesToRender: number[]) {
+		this.props.clipperState.pdfResult.data.get().pdf.getPageListAsDataUrls(pageIndexesToRender).then((dataUrls) => {
+			let renderedIndexes: IndexToDataUrlMap = {};
+			for (let i = 0; i < dataUrls.length; i++) {
+				renderedIndexes[pageIndexesToRender[i]] = dataUrls[i];
+			}
 			this.setState({
-				renderedPages: renderedPages
+				renderedPageIndexes: renderedIndexes
 			});
 		});
-	}
-
-	private fetchDataUrlsForPages(pagesToRender: number[]): Promise<IndexToDataUrlMap> {
-		let renderedPages: IndexToDataUrlMap = {};
-
-		return new Promise<IndexToDataUrlMap>((resolve) => {
-			let resolveIfDone = () => {
-				if (this.isRenderedPagesObjComplete(renderedPages, pagesToRender)) {
-					resolve(renderedPages);
-				}
-			};
-
-			for (let i = 0; i < pagesToRender.length; i++) {
-				let pageToRender = pagesToRender[i];
-				if (this.state.renderedPages[pageToRender]) {
-					// Optimization: we already have the data url for this page in state, so no point going through the proxy
-					renderedPages[pageToRender] = this.state.renderedPages[pageToRender];
-					resolveIfDone();
-				} else {
-					PdfScreenshotHelper.getPdfPageAsDataUrl(this.props.clipperState.pdfResult.data.get().pdf, pageToRender).then((dataUrl) => {
-						renderedPages[pageToRender] = dataUrl;
-						resolveIfDone();
-					});
-				}
-			}
-		});
-	}
-
-	private isRenderedPagesObjComplete(renderedPages: IndexToDataUrlMap, pagesToRender: number[]): boolean {
-		for (let i = 0; i < pagesToRender.length; i++) {
-			if (!renderedPages[pagesToRender[i]]) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/**
@@ -144,9 +113,9 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		}
 		pagesToShow = pagesToShow.map((ind) => { return ind - 1; });
 
-		for (let i = 0; i < pdfResult.pdf.numPages; i++) {
+		for (let i = 0; i < pdfResult.pdf.numPages(); i++) {
 			pages.push(<PdfPreviewPage showPageNumber={this.state.showPageNumbers} isSelected={this.props.clipperState.pdfPreviewInfo.allPages || pagesToShow.indexOf(i) >= 0}
-				viewportDimensions={pdfResult.viewportDimensions[i]} imgUrl={this.state.renderedPages[i + 1]} index={i} />);
+				viewportDimensions={pdfResult.viewportDimensions[i]} imgUrl={this.state.renderedPageIndexes[i]} index={i} />);
 		}
 		return pages;
 	}
@@ -285,7 +254,7 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 				if (!this.initPageRenderCalled) {
 					// Load the first n pages as soon as we are able to
 					this.initPageRenderCalled = true;
-					this.setDataUrlsOfImagesInState(_.range(Constants.Settings.pdfInitialPageLoadCount).map((index) => index + 1));
+					this.setDataUrlsOfImagesInState(_.range(Constants.Settings.pdfInitialPageLoadCount));
 				}
 
 				// In OneNote we don't display the extension

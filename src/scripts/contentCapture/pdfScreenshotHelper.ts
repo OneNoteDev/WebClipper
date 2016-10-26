@@ -7,18 +7,17 @@ import {SmartValue} from "../communicator/smartValue";
 
 import * as Log from "../logging/log";
 
+import {ArrayUtils} from "../arrayUtils";
 import {Constants} from "../constants";
 import {PageInfo} from "../pageInfo";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
-
-export type ViewportDimensions = {
-	height: number;
-	width: number;
-}
+import {PdfDocument} from "./pdfDocument";
+import {PdfJsDocument} from "./pdfJsDocument";
+import {ViewportDimensions} from "./viewportDimensions";
 
 export interface PdfScreenshotResult extends CaptureFailureInfo {
-	pdf?: PDFDocumentProxy;
+	pdf?: PdfDocument;
 	viewportDimensions?: ViewportDimensions[];
 	byteLength?: number;
 }
@@ -71,111 +70,24 @@ export class PdfScreenshotHelper {
 		});
 	}
 
-	public static getDataUrlsForPdfPageRange(pdf: PDFDocumentProxy, pageNumbers: number[]): Promise<string[]> {
-		let numPages = pageNumbers.length;
-		let dataUrls = new Array(numPages);
-		return new Promise<string[]>((resolve) => {
-			for (let i = 0; i < numPages; i++) {
-				let currentPage = pageNumbers[i];
-				this.getPdfPageAsDataUrl(pdf, currentPage).then((dataUrl) => {
-					dataUrls[i] = dataUrl;
-					if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
-						resolve(dataUrls);
-					}
-				});
-			}
-		});
-	}
-
-	public static getPdfPageAsDataUrl(pdf: PDFDocumentProxy, pageNumber: number): Promise<string> {
-		return new Promise<string>((resolve) => {
-			pdf.getPage(pageNumber).then((page) => {
-				let viewport = page.getViewport(1 /* scale */);
-				let canvas = document.createElement("canvas") as HTMLCanvasElement;
-				let context = canvas.getContext("2d");
-				canvas.height = viewport.height;
-				canvas.width = viewport.width;
-
-				let renderContext = {
-					canvasContext: context,
-					viewport: viewport
-				};
-
-				page.render(renderContext).then(() => {
-					resolve(canvas.toDataURL());
-				});
-			});
-		});
-	}
-
-	private static getPdfScreenshotResult(source: string | Uint8Array | PDFSource): Promise<PdfScreenshotResult> {
+	/**
+	 * Source can be a buffer object, or a url (including local)
+	 */
+	private static getPdfScreenshotResult(source: string | Uint8Array): Promise<PdfScreenshotResult> {
 		// Never rejects, interesting
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			PDFJS.getDocument(source).then((pdf) => {
-				PdfScreenshotHelper.getPageViewportData(pdf).then((viewportDimensions) => {
-					resolve({
-						pdf: pdf,
-						viewportDimensions: viewportDimensions
+				let pdfDocument: PdfDocument = new PdfJsDocument(pdf);
+				pdfDocument.getAllPageViewportDimensions().then((viewportDimensions) => {
+					pdfDocument.getByteLength().then((byteLength) => {
+						resolve({
+							pdf: pdfDocument,
+							viewportDimensions: viewportDimensions,
+							byteLength: byteLength
+						});
 					});
 				});
 			});
 		});
-	}
-
-	private static getPageViewportData(pdf: PDFDocumentProxy): Promise<ViewportDimensions[]> {
-		let dimensions: ViewportDimensions[] = new Array(pdf.numPages);
-		return new Promise((resolve) => {
-			for (let i = 0; i < pdf.numPages; i++) {
-				// Pages start at index 1
-				pdf.getPage(i + 1).then((page) => {
-					let viewport = page.getViewport(1 /* scale */);
-					dimensions[i] = {
-						height: viewport.height,
-						width: viewport.width
-					};
-
-					if (PdfScreenshotHelper.isArrayComplete(dimensions)) {
-						resolve(dimensions);
-					}
-				});
-			}
-		});
-	}
-
-	private static convertPdfToDataUrls(pdf: PDFDocumentProxy): Promise<string[]> {
-		if (!pdf || !pdf.numPages || pdf.numPages === 0) {
-			return Promise.resolve([]);
-		}
-
-		let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
-		getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.NumPages, pdf.numPages);
-
-		let dataUrls: string[] = new Array(pdf.numPages);
-
-		return new Promise<string[]>((resolve) => {
-			for (let i = 0; i < pdf.numPages; i++) {
-				// Pages start at index 1
-				this.getPdfPageAsDataUrl(pdf, i + 1).then((dataUrl) => {
-					dataUrls[i] = dataUrl;
-					if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
-						getBinaryEvent.stopTimer();
-						getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
-						Clipper.logger.logEvent(getBinaryEvent);
-
-						resolve(dataUrls);
-					}
-				});
-			}
-		});
-	}
-
-	// We have to use this instead of Array.prototype.every because it doesn't work
-	private static isArrayComplete(arr: any[]): boolean {
-		for (let i = 0; i < arr.length; i++) {
-			if (!arr[i]) {
-				return false;
-			}
-		}
-		return true;
 	}
 }

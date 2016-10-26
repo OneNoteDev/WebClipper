@@ -7,7 +7,7 @@ import {StringUtils} from "../stringUtils";
 import {Utils} from "../utils";
 
 import {AugmentationModel} from "../contentCapture/augmentationHelper";
-import {PdfScreenshotHelper, PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
+import {PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
 
 import {DomUtils} from "../domParsers/domUtils";
 
@@ -357,7 +357,7 @@ export class SaveToOneNote {
 							// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
 							// processed in the order that they were sent.
 							setTimeout(() => {
-								SaveToOneNote.createOneNotePagePatchRequest(pageId, pdfDocumentProxy, currentIndexesRange).then(() => {
+								SaveToOneNote.createOneNotePagePatchRequest(pageId, currentIndexesRange).then(() => {
 									timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 									resolve();
 								});
@@ -370,12 +370,12 @@ export class SaveToOneNote {
 	}
 
 	/**
-	 * Given an array of dataUrls and the pageId, creates and sends the request to append the pages to the specified
+	 * Given a list of page indexes, creates and sends the request to append the pages to the specified
 	 * page with the images
 	 */
-	private static createOneNotePagePatchRequest(pageId: string, pdf: PDFDocumentProxy, pageIndexes: number[]): Promise<any> {
+	private static createOneNotePagePatchRequest(pageId: string, pageIndexes: number[]): Promise<any> {
 		return new Promise<any>((resolve) => {
-			return PdfScreenshotHelper.getDataUrlsForPdfPageRange(pdf, pageIndexes.map((index) => index + 1)).then((dataUrls) => {
+			return this.clipperState.pdfResult.data.get().pdf.getPageListAsDataUrls(pageIndexes).then((dataUrls) => {
 				let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
 				return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
 			});
