@@ -379,9 +379,7 @@ export class SaveToOneNote {
 	private static sendOneNotePagePatchRequestWithRetries(pageId: string, dataUrls: string[], numRetries: number): Promise<any> {
 		return SaveToOneNote.sendOneNotePagePatchRequest(pageId, dataUrls).catch((error) => {
 					if (numRetries >= 1) {
-						setTimeout(() => {
-							return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, numRetries - 1);
-						}, 1000);
+						return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, numRetries - 1);
 					} else {
 						return Promise.reject(error);
 					}

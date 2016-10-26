@@ -90,6 +90,8 @@ export module ClipperStateHelperFunctions {
 					return false;
 				} else if (!clipperState.pdfPreviewInfo.allPages && (!pages || pages.length === 0)) {
 					return false;
+				} else if (clipperState.pdfResult.status !== Status.Succeeded) {
+					return false;
 				}
 				return true;
 			case ClipMode.FullPage:

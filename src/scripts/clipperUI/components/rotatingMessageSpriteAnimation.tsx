@@ -7,7 +7,7 @@ import {ComponentBase} from "../componentBase";
 import {SpriteAnimation, SpriteAnimationProps} from "./spriteAnimation";
 
 interface RotatingMessageSpriteAnimationProps extends SpriteAnimationProps {
-	messages: string[];
+	shouldDisplayMessage?: boolean;
 }
 
 interface SpriteAnimationState {
@@ -16,6 +16,7 @@ interface SpriteAnimationState {
 
 class RotatingMessageSpriteAnimationClass extends ComponentBase<SpriteAnimationState, RotatingMessageSpriteAnimationProps> {
 	render() {
+		let shouldDisplayMessage = this.props.shouldDisplayMessage ? this.props.shouldDisplayMessage : true;
 		return (
 			<div>
 				<SpriteAnimation
@@ -25,12 +26,14 @@ class RotatingMessageSpriteAnimationClass extends ComponentBase<SpriteAnimationS
 					totalFrameCount={this.props.totalFrameCount}
 					loop={this.props.loop}
 					/>
-				<div
-					id={Constants.Ids.spinnerText}
-					className="spinnerText"
-					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}>
-					{Localization.getLocalizedString("WebClipper.Preview.Spinner.ClipAnyTimeInFullPage")}
-				</div>
+				{shouldDisplayMessage ?
+					<div
+						id={Constants.Ids.spinnerText}
+						className="spinnerText"
+						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}>
+						{Localization.getLocalizedString("WebClipper.Preview.Spinner.ClipAnyTimeInFullPage")}
+					</div>
+					: ""}
 			</div>
 		);
 	}
