@@ -1,7 +1,9 @@
 import {Constants} from "../../../constants";
+
 import {Localization} from "../../../localization/localization";
 
 import {ClipperStateProp} from "../../clipperState";
+import {Status} from "../../status";
 
 import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
 
@@ -23,7 +25,12 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 			PreviewViewerPdfHeaderClass.textAreaListenerAttached = true;
 		}
 
-		return [this.getPageRangeGroup(), this.getAttachmentCheckbox()];
+		let controlGroups = [this.getPageRangeGroup()];
+		let attachmentControlGroup = this.getAttachmentCheckbox();
+		if (attachmentControlGroup) {
+			controlGroups.push(attachmentControlGroup);
+		}
+		return controlGroups;
 	}
 
 	private addTextAreaListener() {
@@ -66,7 +73,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 	}
 
 	private getAttachmentCheckbox(): ControlGroup {
-		return {
+		return this.props.clipperState.pdfResult.status === Status.Succeeded && this.props.clipperState.pdfResult.data.get().byteLength < Constants.Settings.maximumMimeSizeLimit ? {
 			id: Constants.Ids.attachmentCheckboxControl,
 			innerElements: [
 				<label id={Constants.Ids.attachmentCheckboxLabel} class="pdf-control pdf-checkbox-control pdf-label" {...this.enableInvoke(this.props.onCheckboxChange, 193, !this.props.shouldAttachPdf) }>
@@ -75,7 +82,7 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 					{this.props.shouldAttachPdf ? <div class="checkbox"></div> : ""}
 				</label>
 			]
-		};
+		} : undefined;
 	}
 }
 

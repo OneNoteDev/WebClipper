@@ -35,7 +35,6 @@ export class SaveToOneNote {
 	private static clipperState: ClipperState;
 
 	// Used by PDF mode
-	private static maxMimeSizeLimit = 24900000;
 	private static maxImagesPerPatchRequest = 15;
 	private static timeBeforeFirstPatch = 1000;
 	private static timeBetweenPatchRequests = 5000;
@@ -279,7 +278,7 @@ export class SaveToOneNote {
 		let rawUrl = this.clipperState.pageInfo.rawUrl;
 		let mimePartName: string;
 		if (this.clipperState.pdfResult.status === Status.Succeeded && arrayBuffer) {
-			if (arrayBuffer.byteLength < this.maxMimeSizeLimit) {
+			if (arrayBuffer.byteLength < Constants.Settings.maximumMimeSizeLimit) {
 				let attachmentName = Utils.getFileNameFromUrl(this.clipperState.pageInfo.rawUrl, "Original.pdf");
 				if (this.clipperState.pdfPreviewInfo.shouldAttachPdf) {
 					mimePartName = page.addAttachment(arrayBuffer, attachmentName);

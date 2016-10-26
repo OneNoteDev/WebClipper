@@ -20,6 +20,7 @@ export type ViewportDimensions = {
 export interface PdfScreenshotResult extends CaptureFailureInfo {
 	pdf?: PDFDocumentProxy;
 	viewportDimensions?: ViewportDimensions[];
+	byteLength?: number;
 }
 
 export class PdfScreenshotHelper {
@@ -52,6 +53,7 @@ export class PdfScreenshotHelper {
 					Clipper.logger.logEvent(getBinaryEvent);
 
 					PdfScreenshotHelper.getPdfScreenshotResult(arrayBuffer).then((pdfScreenshotResult) => {
+						pdfScreenshotResult.byteLength = arrayBuffer.byteLength;
 						resolve(pdfScreenshotResult);
 					});
 				} else {
