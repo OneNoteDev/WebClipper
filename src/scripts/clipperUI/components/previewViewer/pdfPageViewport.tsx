@@ -1,6 +1,6 @@
 import {ComponentBase} from "../../componentBase";
 
-import {ViewportDimensions} from "../../../contentCapture/pdfScreenshotHelper";
+import {ViewportDimensions} from "../../../contentCapture/viewportDimensions";
 
 export interface PdfPageViewportProp {
 	viewportDimensions: ViewportDimensions;

@@ -15,12 +15,15 @@ import {PdfPreview} from "../../../../scripts/clipperUI/components/previewViewer
 import { HelperFunctions } from "../../../helperFunctions";
 import { pdfDataUrls } from "./pdfDataUrls";
 
+import * as sinon from "sinon";
+
 declare function require(name: string);
 let stringsJson = require("../../../../strings.json");
 
 function getMockPdfModeState(): ClipperState {
 	let state = HelperFunctions.getMockClipperState() as ClipperState;
 	state.currentMode.set(ClipMode.Pdf);
+	// state.pdfResult.data.get().pdf = sinon.createStubInstance(PDFDocumentProxy) as any;
 	state.pdfResult.status = Status.Succeeded;
 
 	state.pdfPreviewInfo = {
