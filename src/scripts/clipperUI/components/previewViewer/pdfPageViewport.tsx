@@ -1,3 +1,5 @@
+import {Constants} from "../../../constants";
+
 import {ComponentBase} from "../../componentBase";
 
 import {ViewportDimensions} from "../../../contentCapture/viewportDimensions";
@@ -21,7 +23,7 @@ class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
 		return (
 			<div data-pageindex={this.props.index} style={this.getContainerDimensionsStyle()}>
 				{this.props.imgUrl ?
-					<img src={this.props.imgUrl}></img> :
+					<img class={Constants.Classes.pdfPreviewImage} src={this.props.imgUrl}></img> :
 					<div style={this.getPlaceholderDimensionsStyle()}></div>}
 			</div>
 		);
