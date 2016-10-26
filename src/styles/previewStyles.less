@@ -87,9 +87,7 @@
 				direction: ltr;
 
 				* {
-					-webkit-user-select: none;
-					-moz-user-select: none;
-					-ms-user-select: none;
+					// disable this for the text input, because it breaks safari
 					user-select: none;
 				}
 
@@ -107,6 +105,12 @@
 						cursor: default;
 						line-height: 32px;
 					}
+				}
+
+				#pageRangeControl {
+					// Temporary workaround that fixes styling issues with the PDF Preview Header
+					// in Safari as of 10/21/2016
+					width: 300px;
 				}
 
 				#addRegionControl {
@@ -183,17 +187,10 @@
 					vertical-align: middle;
 					cursor: pointer;
 					position: relative;
+					line-height: 28px;
 
 					&:last-child {
 						margin-left: 6px;
-					}
-				}
-
-				.pdf-control {
-					input[type=radio], input[type=checkbox] {
-						position: absolute;
-						z-index: -1;
-						opacity: 0;
 					}
 				}
 
@@ -209,8 +206,8 @@
 
 				.pdf-indicator {
 					position: absolute;
-					top: 2px;
-					left: 0;
+					top: 0px;
+					left: 0px;
 					width: 15px;
 					height: 15px;
 
@@ -228,7 +225,7 @@
 
 				.checkbox {
 					position: absolute;
-					top: 3px;
+					top: 1px;
 					left: 6px;
 					width: 4px;
 					height: 11px;
@@ -256,6 +253,7 @@
 					color: rgba(255,255,255,0.70);
 					line-height: 20px;
 					outline: none;
+					-webkit-user-select: auto;
 					
 					&.invalid {
 						border: #b94a48 1px solid;
