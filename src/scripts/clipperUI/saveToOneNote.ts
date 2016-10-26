@@ -376,12 +376,22 @@ export class SaveToOneNote {
 		});
 	}
 
-	private static createAndSendOneNotePagePatchRequestWithRetries(pageId: string, pdf: PDFDocumentProxy, pageRange: number[], numRetries: number): Promise<any> {
-		console.log("numRetries: " + numRetries);
-		return SaveToOneNote.createOneNotePagePatchRequest(pageId, pdf, pageRange)
-				.catch((error) => {
+	// private static retry(fxn: Function, numRetries: number): Function {
+	// 	return () => {
+
+	// 	}
+	// }
+	
+	// private static retry(fxn: () => Promise<any>, numRetries: number, args: Object): Promise => {
+
+	// }
+	
+	private static sendOneNotePagePatchRequestWithRetries(pageId: string, dataUrls: string[], numRetries: number): Promise<any> {
+		return SaveToOneNote.sendOneNotePagePatchRequest(pageId, dataUrls).catch((error) => {
 					if (numRetries >= 1) {
-						return SaveToOneNote.createAndSendOneNotePagePatchRequestWithRetries(pageId, pdf, pageRange, numRetries - 1);
+						setTimeout(() => {
+							return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, numRetries - 1);
+						}, 1000);
 					} else {
 						return Promise.reject(error);
 					}
@@ -394,9 +404,17 @@ export class SaveToOneNote {
 	 */
 	private static createOneNotePagePatchRequest(pageId: string, pdf: PDFDocumentProxy, pageRange: number[]): Promise<any> {
 		return SaveToOneNote.getDataUrlsForPdfPageRange(pdf, pageRange).then((dataUrls) => {
-			let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
-			return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
+			return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest);
 		});
+	}
+
+	/**
+	 * Given a pageId and an array of dataUrls, sends a PATCH request with those dataUrls as image to update
+	 * the page with pageId
+	 */
+	private static sendOneNotePagePatchRequest(pageId: string, dataUrls: string[]): Promise<any> {
+		let revisions = SaveToOneNote.createPatchRequestBody(dataUrls);
+		return SaveToOneNote.getApiInstance().updatePage(pageId, revisions);
 	}
 
 	/**
@@ -420,6 +438,13 @@ export class SaveToOneNote {
 	 */
 	private static getPage(pageId: string): Promise<any> {
 		return SaveToOneNote.getApiInstance().getPage(pageId);
+	}
+
+	/**
+	 * Sends a GET request for the content of the specified pageId
+	 */
+	private static getPageContent(pageId: string): Promise<any> {
+		return SaveToOneNote.getApiInstance().getPageContent(pageId);
 	}
 
 	/**
