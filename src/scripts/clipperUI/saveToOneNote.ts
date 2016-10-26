@@ -362,19 +362,29 @@ export class SaveToOneNote {
 							}, timeBetweenPatchRequests);
 						});
 					});
-				}, SaveToOneNote.getPage(pageId))
+				}, SaveToOneNote.getOneNotePageContentWithRetries(pageId, 3))
 			]);
+		});
+	}
+
+	private static getOneNotePageContentWithRetries(pageId: string, numRetries: number): Promise<any> {
+		return SaveToOneNote.getPageContent(pageId).catch((error) => {
+			if (numRetries >= 1) {
+				return SaveToOneNote.getOneNotePageContentWithRetries(pageId, numRetries - 1);
+			} else {
+				return Promise.reject(error);
+			}
 		});
 	}
 
 	private static sendOneNotePagePatchRequestWithRetries(pageId: string, dataUrls: string[], numRetries: number): Promise<any> {
 		return SaveToOneNote.sendOneNotePagePatchRequest(pageId, dataUrls).catch((error) => {
-					if (numRetries >= 1) {
-						return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, numRetries - 1);
-					} else {
-						return Promise.reject(error);
-					}
-				});
+			if (numRetries >= 1) {
+				return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, numRetries - 1);
+			} else {
+				return Promise.reject(error);
+			}
+		});
 	}
 
 	/**
