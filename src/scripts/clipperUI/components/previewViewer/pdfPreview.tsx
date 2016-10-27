@@ -76,7 +76,6 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		let allPages = document.querySelectorAll("div[data-pageindex]");
 
 		const initGuessAtCurrentPageIndexer: number = Math.floor(DomUtils.getScrollPercent(document.getElementById("previewContentContainer"), true /* asDecimalValue */) * (allPages.length - 1));
-		// console.warn("initGuessAtCurrentPageIndexer:", initGuessAtCurrentPageIndexer, "isVisible:", this.pageIsVisible(allPages[initGuessAtCurrentPageIndexer] as HTMLDivElement));
 
 		let firstVisiblePageIndexer: number;
 		let lastVisiblePageIndexer: number;
@@ -108,8 +107,6 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 				firstVisiblePageIndexer = this.searchForVisiblePageBoundary(allPages, lastVisiblePageIndexer, -1);
 			}
 		}
-
-		// console.warn("visible page indices:", firstVisiblePageIndexer, lastVisiblePageIndexer, _.range(firstVisiblePageIndexer, lastVisiblePageIndexer + 1));
 
 		// _.range does not include the end number, so add 1
 		return _.range(firstVisiblePageIndexer, lastVisiblePageIndexer + 1);
