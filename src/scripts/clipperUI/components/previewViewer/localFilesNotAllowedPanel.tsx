@@ -1,13 +1,12 @@
-import { ComponentBase } from "../../componentBase";
-import { PreviewComponentBase } from "./previewComponentBase";
-
-import {ClipperStateProp} from "../../clipperState";
-
-import { Constants } from "../../../constants";
-
-import { Status } from "../../status";
+import {Constants} from "../../../constants";
 
 import {Localization} from "../../../localization/localization";
+
+import {ClipperStateProp} from "../../clipperState";
+import {ComponentBase} from "../../componentBase";
+import {Status} from "../../status";
+
+import {PreviewComponentBase} from "./previewComponentBase";
 
 interface LocalFilesNotAllowedPanelProps {
 	header?: string;
