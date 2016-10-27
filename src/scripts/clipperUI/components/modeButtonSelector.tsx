@@ -100,6 +100,9 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getBookmarkModeButton(currentMode: ClipMode) {
+		if (this.props.clipperState.pageInfo.rawUrl.indexOf("file:///") === 0) {
+			return undefined;
+		}
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("bookmark.png") }
 			label={Localization.getLocalizedString("WebClipper.ClipType.Bookmark.Button") }
 			myMode={ClipMode.Bookmark} tabIndex={44} selected={currentMode === ClipMode.Bookmark}
