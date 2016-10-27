@@ -20,7 +20,7 @@ class PdfPreviewPageClass extends ComponentBase<{}, PdfPreviewPageProp> {
 				<div className={Constants.Classes.pdfPreviewImageCanvas + (this.props.isSelected ? "" : " " + Constants.Classes.unselected)}>
 					<PdfPageViewport viewportDimensions={this.props.viewportDimensions} imgUrl={this.props.imgUrl} index={this.props.index} />
 				</div>
-				<div className={"overlay" + (this.props.showPageNumber ? "" : " overlay-hidden")}>
+				<div className={Constants.Classes.overlay + (this.props.showPageNumber ? "" : (" " + Constants.Classes.overlayHidden))}>
 					<span class="overlay-number">{this.props.index + 1}</span>
 				</div>
 			</div>
