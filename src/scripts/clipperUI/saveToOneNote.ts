@@ -374,7 +374,7 @@ export class SaveToOneNote {
 	private static checkIfUserHasPermissionToPatch(): Promise<any> {
 		let patchPermissionCheckEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchPermissionCheck);
 		return new Promise<any>((resolve, reject) => {
-			SaveToOneNote.getPages().then((getPagesResponse) => {
+			SaveToOneNote.getPages({ top: 1, sectionId: this.clipperState.saveLocation }).then((getPagesResponse) => {
 				resolve(getPagesResponse);
 			}, (error) => {
 				patchPermissionCheckEvent.setStatus(Log.Status.Failed);
@@ -494,8 +494,8 @@ export class SaveToOneNote {
 	/**
 	 * Sends a GET request for all pages in all notebooks
 	 */
-	private static getPages(): Promise<any> {
-		return SaveToOneNote.getApiInstance().getPages();
+	private static getPages(options: { top?: number, sectionId?: string }): Promise<any> {
+		return SaveToOneNote.getApiInstance().getPages(options);
 	}
 
 	/**
