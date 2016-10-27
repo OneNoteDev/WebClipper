@@ -92,6 +92,8 @@ export module ClipperStateHelperFunctions {
 					return false;
 				} else if (clipperState.pdfResult.status !== Status.Succeeded) {
 					return false;
+				} else if (clipperState.pdfResult.status === Status.Succeeded) {
+					return StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, clipperState.pdfResult.data.get().pdf.numPages()) !== undefined;
 				}
 				return true;
 			case ClipMode.FullPage:

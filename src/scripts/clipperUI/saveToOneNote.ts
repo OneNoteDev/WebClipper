@@ -436,14 +436,22 @@ export class SaveToOneNote {
 	 */
 	private static createOneNotePagePatchRequest(pageId: string, pageIndices: number[]): Promise<any> {
 		let pdf = this.clipperState.pdfResult.data.get().pdf;
+
+		let getPageListAsDataUrlsEvent = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
+		getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.NumPages, pageIndices.length);
+
 		return pdf.getPageListAsDataUrls(pageIndices).then((dataUrls) => {
+			getPageListAsDataUrlsEvent.stopTimer();
+			getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getPageListAsDataUrlsEvent.getDuration() / pageIndices.length);
+			Clipper.logger.logEvent(getPageListAsDataUrlsEvent);
+
 			let patchRequestEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchRequest);
 			return new Promise<any>((resolve, reject) => {
 				SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest).then((data) => {
 					resolve(data);
 				}, (err) => {
 					patchRequestEvent.setStatus(Log.Status.Failed);
-					patchRequestEvent.setFailureInfo({ error: "The PATCH request failed all its retries" });
+					patchRequestEvent.setFailureInfo({ error: err });
 					reject(err);
 				}).then(() => {
 					Clipper.logger.logEvent(patchRequestEvent);

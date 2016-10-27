@@ -63,3 +63,11 @@ test("Ranges that have 0 anywhere in them should be invalid", () => {
 	ok(!StringUtils.parsePageRange("5-0"));
 	ok(!StringUtils.parsePageRange("1,3,4,0"));
 });
+
+test("Validate the range when max range is provide", () => {
+	ok(StringUtils.parsePageRange("1-5", 10), "Given range is within the max bounds of 10.");
+	ok(StringUtils.parsePageRange("1,3,5,6,8", 9), "Given range is within the max range of 9");
+
+	ok(!StringUtils.parsePageRange("1-13", 10), "Given range is outside of the max bounds of 10.");
+	ok(!StringUtils.parsePageRange("1,3,5,6,8", 2), "Given range is outside the max bounds of 2");
+});
