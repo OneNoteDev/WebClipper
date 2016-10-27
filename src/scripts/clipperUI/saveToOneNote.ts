@@ -406,7 +406,12 @@ export class SaveToOneNote {
 	 */
 	private static createOneNotePagePatchRequest(pageId: string, pageIndices: number[]): Promise<any> {
 		let pdf = this.clipperState.pdfResult.data.get().pdf;
+		let getPageListAsDataUrlsEvent = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
+		getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.NumPages, pageIndices.length);
 		return pdf.getPageListAsDataUrls(pageIndices).then((dataUrls) => {
+			getPageListAsDataUrlsEvent.stopTimer();
+			getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getPageListAsDataUrlsEvent.getDuration() / pageIndices.length);
+			Clipper.logger.logEvent(getPageListAsDataUrlsEvent);
 			return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest);
 		});
 	}
