@@ -52,7 +52,7 @@
     "mithril": "0.2.5",
     "node-qunit-phantomjs": "1.4.0",
     "node-static": "0.7.9",
-    "onenoteapi": "1.0.4",
+    "onenoteapi": "1.0.5",
     "onenotepicker": "1.0.6",
     "pdfjs-dist": "1.6.214",
     "qunitjs": "1.20.0",
