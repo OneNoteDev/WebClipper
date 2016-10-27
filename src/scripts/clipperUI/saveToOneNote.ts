@@ -412,7 +412,7 @@ export class SaveToOneNote {
 						}).catch((error2) => {
 							reject(error2);
 						});
-					}, 2000);
+					}, Constants.Settings.pdfCheckCreatePageInterval);
 				});
 			} else {
 				return Promise.reject(error1);

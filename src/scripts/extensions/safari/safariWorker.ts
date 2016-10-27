@@ -112,8 +112,8 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 	}
 
 	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (isAllowed: boolean) => void): void {
-		// TODO: test on Safari
-		callback(true);
+		// When Safari opens a pdf, it is no longer a web environment and won't allow extensions to run
+		callback(false);
 	}
 
 	/**

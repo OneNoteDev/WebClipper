@@ -70,7 +70,6 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 	}
 
 	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (isAllowed: boolean) => void): void {
-		// TODO: test on Bookmarklet
 		callback(false);
 	}
 

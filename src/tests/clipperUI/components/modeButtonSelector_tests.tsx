@@ -370,9 +370,25 @@ test("In PDF Mode, only the PDF, Region, and Bookmark Mode Buttons should be ren
 	let modeButtonSelector = HelperFunctions.getFixture().firstElementChild;
 	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
-	strictEqual(buttonElements.length, 3, "Only 3 buttons should be rendered in PDF mode: PDF, Region, and bookmark");
-
+	strictEqual(buttonElements.length, 3, "There should be three mode buttons");
 	strictEqual(buttonElements[0].id, TestConstants.Ids.pdfButton, "The first button should be the pdf button");
 	strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
 	strictEqual(buttonElements[2].id, TestConstants.Ids.bookmarkButton, "The third button should be the bookmark button");
+});
+
+test("The bookmark clipping button should not appear when a PDF was detected but was on a local file", () => {
+	let startingState = HelperFunctions.getMockClipperState();
+	startingState.currentMode.set(ClipMode.Pdf);
+	startingState.pageInfo.contentType = OneNoteApi.ContentType.EnhancedUrl;
+	startingState.pageInfo.rawUrl = "file:///local.pdf";
+
+	HelperFunctions.mountToFixture(
+		<ModeButtonSelector clipperState={ startingState } />);
+
+	let modeButtonSelector = HelperFunctions.getFixture().firstElementChild;
+	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
+
+	strictEqual(buttonElements.length, 2, "There should be two mode buttons");
+	strictEqual(buttonElements[0].id, TestConstants.Ids.pdfButton, "The first button should be the pdf button");
+	strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
 });
