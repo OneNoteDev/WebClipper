@@ -239,7 +239,11 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		});
 
 		let pagesToShow = StringUtils.parsePageRange(text);
-		if (!pagesToShow) {
+		let validUpperBounds = _.every(pagesToShow, (ind: number) => {
+			return ind <= this.props.clipperState.pdfResult.data.get().pdf.numPages();
+		});
+
+		if (!pagesToShow || !validUpperBounds) {
 			this.setState({
 				invalidRange: true
 			});
