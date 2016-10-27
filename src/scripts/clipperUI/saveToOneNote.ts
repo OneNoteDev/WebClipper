@@ -409,6 +409,7 @@ export class SaveToOneNote {
 			getPageListAsDataUrlsEvent.stopTimer();
 			let duration = getPageListAsDataUrlsEvent.getDuration();
 			getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, duration / numPages);
+			Clipper.logger.logEvent(getPageListAsDataUrlsEvent);
 			return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest);
 		});
 	}
