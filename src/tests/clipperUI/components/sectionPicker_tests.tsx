@@ -194,10 +194,6 @@ QUnit.module("sectionPicker-sinon", {
 			clipperState={mockClipperState} />;
 
 		xhr = sinon.useFakeXMLHttpRequest();
-		let requests = this.requests = [];
-		xhr.onCreate = req => {
-			requests.push(req);
-		};
 
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
@@ -230,7 +226,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 		value: freshNotebooks
 	};
-	server.respondWith([200, {}, JSON.stringify(responseJson)]);
+	server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 	let component = <SectionPicker onPopupToggle={() => {}} clipperState={clipperState} />;
 	let controllerInstance = HelperFunctions.mountToFixture(component);
@@ -290,7 +286,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 		value: freshNotebooks
 	};
-	server.respondWith([200, {}, JSON.stringify(responseJson)]);
+	server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
@@ -340,7 +336,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 		value: freshNotebooks
 	};
-	server.respondWith([200, {}, JSON.stringify(responseJson)]);
+	server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 	// This is the default section in the mock notebooks, and this should be found in storage and state after fresh notebooks are retrieved
 	let defaultSection = {
@@ -426,7 +422,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 			"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 			value: freshNotebooks
 		};
-		server.respondWith([200, {}, JSON.stringify(responseJson)]);
+		server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 		controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 			Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
@@ -481,7 +477,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 		value: freshNotebooks
 	};
-	server.respondWith([200, {}, JSON.stringify(responseJson)]);
+	server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		Clipper.getStoredValue(ClipperStorageKeys.cachedNotebooks, (notebooks) => {
@@ -532,7 +528,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 		"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 		value: undefined
 	};
-	server.respondWith([200, {}, JSON.stringify(responseJson)]);
+	server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		ok(false, "resolve should not be called");
@@ -586,7 +582,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 
 	// After retrieving fresh undefined notebooks, the storage should not be updated with the undefined value, but should still keep the old cached information
 	let responseJson = {};
-	server.respondWith([404, {}, JSON.stringify(responseJson)]);
+	server.respondWith([404, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		ok(false, "resolve should not be called");
@@ -628,7 +624,7 @@ test("retrieveAndUpdateNotebookAndSectionSelection should update states correctl
 
 	// After retrieving fresh undefined notebooks, the storage should not be updated with the undefined value, but should still keep the old cached information
 	let responseJson = {};
-	server.respondWith([404, {}, JSON.stringify(responseJson)]);
+	server.respondWith([404, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 	controllerInstance.retrieveAndUpdateNotebookAndSectionSelection().then((response: SectionPickerState) => {
 		ok(false, "resolve should not be called");
@@ -661,7 +657,7 @@ test("fetchFreshNotebooks should parse out @odata.context from the raw 200 respo
 		"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 		value: notebooks
 	};
-	server.respondWith([200, {}, JSON.stringify(responseJson)]);
+	server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 	controllerInstance.fetchFreshNotebooks("sessionId").then((responsePackage: OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>) => {
 		strictEqual(JSON.stringify(responsePackage.parsedResponse), JSON.stringify(notebooks),
@@ -685,7 +681,7 @@ test("fetchFreshNotebooks should parse out @odata.context from the raw 201 respo
 		"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 		value: notebooks
 	};
-	server.respondWith([201, {}, JSON.stringify(responseJson)]);
+	server.respondWith([201, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 	controllerInstance.fetchFreshNotebooks("sessionId").then((responsePackage: OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>) => {
 		strictEqual(JSON.stringify(responsePackage.parsedResponse), JSON.stringify(notebooks),
@@ -707,7 +703,7 @@ test("fetchFreshNotebooks should reject with the error object and a copy of the 
 	let responseJson = {
 		error: "Unexpected response status",
 		statusCode: 401,
-		responseHeaders: {}
+		responseHeaders: { "Content-Type": "application/json" }
 	};
 
 	let expected = {
@@ -746,7 +742,7 @@ test("fetchFreshNotebooks should reject with the error object and an API respons
 	let expected = {
 		error: "Unexpected response status",
 		statusCode: 403,
-		responseHeaders: {},
+		responseHeaders: { "Content-Type": "application/json" },
 		response: JSON.stringify(responseJson),
 		timeout: 30000
 	};
@@ -771,9 +767,9 @@ test("fetchFreshNotebooks should reject with the error object and a copy of the 
 	let responseJson = {
 		error: "Unexpected response status",
 		statusCode: 501,
-		responseHeaders: {}
+		responseHeaders: { "Content-Type": "application/json" }
 	};
-	server.respondWith([501, {}, JSON.stringify(responseJson)]);
+	server.respondWith([501, responseJson.responseHeaders, JSON.stringify(responseJson)]);
 
 	let expected = {
 		error: responseJson.error,
