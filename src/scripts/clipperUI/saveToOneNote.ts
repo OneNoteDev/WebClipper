@@ -337,13 +337,13 @@ export class SaveToOneNote {
 			return new Promise<any>((resolve) => { resolve(); });
 		}
 
-		console.log(ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest));
 		let indexesToBePatchedRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest);
 
 		return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
 			let pageId = postPageResponse.parsedResponse.id;
 
-			// As of 10/21/16, the page sometimes does not exist after the 200 is returned, so we wait a bit
+			// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
+			// When the getPageContent returns a 200, we start PATCHing the page.
 			let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
 			return Promise.all([postPageResponse,
 				indexesToBePatchedRanges.reduce((chainedPromise, currentIndexesRange) => {
