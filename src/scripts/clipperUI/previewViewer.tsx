@@ -1,6 +1,8 @@
-import { Localization } from "../localization/localization";
+import {ClientType} from "../clientType";
 
-import { ClipMode } from "./clipMode";
+import {Localization} from "../localization/localization";
+
+import {ClipMode} from "./clipMode";
 import {ClipperStateProp} from "./clipperState";
 import {ComponentBase} from "./componentBase";
 
@@ -18,13 +20,16 @@ class PreviewViewerClass<TState, TProp extends ClipperStateProp> extends Compone
 		switch (state.currentMode.get()) {
 			case ClipMode.Pdf:
 				if (!state.pdfPreviewInfo.localFilesAllowed) {
-					let title = Localization.getLocalizedString("WebClipper.ClipType.Pdf.AskPermissionToClipLocalFile");
-					let subtitle = Localization.getLocalizedString("WebClipper.ClipType.Pdf.InstructionsForClippingLocalFiles");
-					let header = Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button");
+					if (state.clientInfo.clipperType === ClientType.ChromeExtension) {
+						return <LocalFilesNotAllowedPanel
+							title={Localization.getLocalizedString("WebClipper.ClipType.Pdf.AskPermissionToClipLocalFile")}
+							subtitle={Localization.getLocalizedString("WebClipper.ClipType.Pdf.InstructionsForClippingLocalFiles")}
+							header={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button")} />;
+					}
 					return <LocalFilesNotAllowedPanel
-						title={title}
-						subtitle={subtitle}
-						header={header} />;
+						title={Localization.getLocalizedString("WebClipper.Preview.UnableToClipLocalFile")}
+						subtitle={""}
+						header={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button")} />;
 				}
 				return <PdfPreview clipperState={state} />;
 			case ClipMode.FullPage:
