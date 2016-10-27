@@ -339,31 +339,35 @@ export class SaveToOneNote {
 
 		let indexesToBePatchedRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest);
 
-		return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
-			let pageId = postPageResponse.parsedResponse.id;
+		return SaveToOneNote.getPages().then((getPagesResponse) => {
+			return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
+				let pageId = postPageResponse.parsedResponse.id;
 
-			// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
-			// When the getPageContent returns a 200, we start PATCHing the page.
-			let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
-			return Promise.all([postPageResponse,
-				indexesToBePatchedRanges.reduce((chainedPromise, currentIndexesRange) => {
-					return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
-						return new Promise((resolve, reject) => {
-							// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
-							// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
-							// processed in the order that they were sent.
-							setTimeout(() => {
-								SaveToOneNote.createOneNotePagePatchRequest(pageId, currentIndexesRange).then(() => {
-									timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
-									resolve();
-								}).catch((error) => {
-									reject(error);
-								});
-							}, timeBetweenPatchRequests);
+				// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
+				// When the getPageContent returns a 200, we start PATCHing the page.
+				let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
+				return Promise.all([postPageResponse,
+					indexesToBePatchedRanges.reduce((chainedPromise, currentIndexesRange) => {
+						return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
+							return new Promise((resolve, reject) => {
+								// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
+								// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
+								// processed in the order that they were sent.
+								setTimeout(() => {
+									SaveToOneNote.createOneNotePagePatchRequest(pageId, currentIndexesRange).then(() => {
+										timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
+										resolve();
+									}).catch((error) => {
+										reject(error);
+									});
+								}, timeBetweenPatchRequests);
+							});
 						});
-					});
-				}, SaveToOneNote.getOneNotePageContentWithRetries(pageId, 3))
-			]);
+					}, SaveToOneNote.getOneNotePageContentWithRetries(pageId, 3))
+				]);
+			});
+		}).catch((error) => {
+			return Promise.reject(error);
 		});
 	}
 
@@ -444,6 +448,13 @@ export class SaveToOneNote {
 	 */
 	private static getPageContent(pageId: string): Promise<any> {
 		return SaveToOneNote.getApiInstance().getPageContent(pageId);
+	}
+
+	/**
+	 * Sends a GET request for all pages in all notebooks
+	 */
+	private static getPages(): Promise<any> {
+		return SaveToOneNote.getApiInstance().getPages();
 	}
 
 	/**
