@@ -339,8 +339,8 @@ export class SaveToOneNote {
 
 		let indexesToBePatchedRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest);
 
-		return SaveToOneNote.getPages().then((getPagesResponse) => {
-			return SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse /* should also be a onenote response */) => {
+		return SaveToOneNote.checkIfUserHasPermissionToPatch().then(() => {
+			return SaveToOneNote.pdfCreatePage(page).then((postPageResponse /* should also be a onenote response */) => {
 				let pageId = postPageResponse.parsedResponse.id;
 
 				// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
@@ -368,6 +368,36 @@ export class SaveToOneNote {
 			});
 		}).catch((error) => {
 			return Promise.reject(error);
+		});
+	}
+
+	private static checkIfUserHasPermissionToPatch(): Promise<any> {
+		let patchPermissionCheckEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchPermissionCheck);
+		return new Promise<any>((resolve, reject) => {
+			SaveToOneNote.getPages({ top: 1, sectionId: this.clipperState.saveLocation }).then((getPagesResponse) => {
+				resolve(getPagesResponse);
+			}, (error) => {
+				patchPermissionCheckEvent.setStatus(Log.Status.Failed);
+				patchPermissionCheckEvent.setFailureInfo({ error: error });
+				reject(error);
+			}).then(() => {
+				Clipper.logger.logEvent(patchPermissionCheckEvent);
+			});
+		});
+	}
+
+	private static pdfCreatePage(page: OneNoteApi.OneNotePage): Promise<any> {
+		let pdfCreatePageEvent = new Log.Event.PromiseEvent(Log.Event.Label.PdfCreatePage);
+		return new Promise<any>((resolve, reject) => {
+			SaveToOneNote.createNewPage(page, ClipMode.Pdf).then((postPageResponse) => {
+				resolve(postPageResponse);
+			}, (error) => {
+				pdfCreatePageEvent.setStatus(Log.Status.Failed);
+				pdfCreatePageEvent.setFailureInfo({ error: error });
+				reject(error);
+			}).then(() => {
+				Clipper.logger.logEvent(pdfCreatePageEvent);
+			});
 		});
 	}
 
@@ -407,7 +437,18 @@ export class SaveToOneNote {
 	private static createOneNotePagePatchRequest(pageId: string, pageIndices: number[]): Promise<any> {
 		let pdf = this.clipperState.pdfResult.data.get().pdf;
 		return pdf.getPageListAsDataUrls(pageIndices).then((dataUrls) => {
-			return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest);
+			let patchRequestEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchRequest);
+			return new Promise<any>((resolve, reject) => {
+				SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest).then((data) => {
+					resolve(data);
+				}, (err) => {
+					patchRequestEvent.setStatus(Log.Status.Failed);
+					patchRequestEvent.setFailureInfo({ error: "The PATCH request failed all its retries" });
+					reject(err);
+				}).then(() => {
+					Clipper.logger.logEvent(patchRequestEvent);
+				});
+			});
 		});
 	}
 
@@ -453,8 +494,8 @@ export class SaveToOneNote {
 	/**
 	 * Sends a GET request for all pages in all notebooks
 	 */
-	private static getPages(): Promise<any> {
-		return SaveToOneNote.getApiInstance().getPages();
+	private static getPages(options: { top?: number, sectionId?: string }): Promise<any> {
+		return SaveToOneNote.getApiInstance().getPages(options);
 	}
 
 	/**
