@@ -368,11 +368,20 @@ export class SaveToOneNote {
 	}
 
 	private static getOneNotePageContentWithRetries(pageId: string, numRetries: number): Promise<any> {
-		return SaveToOneNote.getPageContent(pageId).catch((error) => {
+		return SaveToOneNote.getPageContent(pageId).catch((error1) => {
+			// If the first call fails, we need to wait a couple of seconds before trying again
 			if (numRetries >= 1) {
-				return SaveToOneNote.getOneNotePageContentWithRetries(pageId, numRetries - 1);
+				return new Promise<any>((resolve, reject) => {
+					setTimeout(() => {
+						SaveToOneNote.getOneNotePageContentWithRetries(pageId, numRetries - 1).then((response) => {
+							resolve(response);
+						}).catch((error2) => {
+							reject(error2);
+						});
+					}, 2000);
+				});
 			} else {
-				return Promise.reject(error);
+				return Promise.reject(error1);
 			}
 		});
 	}
