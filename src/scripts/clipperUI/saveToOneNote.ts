@@ -6,6 +6,8 @@ import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
 import {Utils} from "../utils";
 
+import {SmartValue} from "../communicator/smartValue";
+
 import {AugmentationModel} from "../contentCapture/augmentationHelper";
 import {PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
 
@@ -315,7 +317,7 @@ export class SaveToOneNote {
 	 */
 	private static executeApiRequest(page: OneNoteApi.OneNotePage, clipMode: ClipMode): Promise<any> {
 		if (clipMode === ClipMode.Pdf) {
-			return SaveToOneNote.patchPdfPages(page);
+			return SaveToOneNote.patchPdfPages(page, SaveToOneNote.getAllPdfPageIndexesToBeSent());
 		}
 
 		let saveLocation = SaveToOneNote.clipperState.saveLocation;
@@ -327,44 +329,15 @@ export class SaveToOneNote {
 	 * group has <= 30 pages, and then chains them all to be sent to OneNote as PATCH requests. Simply
 	 * resolves if there are no PDF pages to PATCH.
 	 */
-	private static patchPdfPages(page: OneNoteApi.OneNotePage): Promise<any> {
-		let clipperState = SaveToOneNote.clipperState;
-		let previewOptions = clipperState.pdfPreviewInfo;
-		let pdfDocumentProxy = clipperState.pdfResult.data.get().pdf;
-
-		let indexesToBePatched = SaveToOneNote.getAllPdfPageIndexesToBeSent();
-		if (indexesToBePatched.length === 0) {
+	private static patchPdfPages(page: OneNoteApi.OneNotePage, pageIndexes: number[]): Promise<any> {
+		if (pageIndexes.length === 0) {
 			return new Promise<any>((resolve) => { resolve(); });
 		}
-
-		let indexesToBePatchedRanges = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest);
 
 		return SaveToOneNote.checkIfUserHasPermissionToPatch().then(() => {
 			return SaveToOneNote.pdfCreatePage(page).then((postPageResponse /* should also be a onenote response */) => {
 				let pageId = postPageResponse.parsedResponse.id;
-
-				// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
-				// When the getPageContent returns a 200, we start PATCHing the page.
-				let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
-				return Promise.all([postPageResponse,
-					indexesToBePatchedRanges.reduce((chainedPromise, currentIndexesRange) => {
-						return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
-							return new Promise((resolve, reject) => {
-								// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
-								// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
-								// processed in the order that they were sent.
-								setTimeout(() => {
-									SaveToOneNote.createOneNotePagePatchRequest(pageId, currentIndexesRange).then(() => {
-										timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
-										resolve();
-									}).catch((error) => {
-										reject(error);
-									});
-								}, timeBetweenPatchRequests);
-							});
-						});
-					}, SaveToOneNote.getOneNotePageContentWithRetries(pageId, 3))
-				]);
+				return SaveToOneNote.sendPagesAsPatchRequests(pageId, pageIndexes);
 			});
 		}).catch((error) => {
 			return Promise.reject(error);
@@ -420,13 +393,63 @@ export class SaveToOneNote {
 		});
 	}
 
-	private static sendOneNotePagePatchRequestWithRetries(pageId: string, dataUrls: string[], numRetries: number): Promise<any> {
-		return SaveToOneNote.sendOneNotePagePatchRequest(pageId, dataUrls).catch((error) => {
-			if (numRetries >= 1) {
-				return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, numRetries - 1);
-			} else {
-				return Promise.reject(error);
-			}
+	private static sendPagesAsPatchRequests(pageId: string, indexesToBePatched: number[]): Promise<any> {
+		let indexesToBePatchedRanges: number[][] = ArrayUtils.partition(indexesToBePatched, SaveToOneNote.maxImagesPerPatchRequest);
+
+		// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
+		// When the getPageContent returns a 200, we start PATCHing the page.
+		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
+		return Promise.all([
+			indexesToBePatchedRanges.reduce((chainedPromise, currentIndexesRange) => {
+				return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
+					return new Promise((resolve, reject) => {
+						// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
+						// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
+						// processed in the order that they were sent.
+						let dataUrlsSv = new SmartValue<string[]>();
+						let createPatchRequestCb = () => {
+							SaveToOneNote.createOneNotePagePatchRequest(pageId, dataUrlsSv.get()).then(() => {
+								timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
+								resolve();
+							}).catch((error) => {
+								reject(error);
+							});
+						};
+
+						setTimeout(() => {
+							if (dataUrlsSv.get()) {
+								createPatchRequestCb();
+							} else {
+								dataUrlsSv.subscribe((value) => {
+									createPatchRequestCb();
+								}, { times: 1, callOnSubscribe: false });
+							}
+						}, timeBetweenPatchRequests);
+
+						SaveToOneNote.getDataUrls(currentIndexesRange).then((dataUrls) => {
+							dataUrlsSv.set(dataUrls);
+						});
+					});
+				});
+			}, SaveToOneNote.getOneNotePageContentWithRetries(pageId, 3))
+		]);
+	}
+
+	/**
+	 * Given a list of page indexes, queries the PDF file for a list of corresponding data urls representing
+	 * images of the pages
+	 */
+	private static getDataUrls(pageIndices: number[]): Promise<string[]> {
+		let getPageListAsDataUrlsEvent = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
+		getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.NumPages, pageIndices.length);
+
+		let pdf = this.clipperState.pdfResult.data.get().pdf;
+		return pdf.getPageListAsDataUrls(pageIndices).then((dataUrls: string[]) => {
+			getPageListAsDataUrlsEvent.stopTimer();
+			getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getPageListAsDataUrlsEvent.getDuration() / pageIndices.length);
+			Clipper.logger.logEvent(getPageListAsDataUrlsEvent);
+
+			return Promise.resolve(dataUrls);
 		});
 	}
 
@@ -434,29 +457,28 @@ export class SaveToOneNote {
 	 * Given a list of page indexes, creates and sends the request to append the pages to the specified
 	 * page with the images
 	 */
-	private static createOneNotePagePatchRequest(pageId: string, pageIndices: number[]): Promise<any> {
-		let pdf = this.clipperState.pdfResult.data.get().pdf;
-
-		let getPageListAsDataUrlsEvent = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
-		getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.NumPages, pageIndices.length);
-
-		return pdf.getPageListAsDataUrls(pageIndices).then((dataUrls) => {
-			getPageListAsDataUrlsEvent.stopTimer();
-			getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getPageListAsDataUrlsEvent.getDuration() / pageIndices.length);
-			Clipper.logger.logEvent(getPageListAsDataUrlsEvent);
-
-			let patchRequestEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchRequest);
-			return new Promise<any>((resolve, reject) => {
-				SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest).then((data) => {
-					resolve(data);
-				}, (err) => {
-					patchRequestEvent.setStatus(Log.Status.Failed);
-					patchRequestEvent.setFailureInfo({ error: err });
-					reject(err);
-				}).then(() => {
-					Clipper.logger.logEvent(patchRequestEvent);
-				});
+	private static createOneNotePagePatchRequest(pageId: string, dataUrls: string[]): Promise<any> {
+		let patchRequestEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchRequest);
+		return new Promise<any>((resolve, reject) => {
+			SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, Constants.Settings.numRetriesPerPatchRequest).then((data) => {
+				resolve(data);
+			}, (err) => {
+				patchRequestEvent.setStatus(Log.Status.Failed);
+				patchRequestEvent.setFailureInfo({ error: err });
+				reject(err);
+			}).then(() => {
+				Clipper.logger.logEvent(patchRequestEvent);
 			});
+		});
+	}
+
+	private static sendOneNotePagePatchRequestWithRetries(pageId: string, dataUrls: string[], numRetries: number): Promise<any> {
+		return SaveToOneNote.sendOneNotePagePatchRequest(pageId, dataUrls).catch((error) => {
+			if (numRetries >= 1) {
+				return SaveToOneNote.sendOneNotePagePatchRequestWithRetries(pageId, dataUrls, numRetries - 1);
+			} else {
+				return Promise.reject(error);
+			}
 		});
 	}
 
