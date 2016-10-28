@@ -378,6 +378,9 @@ export class SaveToOneNote {
 				if (hasPermissions) {
 					resolve();
 				} else {
+					// As of v3.2.9, we have added a new scope for MSA to allow for PATCHing, however currently-logged-in users will not have
+					// this scope, so this call is a workaround to check for permissions, but is very unperformant. We need to investigate a
+					// quicker way of doing this ... perhaps exposing an endpoint that we can use for this sole purpose.
 					let patchPermissionCheckEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchPermissionCheck);
 					SaveToOneNote.getPages({ top: 1, sectionId: this.clipperState.saveLocation }).then(() => {
 						Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
