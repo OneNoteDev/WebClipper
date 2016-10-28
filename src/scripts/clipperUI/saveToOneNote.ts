@@ -317,7 +317,7 @@ export class SaveToOneNote {
 		return SaveToOneNote.getApiInstance().createPage(page, saveLocation);
 	}
 
-	private static getAllPdfPageIndexesToBeSent(): number[] {
+	public static getAllPdfPageIndexesToBeSent(): number[] {
 		if (this.clipperState.pdfPreviewInfo.allPages) {
 			return _.range(this.clipperState.pdfResult.data.get().viewportDimensions.length);
 		}
