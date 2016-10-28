@@ -39,7 +39,7 @@ export class SaveToOneNote {
 	// Used by PDF mode
 	private static maxImagesPerPatchRequest = 15;
 	private static timeBeforeFirstPatch = 1000;
-	private static timeBetweenPatchRequests = 5000;
+	private static timeBetweenPatchRequests = 7000;
 
 	/**
 	 * Checks for the 1) data result from creating a new page on clip, and 2) completion of the show ratings prompt calculation
