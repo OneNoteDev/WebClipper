@@ -100,32 +100,33 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						clientInfo: this.clientInfo
 					});
 
-					// The ability to get a store link from the url is only available to Chrome so far (as of 10/21/16)
-					let extensionUrlRegex = /^chrome-extension:\/\/(\w+)\W/;
-					if (this.clientInfo.get().clipperType === ClientType.ChromeExtension && extensionUrlRegex.test(this.tab.url)) {
-						let extensionId = this.tab.url.match(extensionUrlRegex)[1];
-						let extensionUrl = "https://chrome.google.com/webstore/detail/" + extensionId;
+					// // The ability to get a store link from the url is only available to Chrome so far (as of 10/21/16)
+					// let extensionUrlRegex = /^chrome-extension:\/\/(\w+)\W/;
+					// if (this.clientInfo.get().clipperType === ClientType.ChromeExtension && extensionUrlRegex.test(this.tab.url)) {
+					// 	let extensionId = this.tab.url.match(extensionUrlRegex)[1];
+					// 	let extensionUrl = "https://chrome.google.com/webstore/detail/" + extensionId;
 
-						WebExtensionNotifications.setButtonListener((notificationId, buttonIndex) => {
-							if (notificationId === Constants.Extension.NotificationIds.conflictingExtension && buttonIndex === 0) {
-								window.open(extensionUrl);
-								WebExtension.browser.notifications.clear(Constants.Extension.NotificationIds.conflictingExtension);
-							}
-						});
+					// 	WebExtensionNotifications.setButtonListener((notificationId, buttonIndex) => {
+					// 		if (notificationId === Constants.Extension.NotificationIds.conflictingExtension && buttonIndex === 0) {
+					// 			window.open(extensionUrl);
+					// 			WebExtension.browser.notifications.clear(Constants.Extension.NotificationIds.conflictingExtension);
+					// 		}
+					// 	});
 
-						WebExtension.browser.notifications.create(Constants.Extension.NotificationIds.conflictingExtension, {
-							type: "basic",
-							title: Localization.getLocalizedString("WebClipper.Label.OneNoteWebClipper"),
-							message: Localization.getLocalizedString("WebClipper.Error.ConflictingExtension"),
-							buttons: [{ title: extensionUrl }],
-							iconUrl: "icons/icon-256.png"
-						});
-					} else {
-						// In Firefox, alert() is not callable from the background, so it looks like we have to no-op here
-						if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
-							InjectHelper.alertUserOfUnclippablePage();
-						}
+					// 	WebExtension.browser.notifications.create(Constants.Extension.NotificationIds.conflictingExtension, {
+					// 		type: "basic",
+					// 		title: Localization.getLocalizedString("WebClipper.Label.OneNoteWebClipper"),
+					// 		message: Localization.getLocalizedString("WebClipper.Error.ConflictingExtension"),
+					// 		buttons: [{ title: extensionUrl }],
+					// 		iconUrl: "icons/icon-256.png"
+					// 	});
+					// } else {
+
+					// In Firefox, alert() is not callable from the background, so it looks like we have to no-op here
+					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
+						InjectHelper.alertUserOfUnclippablePage();
 					}
+					// }
 					resolve(false);
 				} else {
 					WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.webClipperInjectUrl });
