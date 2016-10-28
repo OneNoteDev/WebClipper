@@ -1,6 +1,6 @@
 /// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
-// 9/28/2016 - We need to go back and update sanitize-html to the latest .d.ts once 
+// 9/28/2016 - We need to go back and update sanitize-html to the latest .d.ts once
 // they rename `sanitize` to `sanitizeHtml`, which is the name of the actually exported function
 declare let sanitizeHtml;
 
@@ -933,5 +933,25 @@ export module DomUtils {
 			(<HTMLElement>oldNode).removeAttribute("class");
 			return oldNode;
 		});
+	}
+
+	function isScrolledIntoPartialView(el: HTMLElement): boolean {
+		let elemTop = el.getBoundingClientRect().top;
+		let elemBottom = el.getBoundingClientRect().bottom;
+
+		let isVisible = elemTop < window.innerHeight && elemBottom >= 0;
+		return isVisible;
+	}
+
+	export function getScrollPercent(elem: Element, asDecimalValue = false) {
+		let scrollValue: number = (elem.scrollTop * 1.0) / (elem.scrollHeight - elem.clientHeight);
+
+		// console.warn(elem.scrollTop, elem.scrollHeight, elem.clientHeight, scrollValue);
+
+		if (asDecimalValue) {
+			return scrollValue;
+		}
+
+		return scrollValue * 100;
 	}
 }

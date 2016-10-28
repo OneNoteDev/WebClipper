@@ -21,7 +21,23 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		});
 	};
 
+	private getPdfModeButton(currentMode: ClipMode) {
+		if (this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
+			return undefined;
+		}
+
+		return <ModeButton imgSrc={Utils.getImageResourceUrl("pdf.png") }
+			label={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button")}
+			myMode={ClipMode.Pdf} tabIndex={39} selected={currentMode === ClipMode.Pdf}
+			onModeSelected={this.onModeSelected.bind(this) }
+			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button.Tooltip")}/>;
+	}
+
 	private getAugmentationModeButton(currentMode: ClipMode) {
+		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			return undefined;
+		}
+
 		let augmentationType: string = AugmentationHelper.getAugmentationType(this.props.clipperState);
 		let augmentationLabel: string = Localization.getLocalizedString("WebClipper.ClipType." + augmentationType + ".Button");
 		let augmentationTooltip = Localization.getLocalizedString("WebClipper.ClipType.Button.Tooltip").replace("{0}", augmentationLabel);
@@ -34,10 +50,14 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getFullPageModeButton(currentMode: ClipMode) {
+		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			return undefined;
+		}
+
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("fullpage.png")}
 			label={Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button")}
 			myMode={ClipMode.FullPage} tabIndex={40}
-			selected={(!currentMode as boolean) || currentMode === ClipMode.FullPage}
+			selected={currentMode === ClipMode.FullPage}
 			onModeSelected={this.onModeSelected.bind(this) }
 			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button.Tooltip")}/>;
 	}
@@ -80,6 +100,9 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getBookmarkModeButton(currentMode: ClipMode) {
+		if (this.props.clipperState.pageInfo.rawUrl.indexOf("file:///") === 0) {
+			return undefined;
+		}
 		return <ModeButton imgSrc={Utils.getImageResourceUrl("bookmark.png") }
 			label={Localization.getLocalizedString("WebClipper.ClipType.Bookmark.Button") }
 			myMode={ClipMode.Bookmark} tabIndex={44} selected={currentMode === ClipMode.Bookmark}
@@ -91,7 +114,8 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		let currentMode = this.props.clipperState.currentMode.get();
 
 		return (
-			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}>
+			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight) }>
+				{ this.getPdfModeButton(currentMode) }
 				{ this.getFullPageModeButton(currentMode) }
 				{ this.getRegionModeButton(currentMode) }
 				{ this.getAugmentationModeButton(currentMode) }

@@ -40,8 +40,6 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 		if (this.props.onSignOutInvoked) {
 			this.props.onSignOutInvoked(this.props.clipperState.userResult.data.user.authType);
 		}
-
-		this.props.clipperState.setState({ userResult: undefined });
 	}
 
 	handleFeedbackButton(args: any, event: MouseEvent) {

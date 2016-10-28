@@ -111,6 +111,11 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		return this.invokePageNavBrowserSpecific();
 	}
 
+	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (isAllowed: boolean) => void): void {
+		// When Safari opens a pdf, it is no longer a web environment and won't allow extensions to run
+		callback(false);
+	}
+
 	/**
 	 * Gets the visible tab's screenshot as an image url
 	 */

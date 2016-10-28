@@ -52,6 +52,8 @@ import {RegionSelector} from "./regionSelector";
 import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
 import {Status} from "./status";
 
+import * as _ from "lodash";
+
 class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private isFullScreen = new SmartValue<boolean>(false);
 
@@ -69,7 +71,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 			userResult: { status: Status.NotStarted } ,
 			fullPageResult: { status: Status.NotStarted },
-			pdfResult: { status: Status.NotStarted },
+			pdfResult: { data: new SmartValue<PdfScreenshotResult>(), status: Status.NotStarted },
 			regionResult: { status: Status.NotStarted, data: [] },
 			augmentationResult: { status: Status.NotStarted },
 			oneNoteApiResult: { status: Status.NotStarted },
@@ -88,6 +90,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			},
 			augmentationPreviewInfo: {},
 			selectionPreviewInfo: {},
+			pdfPreviewInfo: {
+				allPages: true,
+				localFilesAllowed: true,
+				selectedPageRange: "",
+				shouldAttachPdf: false,
+			},
 
 			showRatingsPrompt: new SmartValue<boolean>(),
 
@@ -158,7 +166,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					previewGlobalInfo: newPreviewGlobalInfo
 				});
 
-				this.captureFullScreenshotContent();
+				this.capturePdfScreenshotContent();
+				this.captureFullPageScreenshotContent();
 				this.captureAugmentedContent();
 				this.captureBookmarkContent();
 
@@ -173,65 +182,77 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		});
 	}
 
-	private captureFullScreenshotContent() {
-		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-			this.capturePdfScreenshotContent();
-		} else {
-			this.captureFullPageScreenshotContent();
+	private capturePdfScreenshotContent() {
+		// We don't capture anything. If the type is not EnhancedUrl, the mode will never show.
+		if (this.state.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
+			return;
+		}
+
+		// The PDF isn't going to change on the same url, so we avoid multiple GETs in the same page
+		if (this.state.pdfResult.status === Status.NotStarted) {
+			// If network file, send XHR, get bytes back, convert to PDFDocumentProxy
+			// If local file, get bytes back, convert to PDFDocumentProxy
+			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
+			this.getPdfScreenshotResultFromRawUrl(this.state.pageInfo.rawUrl)
+				.then((pdfScreenshotResult: PdfScreenshotResult) => {
+					this.state.pdfResult.data.set(pdfScreenshotResult);
+					this.state.setState({
+						pdfResult: {
+							data: this.state.pdfResult.data,
+							status: Status.Succeeded
+						}
+					});
+				})
+				.catch(() => {
+					this.state.pdfResult.data.set({
+						failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+					});
+					this.state.setState({
+						pdfResult: {
+							data: this.state.pdfResult.data,
+							status: Status.Failed
+						}
+					});
+					// The clip action might be waiting on the result, so do this to consistently trigger its callback
+					this.state.pdfResult.data.forceUpdate();
+				});
 		}
 	}
 
-	private capturePdfScreenshotContent() {
-		if (this.state.pageInfo.rawUrl.indexOf("file:///") === 0) {
-			// The pdf is local, and therefore we cannot get its binary
-			this.state.setState({
-				pdfResult: {
-					data: new SmartValue<PdfScreenshotResult>({ failureMessage: Localization.getLocalizedString("WebClipper.Preview.UnableToClipLocalFile") }),
-					status: Status.Failed
-				}
-			});
+	private getPdfScreenshotResultFromRawUrl(rawUrl: string): Promise<PdfScreenshotResult> {
+		if (rawUrl.indexOf("file:///") === 0) {
+			return PdfScreenshotHelper.getLocalPdfData(rawUrl);
 		} else {
-			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
-			PdfScreenshotHelper.getPdfData(this.state.pageInfo.rawUrl).then((result) => {
-				// We can't trigger subscribed callbacks using setState so we still have to call set()
-				this.state.pdfResult.data.set(result);
-				this.state.setState({
-					pdfResult: {
-						data: this.state.pdfResult.data,
-						status: Status.Succeeded
-					}
-				});
-			}, () => {
-				this.state.pdfResult.data.set({
-					failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
-				});
-				this.state.setState({
-					pdfResult: {
-						data: this.state.pdfResult.data,
-						status: Status.Failed
-					}
-				});
-				// The clip action might be waiting on the result, so do this to consistently trigger its callback
-				this.state.pdfResult.data.forceUpdate();
-			});
+			return PdfScreenshotHelper.getPdfData(rawUrl);
 		}
 	}
 
 	private captureFullPageScreenshotContent() {
-		this.state.setState({ fullPageResult: { status: Status.InProgress } });
-
-		FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData).then((result) => {
-			this.state.setState({ fullPageResult: { data: result, status: Status.Succeeded } });
-		}, () => {
+		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			this.state.setState({
 				fullPageResult: {
 					data: {
-						failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+						failureMessage: Localization.getLocalizedString("WebClipper.Preview.NoContentFound")
 					},
 					status: Status.Failed
 				}
 			});
-		});
+		} else {
+			this.state.setState({ fullPageResult: { status: Status.InProgress } });
+
+			FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData).then((result) => {
+				this.state.setState({ fullPageResult: { data: result, status: Status.Succeeded } });
+			}, () => {
+				this.state.setState({
+					fullPageResult: {
+						data: {
+							failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+						},
+						status: Status.Failed
+					}
+				});
+			});
+		}
 	}
 
 	private captureAugmentedContent() {
@@ -413,6 +434,21 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		});
 
+		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.extensionNotAllowedToAccessLocalFiles, () => {
+			// We only want to log one time per session
+			if (this.state.pdfPreviewInfo.localFilesAllowed) {
+				Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.LocalFilesNotAllowedPanelShown));
+			}
+
+			let newPreviewInfo = Utils.createUpdatedObject(this.state.pdfPreviewInfo, {
+				localFilesAllowed: false
+			});
+
+			this.state.setState({
+				pdfPreviewInfo: newPreviewInfo
+			});
+		});
+
 		Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {
 			if (updatedClientInfo) {
 				this.state.setState({
@@ -516,6 +552,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private getDefaultClipMode(): ClipMode {
+		if (this.state && this.state.pageInfo && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			return ClipMode.Pdf;
+		}
+
 		if (this.state && this.state.invokeOptions) {
 			switch (this.state.invokeOptions.invokeMode) {
 				case InvokeMode.ContextImage:
@@ -592,6 +632,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private getSignOutState(): ClipperState {
 		let signOutState = this.getResetState();
 		signOutState.saveLocation = undefined;
+		signOutState.userResult = undefined;
 		return signOutState;
 	}
 
@@ -601,14 +642,15 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		this.state.setState({ userResult: { status: Status.InProgress, data: this.state.userResult.data } });
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, { callback: (updatedUser: UserInfo) => {
 			if (updatedUser && updatedUser.user) {
-				if (this.state.currentMode.get() === ClipMode.FullPage) {
+				let currentMode = this.state.currentMode.get();
+				if (currentMode === ClipMode.FullPage) {
 					// A page info refresh needs to be triggered if the url has changed right before the clip action
 					Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged, {
 						callback: () => {
 							this.startClip();
 						}
 					});
-				} else if (this.state.currentMode.get() === ClipMode.Bookmark) {
+				} else if (currentMode === ClipMode.Bookmark) {
 					// set the rendered bookmark preview HTML as the exact HTML to send to OneNote
 					let previewBodyHtml = document.getElementById("previewBody").innerHTML;
 					this.state.setState({
@@ -623,16 +665,19 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}});
 	}
 
-	private startClip() {
+	// Refactor this to do the correct thing based on the this.state.currentMode.get()	
+	private startClip(): void {
 		Clipper.storeValue(ClipperStorageKeys.lastClippedDate, Date.now().toString());
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
 		let mode = ClipMode[this.state.currentMode.get()];
-		if (this.state.currentMode.get() === ClipMode.FullPage && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-			mode += ": " + OneNoteApi.ContentType[this.state.pageInfo.contentType];
+
+		if (this.state.currentMode.get() === ClipMode.Pdf) {
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
+			mode += ": " + OneNoteApi.ContentType[this.state.pageInfo.contentType];
 		}
+
 		if (this.state.currentMode.get() === ClipMode.Augmentation) {
 			let styles = {
 				fontSize: this.state.previewGlobalInfo.fontSize,
@@ -657,13 +702,15 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}, { callOnSubscribe: false });
 
 		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, startClipPackage.responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
+			let responsePackage = startClipPackage.responsePackage;
+			let createPageResponse = Array.isArray(responsePackage) ? responsePackage[0] : responsePackage;
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, createPageResponse.request.getResponseHeader(Constants.HeaderValues.correlationId));
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
 
 			// set oneNoteApiResult.data first with status still InProgress, then check for correct status to set
-			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: Status.InProgress } });
+			this.state.setState({ oneNoteApiResult: { data: createPageResponse.parsedResponse, status: Status.InProgress } });
 			let statusToSet: Status = SaveToOneNote.getClipSuccessStatus(this.state);
-			this.state.setState({ oneNoteApiResult: { data: startClipPackage.responsePackage.parsedResponse, status: statusToSet } });
+			this.state.setState({ oneNoteApiResult: { data: createPageResponse.parsedResponse, status: statusToSet } });
 		}, (error: OneNoteApi.RequestError) => {
 			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
 

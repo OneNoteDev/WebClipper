@@ -1,7 +1,8 @@
 ﻿export enum ClipMode {
-	FullPage,
-	Region,
 	Augmentation,
 	Bookmark,
+	FullPage,
+	Pdf,
+	Region,
 	Selection
 }

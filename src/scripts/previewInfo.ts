@@ -6,6 +6,13 @@
 	serif?: boolean;
 }
 
+export interface PdfPreviewInfo {
+	allPages?: boolean;
+	localFilesAllowed?: boolean;
+	selectedPageRange?: string;
+	shouldAttachPdf?: boolean;
+};
+
 export interface PreviewInfo {
 	previewBodyHtml?: string;
 };

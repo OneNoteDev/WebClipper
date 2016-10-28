@@ -1,13 +1,13 @@
 ﻿import * as sinon from "sinon";
 
-import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
-import {PreviewViewerAugmentationHeader, PreviewViewerAugmentationHeaderProp} from "../../../scripts/clipperUI/components/previewViewer/previewViewerAugmentationHeader";
+import {Clipper} from "../../../../scripts/clipperUI/frontEndGlobals";
+import {PreviewViewerAugmentationHeader, PreviewViewerAugmentationHeaderProp} from "../../../../scripts/clipperUI/components/previewViewer/previewViewerAugmentationHeader";
 
-import {Constants} from "../../../scripts/constants";
+import {Constants} from "../../../../scripts/constants";
 
-import {HelperFunctions} from "../../helperFunctions";
+import {HelperFunctions} from "../../../helperFunctions";
 
-import {StubSessionLogger} from "../../../scripts/logging/stubSessionLogger";
+import {StubSessionLogger} from "../../../../scripts/logging/stubSessionLogger";
 
 let defaultComponent;
 let mockProp;

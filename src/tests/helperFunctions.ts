@@ -15,6 +15,8 @@ import {ModeButtonProps} from "../scripts/clipperUI/components/modeButton";
 import {Communicator} from "../scripts/communicator/communicator";
 import {SmartValue} from "../scripts/communicator/smartValue";
 
+import {PdfScreenshotResult} from "../scripts/contentCapture/pdfScreenshotHelper";
+
 import {InvokeMode} from "../scripts/extensions/invokeOptions";
 
 import {Localization} from "../scripts/localization/localization";
@@ -104,7 +106,7 @@ export module HelperFunctions {
 				status: Status.NotStarted
 			},
 			pdfResult: {
-				data: undefined,
+				data: new SmartValue<PdfScreenshotResult>({}),
 				status: Status.NotStarted
 			},
 			regionResult: {
@@ -122,6 +124,11 @@ export module HelperFunctions {
 				highlighterEnabled: false,
 				previewTitleText: "Edited title",
 				serif: false
+			},
+			pdfPreviewInfo: {
+				allPages: true,
+				selectedPageRange: "1,3,5",
+				shouldAttachPdf: true
 			},
 			augmentationPreviewInfo: {
 				previewBodyHtml: "Edited body"
