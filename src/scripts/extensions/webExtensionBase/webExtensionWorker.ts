@@ -26,7 +26,7 @@ import {InvokeSource} from "../invokeSource";
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
-import {WebExtensionNotifications} from "./webExtensionNotifications";
+// import {WebExtensionNotifications} from "./webExtensionNotifications";
 
 type Tab = chrome.tabs.Tab;
 type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
