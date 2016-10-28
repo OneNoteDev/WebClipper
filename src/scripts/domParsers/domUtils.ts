@@ -944,6 +944,10 @@ export module DomUtils {
 	}
 
 	export function getScrollPercent(elem: Element, asDecimalValue = false) {
+		if (!elem) {
+			return 0;
+		}
+
 		let scrollValue: number = (elem.scrollTop * 1.0) / (elem.scrollHeight - elem.clientHeight);
 
 		// console.warn(elem.scrollTop, elem.scrollHeight, elem.clientHeight, scrollValue);
