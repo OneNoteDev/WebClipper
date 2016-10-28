@@ -330,10 +330,10 @@ export class SaveToOneNote {
 	 */
 	private static createAndPatchPdfPage(page: OneNoteApi.OneNotePage, pageIndexes: number[]): Promise<OneNoteApi.ResponsePackage<any>> {
 		return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject) => {
-			SaveToOneNote.checkIfUserHasPermissionToPatch().then(() => {
-				SaveToOneNote.pdfCreatePage(page).then((postPageResponse /* should also be a onenote response */) => {
+			return SaveToOneNote.checkIfUserHasPermissionToPatch().then(() => {
+				return SaveToOneNote.pdfCreatePage(page).then((postPageResponse /* should also be a onenote response */) => {
 					let pageId = postPageResponse.parsedResponse.id;
-					SaveToOneNote.sendPagesAsPatchRequests(pageId, pageIndexes).then(() => {
+					return SaveToOneNote.sendPagesAsPatchRequests(pageId, pageIndexes).then(() => {
 						resolve(postPageResponse);
 					});
 				});

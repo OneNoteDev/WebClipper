@@ -675,8 +675,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		let mode = ClipMode[this.state.currentMode.get()];
 
 		if (this.state.currentMode.get() === ClipMode.Pdf) {
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.NumPages, this.state.pdfResult.data.get().pdf.numPages());
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
-			mode += ": " + OneNoteApi.ContentType[this.state.pageInfo.contentType];
 		}
 
 		if (this.state.currentMode.get() === ClipMode.Augmentation) {
@@ -717,6 +717,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 			this.state.setState({ oneNoteApiResult: { data: error, status: Status.Failed } });
 		}).then(() => {
+			if (this.state.currentMode.get() === ClipMode.Pdf) {
+				clipEvent.stopTimer();
+				clipEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, clipEvent.getDuration() / this.state.pdfResult.data.get().pdf.numPages());
+			}
 			Clipper.logger.logEvent(clipEvent);
 		});
 	}
