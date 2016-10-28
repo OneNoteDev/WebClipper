@@ -2,6 +2,7 @@
 
 import {ArrayUtils} from "../arrayUtils";
 import {Constants} from "../constants";
+import {PromiseUtils} from "../promiseUtils";
 import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
 import {Utils} from "../utils";
@@ -424,34 +425,24 @@ export class SaveToOneNote {
 		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
 		return Promise.all([
 			indexesToBePatchedRanges.reduce((chainedPromise, currentIndexesRange) => {
-				return chainedPromise = chainedPromise.then((returnValueOfPreviousPromise /* should be a onenote response */) => {
+				return chainedPromise = chainedPromise.then(() => {
 					return new Promise((resolve, reject) => {
 						// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
 						// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
 						// processed in the order that they were sent.
-						let dataUrlsSv = new SmartValue<string[]>();
-						let createPatchRequestCb = () => {
-							SaveToOneNote.createOneNotePagePatchRequest(pageId, dataUrlsSv.get()).then(() => {
+
+						// Parallelize the PATCH request intervals with the fetching of the next set of dataUrls
+						let getDataUrlsPromise = SaveToOneNote.getDataUrls(currentIndexesRange);
+						let timeoutPromise = PromiseUtils.wait(timeBetweenPatchRequests);
+
+						Promise.all([getDataUrlsPromise, timeoutPromise]).then((values) => {
+							let dataUrls = values[0] as string[];
+							SaveToOneNote.createOneNotePagePatchRequest(pageId, dataUrls).then(() => {
 								timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 								resolve();
 							}).catch((error) => {
 								reject(error);
 							});
-						};
-
-						// Parallelize the PATCH request intervals with the fetching of the next set of dataUrls
-						setTimeout(() => {
-							if (dataUrlsSv.get()) {
-								createPatchRequestCb();
-							} else {
-								dataUrlsSv.subscribe((value) => {
-									createPatchRequestCb();
-								}, { times: 1, callOnSubscribe: false });
-							}
-						}, timeBetweenPatchRequests);
-
-						SaveToOneNote.getDataUrls(currentIndexesRange).then((dataUrls) => {
-							dataUrlsSv.set(dataUrls);
 						});
 					});
 				});

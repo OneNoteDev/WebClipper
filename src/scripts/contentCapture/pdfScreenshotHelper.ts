@@ -30,7 +30,6 @@ export class PdfScreenshotHelper {
 	public static getPdfData(url: string): Promise<PdfScreenshotResult> {
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetBinaryRequest);
-			getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.Url, url);
 
 			let request = new XMLHttpRequest();
 			request.open("GET", url, true);
