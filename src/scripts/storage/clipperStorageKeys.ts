@@ -5,6 +5,7 @@ export module ClipperStorageKeys {
 	export var displayLanguageOverride = "displayLocaleOverride";
 	export var doNotPromptRatings = "doNotPromptRatings";
 	export var flightingInfo = "flightingInfo";
+	export var hasPatchPermissions = "hasPatchPermissions";
 	export var lastBadRatingDate = "lastBadRatingDate";
 	export var lastBadRatingVersion = "lastBadRatingVersion";
 	export var lastClippedDate = "lastClippedDate";

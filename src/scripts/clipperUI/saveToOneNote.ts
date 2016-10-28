@@ -371,17 +371,25 @@ export class SaveToOneNote {
 		});
 	}
 
-	private static checkIfUserHasPermissionToPatch(): Promise<any> {
-		let patchPermissionCheckEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchPermissionCheck);
+	private static checkIfUserHasPermissionToPatch(): Promise<void> {
 		return new Promise<any>((resolve, reject) => {
-			SaveToOneNote.getPages({ top: 1, sectionId: this.clipperState.saveLocation }).then((getPagesResponse) => {
-				resolve(getPagesResponse);
-			}, (error) => {
-				patchPermissionCheckEvent.setStatus(Log.Status.Failed);
-				patchPermissionCheckEvent.setFailureInfo({ error: error });
-				reject(error);
-			}).then(() => {
-				Clipper.logger.logEvent(patchPermissionCheckEvent);
+			Clipper.getStoredValue(ClipperStorageKeys.hasPatchPermissions, (hasPermissions) => {
+				// We have checked their permissions successfully in the past, or the user signed in on this device (with the latest scope)
+				if (hasPermissions) {
+					resolve();
+				} else {
+					let patchPermissionCheckEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchPermissionCheck);
+					SaveToOneNote.getPages({ top: 1, sectionId: this.clipperState.saveLocation }).then(() => {
+						Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
+						resolve();
+					}, (error) => {
+						patchPermissionCheckEvent.setStatus(Log.Status.Failed);
+						patchPermissionCheckEvent.setFailureInfo({ error: error });
+						reject(error);
+					}).then(() => {
+						Clipper.logger.logEvent(patchPermissionCheckEvent);
+					});
+				}
 			});
 		});
 	}
