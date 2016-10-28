@@ -344,17 +344,28 @@ export class SaveToOneNote {
 		});
 	}
 
-	private static checkIfUserHasPermissionToPatch(): Promise<any> {
-		let patchPermissionCheckEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchPermissionCheck);
+	private static checkIfUserHasPermissionToPatch(): Promise<void> {
 		return new Promise<any>((resolve, reject) => {
-			SaveToOneNote.getPages({ top: 1, sectionId: this.clipperState.saveLocation }).then((getPagesResponse) => {
-				resolve(getPagesResponse);
-			}, (error) => {
-				patchPermissionCheckEvent.setStatus(Log.Status.Failed);
-				patchPermissionCheckEvent.setFailureInfo({ error: error });
-				reject(error);
-			}).then(() => {
-				Clipper.logger.logEvent(patchPermissionCheckEvent);
+			Clipper.getStoredValue(ClipperStorageKeys.hasPatchPermissions, (hasPermissions) => {
+				// We have checked their permissions successfully in the past, or the user signed in on this device (with the latest scope)
+				if (hasPermissions) {
+					resolve();
+				} else {
+					// As of v3.2.9, we have added a new scope for MSA to allow for PATCHing, however currently-logged-in users will not have
+					// this scope, so this call is a workaround to check for permissions, but is very unperformant. We need to investigate a
+					// quicker way of doing this ... perhaps exposing an endpoint that we can use for this sole purpose.
+					let patchPermissionCheckEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchPermissionCheck);
+					SaveToOneNote.getPages({ top: 1, sectionId: this.clipperState.saveLocation }).then(() => {
+						Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
+						resolve();
+					}, (error) => {
+						patchPermissionCheckEvent.setStatus(Log.Status.Failed);
+						patchPermissionCheckEvent.setFailureInfo({ error: error });
+						reject(error);
+					}).then(() => {
+						Clipper.logger.logEvent(patchPermissionCheckEvent);
+					});
+				}
 			});
 		});
 	}

@@ -612,6 +612,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			let userInfoReturned = updatedUser && !!updatedUser.user;
 			if (userInfoReturned) {
 				// Sign in succeeded
+				Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
 				Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInCompleted);
 			}
 			handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationReturned, userInfoReturned);
