@@ -675,7 +675,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		let mode = ClipMode[this.state.currentMode.get()];
 
 		if (this.state.currentMode.get() === ClipMode.Pdf) {
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.NumPages, this.state.pdfResult.data.get().pdf.numPages());
+			clipEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesInPdf, this.state.pdfResult.data.get().pdf.numPages());
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
 		}
 
@@ -719,7 +719,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}).then(() => {
 			if (this.state.currentMode.get() === ClipMode.Pdf) {
 				clipEvent.stopTimer();
-				clipEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, clipEvent.getDuration() / this.state.pdfResult.data.get().pdf.numPages());
+				const totalPagesClipped = SaveToOneNote.getAllPdfPageIndexesToBeSent().length;
+				clipEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesClipped, totalPagesClipped);
+				clipEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, clipEvent.getDuration() / totalPagesClipped);
 			}
 			Clipper.logger.logEvent(clipEvent);
 		});
