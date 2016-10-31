@@ -20,7 +20,6 @@ export module Event {
 		CloseClipper,
 		ClosePageNavTooltip,
 		DebugFeedback,
-		DeviceIdMap,
 		FetchNonLocalData,
 		FullPageScreenshotCall,
 		GetBinaryRequest,
