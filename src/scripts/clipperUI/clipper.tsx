@@ -246,7 +246,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.state.setState({
 					fullPageResult: {
 						data: {
-							failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+							failureMessage: Localization.getLocalizedString("WebClipper.Preview.NoFullPageScreenshotFound")
 						},
 						status: Status.Failed
 					}
