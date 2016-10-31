@@ -28,6 +28,7 @@ export module Constants {
 		export var attachmentOverlay = "attachment-overlay";
 		export var overlay = "overlay";
 		export var overlayHidden = "overlay-hidden";
+		export var overlayNumber = "overlay-number";
 		export var pdfPreviewImage = "pdf-preview-image";
 		export var pdfPreviewImageCanvas = "pdf-preview-image-canvas";
 		export var unselected = "unselected";
