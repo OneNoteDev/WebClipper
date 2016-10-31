@@ -43,7 +43,7 @@
 	"PdfDomains": {
 		"Description": "PDF regexes",
 		"Value": [
-			"^.*(.pdf)$"
+			"^.*(\\.pdf)$"
 		]
 	},
 	"RecipeDomains": {
