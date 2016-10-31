@@ -44,6 +44,30 @@ test("Given that showPageNumber is true, the page number should be shown", () =>
 	ok(!overlay.classList.contains(Constants.Classes.overlayHidden), "The overlay should not be hidden");
 });
 
+test("Given that showPageNumber is true, but the page is not selected, the page number should still be shown", () => {
+	let index = 19;
+	let expectedPageNumber = "" + (index + 1);
+	let pdfPreviewPage = HelperFunctions.mountToFixture(
+		<PdfPreviewPage viewportDimensions={{ width: 50, height: 50 }}
+			imgUrl={pdfDataUrls[0]} index={index} showPageNumber={true} isSelected={false} />);
+
+	let overlay = HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
+	strictEqual(overlay.innerText, expectedPageNumber, "The page number shown should be the index + 1");
+	ok(!overlay.classList.contains(Constants.Classes.overlayHidden), "The overlay should not be hidden");
+});
+
+test("Given that showPageNumber is true, but the imgUrl is undefined, the page number should still be shown", () => {
+	let index = 19;
+	let expectedPageNumber = "" + (index + 1);
+	let pdfPreviewPage = HelperFunctions.mountToFixture(
+		<PdfPreviewPage viewportDimensions={{ width: 50, height: 50 }}
+			index={index} showPageNumber={true} isSelected={true} />);
+
+	let overlay = HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
+	strictEqual(overlay.innerText, expectedPageNumber, "The page number shown should be the index + 1");
+	ok(!overlay.classList.contains(Constants.Classes.overlayHidden), "The overlay should not be hidden");
+});
+
 test("Given that showPageNumber is true and the index is 0, the page number should be shown", () => {
 	let index = 0;
 	let expectedPageNumber = "" + (index + 1);

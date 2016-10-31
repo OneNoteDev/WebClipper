@@ -53,3 +53,14 @@ test("Given the index, the component should render the container with the index 
 	let container = HelperFunctions.getFixture().firstChild as HTMLElement;
 	strictEqual((container.dataset as any).pageindex, "" + expectedIndex, "The index should be stored in the data-pageindex attribute");
 });
+
+test("Given the index, but not an imgUrl, the component should still render the container with the index stored in the attribute 'data-pageindex'", () => {
+	let expectedIndex = 999;
+
+	let pdfPageViewport = HelperFunctions.mountToFixture(
+		<PdfPageViewport viewportDimensions={{ width: 20, height: 15 }}
+			index={expectedIndex} />);
+
+	let container = HelperFunctions.getFixture().firstChild as HTMLElement;
+	strictEqual((container.dataset as any).pageindex, "" + expectedIndex, "The index should be stored in the data-pageindex attribute");
+});
