@@ -3,5 +3,10 @@ let string1 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAICAYAAAAvOAW
 let string2 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEcAAAD4CAYAAAC+LPu/AAACaklEQVR4Xu3VsQqDMABFUf3/n3VQlIjYudBauGM52bNcTl7mfd/v8zwn573Auq7TvG2bOB9kLMsizrcXI87DlogjTvtqyCGHnFaAnNbN5pBDTitATutmc8ghpxUgp3WzOeSQ0wqQ07rZHHLIaQXIad1sDjnktALktG42hxxyWgFyWjebQw45rQA5rZvNIYecVoCc1s3mkENOK0BO62ZzyCGnFSCndbM55JDTCpDTutkccshpBchp3WwOOeS0AuS0bjaHHHJaAXJaN5tDDjmtADmtm80hh5xWgJzWzeaQQ04rQE7rZnPIIacVIKd1sznkkNMKkNO62RxyyGkFyGndbA455LQC5LRuNocccloBclo3m0MOOa0AOa2bzSGHnFaAnNbN5pBDTitATutmc8ghpxUgp3WzOeSQ0wqQ07rZHHLIaQXIad1sDjnktALktG42hxxyWgFyWjebQw45rQA5rZvNIYecVoCc1s3mkENOK0BO62ZzyCGnFSCndbM55JDTCpDTutkccshpBchp3WwOOeS0AuS0bjaHHHJaAXJaN5tDDjmtADmtm80hh5xWgJzWzeaQQ04rQE7rZnPIIacVIKd1sznkkNMKkNO62RxyyGkFyGndbA455LQC5LRuNocccloBclo3m0MOOa0AOa2bzSGHnFaAnNbN5pBDTitATutmc8ghpxUgp3WzOeSQ0wqQ07rZHHLIaQXIad1sDjnktALktG42hxxyWgFyWjebQw45rQA5rZvNIYecVoCc1s3mkENOK0BO62ZzyCGnFSCndbM55JDTCpDTutmcX3LGGPd1XS3vH986jmN6AdP4U8daodwiAAAAAElFTkSuQmCC";
 
 let pdfDataUrls: string[] = [string0, string1, string2];
+let pdfDataUrlDimensions = [
+	{ width: "14px", height: "9px" },
+	{ width: "11px", height: "8px" },
+	{ width: "71px", height: "248px" }
+];
 
-export {pdfDataUrls};
+export {pdfDataUrls, pdfDataUrlDimensions};
