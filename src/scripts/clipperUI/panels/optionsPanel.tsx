@@ -14,12 +14,12 @@ import {ClipperStateHelperFunctions, ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {Status} from "../status";
 
-interface OptionsPanelProps extends ClipperStateProp {
+export interface OptionsPanelProp extends ClipperStateProp {
 	onStartClip: () => void;
 	onPopupToggle: (shouldNowBeOpen: boolean) => void;
 }
 
-class OptionsPanelClass extends ComponentBase<{ }, OptionsPanelProps> {
+class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 	render() {
 		let clipButtonEnabled = ClipperStateHelperFunctions.clipButtonEnabled(this.props.clipperState);
 		let clipButtonContainerClassName = clipButtonEnabled ? "wideButtonContainer" : "wideButtonContainer disabled";
