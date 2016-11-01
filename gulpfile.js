@@ -903,12 +903,6 @@ function exportTestLibFiles() {
 		.pipe(gulp.dest(targetDir + "libs"));
 }
 
-function exportExampleSrcFiles() {
-	return gulp.src(PATHS.SRC.ROOT + "example.html")
-		.pipe(rename("index.html"))
-		.pipe(gulp.dest(PATHS.SERVERROOT));
-}
-
 // Checks if a file path or list of file paths exists. Throws an error if one or more files don't exist,
 // and returns itself otherwise.
 function assertModuleExists(filePath) {
@@ -992,13 +986,6 @@ gulp.task("exportTests", function() {
 	return merge(jsTask, srcTask, libTask);
 });
 
-gulp.task("exportExample", function() {
-	var bookmarkletTask = exportBookmarkletFiles(PATHS.SERVERROOT + "clipper/");
-	var exampleTask = exportExampleSrcFiles();
-
-	return merge(bookmarkletTask, exampleTask);
-});
-
 gulp.task("exportJS", function() {
 	var bookmarkletTask = exportBookmarkletJS(PATHS.TARGET.BOOKMARKLET);
 	var chromeTask = exportChromeJS();
@@ -1027,10 +1014,9 @@ gulp.task("exportSrcFiles", function() {
 	var edgeTask = exportEdgeSrcFiles();
 	var safariTask = exportSafariSrcFiles();
 	var exampleTask = exportBookmarkletSrcFiles(PATHS.SERVERROOT + "clipper/");
-	var exampleSrcTask = exportExampleSrcFiles();
 	var testTask = exportTestSrcFiles();
 
-	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, exampleTask, exampleSrcTask, testTask);
+	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, exampleTask, testTask);
 });
 
 gulp.task("export", function(callback) {
@@ -1042,7 +1028,6 @@ gulp.task("export", function(callback) {
 		"exportFirefox",
 		"exportSafari",
 		"exportTests",
-		"exportExample",
 		callback);
 });
 
@@ -1139,7 +1124,6 @@ gulp.task("watchSrcFiles", function() {
 			PATHS.SRC.ROOT + "images/*",
 			PATHS.SRC.ROOT + "auth.html",
 			PATHS.SRC.ROOT + "clipper.html",
-			PATHS.SRC.ROOT + "example.html",
 			PATHS.SRC.ROOT + "unsupportedBrowser.html",
 			PATHS.SRC.ROOT + "pageNav.html",
 			PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json",

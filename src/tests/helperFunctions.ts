@@ -117,6 +117,10 @@ export module HelperFunctions {
 				data: undefined,
 				status: Status.NotStarted
 			},
+			bookmarkResult: {
+				data: undefined,
+				status: Status.NotStarted
+			},
 
 			previewGlobalInfo: {
 				annotation: "",

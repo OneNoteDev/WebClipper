@@ -10,7 +10,8 @@ import {ModeButtonSelector} from "../components/modeButtonSelector";
 import {SectionPicker} from "../components/sectionPicker";
 
 import {ClipMode} from "../clipMode";
-import {ClipperStateHelperFunctions, ClipperStateProp} from "../clipperState";
+import {ClipperStateProp} from "../clipperState";
+import {ClipperStateUtilities} from "../clipperStateUtilities";
 import {ComponentBase} from "../componentBase";
 import {Status} from "../status";
 
@@ -21,7 +22,7 @@ export interface OptionsPanelProp extends ClipperStateProp {
 
 class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 	render() {
-		let clipButtonEnabled = ClipperStateHelperFunctions.clipButtonEnabled(this.props.clipperState);
+		let clipButtonEnabled = ClipperStateUtilities.clipButtonEnabled(this.props.clipperState);
 		let clipButtonContainerClassName = clipButtonEnabled ? "wideButtonContainer" : "wideButtonContainer disabled";
 
 		return (
