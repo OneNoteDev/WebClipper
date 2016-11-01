@@ -24,6 +24,18 @@ export module Constants {
 		export var regionSelectionImage = "region-selection-image";
 		export var regionSelectionRemoveButton = "region-selection-remove-button";
 
+		// pdfPreviewViewer
+		export var attachmentOverlay = "attachment-overlay";
+		export var overlay = "overlay";
+		export var overlayHidden = "overlay-hidden";
+		export var overlayNumber = "overlay-number";
+		export var pdfPreviewImage = "pdf-preview-image";
+		export var pdfPreviewImageCanvas = "pdf-preview-image-canvas";
+		export var unselected = "unselected";
+
+		export var localPdfPanelTitle = "local-pdf-panel-title";
+		export var localPdfPanelSubtitle = "local-pdf-panel-subtitle";
+
 		// spriteAnimation
 		export var spinner = "spinner";
 
@@ -36,6 +48,12 @@ export module Constants {
 
 	export module Cookies {
 		export var clipperInfo = "ClipperInfo";
+	}
+
+	export module Extension {
+		export module NotificationIds {
+			export var conflictingExtension = "conflictingExtension";
+		}
 	}
 
 	export module Ids {
@@ -53,6 +71,9 @@ export module Constants {
 		// clippingPanel
 		export var clipperApiProgressContainer = "clipperApiProgressContainer";
 
+		// clippingPanel
+		export var clipProgressDelayedMessage = "clipProgressDelayedMessage";
+
 		// dialogPanel
 		export var dialogBackButton = "dialogBackButton";
 		export var dialogButtonContainer = "dialogButtonContainer";
@@ -60,6 +81,7 @@ export module Constants {
 		export var dialogMessageContainer = "dialogMessageContainer";
 		export var dialogContentContainer = "dialogContentContainer";
 		export var dialogMessage = "dialogMessage";
+		export var dialogSignOutButton = "dialogSignoutButton";
 		export var dialogTryAgainButton = "dialogTryAgainButton";
 
 		// editorPreviewComponentBase
@@ -100,6 +122,11 @@ export module Constants {
 		export var clipButton = "clipButton";
 		export var clipButtonContainer = "clipButtonContainer";
 
+		// previewViewerPdfHeader
+		export var radioAllPagesLabel = "radioAllPagesLabel";
+		export var radioPageRangeLabel = "radioPageRangeLabel";
+		export var rangeInput = "rangeInput";
+
 		// previewViewer
 		export var previewBody = "previewBody";
 		export var previewContentContainer = "previewContentContainer";
@@ -119,6 +146,14 @@ export module Constants {
 		// previewViewerFullPageHeader
 		export var fullPageControl = "fullPageControl";
 		export var fullPageHeaderTitle = "fullPageHeaderTitle";
+
+		// previewViewerPdfHeader
+		export var localPdfFileTitle = "localPdfFileTitle";
+		export var pageRangeControl = "pageRangeControl";
+		export var pdfControl = "pdfControl";
+
+		export var attachmentCheckboxControl = "attachmentCheckboxControl";
+		export var attachmentCheckboxLabel = "attachmentCheckboxLabel";
 
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";
@@ -244,6 +279,7 @@ export module Constants {
 		export var invokeClipperFromPageNav = "INVOKE_CLIPPER_FROM_PAGE_NAV";
 		export var invokeDebugLogging = "INVOKE_DEBUG_LOGGING";
 		export var invokePageNav = "INVOKE_PAGE_NAV";
+		export var extensionNotAllowedToAccessLocalFiles = "EXTENSION_NOT_ALLOWED_TO_ACCESS_LOCAL_FILES";
 		export var noOpTracker = "NO_OP_TRACKER";
 		export var onSpaNavigate = "ON_SPA_NAVIGATE";
 		export var refreshPage = "REFRESH_PAGE";
@@ -289,6 +325,7 @@ export module Constants {
 	}
 
 	export module Urls {
+		// export var serviceDomain = "https://minint-per7o4f.redmond.corp.microsoft.com";
 		export var serviceDomain = "https://www.onenote.com";
 
 		export var augmentationApiUrl = serviceDomain + "/onaugmentation/clipperextract/v1.0/";
@@ -346,12 +383,19 @@ export module Constants {
 		export var maximumJSTimeValue = 1000 * 60 * 60 * 24 * 100000000; // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
 		export var maximumFontSize = 72;
 		export var maximumNumberOfTimesToShowTooltips = 3;
+		export var maximumMimeSizeLimit = 24900000;
 		export var minClipSuccessForRatingsPrompt = 4;
 		export var minimumFontSize = 8;
 		export var minTimeBetweenBadRatings = 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
 		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
+		export var numRetriesPerPatchRequest = 3;
+		export var pdfCheckCreatePageInterval = 2000; // 2 seconds
+		export var pdfClippingMessageDelay = 5000; // 5 seconds
+		export var pdfExtraPageLoadEachSide = 1;
+		export var pdfInitialPageLoadCount = 3;
 		export var timeBetweenDifferentTooltips = 1000 * 60 * 60 * 24 * 7 * 1; // 1 week
 		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 3 weeks
 		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
+		export var timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
 	}
 }

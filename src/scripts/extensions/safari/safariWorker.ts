@@ -56,7 +56,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
 		let signInUrl = Utils.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
-		return this.launchSafariPopupAndWaitForClose(signInUrl, Constants.Urls.Authentication.authRedirectUrl);
+		return this.launchSafariPopup(signInUrl, Constants.Urls.Authentication.authRedirectUrl);
 	}
 
 	/**
@@ -67,7 +67,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		let signOutUrl = Utils.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		// The signout doesn't work in an iframe in the Safari background page, so we need to launch a popup instead
-		this.launchSafariPopupAndWaitForClose(signOutUrl, Constants.Urls.Authentication.authRedirectUrl);
+		this.launchSafariPopup(signOutUrl);
 	}
 
 	/**
@@ -111,6 +111,15 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		return this.invokePageNavBrowserSpecific();
 	}
 
+	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (isAllowed: boolean) => void): void {
+		// When Safari opens a pdf, it is no longer a web environment and won't allow extensions to run
+		if (this.tab.url.indexOf("file:///") === 0) {
+			callback(false);
+		} else {
+			callback(true);
+		}
+	}
+
 	/**
 	 * Gets the visible tab's screenshot as an image url
 	 */
@@ -129,34 +138,39 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		});
 	}
 
-	private launchSafariPopupAndWaitForClose(url: string, autoCloseDestinationUrl: string): Promise<boolean> {
+	/**
+	 * Launches a new tab and navigates to the given url. If autoCloseDestinationUrl is defined, then a
+	 * listener is set that will wait until the given URL is navigated to, the window is closed.
+	 */
+	private launchSafariPopup(url: string, autoCloseDestinationUrl: string = undefined): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			let redirectOccurred = false;
 			let newWindow = safari.application.openBrowserWindow();
-			newWindow.activeTab.url = url;
-
+			let redirectOccurred = false;
 			let errorObject;
-			let redirectListener = (event) => {
-				if (event && event.target && event.target.url && !event.target.url.toLowerCase().indexOf(autoCloseDestinationUrl)) {
-					redirectOccurred = true;
 
-					let error = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.error);
-					let errorDescription = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.errorDescription);
-					if (error || errorDescription) {
-						errorObject = { error: error, errorDescription: errorDescription };
+			if (!Utils.isNullOrUndefined(autoCloseDestinationUrl)) {
+				newWindow.addEventListener("navigate", (event) => {
+					if (event && event.target && event.target.url && !event.target.url.toLowerCase().indexOf(autoCloseDestinationUrl)) {
+						redirectOccurred = true;
+
+						let error = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.error);
+						let errorDescription = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.errorDescription);
+						if (error || errorDescription) {
+							errorObject = { error: error, errorDescription: errorDescription };
+						}
+
+						if (newWindow.visible) {
+							newWindow.close();
+						}
 					}
+				});
 
-					newWindow.removeEventListener(redirectListener);
-					newWindow.close();
-				}
-			};
-			newWindow.addEventListener("navigate", redirectListener);
+				newWindow.addEventListener("close", (event) => {
+					errorObject ? reject(errorObject) : resolve(redirectOccurred);
+				});
+			}
 
-			let closeListener = (event) => {
-				errorObject ? reject(errorObject) : resolve(redirectOccurred);
-				newWindow.removeEventListener(closeListener);
-			};
-			newWindow.addEventListener("close", closeListener);
+			newWindow.activeTab.url = url;
 		});
 	}
 }

@@ -114,6 +114,11 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		return "";
 	}
 
+	// Can be overriden by child classes to disable the title
+	protected isTitleEnabled(): boolean {
+		return true;
+	}
+
 	render() {
 		if (!PreviewComponentBase.textAreaListenerAttached) {
 			this.addTextAreaListener();
@@ -150,10 +155,10 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 							{this.getHeader()}
 						</div>
 						<div id={Constants.Ids.previewContentContainer} className={inProgressClassIfApplicable + " " + this.getPreviewContentContainerClass() } >
-							<div id={Constants.Ids.previewHeaderContainer}>
-								{ this.getPreviewTitle(contentTitle, titleIsEditable, inProgressClassIfApplicable)}
-								{clipButtonEnabled ? this.getPreviewSubtitle() : undefined}
-							</div>
+							{this.isTitleEnabled() ? <div id={Constants.Ids.previewHeaderContainer}>
+								{this.getPreviewTitle(contentTitle, titleIsEditable, inProgressClassIfApplicable)}
+								{this.getPreviewSubtitle() }
+							</div> : ""}
 							<div
 								style={previewStyle}
 								id={Constants.Ids.previewBody}

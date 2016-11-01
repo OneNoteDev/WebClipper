@@ -9,6 +9,8 @@ import {Utils} from "../../utils";
 import {Communicator} from "../../communicator/communicator";
 import {SmartValue} from "../../communicator/smartValue";
 
+import {Localization} from "../../localization/localization";
+
 import * as Log from "../../logging/log";
 
 import {ClipperData} from "../../storage/clipperData";
@@ -96,6 +98,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						},
 						clientInfo: this.clientInfo
 					});
+
 					// In Firefox, alert() is not callable from the background, so it looks like we have to no-op here
 					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
 						InjectHelper.alertUserOfUnclippablePage();
@@ -158,6 +161,21 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 	protected invokeTooltipBrowserSpecific(): Promise<boolean> {
 		return this.invokePageNavBrowserSpecific();
+	}
+
+	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (allowed: boolean) => void): void {
+		if (!WebExtension.browser.extension.isAllowedFileSchemeAccess) {
+			callback(true);
+			return;
+		}
+
+		WebExtension.browser.extension.isAllowedFileSchemeAccess((isAllowed) => {
+			if (!isAllowed && this.tab.url.indexOf("file:///") === 0) {
+				callback(false);
+			} else {
+				callback(true);
+			}
+		});
 	}
 
 	/**

@@ -19,6 +19,8 @@ import {SpriteAnimation} from "../components/spriteAnimation";
 class ClippingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 	getProgressLabel(): string {
 		switch (this.props.clipperState.currentMode.get()) {
+			case ClipMode.Pdf:
+				return Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabel");
 			case ClipMode.Region:
 				return Localization.getLocalizedString("WebClipper.ClipType.Region.ProgressLabel");
 			case ClipMode.Augmentation:

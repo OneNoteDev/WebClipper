@@ -1,11 +1,11 @@
-import {PreviewViewerRegionHeader} from "../../../scripts/clipperUI/components/previewViewer/previewViewerRegionHeader";
+import {PreviewViewerRegionHeader} from "../../../../scripts/clipperUI/components/previewViewer/previewViewerRegionHeader";
 
-import {ClipperState} from "../../../scripts/clipperUI/clipperState";
-import {Status} from "../../../scripts/clipperUI/status";
+import {ClipperState} from "../../../../scripts/clipperUI/clipperState";
+import {Status} from "../../../../scripts/clipperUI/status";
 
-import {Constants} from "../../../scripts/constants";
+import {Constants} from "../../../../scripts/constants";
 
-import {HelperFunctions} from "../../helperFunctions";
+import {HelperFunctions} from "../../../helperFunctions";
 
 let defaultComponent;
 let mockClipperState: ClipperState;

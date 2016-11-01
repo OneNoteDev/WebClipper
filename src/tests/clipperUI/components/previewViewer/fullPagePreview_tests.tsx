@@ -148,21 +148,3 @@ test("When the full page screenshot response is a failure, the preview should di
 		"The title of the page should be displayed in the preview title");
 	ok(previewHeaderInput.readOnly);
 });
-
-test("When the pdf screenshot response is a failure, the preview should display an error message in Full Page mode", () => {
-	let expectedMessage = "An error message.";
-
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.pageInfo.contentType = OneNoteApi.ContentType.EnhancedUrl;
-	clipperState.currentMode.set(ClipMode.FullPage);
-	clipperState.pdfResult = {
-		data: new SmartValue<PdfScreenshotResult>({ failureMessage: expectedMessage }),
-		status: Status.Failed
-	};
-	HelperFunctions.mountToFixture(<FullPagePreview clipperState={clipperState} />);
-
-	let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
-	strictEqual(previewHeaderInput.value, expectedMessage,
-		"The title of the page should be displayed in the preview title");
-	ok(previewHeaderInput.readOnly);
-});

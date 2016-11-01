@@ -7,21 +7,29 @@ import {SmartValue} from "../communicator/smartValue";
 
 import * as Log from "../logging/log";
 
+import {ArrayUtils} from "../arrayUtils";
 import {Constants} from "../constants";
 import {PageInfo} from "../pageInfo";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
+import {PdfDocument} from "./pdfDocument";
+import {PdfJsDocument} from "./pdfJsDocument";
+import {ViewportDimensions} from "./viewportDimensions";
 
 export interface PdfScreenshotResult extends CaptureFailureInfo {
-	arrayBuffer?: ArrayBuffer;
-	dataUrls?: string[];
+	pdf?: PdfDocument;
+	viewportDimensions?: ViewportDimensions[];
+	byteLength?: number;
 }
 
 export class PdfScreenshotHelper {
+	public static getLocalPdfData(localUrl: string): Promise<PdfScreenshotResult> {
+		return PdfScreenshotHelper.getPdfScreenshotResult(localUrl);
+	}
+
 	public static getPdfData(url: string): Promise<PdfScreenshotResult> {
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetBinaryRequest);
-			getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.Url, url);
 
 			let request = new XMLHttpRequest();
 			request.open("GET", url, true);
@@ -42,13 +50,9 @@ export class PdfScreenshotHelper {
 					getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.ByteLength, arrayBuffer.byteLength);
 					Clipper.logger.logEvent(getBinaryEvent);
 
-					PDFJS.getDocument(arrayBuffer).then((pdf) => {
-						PdfScreenshotHelper.convertPdfToDataUrls(pdf).then((dataUrls) => {
-							resolve({
-								arrayBuffer: arrayBuffer,
-								dataUrls: dataUrls
-							});
-						});
+					PdfScreenshotHelper.getPdfScreenshotResult(arrayBuffer).then((pdfScreenshotResult) => {
+						pdfScreenshotResult.byteLength = arrayBuffer.byteLength;
+						resolve(pdfScreenshotResult);
 					});
 				} else {
 					errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
@@ -65,54 +69,24 @@ export class PdfScreenshotHelper {
 		});
 	}
 
-	private static convertPdfToDataUrls(pdf: PDFDocumentProxy): Promise<string[]> {
-		if (!pdf || !pdf.numPages || pdf.numPages === 0) {
-			return Promise.resolve([]);
-		}
-
-		let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
-		getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.NumPages, pdf.numPages);
-
-		let dataUrls: string[] = new Array(pdf.numPages);
-
-		return new Promise<string[]>((resolve) => {
-			for (let i = 0; i < pdf.numPages; i++) {
-				// Pages start at index 1
-				pdf.getPage(i + 1).then((page) => {
-					let viewport = page.getViewport(1 /* scale */);
-					let canvas = document.createElement("canvas") as HTMLCanvasElement;
-					let context = canvas.getContext("2d");
-					canvas.height = viewport.height;
-					canvas.width = viewport.width;
-
-					let renderContext = {
-						canvasContext: context,
-						viewport: viewport
-					};
-
-					// Rendering is async so results may come back in any order
-					page.render(renderContext).then(() => {
-						dataUrls[i] = canvas.toDataURL();
-						if (PdfScreenshotHelper.isArrayComplete(dataUrls)) {
-							getBinaryEvent.stopTimer();
-							getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getBinaryEvent.getDuration() / pdf.numPages);
-							Clipper.logger.logEvent(getBinaryEvent);
-
-							resolve(dataUrls);
-						}
+	/**
+	 * Source can be a buffer object, or a url (including local)
+	 */
+	private static getPdfScreenshotResult(source: string | Uint8Array): Promise<PdfScreenshotResult> {
+		// Never rejects, interesting
+		return new Promise<PdfScreenshotResult>((resolve, reject) => {
+			PDFJS.getDocument(source).then((pdf) => {
+				let pdfDocument: PdfDocument = new PdfJsDocument(pdf);
+				pdfDocument.getAllPageViewportDimensions().then((viewportDimensions) => {
+					pdfDocument.getByteLength().then((byteLength) => {
+						resolve({
+							pdf: pdfDocument,
+							viewportDimensions: viewportDimensions,
+							byteLength: byteLength
+						});
 					});
 				});
-			}
+			});
 		});
-	}
-
-	// We have to use this instead of Array.prototype.every because it doesn't work
-	private static isArrayComplete(arr: string[]): boolean {
-		for (let i = 0; i < arr.length; i++) {
-			if (!arr[i]) {
-				return false;
-			}
-		}
-		return true;
 	}
 }
