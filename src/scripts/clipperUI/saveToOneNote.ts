@@ -339,7 +339,7 @@ export class SaveToOneNote {
 					});
 				});
 			}).catch((error) => {
-				return Promise.reject(error);
+				reject(error);
 			});
 		});
 	}
