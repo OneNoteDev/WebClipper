@@ -107,11 +107,11 @@
 					}
 				}
 
-				#pageRangeControl {
+				/*#pageRangeControl {
 					// Temporary workaround that fixes styling issues with the PDF Preview Header
 					// in Safari as of 10/21/2016
 					width: 300px;
-				}
+				}*/
 
 				#addRegionControl {
 					#addAnotherRegionButton {
@@ -183,7 +183,7 @@
 					color: #fff;
 					cursor: pointer;
 					position: relative;
-					margin-left: 24px;
+					margin-left: 22px;
 					line-height: 28px;
 				}
 
@@ -195,6 +195,14 @@
 					height: 9px;
 					background-color: white;
 					border-radius: 100%;
+				}
+			
+				.pdf-control {
+					cursor: pointer; 
+					display: inline-block; 
+					position: relative; 
+					outline: none; 
+					line-height: 28px;
 				}
 
 				.pdf-indicator {
@@ -232,9 +240,43 @@
 					float: right;
 					margin-right: 24px;
 				}
+				
+				.popover {
+					background: #e81123;
+					color: #fff;
+					opacity: 1;
+					position: absolute;
+					z-index: 5;
+					transform: translateY(10px);
+					transition: all 0.25s ease-out;
+					box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
+					border-radius: 4px;
+					padding: 4px;
+					font-size: 15px;
+					line-height: 20px;
+					// The left margin is 22px to account for the custom radio button
+					// If we want to extend 10px to the right outside of the margin
+					// We have to be 22px - 10px = 12px inside the left margin 
+					right: -10px; 
+					left: 12px;
+					text-align: center;
+
+					&:before {
+						position: absolute;
+						left: 50%;
+						content: " ";
+						width: 0; // CSS triangles are built using only borders
+						height: 0;
+						top: -9px; // 9px to account for height of the triangle, and to overlap the border
+						margin-left: -13px; // no idea why this works
+						border-left: solid transparent 10px;
+						border-right: solid transparent 10px;
+						border-bottom: solid #e81123 10px;
+					}
+				}
 
 				#rangeInput {
-					margin-left: 24px;
+					margin-left: 22px;
 					border-radius: 2px;
 					background-color:  @DarkBackgroundColor;
 					height: 26px;
@@ -245,12 +287,11 @@
 					font-family: @SegoeUi;
 					font-size: 14px;
 					color: rgba(255,255,255,0.70);
-					line-height: 20px;
 					outline: none;
 					user-select: auto;
 					
 					&.invalid {
-						border: #b94a48 1px solid;
+						border: #e81123 1px solid;
 						height: 24px;
 					}
 

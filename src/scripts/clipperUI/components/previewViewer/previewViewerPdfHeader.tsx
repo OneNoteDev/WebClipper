@@ -54,18 +54,19 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 		return {
 			id: Constants.Ids.pageRangeControl,
 			innerElements: [
-				<div style="cursor: pointer; display: inline-block; position: relative; outline: none; line-height: 28px;" id="clicky" {...this.enableInvoke(this.props.onSelectionChange, 190, true) }>
+				<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.props.onSelectionChange, 190, true) }>
 					<div class="pdf-indicator pdf-radio-indicator">
 						{this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 					</div>
 					<span class="pdf-label"> All pages </span>
 				</div>,
-				<div style="cursor: pointer; display: inline-block; position: relative; outline: none; margin-left: 6px; line-height: 28px;" id="clicky2" {...this.enableInvoke(this.props.onSelectionChange, 190, false) }>
+				<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.props.onSelectionChange, 191, false) }>
 					<div class="pdf-indicator pdf-radio-indicator">
 						{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 					</div>
 					{!this.props.allPages ? <input type="text" id={Constants.Ids.rangeInput} className={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange}
-						{...this.enableInvoke(this.props.onSelectionChange, 192, false) }></input> : <span class="pdf-label"> Page range </span> }
+						{...this.enableInvoke(this.props.onSelectionChange, 192, false) }></input> : <span class="pdf-label"> Page range </span>}
+					{!this.props.allPages && this.props.invalidRange ? <div class="popover">Invalid page range.</div> : ""}
 				</div>,
 				// <label id={Constants.Ids.radioAllPagesLabel} class="pdf-control pdf-label" {...this.enableInvoke(this.props.onSelectionChange, 190, true) }>
 				// 	{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel") }
