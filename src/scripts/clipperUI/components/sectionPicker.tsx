@@ -11,7 +11,8 @@ import * as Log from "../../logging/log";
 import {ClipperStorageKeys} from "../../storage/clipperStorageKeys";
 
 import {Clipper} from "../frontEndGlobals";
-import {ClipperStateProp, ClipperStateHelperFunctions} from "../clipperState";
+import {ClipperStateProp} from "../clipperState";
+import {ClipperStateUtilities} from "../clipperStateUtilities";
 import {ComponentBase} from "../componentBase";
 import {OneNoteApiUtils} from "../oneNoteApiUtils";
 import {Status} from "../status";
@@ -63,7 +64,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 	// Returns true if successful; false otherwise
 	setDataSource(): boolean {
-		if (!ClipperStateHelperFunctions.isUserLoggedIn(this.props.clipperState)) {
+		if (!ClipperStateUtilities.isUserLoggedIn(this.props.clipperState)) {
 			return false;
 		}
 
@@ -164,7 +165,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 	dataSourceUninitialized(): boolean {
 		return !SectionPickerClass.dataSource ||
 			!SectionPickerClass.dataSource.authToken ||
-			!ClipperStateHelperFunctions.isUserLoggedIn(this.props.clipperState) ||
+			!ClipperStateUtilities.isUserLoggedIn(this.props.clipperState) ||
 			(SectionPickerClass.dataSource.authToken !== this.props.clipperState.userResult.data.user.accessToken);
 	}
 

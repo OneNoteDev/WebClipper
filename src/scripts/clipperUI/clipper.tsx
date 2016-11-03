@@ -42,7 +42,8 @@ import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
-import {ClipperState, ClipperStateHelperFunctions} from "./clipperState";
+import {ClipperState} from "./clipperState";
+import {ClipperStateUtilities} from "./clipperStateUtilities";
 import {ComponentBase} from "./componentBase";
 import {MainController} from "./mainController";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
@@ -92,7 +93,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			selectionPreviewInfo: {},
 			pdfPreviewInfo: {
 				allPages: true,
-				localFilesAllowed: true,
+				isLocalFileAndNotAllowed: true,
 				selectedPageRange: "",
 				shouldAttachPdf: false,
 			},
@@ -246,7 +247,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.state.setState({
 					fullPageResult: {
 						data: {
-							failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+							failureMessage: Localization.getLocalizedString("WebClipper.Preview.NoFullPageScreenshotFound")
 						},
 						status: Status.Failed
 					}
@@ -436,12 +437,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.extensionNotAllowedToAccessLocalFiles, () => {
 			// We only want to log one time per session
-			if (this.state.pdfPreviewInfo.localFilesAllowed) {
+			if (this.state.pdfPreviewInfo.isLocalFileAndNotAllowed) {
 				Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.LocalFilesNotAllowedPanelShown));
 			}
 
 			let newPreviewInfo = Utils.createUpdatedObject(this.state.pdfPreviewInfo, {
-				localFilesAllowed: false
+				isLocalFileAndNotAllowed: false
 			});
 
 			this.state.setState({
@@ -729,7 +730,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private static shouldShowOptions(state: ClipperState): boolean {
 		return (state.uiExpanded &&
-			ClipperStateHelperFunctions.isUserLoggedIn(state) &&
+			ClipperStateUtilities.isUserLoggedIn(state) &&
 			state.oneNoteApiResult.status === Status.NotStarted &&
 			!state.badState);
 	}

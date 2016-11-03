@@ -8,7 +8,8 @@ import {Localization} from "../../localization/localization";
 import * as Log from "../../logging/log";
 
 import {Clipper} from "../frontEndGlobals";
-import {ClipperStateProp, ClipperStateHelperFunctions} from "../clipperState";
+import {ClipperStateProp} from "../clipperState";
+import {ClipperStateUtilities} from "../clipperStateUtilities";
 import {ComponentBase} from "../componentBase";
 
 interface FooterState {
@@ -65,7 +66,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 	}
 
 	render() {
-		let showUserInfo = ClipperStateHelperFunctions.isUserLoggedIn(this.props.clipperState);
+		let showUserInfo = ClipperStateUtilities.isUserLoggedIn(this.props.clipperState);
 
 		return (
 			<div id={Constants.Ids.clipperFooterContainer} className="footerFont"

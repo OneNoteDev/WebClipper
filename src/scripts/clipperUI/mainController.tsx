@@ -11,7 +11,8 @@ import * as Log from "../logging/log";
 
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
-import {ClipperStateProp, ClipperStateHelperFunctions} from "./clipperState";
+import {ClipperStateProp} from "./clipperState";
+import {ClipperStateUtilities} from "./clipperStateUtilities";
 import {ComponentBase} from "./componentBase";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {Status} from "./status";
@@ -166,7 +167,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			return PanelType.Loading;
 		}
 
-		if (!ClipperStateHelperFunctions.isUserLoggedIn(this.props.clipperState)) {
+		if (!ClipperStateUtilities.isUserLoggedIn(this.props.clipperState)) {
 			return PanelType.SignInNeeded;
 		}
 
