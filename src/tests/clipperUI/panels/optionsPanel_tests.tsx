@@ -288,7 +288,7 @@ test("If the current mode is PDF and the status indicates Succeeded, and a valid
 	mockOptionsPanelProps.clipperState.pdfPreviewInfo = {
 		allPages: false,
 		isLocalFileAndNotAllowed: true,
-		selectedPageRange: "1-3,5",
+		selectedPageRange: "1-3",
 	};
 	HelperFunctions.mountToFixture(<OptionsPanel onStartClip={mockOptionsPanelProps.onStartClip}
 		onPopupToggle={mockOptionsPanelProps.onPopupToggle} clipperState={mockOptionsPanelProps.clipperState} />);
@@ -308,6 +308,25 @@ test("If the current mode is PDF and the status indicates Succeeded, and an inva
 		allPages: false,
 		isLocalFileAndNotAllowed: true,
 		selectedPageRange: "1-3,5,6-",
+	};
+	HelperFunctions.mountToFixture(<OptionsPanel onStartClip={mockOptionsPanelProps.onStartClip}
+		onPopupToggle={mockOptionsPanelProps.onPopupToggle} clipperState={mockOptionsPanelProps.clipperState} />);
+
+	assertClipButtonAvailability(false);
+});
+
+test("If the current mode is PDF and the status indicates Succeeded, and a syntactically correct but out-of-bounds selection is selected, the clip button should not be active or clickable", () => {
+	mockOptionsPanelProps.clipperState.currentMode.set(ClipMode.Pdf);
+	mockOptionsPanelProps.clipperState.pdfResult.status = Status.Succeeded;
+	mockOptionsPanelProps.clipperState.pdfResult.data.set({
+		pdf: new MockPdfDocument(),
+		viewportDimensions: MockPdfValues.dimensions,
+		byteLength: MockPdfValues.byteLength,
+	});
+	mockOptionsPanelProps.clipperState.pdfPreviewInfo = {
+		allPages: false,
+		isLocalFileAndNotAllowed: true,
+		selectedPageRange: "4", // There are only 3 pages in the mock pdf
 	};
 	HelperFunctions.mountToFixture(<OptionsPanel onStartClip={mockOptionsPanelProps.onStartClip}
 		onPopupToggle={mockOptionsPanelProps.onPopupToggle} clipperState={mockOptionsPanelProps.clipperState} />);
