@@ -8,7 +8,7 @@
 
 export interface PdfPreviewInfo {
 	allPages?: boolean;
-	localFilesAllowed?: boolean;
+	isLocalFileAndNotAllowed?: boolean;
 	selectedPageRange?: string;
 	shouldAttachPdf?: boolean;
 };

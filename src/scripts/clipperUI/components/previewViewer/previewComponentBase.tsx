@@ -7,7 +7,7 @@ import {PreviewGlobalInfo} from "../../../previewInfo";
 import {Localization} from "../../../localization/localization";
 
 import {ClipMode} from "../../clipMode";
-import {ClipperStateHelperFunctions, ClipperStateProp} from "../../clipperState";
+import {ClipperStateProp} from "../../clipperState";
 import {ComponentBase} from "../../componentBase";
 import {Status} from "../../status";
 
@@ -131,8 +131,6 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		let editableTitleEnabled = this.props.clipperState.injectOptions && this.props.clipperState.injectOptions.enableEditableTitle;
 		let titleIsEditable = editableTitleEnabled && this.getStatus() === Status.Succeeded &&
 			contentTitle === this.props.clipperState.previewGlobalInfo.previewTitleText;
-
-		let clipButtonEnabled = ClipperStateHelperFunctions.clipButtonEnabled(this.props.clipperState);
 
 		let fontFamilyString = (this.props.clipperState.previewGlobalInfo.serif) ? "WebClipper.FontFamily.Preview.SerifDefault" : "WebClipper.FontFamily.Preview.SansSerifDefault";
 		let previewStyle = {

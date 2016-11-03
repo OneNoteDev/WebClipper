@@ -19,7 +19,7 @@ class PreviewViewerClass<TState, TProp extends ClipperStateProp> extends Compone
 		let state = this.props.clipperState;
 		switch (state.currentMode.get()) {
 			case ClipMode.Pdf:
-				if (!state.pdfPreviewInfo.localFilesAllowed) {
+				if (!state.pdfPreviewInfo.isLocalFileAndNotAllowed) {
 					if (state.clientInfo.clipperType === ClientType.ChromeExtension) {
 						return <LocalFilesNotAllowedPanel
 							title={Localization.getLocalizedString("WebClipper.ClipType.Pdf.AskPermissionToClipLocalFile")}
