@@ -10,8 +10,7 @@ export module ArrayUtils {
 		}
 
 		// Calculate the smallest divisor where the largest bucket is size <= maxPerBucket
-		let floatingPointDivisor = numItems / maxPerBucket;
-		let divisor = Math.ceil(floatingPointDivisor);
+		let divisor = Math.ceil(numItems / maxPerBucket);
 		let integerDivideResult = Math.floor(numItems / divisor);
 		let remainder = numItems % divisor;
 
