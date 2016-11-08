@@ -1,0 +1,53 @@
+import {ArrayUtils} from "../arrayUtils";
+
+import {PdfDocument} from "../contentCapture/pdfDocument";
+
+import {OneNoteSaveable} from "./oneNoteSaveable";
+
+export class OneNoteSaveablePdf implements OneNoteSaveable {
+	private static maxImagesPerPatchRequest = 15;
+
+	private page: OneNoteApi.OneNotePage;
+	private pdf: PdfDocument;
+	private buckets: number[][];
+
+	constructor(page: OneNoteApi.OneNotePage, pdf: PdfDocument, pageIndexes?: number[]) {
+		this.page = page;
+		this.pdf = pdf;
+		this.buckets = ArrayUtils.partition(pageIndexes, OneNoteSaveablePdf.maxImagesPerPatchRequest);
+	}
+
+	public getPage(): Promise<OneNoteApi.OneNotePage> {
+		return Promise.resolve(this.page);
+	}
+
+	public getPatch(index: number): Promise<OneNoteApi.Revision[]> {
+		return new Promise<OneNoteApi.Revision[]>((resolve) => {
+			this.pdf.getPageListAsDataUrls(this.buckets[index]).then((dataUrls) => {
+				resolve(this.createPatchRequestBody(dataUrls));
+			});
+		});
+	}
+
+	private createPatchRequestBody(dataUrls: string[]): OneNoteApi.Revision[] {
+		let requestBody = [];
+		dataUrls.forEach((dataUrl) => {
+			let content = "<p><img src=\"" + dataUrl + "\" /></p>&nbsp;";
+			requestBody.push({
+				target: "body",
+				action: "append",
+				content: content
+			});
+		});
+		return requestBody;
+	}
+
+	public getNumPatches(): number {
+		return this.buckets.length;
+	}
+}
+
+// TODO: Problem: dev should conceptually be able to just take a page object, pass it in, and save it
+// BUT it's not that simple. We might have PATCHes. In the case of pdf, we can't even frontload all our
+// PATCHes due to memory issues, and we have to lazy load them in an async manner!
+// What if I had a onenotepagewithpatches object, and to get anything such like the patch or revision, its all a promise?
