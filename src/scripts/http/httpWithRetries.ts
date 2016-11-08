@@ -8,7 +8,10 @@ import { PromiseUtils } from "../promiseUtils";
  */
 export class HttpWithRetries extends Http {
 	public static get(url: string, headers?: any, timeout = Http.defaultTimeout, expectedCodes = [200], retryCount = 1): Promise<XMLHttpRequest> {
-		return PromiseUtils.retry(super.createAndSendRequest("GET", url, headers, expectedCodes, timeout), 2);
+		let func = () => {
+			return super.createAndSendRequest("GET", url, headers, expectedCodes, timeout);
+		};
+		return PromiseUtils.execWithRetry(func, 2);
 	}
 
 	public static post(url: string, data: any, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, retryCount = 1): Promise<XMLHttpRequest> {
@@ -16,6 +19,9 @@ export class HttpWithRetries extends Http {
 			throw new Error("data must be a non-undefined object, but was: " + data);
 		}
 
-		return PromiseUtils.retry(super.createAndSendRequest("POST", url, headers, expectedCodes, timeout, data), 2);
+		let func = () => {
+			return super.createAndSendRequest("POST", url, headers, expectedCodes, timeout, data);
+		};
+		return PromiseUtils.execWithRetry(func, 2);
 	}
 }
