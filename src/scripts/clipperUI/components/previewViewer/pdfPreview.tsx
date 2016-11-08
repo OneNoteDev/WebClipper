@@ -139,7 +139,9 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	}
 
 	private setDataUrlsOfImagesInState(pageIndicesToRender: number[]) {
-		this.props.clipperState.pdfResult.data.get().pdf.getPageListAsDataUrls(pageIndicesToRender).then((dataUrls) => {
+		let t0 = new Date();
+		let avgByteLength = this.props.clipperState.pdfResult.data.get().byteLength / this.props.clipperState.pdfResult.data.get().pdf.numPages();
+		this.props.clipperState.pdfResult.data.get().pdf.getPageListAsDataUrls(pageIndicesToRender, avgByteLength).then((dataUrls) => {
 			let renderedIndexes: IndexToDataUrlMap = {};
 			for (let i = 0; i < dataUrls.length; i++) {
 				renderedIndexes[pageIndicesToRender[i]] = dataUrls[i];
@@ -147,6 +149,8 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 			this.setState({
 				renderedPageIndexes: renderedIndexes
 			});
+			let t1 = new Date();
+			console.log("time taken to setdataUrls: " + (t1.getTime() - t0.getTime()));
 		});
 	}
 

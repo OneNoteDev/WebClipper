@@ -8,7 +8,7 @@ export interface PdfDocument {
 	numPages(): number;
 	getByteLength(): Promise<number>;
 	getData(): Promise<Uint8Array>;
-	getPageListAsDataUrls(pageIndexes: number[]): Promise<string[]>;
+	getPageListAsDataUrls(pageIndexes: number[], maxBytesPerImage?: number): Promise<string[]>;
 	getPageAsDataUrl(pageIndex: number): Promise<string>;
 	getAllPageViewportDimensions(): Promise<ViewportDimensions[]>;
 	getPageListViewportDimensions(pageIndexes: number[]): Promise<ViewportDimensions[]>;

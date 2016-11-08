@@ -1,3 +1,5 @@
+import {DomUtils} from "../domParsers/domUtils";
+
 import {ArrayUtils} from "../arrayUtils";
 
 import {PdfDocument} from "./pdfDocument";
@@ -32,11 +34,11 @@ export class PdfJsDocument implements PdfDocument {
 		});
 	}
 
-	public getPageListAsDataUrls(pageIndexes: number[]): Promise<string[]> {
+	public getPageListAsDataUrls(pageIndexes: number[], maxBytesPerImage?: number): Promise<string[]> {
 		let dataUrls: string[] = new Array(pageIndexes.length);
 		return new Promise((resolve) => {
 			for (let i = 0; i < pageIndexes.length; i++) {
-				this.getPageAsDataUrl(pageIndexes[i]).then((dataUrl) => {
+				this.getPageAsDataUrl(pageIndexes[i], maxBytesPerImage).then((dataUrl) => {
 					dataUrls[i] = dataUrl;
 					if (ArrayUtils.isArrayComplete(dataUrls)) {
 						resolve(dataUrls);
@@ -46,7 +48,7 @@ export class PdfJsDocument implements PdfDocument {
 		});
 	}
 
-	public getPageAsDataUrl(pageIndex: number): Promise<string> {
+	public getPageAsDataUrl(pageIndex: number, maxBytesPerImage?: number): Promise<string> {
 		return new Promise<string>((resolve) => {
 			// In pdf.js, indexes start at 1
 			this.pdf.getPage(pageIndex + 1).then((page) => {
@@ -60,9 +62,13 @@ export class PdfJsDocument implements PdfDocument {
 					canvasContext: context,
 					viewport: viewport
 				};
-
+				
 				page.render(renderContext).then(() => {
-					resolve(canvas.toDataURL());
+					let t0 = new Date();
+					let dataUrl = DomUtils.adjustImageQualityIfNecessary(canvas, canvas.toDataURL(), 1, .3, maxBytesPerImage);
+					let t1 = new Date();
+					console.log("time taken to adjust the URL:" + (t1.getTime() - t0.getTime()));
+					resolve(dataUrl);
 				});
 			});
 		});

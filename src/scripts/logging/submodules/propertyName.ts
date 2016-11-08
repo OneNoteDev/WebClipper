@@ -5,6 +5,8 @@ export module PropertyName {
 		AverageProcessingDurationPerPage,
 		BookmarkInfo,
 		ByteLength,
+		BytesPerDataUrl,
+		BytesPerPdfPage,
 		BytesTrimmed,
 		Channel,
 		ClipMode,
