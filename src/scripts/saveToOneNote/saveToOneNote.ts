@@ -8,6 +8,7 @@ import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import * as Log from "../logging/log";
 
+import {OneNoteApiWithLogging} from "./oneNoteApiWithLogging";
 import {OneNoteSaveable} from "./oneNoteSaveable";
 
 import * as _ from "lodash";
@@ -61,16 +62,11 @@ export class SaveToOneNote {
 					// As of v3.2.9, we have added a new scope for MSA to allow for PATCHing, however currently-logged-in users will not have
 					// this scope, so this call is a workaround to check for permissions, but is very unperformant. We need to investigate a
 					// quicker way of doing this ... perhaps exposing an endpoint that we can use for this sole purpose.
-					let patchPermissionCheckEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchPermissionCheck);
-					this.getPages({ top: 1, sectionId: saveLocation }).then(() => {
+					this.getApi().getPages({ top: 1, sectionId: saveLocation }).then(() => {
 						Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
 						resolve(true);
-					}, (error) => {
-						patchPermissionCheckEvent.setStatus(Log.Status.Failed);
-						patchPermissionCheckEvent.setFailureInfo({ error: error });
+					}).catch((error) => {
 						resolve(false);
-					}).then(() => {
-						Clipper.logger.logEvent(patchPermissionCheckEvent);
 					});
 				}
 			});
@@ -79,31 +75,16 @@ export class SaveToOneNote {
 
 	public saveWithoutCheckingPatchPermissions(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
 		return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject) => {
-			this.createPage(options.page).then((responsePackage) => {
-				if (options.page.getNumPatches() > 0) {
-					let pageId = responsePackage.parsedResponse.id;
-					this.patch(pageId, options.page); // TODO incomplete
-				} else {
-					resolve(responsePackage);
-				}
-			}).catch((error) => {
-				reject(error);
-			});
-		});
-	}
-
-	public createPage(saveable: OneNoteSaveable): Promise<OneNoteApi.ResponsePackage<any>> {
-		let pdfCreatePageEvent = new Log.Event.PromiseEvent(Log.Event.Label.CreatePage);
-		return new Promise<any>((resolve, reject) => {
-			saveable.getPage().then((page) => {
-				this.getApi().createPage(page).then((postPageResponse) => {
-					resolve(postPageResponse);
-				}, (error) => {
-					pdfCreatePageEvent.setStatus(Log.Status.Failed);
-					pdfCreatePageEvent.setFailureInfo({ error: error });
+			options.page.getPage().then((page) => {
+				this.getApi().createPage(page).then((responsePackage) => {
+					if (options.page.getNumPatches() > 0) {
+						let pageId = responsePackage.parsedResponse.id;
+						this.patch(pageId, options.page); // TODO incomplete
+					} else {
+						resolve(responsePackage);
+					}
+				}).catch((error) => {
 					reject(error);
-				}).then(() => {
-					Clipper.logger.logEvent(pdfCreatePageEvent);
 				});
 			});
 		});
@@ -188,18 +169,13 @@ export class SaveToOneNote {
 		});
 	}
 
-	/**
-	 * Sends a GET request for all pages in all notebooks
-	 */
-	private getPages(options: { top?: number, sectionId?: string }): Promise<any> {
-		return this.getApi().getPages(options);
-	}
-
 	// TODO create a class that wraps the api and is simply in charge of logging? We have SO MUCH LOGGING BOILERPLATE. Also we should shove the patch retry logic in there!
-	private getApi(): OneNoteApi.OneNoteApi {
+	private getApi(): OneNoteApi.IOneNoteApi {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
-		return new OneNoteApi.OneNoteApi(this.accessToken, undefined /* timeout */, headers);
+
+		let bareApi = new OneNoteApi.OneNoteApi(this.accessToken, undefined /* timeout */, headers);
+		return new OneNoteApiWithLogging(bareApi);
 	}
 }

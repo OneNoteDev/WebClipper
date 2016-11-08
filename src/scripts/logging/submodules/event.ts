@@ -8,6 +8,7 @@ export module Event {
 		StreamEvent,
 	}
 
+	// TODO go through each one and ensure they aren't being used in exactly one place in code
 	export enum Label {
 		AddEmbeddedVideo,
 		AugmentationApiCall,
@@ -19,7 +20,9 @@ export module Event {
 		ClipToOneNoteAction,
 		CloseClipper,
 		ClosePageNavTooltip,
+		CreateNotebook,
 		CreatePage,
+		CreateSection,
 		DebugFeedback,
 		DeviceIdMap,
 		FetchNonLocalData,
@@ -31,7 +34,11 @@ export module Event {
 		GetFlightingAssignments,
 		GetLocale,
 		GetLocalizedStrings,
+		GetNotebookByName,
 		GetNotebooks,
+		GetPage,
+		GetPageContent,
+		GetPages,
 		HandleSignInEvent,
 		HideClipperDueToSpaNavigate,
 		InvokeClipper,
@@ -39,8 +46,9 @@ export module Event {
 		InvokeWhatsNew,
 		LocalFilesNotAllowedPanelShown,
 		PageModifications,
-		PatchPermissionCheck,
-		PatchRequest,
+		PagesSearch,
+		// PatchPermissionCheck,
+		// PatchRequest,
 		// PdfCreatePage,
 		PostToOneNoteApi,
 		ProcessPdfIntoDataUrls,
@@ -53,6 +61,7 @@ export module Event {
 		SetDoNotPromptRatings,
 		ShouldShowRatingsPrompt,
 		TooltipImpression,
+		UpdatePage,
 		UserInfoUpdated,
 		WaitOnBinaryRequestBeforePdfClip,
 		WhatsNewImpression
