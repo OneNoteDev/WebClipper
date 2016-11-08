@@ -9,6 +9,7 @@ import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 import * as Log from "../logging/log";
 
 import {OneNoteApiWithLogging} from "./oneNoteApiWithLogging";
+import {OneNoteApiWithRetries} from "./oneNoteApiWithRetries";
 import {OneNoteSaveable} from "./oneNoteSaveable";
 
 import * as _ from "lodash";
@@ -31,23 +32,20 @@ export class SaveToOneNote {
 		this.accessToken = accessToken;
 	}
 
+	/**
+	 * Saves a page (and if necessary, appends PATCHES) to OneNote
+	 */
 	public save(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
-		return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject) => {
+		return new Promise<OneNoteApi.ResponsePackage<any>>(() => {
 			if (options.page.getNumPatches() > 0) {
-				this.userHasPatchPermissions(options.saveLocation).then((hasPatchPermissions) => {
-					this.saveWithoutCheckingPatchPermissions(options).then((ResponsePackage) => {
-						resolve(ResponsePackage);
-					});
-				}).catch((error) => {
-					reject(error);
+				return this.userHasPatchPermissions(options.saveLocation).then((hasPatchPermissions) => {
+					return this.saveWithoutCheckingPatchPermissions(options);
 				});
 			} else {
-				this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
-					resolve(responsePackage);
-				}).catch((error) => {
-					reject(error);
-				});
+				return this.saveWithoutCheckingPatchPermissions(options);
 			}
+		}).catch((error) => {
+			return Promise.reject(error);
 		});
 	}
 
@@ -79,7 +77,9 @@ export class SaveToOneNote {
 				this.getApi().createPage(page).then((responsePackage) => {
 					if (options.page.getNumPatches() > 0) {
 						let pageId = responsePackage.parsedResponse.id;
-						this.patch(pageId, options.page); // TODO incomplete
+						this.patch(pageId, options.page).then(() => {
+							resolve(responsePackage);
+						});
 					} else {
 						resolve(responsePackage);
 					}
@@ -108,7 +108,7 @@ export class SaveToOneNote {
 
 						Promise.all([getRevisionsPromise, timeoutPromise]).then((values) => {
 							let revisions = values[0] as OneNoteApi.Revision[];
-							this.createOneNotePagePatchRequest(pageId, revisions).then(() => {
+							this.getApi().updatePage(pageId, revisions).then(() => {
 								timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 								resolve();
 							}).catch((error) => {
@@ -121,61 +121,21 @@ export class SaveToOneNote {
 		]);
 	}
 
-	private createOneNotePagePatchRequest(pageId: string, revisions: OneNoteApi.Revision[]): Promise<any> {
-		let patchRequestEvent = new Log.Event.PromiseEvent(Log.Event.Label.PatchRequest);
-		return new Promise<any>((resolve, reject) => {
-			this.sendOneNotePagePatchRequestWithRetries(pageId, revisions, Constants.Settings.numRetriesPerPatchRequest).then((data) => {
-				resolve(data);
-			}, (err) => {
-				patchRequestEvent.setStatus(Log.Status.Failed);
-				patchRequestEvent.setFailureInfo({ error: err });
-				reject(err);
-			}).then(() => {
-				Clipper.logger.logEvent(patchRequestEvent);
-			});
-		});
-	}
-
-	private sendOneNotePagePatchRequestWithRetries(pageId: string, revisions: OneNoteApi.Revision[], numRetries: number): Promise<any> {
-		return this.getApi().updatePage(pageId, revisions).catch((error) => {
-			if (numRetries >= 1) {
-				return this.sendOneNotePagePatchRequestWithRetries(pageId, revisions, numRetries - 1);
-			} else {
-				return Promise.reject(error);
-			}
-		});
-	}
-
 	/**
-	 * Checks to see if a given page exists with a certain number of retries. There is a delay
-	 * between each retry.
+	 * Checks to see if a given page exists
 	 */
 	private getOneNotePageContentWithRetries(pageId: string, numRetries: number): Promise<any> {
-		return this.getApi().getPageContent(pageId).catch((error1) => {
-			// If the first call fails, we need to wait a couple of seconds before trying again
-			if (numRetries >= 1) {
-				return new Promise<any>((resolve, reject) => {
-					setTimeout(() => {
-						this.getOneNotePageContentWithRetries(pageId, numRetries - 1).then((response) => {
-							resolve(response);
-						}).catch((error2) => {
-							reject(error2);
-						});
-					}, Constants.Settings.pdfCheckCreatePageInterval);
-				});
-			} else {
-				return Promise.reject(error1);
-			}
-		});
+		// TODO numRetries not being used
+		return this.getApi().getPageContent(pageId);
 	}
 
-	// TODO create a class that wraps the api and is simply in charge of logging? We have SO MUCH LOGGING BOILERPLATE. Also we should shove the patch retry logic in there!
 	private getApi(): OneNoteApi.IOneNoteApi {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 
-		let bareApi = new OneNoteApi.OneNoteApi(this.accessToken, undefined /* timeout */, headers);
-		return new OneNoteApiWithLogging(bareApi);
+		let api = new OneNoteApi.OneNoteApi(this.accessToken, undefined /* timeout */, headers);
+		let apiWithRetries = new OneNoteApiWithRetries(api);
+		return new OneNoteApiWithLogging(apiWithRetries);
 	}
 }

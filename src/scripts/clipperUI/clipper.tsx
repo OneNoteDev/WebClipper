@@ -38,6 +38,9 @@ import * as Log from "../logging/log";
 import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
 import {Logger} from "../logging/logger";
 
+import {OneNoteSaveableFactory} from "../saveToOneNote/oneNoteSaveableFactory";
+import {SaveToOneNote} from "../saveToOneNote/saveToOneNote";
+
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ClipMode} from "./clipMode";
@@ -50,7 +53,7 @@ import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {PreviewViewer} from "./previewViewer";
 import {RatingsHelper} from "./ratingsHelper";
 import {RegionSelector} from "./regionSelector";
-import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
+// import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
 import {Status} from "./status";
 
 import * as _ from "lodash";
