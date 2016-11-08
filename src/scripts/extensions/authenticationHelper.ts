@@ -96,7 +96,7 @@ export class AuthenticationHelper {
 		return new Promise<string>((resolve) => {
 			// This is to work around a bug in Edge where the cookies.get call doesn't return if the cookie isn't set and there is more
 			// than one tab open.  Basically, we're giving it 3 seconds to return and then giving up.
-			let getCookieTimeout  = setTimeout(() => {
+			let getCookieTimeout = setTimeout(() => {
 				resolve(undefined);
 			}, 3000);
 
@@ -106,6 +106,7 @@ export class AuthenticationHelper {
 					resolve(cookie ? cookie.value : "");
 				});
 			} else {
+				clearTimeout(getCookieTimeout);
 				resolve(undefined);
 			}
 		});
@@ -139,7 +140,6 @@ export class AuthenticationHelper {
 	public retrieveUserInformation(clipperId: string, cookie: string = undefined): Promise<ResponsePackage<string>> {
 		return new Promise<ResponsePackage<string>>((resolve, reject: (error: OneNoteApi.RequestError) => void) => {
 			let userInfoUrl = Utils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
-
 			let retrieveUserInformationEvent = new Log.Event.PromiseEvent(Log.Event.Label.RetrieveUserInformation);
 
 			let correlationId = Utils.generateGuid();

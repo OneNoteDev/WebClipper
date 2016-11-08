@@ -14,7 +14,7 @@ interface ResponsePackage {
  * TODO: Wean this off OneNoteApi.ErrorUtils once we move the general http logic into its own package.
  */
 export class Http {
-	private static defaultTimeout = 30000;
+	protected static defaultTimeout = 30000;
 
 	public static get(url: string, headers?: any, timeout = Http.defaultTimeout, expectedCodes = [200]): Promise<XMLHttpRequest> {
 		return Http.createAndSendRequest("GET", url, headers, expectedCodes, timeout);
@@ -27,7 +27,7 @@ export class Http {
 		return Http.createAndSendRequest("POST", url, headers, expectedCodes, timeout, data);
 	}
 
-	private static createAndSendRequest(method: string, url: string, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, data?: any): Promise<XMLHttpRequest> {
+	protected static createAndSendRequest(method: string, url: string, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, data?: any): Promise<XMLHttpRequest> {
 		if (!url) {
 			throw new Error("url must be a non-empty string, but was: " + url);
 		}
