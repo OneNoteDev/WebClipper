@@ -6,7 +6,7 @@ import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
 import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
-import {Http} from "../http/http";
+import {HttpWithRetries} from "../http/HttpWithRetries";
 
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
@@ -155,7 +155,7 @@ export class AuthenticationHelper {
 				postData = cookie.replace(/\+/g, "%2B");
 			}
 
-			Http.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
+			HttpWithRetries.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
 				let response = request.response;
 				// The false case is expected behavior if the user has not signed in or credentials have expired
 				resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });

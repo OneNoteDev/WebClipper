@@ -1,20 +1,21 @@
 import {Http} from "./http";
 
 import { Utils } from "../utils";
-import { PromiseUtils } from "../promiseUtils";
+import { PromiseUtils, RetryOptions } from "../promiseUtils";
 
 /**
  * Helper class which extends the Http class in order to allow automatic retries.
  */
 export class HttpWithRetries extends Http {
-	public static get(url: string, headers?: any, timeout = Http.defaultTimeout, expectedCodes = [200], retryCount = 1): Promise<XMLHttpRequest> {
+	public static get(url: string, headers?: any, timeout = Http.defaultTimeout, expectedCodes = [200], retryOptions?: RetryOptions): Promise<XMLHttpRequest> {
 		let func = () => {
 			return super.createAndSendRequest("GET", url, headers, expectedCodes, timeout);
 		};
-		return PromiseUtils.execWithRetry(func, 2);
+
+		return PromiseUtils.execWithRetry(func, retryOptions);
 	}
 
-	public static post(url: string, data: any, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, retryCount = 1): Promise<XMLHttpRequest> {
+	public static post(url: string, data: any, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, retryOptions?: RetryOptions): Promise<XMLHttpRequest> {
 		if (Utils.isNullOrUndefined(data)) {
 			throw new Error("data must be a non-undefined object, but was: " + data);
 		}
@@ -22,6 +23,7 @@ export class HttpWithRetries extends Http {
 		let func = () => {
 			return super.createAndSendRequest("POST", url, headers, expectedCodes, timeout, data);
 		};
-		return PromiseUtils.execWithRetry(func, 2);
+
+		return PromiseUtils.execWithRetry(func, retryOptions);
 	}
 }
