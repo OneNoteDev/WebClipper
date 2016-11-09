@@ -1,5 +1,3 @@
-import {DomUtils} from "../domParsers/domUtils";
-
 import {ArrayUtils} from "../arrayUtils";
 
 import {PdfDocument} from "./pdfDocument";
