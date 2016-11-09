@@ -26,11 +26,6 @@ function getValidUserInformationJson(): UserInfoData {
 QUnit.module("authenticationHelper-sinon", {
 	beforeEach: () => {
 		xhr = sinon.useFakeXMLHttpRequest();
-		let requests = this.requests = [];
-		xhr.onCreate = req => {
-			requests.push(req);
-		};
-
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
 
