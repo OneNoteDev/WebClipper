@@ -1,12 +1,9 @@
-import {ArrayUtils} from "../arrayUtils";
 import {Constants} from "../constants";
 import {StringUtils} from "../stringUtils";
 import {Utils} from "../utils";
 
 import {ClipMode} from "../clipperUI/clipMode";
 import {ClipperState} from "../clipperUI/clipperState";
-
-import {PdfDocument} from "../contentCapture/pdfDocument";
 
 import {DomUtils} from "../domParsers/domUtils";
 
@@ -18,10 +15,6 @@ import {OneNoteSaveablePdf} from "./oneNoteSaveablePdf";
 
 import * as _ from "lodash";
 
-/**
- * TODO this class is still too big! Can we split this up more?
- * Also lots of boilerplate with clipperState. This probably should not be a stateless class.
- */
 export class OneNoteSaveableFactory {
 	private static maxImagesPerPatchRequest = 15;
 

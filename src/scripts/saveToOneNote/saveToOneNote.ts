@@ -57,7 +57,6 @@ export class SaveToOneNote {
 		});
 	}
 
-	// TODO: does this work in the default notebook case?
 	public rejectIfNoPatchPermissions(saveLocation: string): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			Clipper.getStoredValue(ClipperStorageKeys.hasPatchPermissions, (hasPermissions) => {
@@ -125,16 +124,8 @@ export class SaveToOneNote {
 						});
 					});
 				});
-			}, this.getOneNotePageContentWithRetries(pageId, 3) /* accumulator, i.e., the promise that gets executed first */)
+			}, this.getApi().getPageContent(pageId)) // Check if page exists  with retries
 		]);
-	}
-
-	/**
-	 * Checks to see if a given page exists
-	 */
-	private getOneNotePageContentWithRetries(pageId: string, numRetries: number): Promise<any> {
-		// TODO numRetries not being used
-		return this.getApi().getPageContent(pageId);
 	}
 
 	private getApi(): OneNoteApi.IOneNoteApi {
