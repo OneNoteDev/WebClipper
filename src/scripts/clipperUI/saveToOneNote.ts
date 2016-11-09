@@ -34,6 +34,7 @@ export interface StartClipPackage {
 	annotationAdded: boolean;
 }
 
+// TODO not all logging has been ported over to the new SaveToOneNote!
 export class SaveToOneNote {
 	private static clipperState: ClipperState;
 

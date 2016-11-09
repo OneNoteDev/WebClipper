@@ -676,8 +676,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
-		let mode = ClipMode[this.state.currentMode.get()];
-
 		if (this.state.currentMode.get() === ClipMode.Pdf) {
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesInPdf, this.state.pdfResult.data.get().pdf.numPages());
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
@@ -698,7 +696,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
 		}
-		clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, mode);
+		clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, ClipMode[this.state.currentMode.get()]);
 
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 		this.state.showRatingsPrompt.subscribe((shouldShow: boolean) => {
