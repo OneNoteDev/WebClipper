@@ -26,7 +26,7 @@ export module PromiseUtils {
 	/**
 	 * Executes the given function and retries on failure.
 	 */
-	export function execWithRetry<T>(func: () => Promise<T>, retryOptions: RetryOptions = { retryCount: 1, minTimeout: 500, maxTimeout: 3000}): Promise<T> {
+	export function execWithRetry<T>(func: () => Promise<T>, retryOptions: RetryOptions = { retryCount: 3, minTimeout: 500, maxTimeout: 3000}): Promise<T> {
 		return func().catch((error1) => {
 			if (retryOptions.retryCount > 0) {
 				return new Promise<T>((resolve, reject) => {
