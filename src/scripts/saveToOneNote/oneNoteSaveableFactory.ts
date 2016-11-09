@@ -16,6 +16,8 @@ import {OneNoteSaveable} from "./oneNoteSaveable";
 import {OneNoteSaveablePage} from "./oneNoteSaveablePage";
 import {OneNoteSaveablePdf} from "./oneNoteSaveablePdf";
 
+import * as _ from "lodash";
+
 /**
  * TODO this class is still too big! Can we split this up more?
  * Also lots of boilerplate with clipperState. This probably should not be a stateless class.
@@ -113,9 +115,13 @@ export class OneNoteSaveableFactory {
 				default:
 				case ClipMode.Pdf:
 					if (clipperState.pdfPreviewInfo.shouldAttachPdf && clipperState.pdfResult.data.get().byteLength < Constants.Settings.maximumMimeSizeLimit) {
-						return OneNoteSaveableFactory.addPdfAttachment(page, clipperState.pdfResult.data.get().pdf);
+						OneNoteSaveableFactory.addPdfAttachment(page, clipperState).then(() => {
+							resolve();
+						});
+					} else {
+						resolve();
 					}
-					break;
+					return;
 				case ClipMode.FullPage:
 					page.addHtml(clipperState.pageInfo.contentData);
 					break;
@@ -138,8 +144,8 @@ export class OneNoteSaveableFactory {
 					page.addOnml(processedSelectedContent.outerHTML);
 					break;
 			}
-			return Promise.resolve();
-		});	
+			resolve();
+		});
 	}
 
 	private static addPdfAttachment(page: OneNoteApi.OneNotePage, clipperState: ClipperState): Promise<any> {
@@ -157,7 +163,7 @@ export class OneNoteSaveableFactory {
 			let pdf = clipperState.pdfResult.data.get().pdf;
 			let pageIndexes: number[] = clipperState.pdfPreviewInfo.allPages ?
 				_.range(pdf.numPages()) :
-				StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, pdf.numPages());
+				StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, pdf.numPages()).map(value => value - 1);
 			return new OneNoteSaveablePdf(page, pdf, pageIndexes);
 		}
 		return new OneNoteSaveablePage(page);

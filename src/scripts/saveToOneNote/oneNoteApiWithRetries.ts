@@ -4,7 +4,7 @@ export class OneNoteApiWithRetries implements OneNoteApi.IOneNoteApi {
 	private api: OneNoteApi.IOneNoteApi;
 	private maxRetries: number;
 
-	constructor(api: OneNoteApi.IOneNoteApi, maxRetries: number = 3) {
+	constructor(api: OneNoteApi.IOneNoteApi, maxRetries = 3) {
 		this.api = api;
 		this.maxRetries = maxRetries;
 	}

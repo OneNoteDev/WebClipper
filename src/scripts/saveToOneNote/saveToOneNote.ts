@@ -36,35 +36,43 @@ export class SaveToOneNote {
 	 * Saves a page (and if necessary, appends PATCHES) to OneNote
 	 */
 	public save(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
-		return new Promise<OneNoteApi.ResponsePackage<any>>(() => {
+		return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject) => {
 			if (options.page.getNumPatches() > 0) {
-				return this.userHasPatchPermissions(options.saveLocation).then((hasPatchPermissions) => {
-					return this.saveWithoutCheckingPatchPermissions(options);
+				this.rejectIfNoPatchPermissions(options.saveLocation).then(() => {
+					this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
+						resolve(responsePackage);
+					}, (error) => {
+						reject(error);
+					});
+				}, (error) => {
+					reject(error);
 				});
 			} else {
-				return this.saveWithoutCheckingPatchPermissions(options);
+				this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
+					resolve(responsePackage);
+				}, (error) => {
+					reject(error);
+				});
 			}
-		}).catch((error) => {
-			return Promise.reject(error);
 		});
 	}
 
 	// TODO: does this work in the default notebook case?
-	public userHasPatchPermissions(saveLocation: string): Promise<boolean> {
-		return new Promise<any>((resolve) => {
+	public rejectIfNoPatchPermissions(saveLocation: string): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
 			Clipper.getStoredValue(ClipperStorageKeys.hasPatchPermissions, (hasPermissions) => {
 				// We have checked their permissions successfully in the past, or the user signed in on this device (with the latest scope)
 				if (hasPermissions) {
-					resolve(true);
+					resolve();
 				} else {
 					// As of v3.2.9, we have added a new scope for MSA to allow for PATCHing, however currently-logged-in users will not have
 					// this scope, so this call is a workaround to check for permissions, but is very unperformant. We need to investigate a
 					// quicker way of doing this ... perhaps exposing an endpoint that we can use for this sole purpose.
 					this.getApi().getPages({ top: 1, sectionId: saveLocation }).then(() => {
 						Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
-						resolve(true);
+						resolve();
 					}).catch((error) => {
-						resolve(false);
+						reject(error);
 					});
 				}
 			});
@@ -74,7 +82,7 @@ export class SaveToOneNote {
 	public saveWithoutCheckingPatchPermissions(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
 		return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject) => {
 			options.page.getPage().then((page) => {
-				this.getApi().createPage(page).then((responsePackage) => {
+				this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
 					if (options.page.getNumPatches() > 0) {
 						let pageId = responsePackage.parsedResponse.id;
 						this.patch(pageId, options.page).then(() => {

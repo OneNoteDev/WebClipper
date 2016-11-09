@@ -55,7 +55,6 @@ export module PropertyName {
 		TimeToClearNoOpTracker,
 		TooltipType,
 		TotalPagesClipped,
-		TotalPagesInPdf,
 		UpdateInterval,
 		UserInformationReturned,
 		UserInformationStored,

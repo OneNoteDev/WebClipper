@@ -240,7 +240,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 	}
 
 	render() {
-		if (!this.props.clipperState.showRatingsPrompt || !this.props.clipperState.showRatingsPrompt.get()) {
+		if (!this.props.clipperState.showRatingsPrompt) {
 			return <div />;
 		}
 

@@ -146,8 +146,6 @@ export module HelperFunctions {
 				status: Status.NotStarted
 			},
 
-			showRatingsPrompt: new SmartValue<boolean>(),
-
 			setState: (newPartialState: ClipperState) => {
 				for (let key in newPartialState) {
 					if (newPartialState.hasOwnProperty(key)) {

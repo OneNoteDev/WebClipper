@@ -46,8 +46,3 @@ export class OneNoteSaveablePdf implements OneNoteSaveable {
 		return this.buckets.length;
 	}
 }
-
-// TODO: Problem: dev should conceptually be able to just take a page object, pass it in, and save it
-// BUT it's not that simple. We might have PATCHes. In the case of pdf, we can't even frontload all our
-// PATCHes due to memory issues, and we have to lazy load them in an async manner!
-// What if I had a onenotepagewithpatches object, and to get anything such like the patch or revision, its all a promise?

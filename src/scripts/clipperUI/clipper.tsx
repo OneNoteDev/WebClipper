@@ -39,7 +39,7 @@ import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
 import {Logger} from "../logging/logger";
 
 import {OneNoteSaveableFactory} from "../saveToOneNote/oneNoteSaveableFactory";
-import {SaveToOneNote} from "../saveToOneNote/saveToOneNote";
+import {SaveToOneNote, SaveToOneNoteOptions} from "../saveToOneNote/saveToOneNote";
 
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
@@ -53,7 +53,6 @@ import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {PreviewViewer} from "./previewViewer";
 import {RatingsHelper} from "./ratingsHelper";
 import {RegionSelector} from "./regionSelector";
-// import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
 import {Status} from "./status";
 
 import * as _ from "lodash";
@@ -101,8 +100,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				shouldAttachPdf: false,
 			},
 
-			showRatingsPrompt: new SmartValue<boolean>(),
-
 			reset: () => {
 				this.state.setState(this.getResetState());
 			}
@@ -112,8 +109,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private getResetState(): ClipperState {
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
-			oneNoteApiResult: { status: Status.NotStarted },
-			showRatingsPrompt: new SmartValue<boolean>()
+			oneNoteApiResult: { status: Status.NotStarted }
 		};
 	}
 
@@ -535,23 +531,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private initializeNumSuccessfulClips(): void {
-		new Promise<string>((resolve, reject) => {
-			Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClips, (numClipsAsStr: string) => {
-				resolve(numClipsAsStr);
-			});
-		}).then((numClipsAsStr: string) => {
+		Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClips, (numClipsAsStr: string) => {
 			let numClips: number = parseInt(numClipsAsStr, 10);
-			if (Utils.isNullOrUndefined(numClips) || isNaN(numClips)) {
-				// when the value does not exist yet or is invalid, we initialize it to 0
-				numClips = 0;
-			}
-
-			this.state.numSuccessfulClips = new SmartValue<number>(numClips);
-
-			// subscribe after initial set to storage value
-			this.state.numSuccessfulClips.subscribe(() => {
-				this.state.showRatingsPrompt.set(RatingsHelper.shouldShowRatingsPrompt(this.state));
-			}, { callOnSubscribe: false });
+			this.state.numSuccessfulClips = Utils.isNullOrUndefined(numClips) || isNaN(numClips) ? 0 : numClips;
 		});
 	}
 
@@ -670,14 +652,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}});
 	}
 
-	// Refactor this to do the correct thing based on the this.state.currentMode.get()	
 	private startClip(): void {
 		Clipper.storeValue(ClipperStorageKeys.lastClippedDate, Date.now().toString());
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
 		if (this.state.currentMode.get() === ClipMode.Pdf) {
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesInPdf, this.state.pdfResult.data.get().pdf.numPages());
+			// clipEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesInPdf, this.state.pdfResult.data.get().pdf.numPages());
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
 		}
 
@@ -690,42 +671,38 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			// to users who haven't Clipped this mode in a while
 			let augmentationTypeAsString = AugmentationHelper.getAugmentationType(this.state);
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, augmentationTypeAsString);
+			// clipEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, augmentationTypeAsString);
 			clipEvent.setCustomProperty(Log.PropertyName.Custom.Styles, JSON.stringify(styles));
 		}
 		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
 		}
-		clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, ClipMode[this.state.currentMode.get()]);
+		// clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, ClipMode[this.state.currentMode.get()]);
 
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
-		this.state.showRatingsPrompt.subscribe((shouldShow: boolean) => {
-			let statusToSet: Status = SaveToOneNote.getClipSuccessStatus(this.state);
-			this.state.setState({ oneNoteApiResult: { status: statusToSet } });
-		}, { callOnSubscribe: false });
 
-		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
-			let responsePackage = startClipPackage.responsePackage;
-			let createPageResponse = Array.isArray(responsePackage) ? responsePackage[0] : responsePackage;
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, createPageResponse.request.getResponseHeader(Constants.HeaderValues.correlationId));
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
+		OneNoteSaveableFactory.getSaveable(this.state).then((saveable) => {
+			let saveOptions: SaveToOneNoteOptions = {
+				page: saveable,
+				saveLocation: this.state.saveLocation
+			};
+			let saveToOneNote = new SaveToOneNote(this.state.userResult.data.user.accessToken);
+			saveToOneNote.save(saveOptions).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+				let createPageResponse = Array.isArray(responsePackage) ? responsePackage[0] : responsePackage;
+				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, createPageResponse.request.getResponseHeader(Constants.HeaderValues.correlationId));
+				// clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
 
-			// set oneNoteApiResult.data first with status still InProgress, then check for correct status to set
-			this.state.setState({ oneNoteApiResult: { data: createPageResponse.parsedResponse, status: Status.InProgress } });
-			let statusToSet: Status = SaveToOneNote.getClipSuccessStatus(this.state);
-			this.state.setState({ oneNoteApiResult: { data: createPageResponse.parsedResponse, status: statusToSet } });
-		}, (error: OneNoteApi.RequestError) => {
-			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
-
-			this.state.setState({ oneNoteApiResult: { data: error, status: Status.Failed } });
-		}).then(() => {
-			if (this.state.currentMode.get() === ClipMode.Pdf) {
-				clipEvent.stopTimer();
-				const totalPagesClipped = SaveToOneNote.getAllPdfPageIndexesToBeSent().length;
-				clipEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesClipped, totalPagesClipped);
-				clipEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, clipEvent.getDuration() / totalPagesClipped);
-			}
-			Clipper.logger.logEvent(clipEvent);
+				this.state.setState({
+					oneNoteApiResult: { data: createPageResponse.parsedResponse, status: Status.Succeeded },
+					numSuccessfulClips: this.state.numSuccessfulClips + 1,
+					showRatingsPrompt: RatingsHelper.shouldShowRatingsPrompt(this.state)
+				});
+			}, (error: OneNoteApi.RequestError) => {
+				OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
+				this.state.setState({ oneNoteApiResult: { data: error, status: Status.Failed } });
+			}).then(() => {
+				Clipper.logger.logEvent(clipEvent);
+			});
 		});
 	}
 
