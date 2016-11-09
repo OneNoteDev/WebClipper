@@ -40,6 +40,7 @@ import {Logger} from "../logging/logger";
 
 import {OneNoteSaveableFactory} from "../saveToOneNote/oneNoteSaveableFactory";
 import {SaveToOneNote, SaveToOneNoteOptions} from "../saveToOneNote/saveToOneNote";
+import {SaveToOneNoteLogger} from "../saveToOneNote/saveToOneNoteLogger";
 
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
@@ -653,33 +654,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private startClip(): void {
-		Clipper.storeValue(ClipperStorageKeys.lastClippedDate, Date.now().toString());
+		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
+
+		this.storeLastClippedInformation();
+		SaveToOneNoteLogger.logClip(this.state);
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
-
-		if (this.state.currentMode.get() === ClipMode.Pdf) {
-			// clipEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesInPdf, this.state.pdfResult.data.get().pdf.numPages());
-			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
-		}
-
-		if (this.state.currentMode.get() === ClipMode.Augmentation) {
-			let styles = {
-				fontSize: this.state.previewGlobalInfo.fontSize,
-				serif: this.state.previewGlobalInfo.serif
-			};
-			// Record lastClippedDate for each different augmentationMode so we can upsell the augmentation mode
-			// to users who haven't Clipped this mode in a while
-			let augmentationTypeAsString = AugmentationHelper.getAugmentationType(this.state);
-			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
-			// clipEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, augmentationTypeAsString);
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.Styles, JSON.stringify(styles));
-		}
-		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
-			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
-		}
-		// clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, ClipMode[this.state.currentMode.get()]);
-
-		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 
 		OneNoteSaveableFactory.getSaveable(this.state).then((saveable) => {
 			let saveOptions: SaveToOneNoteOptions = {
@@ -690,11 +670,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			saveToOneNote.save(saveOptions).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
 				let createPageResponse = Array.isArray(responsePackage) ? responsePackage[0] : responsePackage;
 				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, createPageResponse.request.getResponseHeader(Constants.HeaderValues.correlationId));
-				// clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
 
+				let numSuccessfulClips = this.state.numSuccessfulClips + 1;
+				Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numSuccessfulClips.toString());
 				this.state.setState({
 					oneNoteApiResult: { data: createPageResponse.parsedResponse, status: Status.Succeeded },
-					numSuccessfulClips: this.state.numSuccessfulClips + 1,
+					numSuccessfulClips: numSuccessfulClips,
 					showRatingsPrompt: RatingsHelper.shouldShowRatingsPrompt(this.state)
 				});
 			}, (error: OneNoteApi.RequestError) => {
@@ -704,6 +685,25 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				Clipper.logger.logEvent(clipEvent);
 			});
 		});
+	}
+
+	private storeLastClippedInformation() {
+		Clipper.storeValue(ClipperStorageKeys.lastClippedDate, Date.now().toString());
+
+		if (this.state.currentMode.get() === ClipMode.Pdf) {
+			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
+		}
+
+		if (this.state.currentMode.get() === ClipMode.Augmentation) {
+			// Record lastClippedDate for each different augmentationMode so we can upsell the augmentation mode
+			// to users who haven't Clipped this mode in a while
+			let augmentationTypeAsString = AugmentationHelper.getAugmentationType(this.state);
+			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
+		}
+
+		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
+			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
+		}
 	}
 
 	private static shouldShowOptions(state: ClipperState): boolean {

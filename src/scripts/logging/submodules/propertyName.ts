@@ -1,4 +1,5 @@
 export module PropertyName {
+	// TODO check if these are being used
 	export enum Custom {
 		AnnotationAdded,
 		AugmentationModel,
@@ -36,6 +37,7 @@ export module PropertyName {
 		LastUpdated,
 		MaxDepth,
 		NumPages,
+		NumRegions,
 		NumTimesTooltipHasBeenSeen,
 		PageNavTooltipType,
 		PageTitleModified,
