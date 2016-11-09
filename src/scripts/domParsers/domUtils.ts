@@ -739,11 +739,11 @@ export module DomUtils {
 		let stepDownCount = 0;
 		while (quality > 0 && dataUrl.length > max) {
 			dataUrl = canvas.toDataURL("image/jpeg", quality);
-			console.log("adjusting");
 			quality -= qualityStep;
 			stepDownCount++;
 		}
 
+		console.log("Quality: " + quality);
 		return dataUrl;
 	}
 

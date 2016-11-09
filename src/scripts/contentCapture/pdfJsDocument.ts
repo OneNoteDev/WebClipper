@@ -65,7 +65,9 @@ export class PdfJsDocument implements PdfDocument {
 				
 				page.render(renderContext).then(() => {
 					let t0 = new Date();
-					let dataUrl = DomUtils.adjustImageQualityIfNecessary(canvas, canvas.toDataURL(), 1, .3, maxBytesPerImage);
+					let initialDataUrl = canvas.toDataURL();
+					const initialQuality = Math.min(maxBytesPerImage / initialDataUrl.length, 1);
+					let dataUrl = DomUtils.adjustImageQualityIfNecessary(canvas, initialDataUrl, initialQuality, .1, maxBytesPerImage);
 					let t1 = new Date();
 					console.log("time taken to adjust the URL:" + (t1.getTime() - t0.getTime()));
 					resolve(dataUrl);
