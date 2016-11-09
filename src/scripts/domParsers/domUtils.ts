@@ -735,15 +735,14 @@ export module DomUtils {
 	/**
 	 * If a high-quality image is too big for the request, then switch to JPEG and step down
 	 */
-	export function adjustImageQualityIfNecessary(canvas: HTMLCanvasElement, dataUrl: string, quality = 1, qualityStep = 0.1, max = maxBytesForMediaTypes): string {
+	export function adjustImageQualityIfNecessary(canvas: HTMLCanvasElement, dataUrl: string, quality = 1, qualityStep = 0.1): string {
 		let stepDownCount = 0;
-		while (quality > 0 && dataUrl.length > max) {
+		while (quality > 0 && dataUrl.length > maxBytesForMediaTypes) {
 			dataUrl = canvas.toDataURL("image/jpeg", quality);
 			quality -= qualityStep;
 			stepDownCount++;
 		}
 
-		console.log("Quality: " + quality);
 		return dataUrl;
 	}
 

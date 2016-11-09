@@ -439,10 +439,8 @@ export class SaveToOneNote {
 
 						Promise.all([getDataUrlsPromise, timeoutPromise]).then((values) => {
 							let dataUrls = values[0] as string[];
-							let firstSyntax: number = _.sumBy(dataUrls, (dataUrl) => { return dataUrl.length; });
-							let secondSyntax: number = _.sumBy(dataUrls, "length");
-							console.log(firstSyntax + " vs " + secondSyntax);
-							totalLengthOfImagesSent += firstSyntax;
+							const sumOfLengthOfDataUrls = _.sumBy(dataUrls, (dataUrl) => { return dataUrl.length; });
+							totalLengthOfImagesSent += sumOfLengthOfDataUrls;
 							SaveToOneNote.createOneNotePagePatchRequest(pageId, dataUrls).then(() => {
 								timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 								resolve();
@@ -475,10 +473,8 @@ export class SaveToOneNote {
 		let getPageListAsDataUrlsEvent = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
 		getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.NumPages, pageIndices.length);
 
-		const avgByteLength = this.clipperState.pdfResult.data.get().byteLength / this.clipperState.pdfResult.data.get().pdf.numPages();
-		
 		let pdf = this.clipperState.pdfResult.data.get().pdf;
-		return pdf.getPageListAsDataUrls(pageIndices, avgByteLength).then((dataUrls: string[]) => {
+		return pdf.getPageListAsDataUrls(pageIndices).then((dataUrls: string[]) => {
 			getPageListAsDataUrlsEvent.stopTimer();
 			getPageListAsDataUrlsEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, getPageListAsDataUrlsEvent.getDuration() / pageIndices.length);
 			Clipper.logger.logEvent(getPageListAsDataUrlsEvent);
