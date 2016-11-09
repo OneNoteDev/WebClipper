@@ -1,12 +1,17 @@
 import * as sinon from "sinon";
 
-import {AuthenticationHelper} from "../../scripts/extensions/authenticationHelper";
-import {ClipperData} from "../../scripts/storage/clipperData";
-import {Logger} from "../../scripts/logging/logger";
-import {UserInfoData} from "../../scripts/userInfo";
+import { AuthenticationHelper } from "../../scripts/extensions/authenticationHelper";
+import { ClipperData } from "../../scripts/storage/clipperData";
+import { Logger } from "../../scripts/logging/logger";
+import { UserInfoData } from "../../scripts/userInfo";
+
+import { HelperFunctions } from "../helperFunctions";
 
 let xhr: Sinon.SinonFakeXMLHttpRequest;
 let server: Sinon.SinonFakeServer;
+
+let savedSetTimeout;
+declare let setTimeout;
 
 let mockClipperData: ClipperData;
 let mockLogger: Logger;
@@ -34,6 +39,8 @@ QUnit.module("authenticationHelper-sinon", {
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
 
+		HelperFunctions.mockSetTimout();
+
 		mockClipperData = sinon.createStubInstance(ClipperData) as any;
 		mockLogger = sinon.createStubInstance(Logger) as any;
 		authentationHelper = new AuthenticationHelper(mockClipperData, mockLogger);
@@ -41,6 +48,7 @@ QUnit.module("authenticationHelper-sinon", {
 	afterEach: () => {
 		xhr.restore();
 		server.restore();
+		HelperFunctions.restoreSetTimeout();
 	}
 });
 

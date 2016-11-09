@@ -1,11 +1,10 @@
-import { PromiseUtils, RetryOptions } from "../scripts/promiseUtils";
+import { HelperFunctions } from "./helperFunctions";
 
-import * as sinon from "sinon";
+import { PromiseUtils, RetryOptions } from "../scripts/promiseUtils";
 
 let expectedResolve = "succeeded";
 let expectedReject = "failed";
 let callCount: number;
-let clock: sinon.SinonFakeTimers;
 
 function fnGenerator(callsUntilSucceed: number): () => Promise<string> {
 	return () => {
@@ -20,10 +19,11 @@ function fnGenerator(callsUntilSucceed: number): () => Promise<string> {
 QUnit.module("promiseUtils", {
 	beforeEach: () => {
 		callCount = 0;
-		// clock = sinon.useFakeTimers();
+
+		HelperFunctions.mockSetTimout();
 	},
 	afterEach: () => {
-		// clock.restore();
+		HelperFunctions.restoreSetTimeout();
 	}
 });
 
@@ -57,7 +57,7 @@ test("execWithRetry should reject if all attempts fail and there are not enough 
 		ok(false, "execWithRetry should not resolve");
 	}).catch((retVal) => {
 		strictEqual(retVal, expectedReject, "execWithRetry should reject with the same value the function's promise rejects with");
-		strictEqual(callCount, 4, "execWithRetry should call the function 4 times (1 first attempt, then 3 retries)");
+		strictEqual(callCount, 3, "execWithRetry should call the function 3 times (1 first attempt, then 2 retries)");
 	}).then(() => {
 		done();
 	});
@@ -93,16 +93,14 @@ test("execWithRetry should call the function once then reject if the first attem
 
 test("execWithRetry should call the function n times if only the nth attempt succeeds, and there are n-1 retries", (assert: QUnitAssert) => {
 	let done = assert.async();
-	let retryOptions: RetryOptions = { retryCount: 9, minTimeout: 1, maxTimeout: 2 };
+	let retryOptions: RetryOptions = { retryCount: 49, minTimeout: 1, maxTimeout: 2 };
 
-	PromiseUtils.execWithRetry(fnGenerator(10), retryOptions).then((retVal) => {
+	PromiseUtils.execWithRetry(fnGenerator(50), retryOptions).then((retVal) => {
 		strictEqual(retVal, expectedResolve, "execWithRetry should resolve with the same value the function's promise resolves with");
-		strictEqual(callCount, 10, "execWithRetry should call the function 500 times");
+		strictEqual(callCount, 50, "execWithRetry should call the function 500 times");
 	}).catch(() => {
 		ok(false, "execWithRetry should not reject");
 	}).then(() => {
 		done();
 	});
 });
-
-// TODO use fakeTimers to test the setTimeout
