@@ -459,6 +459,7 @@ export class SaveToOneNote {
 			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesClipped, SaveToOneNote.getAllPdfPageIndexesToBeSent().length);
 			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesInPdf, this.clipperState.pdfResult.data.get().pdf.numPages());
 			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.ByteLength, this.clipperState.pdfResult.data.get().byteLength);
+			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.TotalBytesSentInDataUrls, totalLengthOfImagesSent);
 			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.BytesPerDataUrl, totalLengthOfImagesSent / numPagesClipped);
 			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, byteLengthOfEntirePdf / numPagesInPdf);
 			Clipper.logger.logEvent(dataPerPagesComparisonEvent);
