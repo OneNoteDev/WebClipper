@@ -86,6 +86,8 @@ export class SaveToOneNote {
 						let pageId = responsePackage.parsedResponse.id;
 						this.patch(pageId, options.page).then(() => {
 							resolve(responsePackage);
+						}).catch((error) => {
+							reject(error);
 						});
 					} else {
 						resolve(responsePackage);

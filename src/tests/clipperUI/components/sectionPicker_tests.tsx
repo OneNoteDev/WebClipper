@@ -100,7 +100,6 @@ let createSection = (id: string, isDefault?: boolean): OneNoteApi.Section => {
 
 let mockClipperState = HelperFunctions.getMockClipperState();
 let defaultComponent;
-let xhr: Sinon.SinonFakeXMLHttpRequest;
 let server: Sinon.SinonFakeServer;
 
 QUnit.module("sectionPicker", {
@@ -193,13 +192,10 @@ QUnit.module("sectionPicker-sinon", {
 			onPopupToggle={() => {}}
 			clipperState={mockClipperState} />;
 
-		xhr = sinon.useFakeXMLHttpRequest();
-
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
 	},
 	afterEach: () => {
-		xhr.restore();
 		server.restore();
 	}
 });

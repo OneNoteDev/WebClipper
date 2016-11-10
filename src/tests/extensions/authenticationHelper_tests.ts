@@ -5,7 +5,6 @@ import {ClipperData} from "../../scripts/storage/clipperData";
 import {Logger} from "../../scripts/logging/logger";
 import {UserInfoData} from "../../scripts/userInfo";
 
-let xhr: Sinon.SinonFakeXMLHttpRequest;
 let server: Sinon.SinonFakeServer;
 
 let mockClipperData: ClipperData;
@@ -25,7 +24,6 @@ function getValidUserInformationJson(): UserInfoData {
 
 QUnit.module("authenticationHelper-sinon", {
 	beforeEach: () => {
-		xhr = sinon.useFakeXMLHttpRequest();
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
 
@@ -34,7 +32,6 @@ QUnit.module("authenticationHelper-sinon", {
 		authentationHelper = new AuthenticationHelper(mockClipperData, mockLogger);
 	},
 	afterEach: () => {
-		xhr.restore();
 		server.restore();
 	}
 });
