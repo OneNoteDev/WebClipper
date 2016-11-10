@@ -1,6 +1,7 @@
 import * as Log from "../logging/log";
 
 import {Constants} from "../constants";
+import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
 import {StringUtils} from "../stringUtils";
 
 import {ClipMode} from "../clipperUI/clipMode";
@@ -76,24 +77,24 @@ export class SaveToOneNoteLogger {
 
 	private static logAugmentationClip(clipperState: ClipperState) {
 		let event = new Log.Event.BaseEvent(Log.Event.Label.ClipAugmentationOptions);
-		SaveToOneNoteLogger.setEditOptions(event, clipperState);
+		SaveToOneNoteLogger.setEditOptions(event, clipperState.previewGlobalInfo, clipperState.augmentationPreviewInfo);
 		event.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, AugmentationModel[clipperState.augmentationResult.data.ContentModel]);
 		Clipper.logger.logEvent(event);
 	}
 
 	private static logSelectionClip(clipperState: ClipperState) {
 		let event = new Log.Event.BaseEvent(Log.Event.Label.ClipSelectionOptions);
-		SaveToOneNoteLogger.setEditOptions(event, clipperState);
+		SaveToOneNoteLogger.setEditOptions(event, clipperState.previewGlobalInfo, clipperState.selectionPreviewInfo);
 		Clipper.logger.logEvent(event);
 	}
 
-	private static setEditOptions(event: Log.Event.BaseEvent, clipperState: ClipperState) {
-		event.setCustomProperty(Log.PropertyName.Custom.FontSize, clipperState.previewGlobalInfo.fontSize);
-		event.setCustomProperty(Log.PropertyName.Custom.IsSerif, clipperState.previewGlobalInfo.serif);
+	private static setEditOptions(event: Log.Event.BaseEvent, previewGlobalInfo: PreviewGlobalInfo, previewInfo: PreviewInfo) {
+		event.setCustomProperty(Log.PropertyName.Custom.FontSize, previewGlobalInfo.fontSize);
+		event.setCustomProperty(Log.PropertyName.Custom.IsSerif, previewGlobalInfo.serif);
 
 		// Log if the user has performed a highlight
 		let container = document.createElement("div");
-		container.innerHTML = DomUtils.cleanHtml(clipperState.augmentationPreviewInfo.previewBodyHtml);
+		container.innerHTML = DomUtils.cleanHtml(previewInfo.previewBodyHtml);
 		let highlightedList = container.getElementsByClassName(Constants.Classes.highlighted);
 		event.setCustomProperty(Log.PropertyName.Custom.ContainsAtLeastOneHighlight, highlightedList && highlightedList.length > 0);
 	}
