@@ -16,33 +16,8 @@ import {ClipperStorageKeys} from "../../scripts/storage/clipperStorageKeys";
 
 import {HelperFunctions} from "../helperFunctions";
 
-// Mock storage TODO this is used in multiple test files e.g. ratingsPanel_tests. We can possibly move this logic somewhere central.
-// TODO remove fakexmlhttprequest since its likely not needed
 let mockStorage: { [key: string]: string };
 let mockStorageCache: { [key: string]: string };
-Clipper.getStoredValue = (key: string, callback: (value: string) => void, cacheValue?: boolean) => {
-	if (cacheValue) {
-		mockStorageCache[key] = mockStorage[key];
-	}
-	callback(mockStorage[key]);
-};
-Clipper.storeValue = (key: string, value: string) => {
-	if (key in mockStorageCache) {
-		mockStorageCache[key] = value;
-	}
-	mockStorage[key] = value;
-};
-Clipper.preCacheStoredValues = (storageKeys: string[]) => {
-	for (let key of storageKeys) {
-		Clipper.getStoredValue(key, () => { }, true);
-	}
-};
-Clipper.getCachedValue = (key: string) => {
-	return mockStorageCache[key];
-};
-Clipper.logger = new StubSessionLogger();
-
-// Helper functions
 
 function getMockSaveablePage(): OneNoteSaveablePage {
 	let page = new OneNoteApi.OneNotePage();
@@ -63,8 +38,11 @@ QUnit.module("saveToOneNote-sinon", {
 		HelperFunctions.mockSetTimeout();
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
+
 		mockStorage = {};
 		mockStorageCache = {};
+		HelperFunctions.mockFrontEndGlobals(mockStorage, mockStorageCache);
+
 		saveToOneNote = new SaveToOneNote("userToken");
 	},
 	afterEach: () => {
