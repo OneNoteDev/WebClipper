@@ -42,7 +42,7 @@ export class AugmentationHelper {
 			let augmentationEvent = new Log.Event.PromiseEvent(Log.Event.Label.AugmentationApiCall);
 
 			let correlationId = Utils.generateGuid();
-			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
+			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[], request: XMLHttpRequest }) => {
 				let parsedResponse = responsePackage.parsedResponse;

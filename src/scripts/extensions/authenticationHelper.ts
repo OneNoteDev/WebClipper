@@ -143,7 +143,7 @@ export class AuthenticationHelper {
 			let retrieveUserInformationEvent = new Log.Event.PromiseEvent(Log.Event.Label.RetrieveUserInformation);
 
 			let correlationId = Utils.generateGuid();
-			retrieveUserInformationEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
+			retrieveUserInformationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 			let headers = {};
 			headers["Content-type"] = "application/x-www-form-urlencoded";

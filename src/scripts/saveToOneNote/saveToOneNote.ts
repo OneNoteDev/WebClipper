@@ -112,7 +112,7 @@ export class SaveToOneNote {
 						// processed in the order that they were sent.
 
 						// Parallelize the PATCH request intervals with the fetching of the next set of dataUrls
-						let getRevisionsPromise = saveable.getPatch(i);
+						let getRevisionsPromise = this.getPatchWithLogging(saveable, i);
 						let timeoutPromise = PromiseUtils.wait(timeBetweenPatchRequests);
 
 						Promise.all([getRevisionsPromise, timeoutPromise]).then((values) => {
@@ -126,8 +126,23 @@ export class SaveToOneNote {
 						});
 					});
 				});
-			}, this.getApi().getPageContent(pageId)) // Check if page exists  with retries
+			}, this.getApi().getPageContent(pageId)) // Check if page exists with retries
 		]);
+	}
+
+	// We try not and put logging logic in this class, but since we lazy-load images, this has to be an exception
+	private getPatchWithLogging(saveable: OneNoteSaveable, index: number): Promise<OneNoteApi.Revision[]> {
+		let event = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
+		return saveable.getPatch(index).then((revisions: OneNoteApi.Revision[]) => {
+			event.stopTimer();
+			event.setCustomProperty(Log.PropertyName.Custom.NumPages, revisions.length);
+			if (revisions.length > 0) {
+				event.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, event.getDuration() / revisions.length);
+			}
+			Clipper.logger.logEvent(event);
+
+			return Promise.resolve(revisions);
+		});
 	}
 
 	private getApi(): OneNoteApi.IOneNoteApi {

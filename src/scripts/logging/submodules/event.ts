@@ -8,7 +8,6 @@ export module Event {
 		StreamEvent,
 	}
 
-	// TODO go through each one and ensure they aren't being used in exactly one place in code
 	export enum Label {
 		AddEmbeddedVideo,
 		AugmentationApiCall,
@@ -29,12 +28,10 @@ export module Event {
 		CreateSection,
 		DebugFeedback,
 		DeviceIdMap,
-		EditOptions,
 		FetchNonLocalData,
 		FullPageScreenshotCall,
 		GetBinaryRequest,
 		GetCleanDom,
-		GetDefaultSection,
 		GetExistingUserInformation,
 		GetFlightingAssignments,
 		GetLocale,
@@ -51,9 +48,7 @@ export module Event {
 		InvokeWhatsNew,
 		LocalFilesNotAllowedPanelShown,
 		PagesSearch,
-		PostToOneNoteApi,
 		ProcessPdfIntoDataUrls,
-		RefreshUserToken,
 		RegionSelectionCapturing,
 		RegionSelectionLoading,
 		RegionSelectionProcessing,
@@ -64,7 +59,6 @@ export module Event {
 		TooltipImpression,
 		UpdatePage,
 		UserInfoUpdated,
-		WaitOnBinaryRequestBeforePdfClip,
 		WhatsNewImpression
 	}
 
