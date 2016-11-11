@@ -36,25 +36,17 @@ export class SaveToOneNote {
 	 * Saves a page (and if necessary, appends PATCHES) to OneNote
 	 */
 	public save(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
-		return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject) => {
-			if (options.page.getNumPatches() > 0) {
-				this.rejectIfNoPatchPermissions(options.saveLocation).then(() => {
-					this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
-						resolve(responsePackage);
-					}, (error) => {
-						reject(error);
-					});
-				}, (error) => {
-					reject(error);
+		if (options.page.getNumPatches() > 0) {
+			return this.rejectIfNoPatchPermissions(options.saveLocation).then(() => {
+				return this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
+					return Promise.resolve(responsePackage);
 				});
-			} else {
-				this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
-					resolve(responsePackage);
-				}, (error) => {
-					reject(error);
-				});
-			}
-		});
+			}).catch((error) => {
+				return Promise.reject(error);
+			});
+		} else {
+			return this.saveWithoutCheckingPatchPermissions(options);
+		}
 	}
 
 	public rejectIfNoPatchPermissions(saveLocation: string): Promise<void> {
