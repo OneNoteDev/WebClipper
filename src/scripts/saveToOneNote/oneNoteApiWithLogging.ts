@@ -6,9 +6,11 @@ import * as Log from "../logging/log";
 
 export class OneNoteApiWithLogging implements OneNoteApi.IOneNoteApi {
 	private api: OneNoteApi.IOneNoteApi;
+	private correlationId: string;
 
-	constructor(api: OneNoteApi.IOneNoteApi) {
+	constructor(api: OneNoteApi.IOneNoteApi, correlationId: string) {
 		this.api = api;
+		this.correlationId = correlationId;
 	}
 
 	public createNotebook(name: string): Promise<OneNoteApi.ResponsePackage<any>> {
@@ -82,15 +84,13 @@ export class OneNoteApiWithLogging implements OneNoteApi.IOneNoteApi {
 			let event = new Log.Event.PromiseEvent(eventLabel);
 			let correlationId: string;
 			return func().then((response) => {
-				correlationId = response.request.getResponseHeader(Constants.HeaderValues.correlationId);
 				resolve(response);
 			}, (error: OneNoteApi.RequestError) => {
 				event.setStatus(Log.Status.Failed);
 				event.setFailureInfo(error);
-				correlationId = error.responseHeaders[Constants.HeaderValues.correlationId];
 				reject(error);
 			}).then(() => {
-				event.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
+				event.setCustomProperty(Log.PropertyName.Custom.CorrelationId, this.correlationId);
 				Clipper.logger.logEvent(event);
 			});
 		});

@@ -1,6 +1,7 @@
 import {Constants} from "../constants";
 import {PromiseUtils} from "../promiseUtils";
 import {Settings} from "../settings";
+import {Utils} from "../utils";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
 
@@ -137,13 +138,18 @@ export class SaveToOneNote {
 		});
 	}
 
+	/**
+	 * We set the correlation id each time this gets called. When using this, make sure you are not reusing
+	 * the same object unless it's your intention to have their API calls use the same correlation id.
+	 */
 	private getApi(): OneNoteApi.IOneNoteApi {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+		headers[Constants.HeaderValues.correlationId] = Utils.generateGuid();
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 
 		let api = new OneNoteApi.OneNoteApi(this.accessToken, undefined /* timeout */, headers);
 		let apiWithRetries = new OneNoteApiWithRetries(api);
-		return new OneNoteApiWithLogging(apiWithRetries);
+		return new OneNoteApiWithLogging(apiWithRetries, headers[Constants.HeaderValues.correlationId]);
 	}
 }
