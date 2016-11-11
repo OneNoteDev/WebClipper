@@ -1,6 +1,6 @@
-import { HelperFunctions } from "./helperFunctions";
+import {HelperFunctions} from "./helperFunctions";
 
-import { PromiseUtils, RetryOptions } from "../scripts/promiseUtils";
+import {PromiseUtils, RetryOptions} from "../scripts/promiseUtils";
 
 let expectedResolve = "succeeded";
 let expectedReject = "failed";

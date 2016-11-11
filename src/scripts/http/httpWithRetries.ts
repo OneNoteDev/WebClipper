@@ -1,7 +1,7 @@
 import {Http} from "./http";
 
-import { Utils } from "../utils";
-import { PromiseUtils, RetryOptions } from "../promiseUtils";
+import {Utils} from "../utils";
+import {PromiseUtils, RetryOptions} from "../promiseUtils";
 
 /**
  * Helper class which extends the Http class in order to allow automatic retries.

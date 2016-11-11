@@ -1,11 +1,11 @@
 import * as sinon from "sinon";
 
-import { AuthenticationHelper } from "../../scripts/extensions/authenticationHelper";
-import { ClipperData } from "../../scripts/storage/clipperData";
-import { Logger } from "../../scripts/logging/logger";
-import { UserInfoData } from "../../scripts/userInfo";
+import {AuthenticationHelper} from "../../scripts/extensions/authenticationHelper";
+import {ClipperData} from "../../scripts/storage/clipperData";
+import {Logger} from "../../scripts/logging/logger";
+import {UserInfoData} from "../../scripts/userInfo";
 
-import { HelperFunctions } from "../helperFunctions";
+import {HelperFunctions} from "../helperFunctions";
 
 let xhr: Sinon.SinonFakeXMLHttpRequest;
 let server: Sinon.SinonFakeServer;
