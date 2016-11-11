@@ -22,7 +22,7 @@ QUnit.module("augmentationHelper-sinon", {
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
 
-		HelperFunctions.mockSetTimout();
+		HelperFunctions.mockSetTimeout();
 
 		// The augmentation call waits on the session id, so we need to set this
 		Clipper.sessionId.set("abcde");

@@ -39,7 +39,7 @@ QUnit.module("authenticationHelper-sinon", {
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
 
-		HelperFunctions.mockSetTimout();
+		HelperFunctions.mockSetTimeout();
 
 		mockClipperData = sinon.createStubInstance(ClipperData) as any;
 		mockLogger = sinon.createStubInstance(Logger) as any;

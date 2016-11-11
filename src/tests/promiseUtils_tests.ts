@@ -20,7 +20,7 @@ QUnit.module("promiseUtils", {
 	beforeEach: () => {
 		callCount = 0;
 
-		HelperFunctions.mockSetTimout();
+		HelperFunctions.mockSetTimeout();
 	},
 	afterEach: () => {
 		HelperFunctions.restoreSetTimeout();

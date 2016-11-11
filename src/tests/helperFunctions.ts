@@ -393,7 +393,7 @@ export module HelperFunctions {
 		}];
 	}
 
-	export function mockSetTimout() {
+	export function mockSetTimeout() {
 		theRealSetTimeout = setTimeout;
 		setTimeout = (func: (...args: any[]) => void, timeout: number) => {
 			return theRealSetTimeout(func, 0);
