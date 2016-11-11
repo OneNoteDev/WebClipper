@@ -128,12 +128,19 @@ export class SaveToOneNote {
 		let event = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
 		return saveable.getPatch(index).then((revisions: OneNoteApi.Revision[]) => {
 			event.stopTimer();
-			event.setCustomProperty(Log.PropertyName.Custom.NumPages, revisions.length);
-			if (revisions.length > 0) {
-				event.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, event.getDuration() / revisions.length);
-			}
-			Clipper.logger.logEvent(event);
 
+			let numPages = revisions.length;
+			event.setCustomProperty(Log.PropertyName.Custom.NumPages, numPages);
+
+			if (revisions.length > 0) {
+				// There's some html in the content itself, but it's negligible compared to the length of the actual dataUrls
+				let lengthOfDataUrls = _.sumBy(revisions, (revision) => { return revision.content.length; });
+				event.setCustomProperty(Log.PropertyName.Custom.ByteLength, lengthOfDataUrls);
+				event.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, lengthOfDataUrls / numPages);
+				event.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, event.getDuration() / numPages);
+			}
+
+			Clipper.logger.logEvent(event);
 			return Promise.resolve(revisions);
 		});
 	}

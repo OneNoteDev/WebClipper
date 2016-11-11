@@ -5,7 +5,6 @@ export module PropertyName {
 		AverageProcessingDurationPerPage,
 		BookmarkInfo,
 		ByteLength,
-		BytesPerDataUrl,
 		BytesPerPdfPage,
 		BytesTrimmed,
 		Channel,
@@ -51,7 +50,6 @@ export module PropertyName {
 		StoredLocaleDifferentThanRequested,
 		TimeToClearNoOpTracker,
 		TooltipType,
-
 		UpdateInterval,
 		UserInformationReturned,
 		UserInformationStored,

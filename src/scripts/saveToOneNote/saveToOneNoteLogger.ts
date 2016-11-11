@@ -54,6 +54,11 @@ export class SaveToOneNoteLogger {
 	}
 
 	private static logPdfClip(clipperState: ClipperState) {
+		SaveToOneNoteLogger.logPdfClipOptions(clipperState);
+		SaveToOneNoteLogger.logPdfByteMetadata(clipperState);
+	}
+
+	private static logPdfClipOptions(clipperState: ClipperState) {
 		let event = new Log.Event.BaseEvent(Log.Event.Label.ClipPdfOptions);
 
 		let pdfInfo = clipperState.pdfPreviewInfo;
@@ -65,6 +70,16 @@ export class SaveToOneNoteLogger {
 		let selectedPageCount = pdfInfo.allPages ? totalPageCount : Math.min(totalPageCount, StringUtils.countPageRange(pdfInfo.selectedPageRange));
 		event.setCustomProperty(Log.PropertyName.Custom.PdfFileSelectedPageCount, selectedPageCount);
 		event.setCustomProperty(Log.PropertyName.Custom.PdfFileTotalPageCount, totalPageCount);
+
+		Clipper.logger.logEvent(event);
+	}
+
+	private static logPdfByteMetadata(clipperState: ClipperState) {
+		let event = new Log.Event.BaseEvent(Log.Event.Label.PdfByteMetadata);
+
+		let byteLength = clipperState.pdfResult.data.get().byteLength;
+		event.setCustomProperty(Log.PropertyName.Custom.ByteLength, byteLength);
+		event.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, byteLength / clipperState.pdfResult.data.get().pdf.numPages());
 
 		Clipper.logger.logEvent(event);
 	}

@@ -48,6 +48,8 @@ export module Event {
 		InvokeWhatsNew,
 		LocalFilesNotAllowedPanelShown,
 		PagesSearch,
+		PdfByteMetadata,
+		PdfDataUrlMetadata,
 		ProcessPdfIntoDataUrls,
 		RegionSelectionCapturing,
 		RegionSelectionLoading,
