@@ -41,6 +41,7 @@ export module Event {
 		PatchPermissionCheck,
 		PatchRequest,
 		PdfCreatePage,
+		PdfDataAndImageDataComparison,
 		PostToOneNoteApi,
 		ProcessPdfIntoDataUrls,
 		RefreshUserToken,

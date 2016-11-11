@@ -422,6 +422,8 @@ export class SaveToOneNote {
 
 		// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
 		// When the getPageContent returns a 200, we start PATCHing the page.
+		let dataPerPagesComparisonEvent = new Log.Event.BaseEvent(Log.Event.Label.PdfDataAndImageDataComparison);
+		let totalLengthOfImagesSent = 0;
 		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
 		return Promise.all([
 			indexesToBePatchedRanges.reduce((chainedPromise, currentIndexesRange) => {
@@ -437,6 +439,8 @@ export class SaveToOneNote {
 
 						Promise.all([getDataUrlsPromise, timeoutPromise]).then((values) => {
 							let dataUrls = values[0] as string[];
+							const sumOfLengthOfDataUrls = _.sumBy(dataUrls, (dataUrl) => { return dataUrl.length; });
+							totalLengthOfImagesSent += sumOfLengthOfDataUrls;
 							SaveToOneNote.createOneNotePagePatchRequest(pageId, dataUrls).then(() => {
 								timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 								resolve();
@@ -447,7 +451,19 @@ export class SaveToOneNote {
 					});
 				});
 			}, SaveToOneNote.getOneNotePageContentWithRetries(pageId, 3))
-		]);
+		]).then(() => {
+			const numPagesClipped = SaveToOneNote.getAllPdfPageIndexesToBeSent().length;
+			const numPagesInPdf = this.clipperState.pdfResult.data.get().pdf.numPages();
+			const byteLengthOfEntirePdf = this.clipperState.pdfResult.data.get().byteLength;
+
+			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesClipped, SaveToOneNote.getAllPdfPageIndexesToBeSent().length);
+			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesInPdf, this.clipperState.pdfResult.data.get().pdf.numPages());
+			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.ByteLength, this.clipperState.pdfResult.data.get().byteLength);
+			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.TotalBytesSentInDataUrls, totalLengthOfImagesSent);
+			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.BytesPerDataUrl, totalLengthOfImagesSent / numPagesClipped);
+			dataPerPagesComparisonEvent.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, byteLengthOfEntirePdf / numPagesInPdf);
+			Clipper.logger.logEvent(dataPerPagesComparisonEvent);
+		});
 	}
 
 	/**

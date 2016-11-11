@@ -739,7 +739,6 @@ export module DomUtils {
 		let stepDownCount = 0;
 		while (quality > 0 && dataUrl.length > maxBytesForMediaTypes) {
 			dataUrl = canvas.toDataURL("image/jpeg", quality);
-
 			quality -= qualityStep;
 			stepDownCount++;
 		}
