@@ -11,7 +11,7 @@ import {Status} from "../clipperUI/status";
 
 import {DomUtils} from "../domParsers/domUtils";
 
-import {Http} from "../http/http";
+import {HttpWithRetries} from "../http/HttpWithRetries";
 
 import {Localization} from "../localization/localization";
 
@@ -42,7 +42,7 @@ export class AugmentationHelper {
 			let augmentationEvent = new Log.Event.PromiseEvent(Log.Event.Label.AugmentationApiCall);
 
 			let correlationId = Utils.generateGuid();
-			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
+			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[], request: XMLHttpRequest }) => {
 				let parsedResponse = responsePackage.parsedResponse;
@@ -113,7 +113,7 @@ export class AugmentationHelper {
 				headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
 				headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-				Http.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
+				HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
 					let parsedResponse: any;
 					try {
 						parsedResponse = JSON.parse(request.response);

@@ -308,7 +308,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 					this.state.ratingsPanelAnimationState = new SmartValue<AnimationState>(AnimationState.Out);
 				}
 
-				if (this.props.clipperState.showRatingsPrompt && this.props.clipperState.showRatingsPrompt.get()) {
+				if (this.props.clipperState.showRatingsPrompt) {
 					panels.push(<RatingsPanel clipperState={this.props.clipperState} animationState={this.state.ratingsPanelAnimationState} />);
 				}
 

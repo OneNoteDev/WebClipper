@@ -236,10 +236,10 @@ export class RatingsHelper {
 			return false;
 		}
 
-		if (!Utils.isNullOrUndefined(clipperState.showRatingsPrompt.get())) {
-			// return cached value in clipper state since it already exists
+		if (!Utils.isNullOrUndefined(clipperState.showRatingsPrompt)) {
+			// Return cached value in clipper state since it already exists
 			logEventInfo.usedCachedValue = true;
-			return clipperState.showRatingsPrompt.get();
+			return clipperState.showRatingsPrompt;
 		}
 
 		let ratingsPromptEnabled: boolean = RatingsHelper.ratingsPromptEnabledForClient(clipperState.clientInfo.clipperType);
