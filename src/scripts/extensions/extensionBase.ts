@@ -11,7 +11,7 @@ import {TooltipType} from "../clipperUI/tooltipType";
 
 import {SmartValue} from "../communicator/smartValue";
 
-import {Http} from "../http/http";
+import {HttpWithRetries} from "../http/HttpWithRetries";
 
 import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
@@ -177,7 +177,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		let fetchNonLocalData = () => {
 			return new Promise<ResponsePackage<string>>((resolve, reject) => {
 				let userFlightUrl = Utils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
-				Http.get(userFlightUrl).then((request) => {
+				HttpWithRetries.get(userFlightUrl).then((request) => {
 					resolve({
 						request: request,
 						parsedResponse: request.responseText
@@ -213,7 +213,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
 			let changelogUrl = Utils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
-			Http.get(changelogUrl).then((request: XMLHttpRequest) => {
+			HttpWithRetries.get(changelogUrl).then((request: XMLHttpRequest) => {
 				try {
 					let schemas: ChangeLog.Schema[] = JSON.parse(request.responseText);
 					let allUpdates: ChangeLog.Update[];

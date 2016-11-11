@@ -36,6 +36,9 @@ import {MockConsole} from "./logging/mockConsole";
 
 Polyfills.init();
 
+let theRealSetTimeout;
+declare let setTimeout;
+
 /**
  * Common functions required across multiple test files
  */
@@ -388,6 +391,17 @@ export module HelperFunctions {
 				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari"]
 			}]
 		}];
+	}
+
+	export function mockSetTimeout() {
+		theRealSetTimeout = setTimeout;
+		setTimeout = (func: (...args: any[]) => void, timeout: number) => {
+			return theRealSetTimeout(func, 0);
+		};
+	}
+
+	export function restoreSetTimeout() {
+		setTimeout = theRealSetTimeout;
 	}
 
 	export function mountToFixture(component): any {
