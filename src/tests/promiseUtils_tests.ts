@@ -65,7 +65,7 @@ test("execWithRetry should reject if all attempts fail and there are not enough 
 
 test("execWithRetry should call the function once if the first attempt succeeds, and there are 0 retries", (assert: QUnitAssert) => {
 	let done = assert.async();
-	let retryOptions: RetryOptions = { retryCount: 0, minTimeout: 0, maxTimeout: 0 };
+	let retryOptions: RetryOptions = { retryCount: 0, retryWaitTime: 0 };
 
 	PromiseUtils.execWithRetry(fnGenerator(1), retryOptions).then((retVal) => {
 		strictEqual(retVal, expectedResolve, "execWithRetry should resolve with the same value the function's promise resolves with");
@@ -79,7 +79,7 @@ test("execWithRetry should call the function once if the first attempt succeeds,
 
 test("execWithRetry should call the function once then reject if the first attempt fails, and there are 0 retries", (assert: QUnitAssert) => {
 	let done = assert.async();
-	let retryOptions: RetryOptions = { retryCount: 0, minTimeout: 0, maxTimeout: 0 };
+	let retryOptions: RetryOptions = { retryCount: 0, retryWaitTime: 0 };
 
 	PromiseUtils.execWithRetry(fnGenerator(Infinity), retryOptions).then((retVal) => {
 		ok(false, "execWithRetry should not resolve");
@@ -93,7 +93,7 @@ test("execWithRetry should call the function once then reject if the first attem
 
 test("execWithRetry should call the function n times if only the nth attempt succeeds, and there are n-1 retries", (assert: QUnitAssert) => {
 	let done = assert.async();
-	let retryOptions: RetryOptions = { retryCount: 49, minTimeout: 1, maxTimeout: 2 };
+	let retryOptions: RetryOptions = { retryCount: 49, retryWaitTime: 0 };
 
 	PromiseUtils.execWithRetry(fnGenerator(50), retryOptions).then((retVal) => {
 		strictEqual(retVal, expectedResolve, "execWithRetry should resolve with the same value the function's promise resolves with");

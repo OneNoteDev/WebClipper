@@ -5,10 +5,8 @@
 export interface RetryOptions {
 	/** Number of times to retry */
 	retryCount?: number;
-	/** Minimum wait between retries (in millieseconds) */
-	minTimeout?: number;
-	/** Maximum wait between retries (in millieseconds) */
-	maxTimeout?: number;
+	/** Wait between retries (in milliseconds) */
+	retryWaitTime?: number;
 }
 
 export module PromiseUtils {
@@ -26,7 +24,7 @@ export module PromiseUtils {
 	/**
 	 * Executes the given function and retries on failure.
 	 */
-	export function execWithRetry<T>(func: () => Promise<T>, retryOptions: RetryOptions = { retryCount: 2, minTimeout: 500, maxTimeout: 3000}): Promise<T> {
+	export function execWithRetry<T>(func: () => Promise<T>, retryOptions: RetryOptions = { retryCount: 2, retryWaitTime: 3000}): Promise<T> {
 		return func().catch((error1) => {
 			if (retryOptions.retryCount > 0) {
 				return new Promise<T>((resolve, reject) => {
@@ -37,7 +35,7 @@ export module PromiseUtils {
 						}).catch((error2) => {
 							reject(error2);
 						});
-					}, Math.round(Math.random() * (retryOptions.maxTimeout - retryOptions.minTimeout)) + retryOptions.minTimeout);
+					}, retryOptions.retryWaitTime);
 				});
 			} else {
 				return Promise.reject(error1);
