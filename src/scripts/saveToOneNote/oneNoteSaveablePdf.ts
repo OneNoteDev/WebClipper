@@ -22,10 +22,8 @@ export class OneNoteSaveablePdf implements OneNoteSaveable {
 	}
 
 	public getPatch(index: number): Promise<OneNoteApi.Revision[]> {
-		return new Promise<OneNoteApi.Revision[]>((resolve) => {
-			this.pdf.getPageListAsDataUrls(this.buckets[index]).then((dataUrls) => {
-				resolve(this.createPatchRequestBody(dataUrls));
-			});
+		return this.pdf.getPageListAsDataUrls(this.buckets[index]).then((dataUrls) => {
+			return Promise.resolve(this.createPatchRequestBody(dataUrls));
 		});
 	}
 

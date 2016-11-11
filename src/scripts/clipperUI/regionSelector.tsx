@@ -224,17 +224,15 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	 * necessary, then saves it to state if the process was successful
 	 */
 	private saveCompressedSelectionToState(baseDataUrl: string): Promise<HTMLCanvasElement> {
-		return new Promise<HTMLCanvasElement>((resolve, reject) => {
-			this.createSelectionAsCanvas(baseDataUrl).then((canvas) => {
-				let compressedSelection = this.getCompressedDataUrl(canvas);
-				this.completeSelection(compressedSelection);
-				resolve(canvas);
-			}, (error: Error) => {
-				Clipper.logger.logFailure(Log.Failure.Label.RegionSelectionProcessing, Log.Failure.Type.Unexpected,
-					{ error: error.message });
-				this.resetState();
-				reject(error);
-			});
+		return this.createSelectionAsCanvas(baseDataUrl).then((canvas) => {
+			let compressedSelection = this.getCompressedDataUrl(canvas);
+			this.completeSelection(compressedSelection);
+			return Promise.resolve(canvas);
+		}).catch((error: Error) => {
+			Clipper.logger.logFailure(Log.Failure.Label.RegionSelectionProcessing, Log.Failure.Type.Unexpected,
+				{ error: error.message });
+			this.resetState();
+			return Promise.reject(error);
 		});
 	}
 

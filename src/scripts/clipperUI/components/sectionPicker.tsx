@@ -210,16 +210,12 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			this.setDataSource();
 		}
 
-		return new Promise<OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>>((resolve, reject) => {
-			let headers: { [key: string]: string } = {};
-			headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-			headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
+		let headers: { [key: string]: string } = {};
+		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+		headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-			SectionPickerClass.dataSource.getNotebooks(headers).then((responsePackage: OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>) => {
-				resolve(responsePackage);
-			}, (failure: OneNoteApi.RequestError) => {
-				reject(failure);
-			});
+		return SectionPickerClass.dataSource.getNotebooks(headers).catch((failure: OneNoteApi.RequestError) => {
+			return Promise.reject(failure);
 		});
 	}
 

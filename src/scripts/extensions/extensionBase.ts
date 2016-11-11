@@ -188,15 +188,13 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			});
 		};
 
-		return new Promise((resolve: (formattedFlights: string[]) => void, reject: (error: OneNoteApi.GenericError) => void) => {
-			this.clipperData.getFreshValue(ClipperStorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
-				// The response comes as a string array in the form [flight1, flight2, flight3],
-				// needs to be in CSV format for ODIN cooker, so we rejoin w/o spaces
-				let parsedResponse: string[] = successfulResponse.data.Features ? successfulResponse.data.Features : [];
-				resolve(parsedResponse);
-			}, (error: OneNoteApi.GenericError) => {
-				reject(error);
-			});
+		return this.clipperData.getFreshValue(ClipperStorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
+			// The response comes as a string array in the form [flight1, flight2, flight3],
+			// needs to be in CSV format for ODIN cooker, so we rejoin w/o spaces
+			let parsedResponse: string[] = successfulResponse.data.Features ? successfulResponse.data.Features : [];
+			return Promise.resolve(parsedResponse);
+		}).catch((error: OneNoteApi.GenericError) => {
+			return Promise.reject(error);
 		});
 	}
 
