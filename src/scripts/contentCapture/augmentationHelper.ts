@@ -11,7 +11,7 @@ import {Status} from "../clipperUI/status";
 
 import {DomUtils} from "../domParsers/domUtils";
 
-import {Http} from "../http/http";
+import {HttpWithRetries} from "../http/HttpWithRetries";
 
 import {Localization} from "../localization/localization";
 
@@ -113,7 +113,7 @@ export class AugmentationHelper {
 				headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
 				headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-				Http.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
+				HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
 					let parsedResponse: any;
 					try {
 						parsedResponse = JSON.parse(request.response);

@@ -15,11 +15,14 @@ QUnit.module("augmentationHelper-sinon", {
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
 
+		HelperFunctions.mockSetTimeout();
+
 		// The augmentation call waits on the session id, so we need to set this
 		Clipper.sessionId.set("abcde");
 	},
 	afterEach: () => {
 		server.restore();
+		HelperFunctions.restoreSetTimeout();
 		Clipper.sessionId.set(undefined);
 	}
 });
