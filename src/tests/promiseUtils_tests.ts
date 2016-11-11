@@ -97,7 +97,7 @@ test("execWithRetry should call the function n times if only the nth attempt suc
 
 	PromiseUtils.execWithRetry(fnGenerator(50), retryOptions).then((retVal) => {
 		strictEqual(retVal, expectedResolve, "execWithRetry should resolve with the same value the function's promise resolves with");
-		strictEqual(callCount, 50, "execWithRetry should call the function 500 times");
+		strictEqual(callCount, 50, "execWithRetry should call the function 50 times");
 	}).catch(() => {
 		ok(false, "execWithRetry should not reject");
 	}).then(() => {
