@@ -23,6 +23,7 @@ import {Localization} from "../scripts/localization/localization";
 
 import * as Log from "../scripts/logging/log";
 import {ConsoleLoggerDecorator} from "../scripts/logging/consoleLoggerDecorator";
+import {StubSessionLogger} from "../scripts/logging/stubSessionLogger";
 import {ProductionRequirements} from "../scripts/logging/context";
 
 import {ChangeLog} from "../scripts/versioning/changeLog";
@@ -148,8 +149,6 @@ export module HelperFunctions {
 				data: undefined,
 				status: Status.NotStarted
 			},
-
-			showRatingsPrompt: new SmartValue<boolean>(),
 
 			setState: (newPartialState: ClipperState) => {
 				for (let key in newPartialState) {
@@ -402,6 +401,30 @@ export module HelperFunctions {
 
 	export function restoreSetTimeout() {
 		setTimeout = theRealSetTimeout;
+	}
+
+	export function mockFrontEndGlobals(mockStorageRef: { [key: string]: string }, mockStorageCacheRef: { [key: string]: string }) {
+		Clipper.getStoredValue = (key: string, callback: (value: string) => void, cacheValue?: boolean) => {
+			if (cacheValue) {
+				mockStorageCacheRef[key] = mockStorageRef[key];
+			}
+			callback(mockStorageRef[key]);
+		};
+		Clipper.storeValue = (key: string, value: string) => {
+			if (key in mockStorageCacheRef) {
+				mockStorageCacheRef[key] = value;
+			}
+			mockStorageRef[key] = value;
+		};
+		Clipper.preCacheStoredValues = (storageKeys: string[]) => {
+			for (let key of storageKeys) {
+				Clipper.getStoredValue(key, () => { }, true);
+			}
+		};
+		Clipper.getCachedValue = (key: string) => {
+			return mockStorageCacheRef[key];
+		};
+		Clipper.logger = new StubSessionLogger();
 	}
 
 	export function mountToFixture(component): any {

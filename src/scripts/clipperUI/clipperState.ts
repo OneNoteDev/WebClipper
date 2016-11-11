@@ -62,12 +62,12 @@ export interface ClipperState {
 	// Save to OneNote status
 	oneNoteApiResult?: DataResult<OneNoteApi.Page | OneNoteApi.RequestError>;
 
-	numSuccessfulClips?: SmartValue<number>;
-
 	// Should be set when the Web Clipper enters a state that can not be recovered this session
 	badState?: boolean;
 
-	showRatingsPrompt?: SmartValue<boolean>;
+	// Used for determining if user should see ratings prompt
+	numSuccessfulClips?: number;
+	showRatingsPrompt?: boolean;
 
 	setState?: (partialState: ClipperState) => void;
 	reset?: () => void;

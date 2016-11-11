@@ -16,40 +16,16 @@ import {Utils} from "../../../scripts/utils";
 
 import {HelperFunctions} from "../../helperFunctions";
 
-// MOCK STORAGE
-
 let mockStorage: { [key: string]: string };
 let mockStorageCache: { [key: string]: string };
-Clipper.getStoredValue = (key: string, callback: (value: string) => void, cacheValue?: boolean) => {
-	if (cacheValue) {
-		mockStorageCache[key] = mockStorage[key];
-	}
-	callback(mockStorage[key]);
-};
-Clipper.storeValue = (key: string, value: string) => {
-	if (key in mockStorageCache) {
-		mockStorageCache[key] = value;
-	}
-	mockStorage[key] = value;
-};
-Clipper.preCacheStoredValues = (storageKeys: string[]) => {
-	for (let key of storageKeys) {
-		Clipper.getStoredValue(key, () => { }, true);
-	}
-};
-Clipper.getCachedValue = (key: string) => {
-	return mockStorageCache[key];
-};
-
-// SETUP
 
 QUnit.module("ratingsPanel", {
 	beforeEach: () => {
-		Clipper.logger = new StubSessionLogger();
 		Settings.setSettingsJsonForTesting({});
 
 		mockStorage = {};
 		mockStorageCache = {};
+		HelperFunctions.mockFrontEndGlobals(mockStorage, mockStorageCache);
 		RatingsHelper.preCacheNeededValues();
 	}
 });
@@ -73,7 +49,7 @@ test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.Rat
 	});
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -96,7 +72,7 @@ test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.End
 	let done = assert.async();
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -127,7 +103,7 @@ test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goe
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -152,7 +128,7 @@ test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goe
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -184,7 +160,7 @@ test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets d
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -210,7 +186,7 @@ test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets d
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -237,7 +213,7 @@ test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End whe
 	});
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -257,7 +233,7 @@ test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End whe
 
 test("'Rate' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -281,7 +257,7 @@ test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.No
 	});
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -301,7 +277,7 @@ test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.No
 
 test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -327,7 +303,7 @@ test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -349,7 +325,7 @@ test("'Feedback' click at RatingsPromptStage.Feedback not available when feedbac
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -375,7 +351,7 @@ test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStag
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
@@ -397,7 +373,7 @@ test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedba
 	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 

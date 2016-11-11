@@ -30,7 +30,7 @@ export class FullPageScreenshotHelper {
 				let fullPageScreenshotEvent = new Log.Event.PromiseEvent(Log.Event.Label.FullPageScreenshotCall);
 
 				let correlationId = Utils.generateGuid();
-				fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
+				fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 				let headers = {};
 				headers[Constants.HeaderValues.accept] = "application/json";

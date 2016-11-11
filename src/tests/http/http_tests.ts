@@ -2,22 +2,14 @@ import * as sinon from "sinon";
 
 import {Http} from "../../scripts/http/http";
 
-let xhr: Sinon.SinonFakeXMLHttpRequest;
 let server: Sinon.SinonFakeServer;
 
-QUnit.module("http", {
+QUnit.module("http-sinon", {
 	beforeEach: () => {
-		xhr = sinon.useFakeXMLHttpRequest();
-		let requests = this.requests = [];
-		xhr.onCreate = req => {
-			requests.push(req);
-		};
-
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
 	},
 	afterEach: () => {
-		xhr.restore();
 		server.restore();
 	}
 });

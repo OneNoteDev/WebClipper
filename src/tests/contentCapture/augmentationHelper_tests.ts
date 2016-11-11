@@ -8,17 +8,10 @@ import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCaptur
 
 import {HelperFunctions} from "../helperFunctions";
 
-let xhr: Sinon.SinonFakeXMLHttpRequest;
 let server: Sinon.SinonFakeServer;
 
 QUnit.module("augmentationHelper-sinon", {
 	beforeEach: () => {
-		xhr = sinon.useFakeXMLHttpRequest();
-		let requests = this.requests = [];
-		xhr.onCreate = req => {
-			requests.push(req);
-		};
-
 		server = sinon.fakeServer.create();
 		server.respondImmediately = true;
 
@@ -28,7 +21,6 @@ QUnit.module("augmentationHelper-sinon", {
 		Clipper.sessionId.set("abcde");
 	},
 	afterEach: () => {
-		xhr.restore();
 		server.restore();
 		HelperFunctions.restoreSetTimeout();
 		Clipper.sessionId.set(undefined);

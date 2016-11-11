@@ -3,10 +3,8 @@
  * Retry options
  */
 export interface RetryOptions {
-	/** Number of times to retry */
-	retryCount?: number;
-	/** Wait between retries (in milliseconds) */
-	retryWaitTime?: number;
+	retryCount: number;
+	retryWaitTimeInMs: number;
 }
 
 export module PromiseUtils {
@@ -24,7 +22,7 @@ export module PromiseUtils {
 	/**
 	 * Executes the given function and retries on failure.
 	 */
-	export function execWithRetry<T>(func: () => Promise<T>, retryOptions: RetryOptions = { retryCount: 2, retryWaitTime: 3000}): Promise<T> {
+	export function execWithRetry<T>(func: () => Promise<T>, retryOptions: RetryOptions = { retryCount: 3, retryWaitTimeInMs: 3000 }): Promise<T> {
 		return func().catch((error1) => {
 			if (retryOptions.retryCount > 0) {
 				return new Promise<T>((resolve, reject) => {
@@ -35,7 +33,7 @@ export module PromiseUtils {
 						}).catch((error2) => {
 							reject(error2);
 						});
-					}, retryOptions.retryWaitTime);
+					}, retryOptions.retryWaitTimeInMs);
 				});
 			} else {
 				return Promise.reject(error1);

@@ -14,40 +14,16 @@ import {Utils} from "../../scripts/utils";
 
 import {HelperFunctions} from "../helperFunctions";
 
-// MOCK STORAGE
-
 let mockStorage: { [key: string]: string };
 let mockStorageCache: { [key: string]: string };
-Clipper.getStoredValue = (key: string, callback: (value: string) => void, cacheValue?: boolean) => {
-	if (cacheValue) {
-		mockStorageCache[key] = mockStorage[key];
-	}
-	callback(mockStorage[key]);
-};
-Clipper.storeValue = (key: string, value: string) => {
-	if (key in mockStorageCache) {
-		mockStorageCache[key] = value;
-	}
-	mockStorage[key] = value;
-};
-Clipper.preCacheStoredValues = (storageKeys: string[]) => {
-	for (let key of storageKeys) {
-		Clipper.getStoredValue(key, () => { }, true);
-	}
-};
-Clipper.getCachedValue = (key: string) => {
-	return mockStorageCache[key];
-};
-
-// SETUP
 
 QUnit.module("ratingsHelper", {
 	beforeEach: () => {
-		Clipper.logger = new StubSessionLogger();
 		Settings.setSettingsJsonForTesting({});
 
 		mockStorage = {};
 		mockStorageCache = {};
+		HelperFunctions.mockFrontEndGlobals(mockStorage, mockStorageCache);
 		RatingsHelper.preCacheNeededValues();
 	}
 });
@@ -486,7 +462,7 @@ test("shouldShowRatingsPrompt returns hardcoded false when clipperState is undef
 
 test("shouldShowRatingsPrompt returns cached false when shouldShowRatingsPrompt is already set to false", () => {
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(false);
+	clipperState.showRatingsPrompt = false;
 
 	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 	strictEqual(shouldShowRatingsPrompt, false);
@@ -494,7 +470,7 @@ test("shouldShowRatingsPrompt returns cached false when shouldShowRatingsPrompt 
 
 test("shouldShowRatingsPrompt returns cached true when shouldShowRatingsPrompt is already set to true", () => {
 	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = new SmartValue<boolean>(true);
+	clipperState.showRatingsPrompt = true;
 
 	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 	strictEqual(shouldShowRatingsPrompt, true);
@@ -644,5 +620,3 @@ test("shouldShowRatingsPrompt returns false when (numSuccessfulClips - numSucces
 	let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 	strictEqual(shouldShowRatingsPrompt, false);
 });
-
-// test("", () => { });
