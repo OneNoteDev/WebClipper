@@ -72,22 +72,16 @@ export class SaveToOneNote {
 	}
 
 	public saveWithoutCheckingPatchPermissions(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
-		return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject) => {
-			options.page.getPage().then((page) => {
-				this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
-					if (options.page.getNumPatches() > 0) {
-						let pageId = responsePackage.parsedResponse.id;
-						this.patch(pageId, options.page).then(() => {
-							resolve(responsePackage);
-						}).catch((error) => {
-							reject(error);
-						});
-					} else {
-						resolve(responsePackage);
-					}
-				}).catch((error) => {
-					reject(error);
-				});
+		return options.page.getPage().then((page) => {
+			return this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
+				if (options.page.getNumPatches() > 0) {
+					let pageId = responsePackage.parsedResponse.id;
+					return this.patch(pageId, options.page).then(() => {
+						return Promise.resolve(responsePackage);
+					});
+				} else {
+					return Promise.resolve(responsePackage);
+				}
 			});
 		});
 	}
