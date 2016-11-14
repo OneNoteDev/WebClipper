@@ -11,6 +11,7 @@ export module Event {
 	export enum Label {
 		AddEmbeddedVideo,
 		AugmentationApiCall,
+		BatchRequests,
 		BookmarkPage,
 		CompressRegionSelection,
 		ClearNoOpTracker,

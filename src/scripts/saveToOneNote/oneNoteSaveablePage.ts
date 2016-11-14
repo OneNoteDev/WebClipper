@@ -18,4 +18,12 @@ export class OneNoteSaveablePage implements OneNoteSaveable {
 	public getNumPatches(): number {
 		return 0;
 	}
+
+	public getBatch(index: number): Promise<OneNoteApi.BatchRequest[]> {
+		return Promise.resolve(undefined);
+	}
+
+	public getNumBatches(): number {
+		return 0;
+	}
 }

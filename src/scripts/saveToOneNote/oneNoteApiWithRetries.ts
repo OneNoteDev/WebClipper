@@ -21,6 +21,12 @@ export class OneNoteApiWithRetries implements OneNoteApi.IOneNoteApi {
 		});
 	}
 
+	public batchRequests(batchRequests: OneNoteApi.BatchRequest[]): Promise<OneNoteApi.ResponsePackage<any>> {
+		return PromiseUtils.execWithRetry(() => {
+			return this.api.batchRequests(batchRequests);
+		});
+	}
+
 	public getPage(pageId: string): Promise<OneNoteApi.ResponsePackage<any>> {
 		return PromiseUtils.execWithRetry(() => {
 			return this.api.getPage(pageId);

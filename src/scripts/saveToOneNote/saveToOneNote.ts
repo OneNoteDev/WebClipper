@@ -40,6 +40,7 @@ export class SaveToOneNote {
 		if (options.page.getNumPatches() > 0) {
 			return this.rejectIfNoPatchPermissions(options.saveLocation).then(() => {
 				return this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
+					// TODO: unnecessary then
 					return Promise.resolve(responsePackage);
 				});
 			});
@@ -70,6 +71,7 @@ export class SaveToOneNote {
 	}
 
 	private saveWithoutCheckingPatchPermissions(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
+		// options.page is a misnomer, as its the saveable, not a specific page
 		return options.page.getPage().then((page) => {
 			return this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
 				if (options.page.getNumPatches() > 0) {
@@ -77,11 +79,44 @@ export class SaveToOneNote {
 					return this.patch(pageId, options.page).then(() => {
 						return Promise.resolve(responsePackage);
 					});
+				} else if (options.page.getNumBatches() > 0) {
+					return this.batch(options.page).then(() => {
+						return Promise.resolve(responsePackage);
+					});
 				} else {
 					return Promise.resolve(responsePackage);
 				}
 			});
 		});
+	}
+
+	private batch(saveable: OneNoteSaveable): Promise<any> {
+		// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
+		// When the getPageContent returns a 200, we start PATCHing the page.
+		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
+		return _.range(saveable.getNumPatches()).reduce((chainedPromise, i) => {
+			return chainedPromise = chainedPromise.then(() => {
+				return new Promise((resolve, reject) => {
+					// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
+					// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
+					// processed in the order that they were sent.
+
+					// Parallelize the PATCH request intervals with the fetching of the next set of dataUrls
+					let getRevisionsPromise = this.getBatchWithLogging(saveable, i);
+					let timeoutPromise = PromiseUtils.wait(timeBetweenPatchRequests);
+
+					Promise.all([getRevisionsPromise, timeoutPromise]).then((values) => {
+						let batchRequests = values[0] as OneNoteApi.BatchRequest[];
+						this.getApi().batchRequests(batchRequests).then(() => {
+							timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
+							resolve();
+						}).catch((error) => {
+							reject(error);
+						});
+					});
+				});
+			});
+		}, Promise.resolve());
 	}
 
 	private patch(pageId: string, saveable: OneNoteSaveable): Promise<any> {
@@ -134,6 +169,27 @@ export class SaveToOneNote {
 
 			Clipper.logger.logEvent(event);
 			return Promise.resolve(revisions);
+		});
+	}
+
+	private getBatchWithLogging(saveable: OneNoteSaveable, index: number): Promise<OneNoteApi.BatchRequest[]> {
+		let event = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
+		return saveable.getBatch(index).then((batchRequests: OneNoteApi.BatchRequest[]) => {
+			event.stopTimer();
+
+			let numPages = batchRequests.length;
+			event.setCustomProperty(Log.PropertyName.Custom.NumPages, numPages);
+
+			if (batchRequests.length > 0) {
+				// There's some html in the content itself, but it's negligible compared to the length of the actual dataUrls
+				let lengthOfDataUrls = _.sumBy(batchRequests, (batchRequest) => { return batchRequest.content.length; });
+				event.setCustomProperty(Log.PropertyName.Custom.ByteLength, lengthOfDataUrls);
+				event.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, lengthOfDataUrls / numPages);
+				event.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, event.getDuration() / numPages);
+			}
+
+			Clipper.logger.logEvent(event);
+			return Promise.resolve(batchRequests);
 		});
 	}
 

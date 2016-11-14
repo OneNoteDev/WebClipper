@@ -151,7 +151,15 @@ export class OneNoteSaveableFactory {
 			let pageIndexes: number[] = clipperState.pdfPreviewInfo.allPages ?
 				_.range(pdf.numPages()) :
 				StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, pdf.numPages()).map(value => value - 1);
-			return new OneNoteSaveablePdf(page, pdf, pageIndexes);
+			// great, now we have all the page ranges
+			// But instead of a page, we want to return a big ol' BATCH request
+			let necessaryPdfOptions = {
+				titleText: clipperState.previewGlobalInfo.previewTitleText,
+				annotation: clipperState.previewGlobalInfo.annotation,
+				contentLocale: clipperState.pageInfo.contentLocale,
+				saveLocation: clipperState.saveLocation
+			};
+			return new OneNoteSaveablePdf(page, pdf, pageIndexes, necessaryPdfOptions);
 		}
 		return new OneNoteSaveablePage(page);
 	}
