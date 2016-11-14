@@ -1,5 +1,4 @@
 import {Constants} from "../../../constants";
-import {ObjectUtils} from "../../../objectUtils";
 import {PreviewGlobalInfo} from "../../../previewInfo";
 
 import {ExtensionUtils} from "../../../extensions/extensionUtils";
@@ -12,6 +11,8 @@ import {Status} from "../../status";
 
 import {PreviewComponentBase} from "./previewComponentBase";
 import {PreviewViewerAugmentationHeader} from "./previewViewerAugmentationHeader";
+
+import * as _ from "lodash";
 
 export interface EditorPreviewState {
 	textHighlighter?: any;
@@ -80,13 +81,9 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	}
 
 	private changeFontFamily(serif: boolean) {
-		let previewGlobalInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			serif: serif
-		} as PreviewGlobalInfo);
-
-		this.props.clipperState.setState({
-			previewGlobalInfo: previewGlobalInfo
-		});
+		} as PreviewGlobalInfo), this.props.clipperState.setState);
 	}
 
 	private changeFontSize(increase: boolean) {
@@ -97,13 +94,9 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 			newFontSize = Constants.Settings.maximumFontSize;
 		}
 
-		let previewGlobalInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			fontSize: newFontSize
-		} as PreviewGlobalInfo);
-
-		this.props.clipperState.setState({
-			previewGlobalInfo: previewGlobalInfo
-		});
+		} as PreviewGlobalInfo), this.props.clipperState.setState);
 	}
 
 	private deleteHighlight(timestamp: number) {
@@ -187,13 +180,9 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 			this.state.textHighlighter.doHighlight();
 		} else {
 			// No selection found, so we actually toggle the highlighter functionality
-			let previewGlobalInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+			_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 				highlighterEnabled: !this.props.clipperState.previewGlobalInfo.highlighterEnabled
-			} as PreviewGlobalInfo);
-
-			this.props.clipperState.setState({
-				previewGlobalInfo: previewGlobalInfo
-			});
+			} as PreviewGlobalInfo), this.props.clipperState.setState);
 		}
 	}
 

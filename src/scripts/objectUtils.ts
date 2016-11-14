@@ -1,24 +1,4 @@
 export module ObjectUtils {
-	// TODO replace with _extend
-	export function createUpdatedObject(old: {}, additions: {}): {} {
-		let retVal = {};
-		if (old) {
-			for (let key in old) {
-				if (old.hasOwnProperty(key)) {
-					retVal[key] = old[key];
-				}
-			}
-		}
-		if (additions) {
-			for (let key in additions) {
-				if (additions.hasOwnProperty(key)) {
-					retVal[key] = additions[key];
-				}
-			}
-		}
-		return retVal;
-	}
-
 	export function isNumeric(varToCheck: any) {
 		return typeof varToCheck === "number" && !isNaN(varToCheck);
 	}
