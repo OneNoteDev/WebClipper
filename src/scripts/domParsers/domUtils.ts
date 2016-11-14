@@ -347,31 +347,29 @@ export module DomUtils {
 	 * Add embedded videos to the article preview where supported
 	 */
 	export function addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<EmbeddedVideoIFrameSrcs[]> {
-		return new Promise<EmbeddedVideoIFrameSrcs[]>((resolve, reject: (error: OneNoteApi.GenericError) => void) => {
-			let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
-			if (!supportedDomain) {
-				resolve();
+		let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
+		if (!supportedDomain) {
+			return Promise.resolve();
+		}
+
+		let iframes: HTMLIFrameElement[] = [];
+		try {
+			// Construct the appropriate videoExtractor based on the Domain we are on
+			let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
+			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
+
+			// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
+			// to render them later
+			if (extractor) {
+				iframes = iframes.concat(extractor.createEmbeddedVideos(pageUrl, pageContent));
 			}
+		} catch (e) {
+			// if we end up here, we're unexpectedly broken
+			// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
+			return Promise.reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
+		}
 
-			let iframes: HTMLIFrameElement[] = [];
-			try {
-				// Construct the appropriate videoExtractor based on the Domain we are on
-				let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
-				let extractor = VideoExtractorFactory.createVideoExtractor(domain);
-
-				// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
-				// to render them later
-				if (extractor) {
-					iframes = iframes.concat(extractor.createEmbeddedVideos(pageUrl, pageContent));
-				}
-			} catch (e) {
-				// if we end up here, we're unexpectedly broken
-				// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
-				reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
-			}
-
-			resolve(addVideosToElement(previewElement, iframes));
-		});
+		return Promise.resolve(addVideosToElement(previewElement, iframes));
 	}
 
 	/**

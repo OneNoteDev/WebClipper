@@ -124,22 +124,18 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
 		let locale = navigator.language || (<any>navigator).userLanguage;
 
-		return new Promise<{}>((resolve, reject) => {
-			LocalizationHelper.makeLocStringsFetchRequest(locale).then((responsePackage) => {
-				try {
-					let locStringsDict = JSON.parse(responsePackage.parsedResponse);
-					if (locStringsDict) {
-						this.clipperData.setValue(ClipperStorageKeys.locale, locale);
-						this.clipperData.setValue(ClipperStorageKeys.locStrings, responsePackage.parsedResponse);
-						Localization.setLocalizedStrings(locStringsDict);
-					}
-					resolve(locStringsDict);
-				} catch (e) {
-					reject();
+		return LocalizationHelper.makeLocStringsFetchRequest(locale).then((responsePackage) => {
+			try {
+				let locStringsDict = JSON.parse(responsePackage.parsedResponse);
+				if (locStringsDict) {
+					this.clipperData.setValue(ClipperStorageKeys.locale, locale);
+					this.clipperData.setValue(ClipperStorageKeys.locStrings, responsePackage.parsedResponse);
+					Localization.setLocalizedStrings(locStringsDict);
 				}
-			}, (error) => {
-				reject();
-			});
+				return Promise.resolve(locStringsDict);
+			} catch (e) {
+				return Promise.reject(undefined);
+			}
 		});
 	}
 
@@ -167,36 +163,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			}
 		}
 		return undefined;
-	}
-
-	/**
-	 * Returns the current flighting assignment for the user
-	 */
-	protected getFlightingAssignments(clipperId: string): Promise<any> {
-		let fetchNonLocalData = () => {
-			return new Promise<ResponsePackage<string>>((resolve, reject) => {
-				let userFlightUrl = UrlUtils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
-				HttpWithRetries.get(userFlightUrl).then((request) => {
-					resolve({
-						request: request,
-						parsedResponse: request.responseText
-					});
-				}, (error) => {
-					reject(error);
-				});
-			});
-		};
-
-		return new Promise((resolve: (formattedFlights: string[]) => void, reject: (error: OneNoteApi.GenericError) => void) => {
-			this.clipperData.getFreshValue(ClipperStorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
-				// The response comes as a string array in the form [flight1, flight2, flight3],
-				// needs to be in CSV format for ODIN cooker, so we rejoin w/o spaces
-				let parsedResponse: string[] = successfulResponse.data.Features ? successfulResponse.data.Features : [];
-				resolve(parsedResponse);
-			}, (error: OneNoteApi.GenericError) => {
-				reject(error);
-			});
-		});
 	}
 
 	/**
@@ -264,13 +230,37 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 		this.getFlightingAssignments(this.clientInfo.get().clipperId).then((flights: string[]) => {
 			this.updateClientInfoWithFlightInformation(flights);
-		}, (error: OneNoteApi.GenericError) => {
+		}).catch((error: OneNoteApi.GenericError) => {
 			this.updateClientInfoWithFlightInformation([]);
 
 			getFlightingEvent.setStatus(Log.Status.Failed);
 			getFlightingEvent.setFailureInfo(error);
 		}).then(() => {
 			this.logger.logEvent(getFlightingEvent);
+		});
+	}
+
+	/**
+	 * Returns the current flighting assignment for the user
+	 */
+	private getFlightingAssignments(clipperId: string): Promise<any> {
+		let fetchNonLocalData = () => {
+			return new Promise<ResponsePackage<string>>((resolve, reject) => {
+				let userFlightUrl = UrlUtils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
+				HttpWithRetries.get(userFlightUrl).then((request) => {
+					resolve({
+						request: request,
+						parsedResponse: request.responseText
+					});
+				});
+			});
+		};
+
+		return this.clipperData.getFreshValue(ClipperStorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
+			// The response comes as a string array in the form [flight1, flight2, flight3],
+			// needs to be in CSV format for ODIN cooker, so we rejoin w/o spaces
+			let parsedResponse: string[] = successfulResponse.data.Features ? successfulResponse.data.Features : [];
+			return Promise.resolve(parsedResponse);
 		});
 	}
 

@@ -65,99 +65,97 @@ export class BookmarkHelper {
 	 * that does not adhere to the Open Graph protocol (http://ogp.me/)
 	 */
 	public static bookmarkPage(url: string, pageTitle: string, metadataElements: Element[], allowFallback = false, imageElements?: HTMLImageElement[], textElements?: Text[]): Promise<BookmarkResult> {
-		return new Promise<BookmarkResult>((resolve: (result: BookmarkResult) => void, reject: (error: BookmarkError) => void) => {
-			let bookmarkPageEvent = new Log.Event.PromiseEvent(Log.Event.Label.BookmarkPage);
+		let bookmarkPageEvent = new Log.Event.PromiseEvent(Log.Event.Label.BookmarkPage);
 
-			if (ObjectUtils.isNullOrUndefined(url) || url === "") {
-				let error: BookmarkError = { error: "Page url is null, undefined, or empty", url: url };
-				bookmarkPageEvent.setStatus(Log.Status.Failed);
-				bookmarkPageEvent.setFailureInfo(error);
+		if (ObjectUtils.isNullOrUndefined(url) || url === "") {
+			let error: BookmarkError = { error: "Page url is null, undefined, or empty", url: url };
+			bookmarkPageEvent.setStatus(Log.Status.Failed);
+			bookmarkPageEvent.setFailureInfo(error);
 
-				Clipper.logger.logEvent(bookmarkPageEvent);
-				reject(error);
+			Clipper.logger.logEvent(bookmarkPageEvent);
+			return Promise.reject(error);
+		}
+
+		let result: BookmarkResult = {
+			url: url,
+			title: pageTitle
+		};
+
+		let bookmarkLoggingInfo = {
+			metadataElementsExist: true,
+			pageTitleExists: true,
+			descriptionMetadataUsed: "",
+			thumbnailSrcMetadataUsed: "",
+			thumbnailSrcToDataUrlFailure: undefined
+		};
+
+		if (ObjectUtils.isNullOrUndefined(pageTitle) || pageTitle.length === 0) {
+			bookmarkLoggingInfo.pageTitleExists = false;
+		}
+
+		if (ObjectUtils.isNullOrUndefined(metadataElements) || metadataElements.length === 0) {
+			bookmarkLoggingInfo.metadataElementsExist = false;
+			bookmarkPageEvent.setCustomProperty(Log.PropertyName.Custom.BookmarkInfo, JSON.stringify(bookmarkLoggingInfo));
+
+			Clipper.logger.logEvent(bookmarkPageEvent);
+			return Promise.resolve(result);
+		}
+
+		let descriptionResult = this.getPrimaryDescription(metadataElements);
+		if (allowFallback && ObjectUtils.isNullOrUndefined(descriptionResult)) {
+			descriptionResult = BookmarkHelper.getFallbackDescription(metadataElements);
+
+			if (ObjectUtils.isNullOrUndefined(descriptionResult)) {
+				// concatenate text on the page if all else fails
+				descriptionResult = BookmarkHelper.getTextOnPage(textElements);
 			}
+		}
 
-			let result: BookmarkResult = {
-				url: url,
-				title: pageTitle
-			};
+		let thumbnailSrcResult = this.getPrimaryThumbnailSrc(metadataElements);
+		if (allowFallback && ObjectUtils.isNullOrUndefined(thumbnailSrcResult)) {
+			thumbnailSrcResult = BookmarkHelper.getFallbackThumbnailSrc(metadataElements);
 
-			let bookmarkLoggingInfo = {
-				metadataElementsExist: true,
-				pageTitleExists: true,
-				descriptionMetadataUsed: "",
-				thumbnailSrcMetadataUsed: "",
-				thumbnailSrcToDataUrlFailure: undefined
-			};
-
-			if (ObjectUtils.isNullOrUndefined(pageTitle) || pageTitle.length === 0) {
-				bookmarkLoggingInfo.pageTitleExists = false;
+			if (ObjectUtils.isNullOrUndefined(thumbnailSrcResult)) {
+				// get first image on the page as thumbnail if all else fails
+				thumbnailSrcResult = BookmarkHelper.getFirstImageOnPage(imageElements);
 			}
+		}
 
-			if (ObjectUtils.isNullOrUndefined(metadataElements) || metadataElements.length === 0) {
-				bookmarkLoggingInfo.metadataElementsExist = false;
+		// populate final result object and log
+
+		if (!ObjectUtils.isNullOrUndefined(descriptionResult)) {
+			descriptionResult.description = BookmarkHelper.truncateString(descriptionResult.description);
+
+			result.description = descriptionResult.description;
+			bookmarkLoggingInfo.descriptionMetadataUsed = descriptionResult.metadataUsed.value;
+		}
+
+		if (!ObjectUtils.isNullOrUndefined(thumbnailSrcResult)) {
+			bookmarkLoggingInfo.thumbnailSrcMetadataUsed = thumbnailSrcResult.metadataUsed.value;
+
+			thumbnailSrcResult.thumbnailSrc = DomUtils.toAbsoluteUrl(thumbnailSrcResult.thumbnailSrc, url);
+
+			return DomUtils.getImageDataUrl(thumbnailSrcResult.thumbnailSrc).then((thumbnailDataUrl: string) => {
+				if (!ObjectUtils.isNullOrUndefined(thumbnailDataUrl)) {
+					result.thumbnailSrc = thumbnailDataUrl;
+				} else {
+					result.thumbnailSrc = thumbnailSrcResult.thumbnailSrc;
+					bookmarkLoggingInfo.thumbnailSrcToDataUrlFailure = "thumbnail conversion to data url returned undefined. falling back to non-data url as source: " + thumbnailSrcResult.thumbnailSrc;
+				}
+			}).catch((error: OneNoteApi.GenericError) => {
+				bookmarkLoggingInfo.thumbnailSrcToDataUrlFailure = error.error;
+			}).then(() => {
 				bookmarkPageEvent.setCustomProperty(Log.PropertyName.Custom.BookmarkInfo, JSON.stringify(bookmarkLoggingInfo));
 
 				Clipper.logger.logEvent(bookmarkPageEvent);
-				resolve(result);
-			}
+				return Promise.resolve(result);
+			});
+		} else {
+			bookmarkPageEvent.setCustomProperty(Log.PropertyName.Custom.BookmarkInfo, JSON.stringify(bookmarkLoggingInfo));
 
-			let descriptionResult = this.getPrimaryDescription(metadataElements);
-			if (allowFallback && ObjectUtils.isNullOrUndefined(descriptionResult)) {
-				descriptionResult = BookmarkHelper.getFallbackDescription(metadataElements);
-
-				if (ObjectUtils.isNullOrUndefined(descriptionResult)) {
-					// concatenate text on the page if all else fails
-					descriptionResult = BookmarkHelper.getTextOnPage(textElements);
-				}
-			}
-
-			let thumbnailSrcResult = this.getPrimaryThumbnailSrc(metadataElements);
-			if (allowFallback && ObjectUtils.isNullOrUndefined(thumbnailSrcResult)) {
-				thumbnailSrcResult = BookmarkHelper.getFallbackThumbnailSrc(metadataElements);
-
-				if (ObjectUtils.isNullOrUndefined(thumbnailSrcResult)) {
-					// get first image on the page as thumbnail if all else fails
-					thumbnailSrcResult = BookmarkHelper.getFirstImageOnPage(imageElements);
-				}
-			}
-
-			// populate final result object and log
-
-			if (!ObjectUtils.isNullOrUndefined(descriptionResult)) {
-				descriptionResult.description = BookmarkHelper.truncateString(descriptionResult.description);
-
-				result.description = descriptionResult.description;
-				bookmarkLoggingInfo.descriptionMetadataUsed = descriptionResult.metadataUsed.value;
-			}
-
-			if (!ObjectUtils.isNullOrUndefined(thumbnailSrcResult)) {
-				bookmarkLoggingInfo.thumbnailSrcMetadataUsed = thumbnailSrcResult.metadataUsed.value;
-
-				thumbnailSrcResult.thumbnailSrc = DomUtils.toAbsoluteUrl(thumbnailSrcResult.thumbnailSrc, url);
-
-				DomUtils.getImageDataUrl(thumbnailSrcResult.thumbnailSrc).then((thumbnailDataUrl: string) => {
-					if (!ObjectUtils.isNullOrUndefined(thumbnailDataUrl)) {
-						result.thumbnailSrc = thumbnailDataUrl;
-					} else {
-						result.thumbnailSrc = thumbnailSrcResult.thumbnailSrc;
-						bookmarkLoggingInfo.thumbnailSrcToDataUrlFailure = "thumbnail conversion to data url returned undefined. falling back to non-data url as source: " + thumbnailSrcResult.thumbnailSrc;
-					}
-				}, (error: OneNoteApi.GenericError) => {
-					bookmarkLoggingInfo.thumbnailSrcToDataUrlFailure = error.error;
-				}).then(() => {
-					bookmarkPageEvent.setCustomProperty(Log.PropertyName.Custom.BookmarkInfo, JSON.stringify(bookmarkLoggingInfo));
-
-					Clipper.logger.logEvent(bookmarkPageEvent);
-					resolve(result);
-				});
-			} else {
-				bookmarkPageEvent.setCustomProperty(Log.PropertyName.Custom.BookmarkInfo, JSON.stringify(bookmarkLoggingInfo));
-
-				Clipper.logger.logEvent(bookmarkPageEvent);
-				resolve(result);
-			}
-		});
+			Clipper.logger.logEvent(bookmarkPageEvent);
+			return Promise.resolve(result);
+		}
 	}
 
 	/**

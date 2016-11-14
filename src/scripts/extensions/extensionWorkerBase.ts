@@ -218,49 +218,45 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * injected; otherwise resolves with false.
 	 */
 	public invokeWhatsNewTooltip(newVersions: ChangeLog.Update[]): Promise<boolean> {
-		return new Promise<boolean>((resolve) => {
-			let invokeWhatsNewEvent = new Log.Event.PromiseEvent(Log.Event.Label.InvokeWhatsNew);
+		let invokeWhatsNewEvent = new Log.Event.PromiseEvent(Log.Event.Label.InvokeWhatsNew);
 
-			this.registerLocalizedStringsForPageNav().then((successful) => {
-				if (successful) {
-					this.registerWhatsNewCommunicatorFunctions(newVersions);
-					this.invokeWhatsNewTooltipBrowserSpecific(newVersions).then((wasInvoked) => {
-						if (!wasInvoked) {
-							invokeWhatsNewEvent.setStatus(Log.Status.Failed);
-							invokeWhatsNewEvent.setFailureInfo({ error: "invoking the What's New experience failed" });
-						}
-						this.logger.logEvent(invokeWhatsNewEvent);
-						resolve(wasInvoked);
-					});
-				} else {
-					invokeWhatsNewEvent.setStatus(Log.Status.Failed);
-					invokeWhatsNewEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
+		return this.registerLocalizedStringsForPageNav().then((successful) => {
+			if (successful) {
+				this.registerWhatsNewCommunicatorFunctions(newVersions);
+				return this.invokeWhatsNewTooltipBrowserSpecific(newVersions).then((wasInvoked) => {
+					if (!wasInvoked) {
+						invokeWhatsNewEvent.setStatus(Log.Status.Failed);
+						invokeWhatsNewEvent.setFailureInfo({ error: "invoking the What's New experience failed" });
+					}
 					this.logger.logEvent(invokeWhatsNewEvent);
-					resolve(false);
-				}
-			});
+					return Promise.resolve(wasInvoked);
+				});
+			} else {
+				invokeWhatsNewEvent.setStatus(Log.Status.Failed);
+				invokeWhatsNewEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
+				this.logger.logEvent(invokeWhatsNewEvent);
+				return Promise.resolve(false);
+			}
 		});
 	}
 
 	public invokeTooltip(tooltipType: TooltipType): Promise<boolean> {
-		return new Promise<boolean>((resolve) => {
-			let tooltipInvokeEvent = new Log.Event.PromiseEvent(Log.Event.Label.InvokeTooltip);
-			tooltipInvokeEvent.setCustomProperty(Log.PropertyName.Custom.TooltipType, TooltipType[tooltipType]);
+		let tooltipInvokeEvent = new Log.Event.PromiseEvent(Log.Event.Label.InvokeTooltip);
+		tooltipInvokeEvent.setCustomProperty(Log.PropertyName.Custom.TooltipType, TooltipType[tooltipType]);
 
-			this.registerLocalizedStringsForPageNav().then((successful) => {
-				if (successful) {
-					this.registerTooltipCommunicatorFunctions(tooltipType);
-					this.invokeTooltipBrowserSpecific(tooltipType).then((wasInvoked) => {
-						this.logger.logEvent(tooltipInvokeEvent);
-						resolve(wasInvoked);
-					});
-				} else {
-					tooltipInvokeEvent.setStatus(Log.Status.Failed);
-					tooltipInvokeEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
+		return this.registerLocalizedStringsForPageNav().then((successful) => {
+			if (successful) {
+				this.registerTooltipCommunicatorFunctions(tooltipType);
+				return this.invokeTooltipBrowserSpecific(tooltipType).then((wasInvoked) => {
 					this.logger.logEvent(tooltipInvokeEvent);
-					resolve(false);
-				}
-			});
+					return Promise.resolve(wasInvoked);
+				});
+			} else {
+				tooltipInvokeEvent.setStatus(Log.Status.Failed);
+				tooltipInvokeEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
+				this.logger.logEvent(tooltipInvokeEvent);
+				return Promise.resolve(false);
+			}
 		});
 	}
 
@@ -501,22 +497,20 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.signInUser, (authType: AuthType) => {
-			return new Promise<UserInfo>((resolve, reject) => {
-				this.doSignInAction(authType).then((redirectOccurred) => {
-					if (redirectOccurred) {
-						this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.SignInAttempt).then((updatedUser: UserInfo) => {
-							resolve(updatedUser);
-						});
-					} else {
-						let updatedUser: UserInfo = { updateReason: UpdateReason.SignInCancel };
-						this.auth.user.set(updatedUser);
-						resolve(updatedUser);
-					}
-				}, (errorObject) => {
-					// Set the user info object to undefined as a result of an attempted sign in
-					this.auth.user.set({ updateReason: UpdateReason.SignInAttempt });
-					reject(errorObject);
-				});
+			return this.doSignInAction(authType).then((redirectOccurred) => {
+				if (redirectOccurred) {
+					return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.SignInAttempt).then((updatedUser: UserInfo) => {
+						return Promise.resolve(updatedUser);
+					});
+				} else {
+					let updatedUser: UserInfo = { updateReason: UpdateReason.SignInCancel };
+					this.auth.user.set(updatedUser);
+					return Promise.resolve(updatedUser);
+				}
+			}).catch((errorObject) => {
+				// Set the user info object to undefined as a result of an attempted sign in
+				this.auth.user.set({ updateReason: UpdateReason.SignInAttempt });
+				return Promise.reject(errorObject);
 			});
 		});
 
@@ -607,8 +601,8 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		return new Promise<boolean>((resolve) => {
 			this.getLocalizedStringsForBrowser((localizedStrings) => {
 				if (localizedStrings) {
-					this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.clipperStringsFrontLoaded, () => {
-						return Promise.resolve(localizedStrings);
+					return this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.clipperStringsFrontLoaded, () => {
+						return Promise.resolve(!!localizedStrings);
 					});
 				}
 				resolve(!!localizedStrings);
