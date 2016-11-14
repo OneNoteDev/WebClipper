@@ -72,7 +72,7 @@ export class AugmentationHelper {
 				}
 
 				augmentationEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, AugmentationModel[result.ContentModel]);
-			}, (failure: OneNoteApi.RequestError) => {
+			}).catch((failure: OneNoteApi.RequestError) => {
 				OneNoteApiUtils.logOneNoteApiRequestError(augmentationEvent, failure);
 				reject();
 			}).then(() => {
@@ -125,8 +125,6 @@ export class AugmentationHelper {
 					request: request
 				};
 				return Promise.resolve(responsePackage);
-			}).catch((error: OneNoteApi.RequestError) => {
-				return Promise.reject(error);
 			});
 		});
 	}

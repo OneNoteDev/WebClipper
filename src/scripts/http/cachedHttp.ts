@@ -49,9 +49,7 @@ export class CachedHttp {
 			}
 		}
 
-		return this.getAndCacheRemoteValue(key, getRemoteValue).catch((error) => {
-			return Promise.reject(error);
-		});
+		return this.getAndCacheRemoteValue(key, getRemoteValue);
 	}
 
 	protected getAndCacheRemoteValue(key: string, getRemoteValue: GetResponseAsync): Promise<TimeStampedData> {

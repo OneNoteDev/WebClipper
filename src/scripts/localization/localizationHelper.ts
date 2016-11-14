@@ -15,8 +15,6 @@ export class LocalizationHelper {
 				request: request,
 				parsedResponse: request.responseText
 			});
-		}).catch((error) => {
-			return Promise.reject(error);
 		});
 	}
 }

@@ -68,7 +68,7 @@ class UnsupportedBrowserClass {
 					localizedStringFetchAttemptCompleted: Status.Failed
 				});
 			}
-		}, () => {
+		}).catch(() => {
 			this.setState({
 				localizedStringFetchAttemptCompleted: Status.Failed
 			});

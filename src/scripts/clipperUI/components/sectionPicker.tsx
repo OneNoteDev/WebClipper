@@ -141,7 +141,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 					this.setState(freshNotebooksAsState);
 					resolve(freshNotebooksAsState);
-				}, (failure: OneNoteApi.RequestError) => {
+				}).catch((failure: OneNoteApi.RequestError) => {
 					this.setState({
 						apiResponseCode: OneNoteApiUtils.getApiResponseCode(failure)
 					});
@@ -214,9 +214,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-		return SectionPickerClass.dataSource.getNotebooks(headers).catch((failure: OneNoteApi.RequestError) => {
-			return Promise.reject(failure);
-		});
+		return SectionPickerClass.dataSource.getNotebooks(headers);
 	}
 
 	// Given a notebook list, converts it to state form where the curSection is the default section (or undefined if not found)
