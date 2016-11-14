@@ -103,42 +103,36 @@ export class OneNoteSaveableFactory {
 	}
 
 	private static addPrimaryContent(page: OneNoteApi.OneNotePage, clipperState: ClipperState): Promise<any> {
-		return new Promise((resolve) => {
-			switch (clipperState.currentMode.get()) {
-				default:
-				case ClipMode.Pdf:
-					if (clipperState.pdfPreviewInfo.shouldAttachPdf && clipperState.pdfResult.data.get().byteLength < Constants.Settings.maximumMimeSizeLimit) {
-						OneNoteSaveableFactory.addPdfAttachment(page, clipperState).then(() => {
-							resolve();
-						});
-					} else {
-						resolve();
-					}
-					return;
-				case ClipMode.FullPage:
-					page.addHtml(clipperState.pageInfo.contentData);
-					break;
-				case ClipMode.Region:
-					for (let regionDataUrl of clipperState.regionResult.data) {
-						// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
-						page.addOnml("<p><img src=\"" + regionDataUrl + "\" /></p>&nbsp;");
-					}
-					break;
-				case ClipMode.Augmentation:
-					let processedAugmentedContent = OneNoteSaveableFactory.createPostProcessessedHtml(clipperState.augmentationPreviewInfo.previewBodyHtml, clipperState);
-					page.addOnml(processedAugmentedContent.outerHTML);
-					break;
-				case ClipMode.Bookmark:
-					let processedBookmarkContent = OneNoteSaveableFactory.createPostProcessessedHtml(clipperState.bookmarkPreviewInfo.previewBodyHtml, clipperState);
-					page.addOnml(processedBookmarkContent.outerHTML);
-					break;
-				case ClipMode.Selection:
-					let processedSelectedContent = OneNoteSaveableFactory.createPostProcessessedHtml(clipperState.selectionPreviewInfo.previewBodyHtml, clipperState);
-					page.addOnml(processedSelectedContent.outerHTML);
-					break;
-			}
-			resolve();
-		});
+		switch (clipperState.currentMode.get()) {
+			default:
+			case ClipMode.Pdf:
+				if (clipperState.pdfPreviewInfo.shouldAttachPdf && clipperState.pdfResult.data.get().byteLength < Constants.Settings.maximumMimeSizeLimit) {
+					return OneNoteSaveableFactory.addPdfAttachment(page, clipperState);
+				}
+				break;
+			case ClipMode.FullPage:
+				page.addHtml(clipperState.pageInfo.contentData);
+				break;
+			case ClipMode.Region:
+				for (let regionDataUrl of clipperState.regionResult.data) {
+					// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
+					page.addOnml("<p><img src=\"" + regionDataUrl + "\" /></p>&nbsp;");
+				}
+				break;
+			case ClipMode.Augmentation:
+				let processedAugmentedContent = OneNoteSaveableFactory.createPostProcessessedHtml(clipperState.augmentationPreviewInfo.previewBodyHtml, clipperState);
+				page.addOnml(processedAugmentedContent.outerHTML);
+				break;
+			case ClipMode.Bookmark:
+				let processedBookmarkContent = OneNoteSaveableFactory.createPostProcessessedHtml(clipperState.bookmarkPreviewInfo.previewBodyHtml, clipperState);
+				page.addOnml(processedBookmarkContent.outerHTML);
+				break;
+			case ClipMode.Selection:
+				let processedSelectedContent = OneNoteSaveableFactory.createPostProcessessedHtml(clipperState.selectionPreviewInfo.previewBodyHtml, clipperState);
+				page.addOnml(processedSelectedContent.outerHTML);
+				break;
+		}
+		return Promise.resolve();
 	}
 
 	private static addPdfAttachment(page: OneNoteApi.OneNotePage, clipperState: ClipperState): Promise<any> {

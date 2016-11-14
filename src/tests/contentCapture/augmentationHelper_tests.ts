@@ -47,7 +47,7 @@ test("makeAugmentationRequest should return the parsed response and the original
 	AugmentationHelper.makeAugmentationRequest(pageInfo.canonicalUrl, pageInfo.contentLocale, pageInfo.contentData, "abc123").then((responsePackage) => {
 		deepEqual(responsePackage.parsedResponse, responseJson, "The parsedResponse field should be the response in json form");
 		ok(responsePackage.request, "The request field should be defined");
-	}, (error) => {
+	}).catch((error) => {
 		ok(false, "reject should not be called");
 	}).then(() => {
 		done();
@@ -69,7 +69,7 @@ test("makeAugmentationRequest should return the error object in the rejected pro
 
 	AugmentationHelper.makeAugmentationRequest(pageInfo.canonicalUrl, pageInfo.contentLocale, pageInfo.contentData, "abc123").then((responsePackage) => {
 		ok(false, "resolve should not be called");
-	}, (error) => {
+	}).catch((error) => {
 		deepEqual(error,
 			{ error: "Unexpected response status", statusCode: 404, responseHeaders: { "Content-Type": "application/json" }, response: JSON.stringify(responseJson), timeout: 30000 },
 			"The error object should be returned in the reject");
@@ -98,7 +98,7 @@ test("makeAugmentationRequest should return the error object in the rejected pro
 
 	AugmentationHelper.makeAugmentationRequest(pageInfo.canonicalUrl, pageInfo.contentLocale, pageInfo.contentData, "abc123").then((responsePackage) => {
 		ok(false, "resolve should not be called");
-	}, (error) => {
+	}).catch((error) => {
 		deepEqual(error,
 			{ error: "Unable to parse response", statusCode: 200, responseHeaders: { "Content-Type": "application/json" }, response: unJsonifiableString },
 			"The error object should be returned in the reject");

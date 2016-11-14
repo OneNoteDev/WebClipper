@@ -678,7 +678,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					numSuccessfulClips: numSuccessfulClips,
 					showRatingsPrompt: RatingsHelper.shouldShowRatingsPrompt(this.state)
 				});
-			}, (error: OneNoteApi.RequestError) => {
+			}).catch((error: OneNoteApi.RequestError) => {
 				OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
 				this.state.setState({ oneNoteApiResult: { data: error, status: Status.Failed } });
 			}).then(() => {
