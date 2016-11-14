@@ -1,5 +1,6 @@
 import {Constants} from "../../../constants";
-import {Utils} from "../../../utils";
+
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {ComponentBase} from "../../componentBase";
 
@@ -15,7 +16,7 @@ class PdfPreviewAttachmentClass extends ComponentBase<{}, PdfPreviewAttachmentPr
 	public render() {
 		return (
 			<span className={Constants.Classes.attachmentOverlay}>
-				<img src={Utils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
+				<img src={ExtensionUtils.getImageResourceUrl("editorOptions/pdf_attachment_icon.png") }></img>
 				<div className="file-name">{this.props.name}</div>
 			</span>
 		);

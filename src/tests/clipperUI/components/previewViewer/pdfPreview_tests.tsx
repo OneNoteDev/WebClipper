@@ -1,5 +1,3 @@
-/// <reference path="../../../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {Constants} from "../../../../scripts/constants";
 
 import {ClipperState} from "../../../../scripts/clipperUI/clipperState";

@@ -2,7 +2,7 @@ import {DomUtils} from "./domUtils";
 import {VideoExtractor} from "./videoExtractor";
 import {VideoUtils} from "./videoUtils";
 
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 
 export class VimeoVideoExtractor implements VideoExtractor {
 	private dataOriginalSrcAttribute = "data-original-src";
@@ -11,7 +11,7 @@ export class VimeoVideoExtractor implements VideoExtractor {
 	 * Return id for a video on Vimeo.com
 	 */
 	public getVideoIds(pageUrl: string, pageContent: string): string[] {
-		if (Utils.isNullOrUndefined(pageContent)) {
+		if (ObjectUtils.isNullOrUndefined(pageContent)) {
 			return;
 		}
 
@@ -28,12 +28,12 @@ export class VimeoVideoExtractor implements VideoExtractor {
 	 * Return valid iframe src attribute value for the supported Vimeo domain
 	 */
 	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
-		if (Utils.isNullOrUndefined(pageContent)) {
+		if (ObjectUtils.isNullOrUndefined(pageContent)) {
 			return;
 		}
 
 		let vimeoIds = this.getVideoIds(pageUrl, pageContent);
-		if (Utils.isNullOrUndefined(vimeoIds)) {
+		if (ObjectUtils.isNullOrUndefined(vimeoIds)) {
 			return;
 		}
 
@@ -52,7 +52,7 @@ export class VimeoVideoExtractor implements VideoExtractor {
 	public createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
 		let vimeoSrcs = this.getVideoSrcValues(pageUrl, pageContent);
 
-		if (Utils.isNullOrUndefined(vimeoSrcs)) {
+		if (ObjectUtils.isNullOrUndefined(vimeoSrcs)) {
 			// fast fail: we expect all pages passed into this function in prod to contain clip ids
 			throw new Error("Vimeo page content does not contain clip ids");
 		}

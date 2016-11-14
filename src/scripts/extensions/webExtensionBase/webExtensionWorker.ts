@@ -1,10 +1,10 @@
-/// <reference path="./w3cExtension.d.ts"/>
-
 import {AuthType} from "../../userInfo";
+import {BrowserUtils} from "../../browserUtils";
 import {ClientInfo} from "../../clientInfo";
 import {ClientType} from "../../clientType";
+import {ClipperUrls} from "../../clipperUrls";
 import {Constants} from "../../constants";
-import {Utils} from "../../utils";
+import {UrlUtils} from "../../urlUtils";
 
 import {Communicator} from "../../communicator/communicator";
 import {SmartValue} from "../../communicator/smartValue";
@@ -65,7 +65,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 */
 	protected doSignInAction(authType: AuthType): Promise<boolean> {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signInUrl = Utils.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		let signInUrl = ClipperUrls.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		return this.launchWebExtensionPopupAndWaitForClose(signInUrl, Constants.Urls.Authentication.authRedirectUrl);
 	}
@@ -75,8 +75,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 */
 	protected doSignOutAction(authType: AuthType) {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signOutUrl = Utils.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
-		Utils.appendHiddenIframeToDocument(signOutUrl);
+		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		BrowserUtils.appendHiddenIframeToDocument(signOutUrl);
 	}
 
 	/**
@@ -233,8 +233,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						}
 
 						let redirectUrl = details.url;
-						let error = Utils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.error);
-						let errorDescription = Utils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.errorDescription);
+						let error = UrlUtils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.error);
+						let errorDescription = UrlUtils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.errorDescription);
 						if (error || errorDescription) {
 							errorObject = { error: error, errorDescription: errorDescription, correlationId: correlationId };
 						}

@@ -1,5 +1,3 @@
-/// <reference path="../logging/logManager.d.ts" />
-
 import {SmartValue} from "../communicator/smartValue";
 import {Communicator} from "../communicator/communicator";
 import {Logger} from "../logging/logger";

@@ -1,4 +1,12 @@
 export module BrowserUtils {
+	export function appendHiddenIframeToDocument(url: string) {
+		let iframe = document.createElement("iframe");
+		iframe.hidden = true;
+		iframe.style.display = "none";
+		iframe.src = url;
+		document.body.appendChild(iframe);
+	}
+
 	/**
 	 * Checks if the browser is unsupported by the Web Clipper, i.e., IE 9 and below.
 	 *
@@ -42,5 +50,19 @@ export module BrowserUtils {
 		}
 
 		return undefined;
+	}
+
+	export function openPopupWindow(url: string, popupWidth = 1000, popupHeight = 700): Window {
+		let leftPosition: number = (screen.width) ? (screen.width - popupWidth) / 2 : 0;
+		let topPosition: number = (screen.height) ? (screen.height - popupHeight) / 2 : 0;
+
+		let settings: string =
+			"height=" + popupHeight +
+			",width=" + popupWidth +
+			",top=" + topPosition +
+			",left=" + leftPosition +
+			",scrollbars=yes,resizable=yes,location=no,menubar=no,status=yes,titlebar=no,toolbar=no";
+
+		return window.open(url, "_blank", settings);
 	}
 }

@@ -1,12 +1,11 @@
-/// <reference path="../../../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {Constants} from "../../../constants";
-import {Utils} from "../../../utils";
 
 import {SmartValue} from "../../../communicator/smartValue";
 
 import {FullPageScreenshotResult} from "../../../contentCapture/fullPageScreenshotHelper";
 import {PdfScreenshotResult} from "../../../contentCapture/pdfScreenshotHelper";
+
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Localization} from "../../../localization/localization";
 
@@ -92,7 +91,7 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 
 	private getSpinner(): any {
 		let spinner = <RotatingMessageSpriteAnimation
-			spriteUrl={Utils.getImageResourceUrl("spinner_loop_colored.png") }
+			spriteUrl={ExtensionUtils.getImageResourceUrl("spinner_loop_colored.png") }
 			imageHeight={65}
 			imageWidth={45}
 			totalFrameCount={21}

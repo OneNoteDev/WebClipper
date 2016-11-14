@@ -1,11 +1,10 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {Experiments} from "../experiments";
 import {ResponsePackage} from "../responsePackage";
-import {Utils} from "../utils";
+import {StringUtils} from "../stringUtils";
+import {UrlUtils} from "../urlUtils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
 
@@ -41,7 +40,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
-	protected static version = "3.2.15";
+	protected static version = "3.2.16";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
@@ -146,10 +145,10 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected getClipperInstalledPageUrl(clipperId: string, clipperType: ClientType, isInlineInstall: boolean): string {
 		let installUrl: string = Constants.Urls.clipperInstallPageUrl;
 
-		installUrl = Utils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clientType, ClientType[clipperType]);
-		installUrl = Utils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperId, clipperId);
-		installUrl = Utils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperVersion,  ExtensionBase.getExtensionVersion());
-		installUrl = Utils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.inlineInstall, isInlineInstall.toString());
+		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clientType, ClientType[clipperType]);
+		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperId, clipperId);
+		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperVersion,  ExtensionBase.getExtensionVersion());
+		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.inlineInstall, isInlineInstall.toString());
 
 		this.logger.logTrace(Log.Trace.Label.RequestForClipperInstalledPageUrl, Log.Trace.Level.Information, installUrl);
 
@@ -178,7 +177,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		return new Promise<ChangeLog.Update[]>((resolve, reject) => {
 			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
-			let changelogUrl = Utils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
+			let changelogUrl = UrlUtils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
 			HttpWithRetries.get(changelogUrl).then((request: XMLHttpRequest) => {
 				try {
 					let schemas: ChangeLog.Schema[] = JSON.parse(request.responseText);
@@ -220,7 +219,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	 */
 	private static generateClipperId(): string {
 		let clipperPrefix = "ON";
-		return clipperPrefix + "-" + Utils.generateGuid();
+		return clipperPrefix + "-" + StringUtils.generateGuid();
 	}
 
 	/**
@@ -247,7 +246,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	private getFlightingAssignments(clipperId: string): Promise<any> {
 		let fetchNonLocalData = () => {
 			return new Promise<ResponsePackage<string>>((resolve, reject) => {
-				let userFlightUrl = Utils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
+				let userFlightUrl = UrlUtils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
 				HttpWithRetries.get(userFlightUrl).then((request) => {
 					resolve({
 						request: request,

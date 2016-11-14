@@ -1,5 +1,3 @@
-/// <reference path="../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 /**
  * Data object that represents the page we want to clip
  */

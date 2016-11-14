@@ -1,5 +1,6 @@
 import {Constants} from "../../constants";
-import {Utils} from "../../utils";
+
+import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {ComponentBase} from "../componentBase";
 
@@ -17,7 +18,7 @@ class CloseButtonClass extends ComponentBase<{}, CloseButtonProps> {
 		return (
 			<div id={Constants.Ids.closeButtonContainer}>
 				<a id={Constants.Ids.closeButton} {...this.enableInvoke(this.props.onClickHandler, 300, this.props.onClickHandlerParams) }>
-					<img className="closeButtonIcon" src={Utils.getImageResourceUrl("close.png")} />
+					<img className="closeButtonIcon" src={ExtensionUtils.getImageResourceUrl("close.png")} />
 				</a>
 			</div>
 		);

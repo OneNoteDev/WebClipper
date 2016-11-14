@@ -1,7 +1,7 @@
 import {SmartValue} from "../communicator/smartValue";
 
 import {Constants} from "../constants";
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 
 import * as Log from "./log";
 import {Context} from "./context";
@@ -66,7 +66,7 @@ export abstract class SessionLogger extends Logger {
 	}
 
 	public logEvent(event: Log.Event.BaseEvent): void {
-		if (Utils.isNullOrUndefined(event)) {
+		if (ObjectUtils.isNullOrUndefined(event)) {
 			this.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected);
 			return;
 		}
@@ -80,7 +80,7 @@ export abstract class SessionLogger extends Logger {
 	}
 
 	public logFailure(label: Log.Failure.Label, failureType: Log.Failure.Type, failureInfo?: OneNoteApi.GenericError, id?: string): void {
-		if (Utils.isNullOrUndefined(label) || Utils.isNullOrUndefined(failureType)) {
+		if (ObjectUtils.isNullOrUndefined(label) || ObjectUtils.isNullOrUndefined(failureType)) {
 			this.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected);
 			return;
 		}
@@ -94,7 +94,7 @@ export abstract class SessionLogger extends Logger {
 	}
 
 	public logUserFunnel(label: Log.Funnel.Label): void {
-		if (Utils.isNullOrUndefined(label)) {
+		if (ObjectUtils.isNullOrUndefined(label)) {
 			this.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected);
 			return;
 		}
@@ -143,7 +143,7 @@ export abstract class SessionLogger extends Logger {
 	protected executeSessionEnd(endTrigger: Log.Session.EndTrigger): void {
 		if (this.currentSessionState === Log.Session.State.Ended) {
 			let errorMessage = "Session already ENDED";
-			if (!Utils.isNullOrUndefined(endTrigger)) {
+			if (!ObjectUtils.isNullOrUndefined(endTrigger)) {
 				errorMessage += ". EndTrigger: " + Log.Session.EndTrigger[endTrigger];
 			}
 			this.logFailure(Log.Failure.Label.SessionAlreadySet, Log.Failure.Type.Unexpected, { error: errorMessage });
@@ -159,7 +159,7 @@ export abstract class SessionLogger extends Logger {
 	}
 
 	public logTrace(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): void {
-		if (Utils.isNullOrUndefined(label) || Utils.isNullOrUndefined(level)) {
+		if (ObjectUtils.isNullOrUndefined(label) || ObjectUtils.isNullOrUndefined(level)) {
 			this.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected);
 			return;
 		}
@@ -173,7 +173,7 @@ export abstract class SessionLogger extends Logger {
 	}
 
 	public pushToStream(label: Log.Event.Label, value: any) {
-		if (Utils.isNullOrUndefined(label)) {
+		if (ObjectUtils.isNullOrUndefined(label)) {
 			this.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected);
 			return;
 		}
