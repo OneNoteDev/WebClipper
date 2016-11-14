@@ -1,5 +1,4 @@
 import {Constants} from "../../constants";
-import {ObjectUtils} from "../../objectUtils";
 import {PreviewGlobalInfo} from "../../previewInfo";
 
 import {ExtensionUtils} from "../../extensions/extensionUtils";
@@ -8,6 +7,8 @@ import {Localization} from "../../localization/localization";
 
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
+
+import * as _ from "lodash";
 
 interface AnnotationInputState {
 	opened: boolean;
@@ -52,13 +53,9 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 
 	onDoneEditing(e: Event) {
 		let value = (e.target as HTMLTextAreaElement).value.trim();
-		let previewGlobalInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			annotation: value
-		} as PreviewGlobalInfo);
-
-		this.props.clipperState.setState({
-			previewGlobalInfo: previewGlobalInfo
-		});
+		} as PreviewGlobalInfo), this.props.clipperState.setState);
 
 		// We do this as if we trigger this on the mousedown instead, the hide causes some buttons to
 		// reposition themselves, and we cannot guarantee that the subsequent mouseup will be on the

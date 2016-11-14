@@ -157,7 +157,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		Clipper.getInjectCommunicator().subscribeAcrossCommunicator(pageInfo, Constants.SmartValueKeys.pageInfo, (updatedPageInfo: PageInfo) => {
 			if (updatedPageInfo) {
-				let newPreviewGlobalInfo = ObjectUtils.createUpdatedObject(this.state.previewGlobalInfo, {
+				let newPreviewGlobalInfo = _.extend(this.state.previewGlobalInfo, {
 					previewTitleText: updatedPageInfo.contentTitle
 				} as PreviewGlobalInfo);
 
@@ -440,13 +440,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.LocalFilesNotAllowedPanelShown));
 			}
 
-			let newPreviewInfo = ObjectUtils.createUpdatedObject(this.state.pdfPreviewInfo, {
+			_.assign(_.extend(this.state.pdfPreviewInfo, {
 				isLocalFileAndNotAllowed: false
-			});
-
-			this.state.setState({
-				pdfPreviewInfo: newPreviewInfo
-			});
+			}), this.state.setState);
 		});
 
 		Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {

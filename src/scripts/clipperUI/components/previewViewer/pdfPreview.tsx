@@ -216,25 +216,15 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	}
 
 	onSelectionChange(selection: boolean) {
-		// TODO: change this to _.assign, _.extend
-		let newPdfPreviewInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
+		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
 			allPages: selection
-		} as PdfPreviewInfo);
-
-		this.props.clipperState.setState({
-			pdfPreviewInfo: newPdfPreviewInfo
-		});
+		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
 	onTextChange(text: string) {
-		// TODO: change this to _.assign, _.extend
-		let newPdfPreviewInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
+		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
 			selectedPageRange: text
-		} as PdfPreviewInfo);
-
-		this.props.clipperState.setState({
-			pdfPreviewInfo: newPdfPreviewInfo
-		});
+		} as PdfPreviewInfo), this.props.clipperState.setState);
 
 		let pagesToShow = StringUtils.parsePageRange(text);
 		let validUpperBounds = _.every(pagesToShow, (ind: number) => {
@@ -253,13 +243,9 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	}
 
 	onCheckboxChange(checked: boolean) {
-		let newPdfPreviewInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
+		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
 			shouldAttachPdf: checked
-		} as PdfPreviewInfo);
-
-		this.props.clipperState.setState({
-			pdfPreviewInfo: newPdfPreviewInfo
-		});
+		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
 	protected getHeader(): any {
