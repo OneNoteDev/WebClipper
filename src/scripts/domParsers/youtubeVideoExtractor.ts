@@ -1,7 +1,8 @@
 import {DomUtils} from "./domUtils";
 import {VideoExtractor} from "./videoExtractor";
 
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
+import {UrlUtils} from "../urlUtils";
 
 export class YoutubeVideoExtractor implements VideoExtractor {
 	private youTubeWatchVideoBaseUrl = "https://www.youtube.com/watch";
@@ -12,27 +13,27 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 	 * Return the ID of the video in the YouTube URL as an array
 	 */
 	public getVideoIds(youTubeUrl: string, pageContent: string): string[] {
-		if (Utils.isNullOrUndefined(youTubeUrl)) {
+		if (ObjectUtils.isNullOrUndefined(youTubeUrl)) {
 			return;
 		}
 
 		let youTubeId: string;
-		if (Utils.getPathname(youTubeUrl).indexOf("/watch") === 0) {
-			youTubeId = Utils.getQueryValue(youTubeUrl, this.youTubeVideoIdQueryKey);
-			if (Utils.isNullOrUndefined(youTubeId)) {
+		if (UrlUtils.getPathname(youTubeUrl).indexOf("/watch") === 0) {
+			youTubeId = UrlUtils.getQueryValue(youTubeUrl, this.youTubeVideoIdQueryKey);
+			if (ObjectUtils.isNullOrUndefined(youTubeId)) {
 				return;
 			}
 		}
 
-		if (Utils.getPathname(youTubeUrl).indexOf("/embed") === 0) {
+		if (UrlUtils.getPathname(youTubeUrl).indexOf("/embed") === 0) {
 			let youTubeIdMatch = youTubeUrl.match(/youtube\.com\/embed\/(\S+)/);
-			if (Utils.isNullOrUndefined(youTubeIdMatch) || Utils.isNullOrUndefined(youTubeIdMatch[1])) {
+			if (ObjectUtils.isNullOrUndefined(youTubeIdMatch) || ObjectUtils.isNullOrUndefined(youTubeIdMatch[1])) {
 				return;
 			}
 			youTubeId = youTubeIdMatch[1];
 		}
 
-		if (Utils.isNullOrUndefined(youTubeId)) {
+		if (ObjectUtils.isNullOrUndefined(youTubeId)) {
 			return;
 		}
 
@@ -43,12 +44,12 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 	 * Return valid iframe src attribute value for the supported YouTube domain
 	 */
 	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
-		if (Utils.isNullOrUndefined(pageUrl)) {
+		if (ObjectUtils.isNullOrUndefined(pageUrl)) {
 			return;
 		}
 
 		let youTubeVideoId = this.getVideoIds(pageUrl, pageContent);
-		if (Utils.isNullOrUndefined(youTubeVideoId)) {
+		if (ObjectUtils.isNullOrUndefined(youTubeVideoId)) {
 			return;
 		}
 
@@ -63,12 +64,12 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 		let iframe = DomUtils.createEmbedVideoIframe();
 		let srcValue = this.getVideoSrcValues(pageUrl, pageContent);
 		let videoId = this.getVideoIds(pageUrl, pageContent)[0];
-		if (Utils.isNullOrUndefined(srcValue) || Utils.isNullOrUndefined(videoId)) {
+		if (ObjectUtils.isNullOrUndefined(srcValue) || ObjectUtils.isNullOrUndefined(videoId)) {
 			// fast fail: we expect all page urls passed into this function in prod to contain a video id
 			throw new Error("YouTube page url does not contain video id");
 		}
 		iframe.src = srcValue[0];
-		iframe.setAttribute(this.dataOriginalSrcAttribute, Utils.addUrlQueryValue(this.youTubeWatchVideoBaseUrl, this.youTubeVideoIdQueryKey, videoId));
+		iframe.setAttribute(this.dataOriginalSrcAttribute, UrlUtils.addUrlQueryValue(this.youTubeWatchVideoBaseUrl, this.youTubeVideoIdQueryKey, videoId));
 
 		return [iframe];
 	}

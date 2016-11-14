@@ -1,6 +1,6 @@
 import {Http} from "./http";
 
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 import {PromiseUtils, RetryOptions} from "../promiseUtils";
 
 /**
@@ -16,7 +16,7 @@ export class HttpWithRetries extends Http {
 	}
 
 	public static post(url: string, data: any, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, retryOptions?: RetryOptions): Promise<XMLHttpRequest> {
-		if (Utils.isNullOrUndefined(data)) {
+		if (ObjectUtils.isNullOrUndefined(data)) {
 			throw new Error("data must be a non-undefined object, but was: " + data);
 		}
 

@@ -1,5 +1,3 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
 import {Status} from "../clipperUI/status";

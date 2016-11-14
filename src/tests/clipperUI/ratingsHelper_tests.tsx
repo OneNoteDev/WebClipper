@@ -9,6 +9,7 @@ import {ClipperStorageKeys} from "../../scripts/storage/clipperStorageKeys";
 
 import {Constants} from "../../scripts/constants";
 import {ClientType} from "../../scripts/clientType";
+import {ObjectUtils} from "../../scripts/objectUtils";
 import {Settings} from "../../scripts/settings";
 import {Utils} from "../../scripts/utils";
 
@@ -49,7 +50,7 @@ test("setNumSuccessfulClipsRatingsEnablement does not set the value when Clipper
 	RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
 
 	Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, (numClipsAnchorAsStr: string) => {
-		ok(Utils.isNullOrUndefined(numClipsAnchorAsStr));
+		ok(ObjectUtils.isNullOrUndefined(numClipsAnchorAsStr));
 		done();
 	});
 });

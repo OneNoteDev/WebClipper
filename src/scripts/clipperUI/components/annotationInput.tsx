@@ -1,7 +1,10 @@
 import {Constants} from "../../constants";
-import {Localization} from "../../localization/localization";
+import {ObjectUtils} from "../../objectUtils";
 import {PreviewGlobalInfo} from "../../previewInfo";
-import {Utils} from "../../utils";
+
+import {ExtensionUtils} from "../../extensions/extensionUtils";
+
+import {Localization} from "../../localization/localization";
 
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
@@ -49,7 +52,7 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 
 	onDoneEditing(e: Event) {
 		let value = (e.target as HTMLTextAreaElement).value.trim();
-		let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		let previewGlobalInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
 			annotation: value
 		} as PreviewGlobalInfo);
 
@@ -79,7 +82,7 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 			return (
 				<div id={Constants.Ids.annotationContainer}>
 					<a id={Constants.Ids.annotationPlaceholder} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} {...this.enableInvoke(this.handleAnnotateButton, 210)}>
-						<img src={Utils.getImageResourceUrl("editorOptions/add_icon_purple.png")} />
+						<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon_purple.png")} />
 						<span>{Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")}</span>
 					</a>
 				</div>

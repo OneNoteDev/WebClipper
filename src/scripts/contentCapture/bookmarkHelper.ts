@@ -1,4 +1,4 @@
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
 
@@ -68,7 +68,7 @@ export class BookmarkHelper {
 		return new Promise<BookmarkResult>((resolve: (result: BookmarkResult) => void, reject: (error: BookmarkError) => void) => {
 			let bookmarkPageEvent = new Log.Event.PromiseEvent(Log.Event.Label.BookmarkPage);
 
-			if (Utils.isNullOrUndefined(url) || url === "") {
+			if (ObjectUtils.isNullOrUndefined(url) || url === "") {
 				let error: BookmarkError = { error: "Page url is null, undefined, or empty", url: url };
 				bookmarkPageEvent.setStatus(Log.Status.Failed);
 				bookmarkPageEvent.setFailureInfo(error);
@@ -90,11 +90,11 @@ export class BookmarkHelper {
 				thumbnailSrcToDataUrlFailure: undefined
 			};
 
-			if (Utils.isNullOrUndefined(pageTitle) || pageTitle.length === 0) {
+			if (ObjectUtils.isNullOrUndefined(pageTitle) || pageTitle.length === 0) {
 				bookmarkLoggingInfo.pageTitleExists = false;
 			}
 
-			if (Utils.isNullOrUndefined(metadataElements) || metadataElements.length === 0) {
+			if (ObjectUtils.isNullOrUndefined(metadataElements) || metadataElements.length === 0) {
 				bookmarkLoggingInfo.metadataElementsExist = false;
 				bookmarkPageEvent.setCustomProperty(Log.PropertyName.Custom.BookmarkInfo, JSON.stringify(bookmarkLoggingInfo));
 
@@ -103,20 +103,20 @@ export class BookmarkHelper {
 			}
 
 			let descriptionResult = this.getPrimaryDescription(metadataElements);
-			if (allowFallback && Utils.isNullOrUndefined(descriptionResult)) {
+			if (allowFallback && ObjectUtils.isNullOrUndefined(descriptionResult)) {
 				descriptionResult = BookmarkHelper.getFallbackDescription(metadataElements);
 
-				if (Utils.isNullOrUndefined(descriptionResult)) {
+				if (ObjectUtils.isNullOrUndefined(descriptionResult)) {
 					// concatenate text on the page if all else fails
 					descriptionResult = BookmarkHelper.getTextOnPage(textElements);
 				}
 			}
 
 			let thumbnailSrcResult = this.getPrimaryThumbnailSrc(metadataElements);
-			if (allowFallback && Utils.isNullOrUndefined(thumbnailSrcResult)) {
+			if (allowFallback && ObjectUtils.isNullOrUndefined(thumbnailSrcResult)) {
 				thumbnailSrcResult = BookmarkHelper.getFallbackThumbnailSrc(metadataElements);
 
-				if (Utils.isNullOrUndefined(thumbnailSrcResult)) {
+				if (ObjectUtils.isNullOrUndefined(thumbnailSrcResult)) {
 					// get first image on the page as thumbnail if all else fails
 					thumbnailSrcResult = BookmarkHelper.getFirstImageOnPage(imageElements);
 				}
@@ -124,20 +124,20 @@ export class BookmarkHelper {
 
 			// populate final result object and log
 
-			if (!Utils.isNullOrUndefined(descriptionResult)) {
+			if (!ObjectUtils.isNullOrUndefined(descriptionResult)) {
 				descriptionResult.description = BookmarkHelper.truncateString(descriptionResult.description);
 
 				result.description = descriptionResult.description;
 				bookmarkLoggingInfo.descriptionMetadataUsed = descriptionResult.metadataUsed.value;
 			}
 
-			if (!Utils.isNullOrUndefined(thumbnailSrcResult)) {
+			if (!ObjectUtils.isNullOrUndefined(thumbnailSrcResult)) {
 				bookmarkLoggingInfo.thumbnailSrcMetadataUsed = thumbnailSrcResult.metadataUsed.value;
 
 				thumbnailSrcResult.thumbnailSrc = DomUtils.toAbsoluteUrl(thumbnailSrcResult.thumbnailSrc, url);
 
 				DomUtils.getImageDataUrl(thumbnailSrcResult.thumbnailSrc).then((thumbnailDataUrl: string) => {
-					if (!Utils.isNullOrUndefined(thumbnailDataUrl)) {
+					if (!ObjectUtils.isNullOrUndefined(thumbnailDataUrl)) {
 						result.thumbnailSrc = thumbnailDataUrl;
 					} else {
 						result.thumbnailSrc = thumbnailSrcResult.thumbnailSrc;
@@ -164,7 +164,7 @@ export class BookmarkHelper {
 	 * Wrapper for native JS getElementsByTagName() which adds ability to provide multiple tag names
 	 */
 	public static getElementsByTagName(root: Document | Element, tagNames: string[]): Element[] {
-		if (Utils.isNullOrUndefined(root) || Utils.isNullOrUndefined(tagNames)) {
+		if (ObjectUtils.isNullOrUndefined(root) || ObjectUtils.isNullOrUndefined(tagNames)) {
 			return;
 		}
 
@@ -194,7 +194,7 @@ export class BookmarkHelper {
 		let metadata = BookmarkHelper.primaryDescriptionKeyValuePair;
 		let description = BookmarkHelper.getMetaContent(metadataElements, metadata);
 
-		if (!Utils.isNullOrUndefined(description)) {
+		if (!ObjectUtils.isNullOrUndefined(description)) {
 			return { metadataUsed: metadata, description: description };
 		}
 	}
@@ -202,24 +202,24 @@ export class BookmarkHelper {
 	public static getFallbackDescription(metadataElements: Element[]): { metadataUsed: MetadataKeyValuePair, description: string } {
 		for (let metadata of BookmarkHelper.fallbackDescriptionKeyValuePairs) {
 			let description = BookmarkHelper.getMetaContent(metadataElements, metadata);
-			if (!Utils.isNullOrUndefined(description)) {
+			if (!ObjectUtils.isNullOrUndefined(description)) {
 				return { metadataUsed: metadata, description: description };
 			}
 		}
 	}
 
 	public static getTextOnPage(textElements: Text[], numberOfWords = 50): { metadataUsed: MetadataKeyValuePair, description: string } {
-		if (!Utils.isNullOrUndefined(textElements) && textElements.length > 0) {
+		if (!ObjectUtils.isNullOrUndefined(textElements) && textElements.length > 0) {
 			let metadata = BookmarkHelper.textOnPageKeyValuePair;
 			let description = textElements.map(text => text.wholeText.trim()).join(" ");
-			if (!Utils.isNullOrUndefined(description) && description.length > 0) {
+			if (!ObjectUtils.isNullOrUndefined(description) && description.length > 0) {
 				return { metadataUsed: metadata, description: description };
 			}
 		}
 	}
 
 	public static truncateString(longStr: string, numChars = BookmarkHelper.maxNumCharsInDescription): string {
-		if (Utils.isNullOrUndefined(longStr)) {
+		if (ObjectUtils.isNullOrUndefined(longStr)) {
 			return;
 		}
 
@@ -235,7 +235,7 @@ export class BookmarkHelper {
 		let truncateRegEx = new RegExp("^(.{" + numChars + "}[^\\s]*)");
 		let truncateMatch = longStr.replace(/\s+/g, " ").match(truncateRegEx);
 
-		if (Utils.isNullOrUndefined(truncateMatch)) {
+		if (ObjectUtils.isNullOrUndefined(truncateMatch)) {
 			return;
 		}
 
@@ -246,7 +246,7 @@ export class BookmarkHelper {
 		let metadata = BookmarkHelper.primaryThumbnailKeyValuePair;
 		let imgSrc = BookmarkHelper.getMetaContent(metaTags, metadata);
 
-		if (!Utils.isNullOrUndefined(imgSrc)) {
+		if (!ObjectUtils.isNullOrUndefined(imgSrc)) {
 			return { metadataUsed: metadata, thumbnailSrc: imgSrc };
 		}
 	}
@@ -254,27 +254,27 @@ export class BookmarkHelper {
 	public static getFallbackThumbnailSrc(metaTags: Element[]): { metadataUsed: MetadataKeyValuePair, thumbnailSrc: string } {
 		for (let metadata of BookmarkHelper.fallbackThumbnailKeyValuePairs) {
 			let imgSrc = BookmarkHelper.getMetaContent(metaTags, metadata);
-			if (!Utils.isNullOrUndefined(imgSrc)) {
+			if (!ObjectUtils.isNullOrUndefined(imgSrc)) {
 				return { metadataUsed: metadata, thumbnailSrc: imgSrc };
 			}
 		}
 	}
 
 	public static getFirstImageOnPage(imageElements: HTMLImageElement[]): { metadataUsed: MetadataKeyValuePair, thumbnailSrc: string } {
-		if (!Utils.isNullOrUndefined(imageElements) && imageElements.length > 0) {
+		if (!ObjectUtils.isNullOrUndefined(imageElements) && imageElements.length > 0) {
 			let imgSrc = imageElements[0].getAttribute(BookmarkHelper.srcAttrName);
 			let metadata = BookmarkHelper.firstImageOnPageKeyValuePair;
-			if (!Utils.isNullOrUndefined(imgSrc) && imgSrc !== "") {
+			if (!ObjectUtils.isNullOrUndefined(imgSrc) && imgSrc !== "") {
 				return { metadataUsed: metadata, thumbnailSrc: imgSrc };
 			}
 		}
 	}
 
 	public static getMetaContent(metaTags: Element[], metadata: MetadataKeyValuePair): string {
-		if (Utils.isNullOrUndefined(metaTags) ||
-			Utils.isNullOrUndefined(metadata) ||
-			Utils.isNullOrUndefined(metadata.key) ||
-			Utils.isNullOrUndefined(metadata.value)) {
+		if (ObjectUtils.isNullOrUndefined(metaTags) ||
+			ObjectUtils.isNullOrUndefined(metadata) ||
+			ObjectUtils.isNullOrUndefined(metadata.key) ||
+			ObjectUtils.isNullOrUndefined(metadata.value)) {
 			return;
 		}
 
@@ -293,7 +293,7 @@ export class BookmarkHelper {
 
 				let content: string = tag.getAttribute(contentAttr);
 
-				if (Utils.isNullOrUndefined(content) || content.length === 0) {
+				if (ObjectUtils.isNullOrUndefined(content) || content.length === 0) {
 					return;
 				}
 				return content;

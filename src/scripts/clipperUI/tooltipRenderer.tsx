@@ -1,6 +1,6 @@
 import {Constants} from "../constants";
-import {Utils} from "../utils";
 
+import {ExtensionUtils} from "../extensions/extensionUtils";
 import {InvokeSource} from "../extensions/invokeSource";
 
 import {ChangeLog} from "../versioning/changeLog";
@@ -105,7 +105,7 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 		let tooltipImagePath = "tooltips/" + tooltipAsString + ".png";
 		tooltipImagePath = tooltipImagePath.toLowerCase();
 
-		let content: HTMLElement[] = [(<img className="tooltip-image" src={Utils.getImageResourceUrl(tooltipImagePath)}/>)];
+		let content: HTMLElement[] = [(<img className="tooltip-image" src={ExtensionUtils.getImageResourceUrl(tooltipImagePath)}/>)];
 
 		let buttons: DialogButton[] = [{
 			id: Constants.Ids.proceedToWebClipperButton,
@@ -159,7 +159,7 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 				return (
 					<div id={Constants.Ids.brandingContainer}>
 						<p className="tooltip-corner-branding">
-							<img src={Utils.getImageResourceUrl("tooltips/onenote_tooltip_branding.png") } />
+							<img src={ExtensionUtils.getImageResourceUrl("tooltips/onenote_tooltip_branding.png") } />
 						</p>
 					</div>
 				);

@@ -1,5 +1,7 @@
 import {Constants} from "../../constants";
-import {Utils} from "../../utils";
+import {UrlUtils} from "../../urlUtils";
+
+import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {Localization} from "../../localization/localization";
 
@@ -18,7 +20,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ViewInWac);
 		let data = this.props.clipperState.oneNoteApiResult.data as OneNoteApi.Page;
 		if (data && data.links && data.links.oneNoteWebUrl && data.links.oneNoteWebUrl.href) {
-			let urlWithFromClipperParam = Utils.addUrlQueryValue(data.links.oneNoteWebUrl.href, Constants.Urls.QueryParams.wdFromClipper, "1");
+			let urlWithFromClipperParam = UrlUtils.addUrlQueryValue(data.links.oneNoteWebUrl.href, Constants.Urls.QueryParams.wdFromClipper, "1");
 			window.open(urlWithFromClipperParam, "_blank");
 		} else {
 			Clipper.logger.logFailure(Log.Failure.Label.OnLaunchOneNoteButton, Log.Failure.Type.Unexpected,
@@ -30,7 +32,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 		return (
 			<div id={Constants.Ids.clipperSuccessContainer}>
 				<div className="messageLabelContainer successPagePadding">
-					<SpriteAnimation spriteUrl={Utils.getImageResourceUrl("checkmark.png")} imageHeight={28} totalFrameCount={30} loop={false}/>
+					<SpriteAnimation spriteUrl={ExtensionUtils.getImageResourceUrl("checkmark.png")} imageHeight={28} totalFrameCount={30} loop={false}/>
 					<span className="actionLabelFont messageLabel"
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 						{Localization.getLocalizedString("WebClipper.Label.ClipSuccessful")}

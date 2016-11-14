@@ -1,7 +1,5 @@
 import * as Log from "../logging/log";
 
-import {Utils} from "../utils";
-
 // Should we be referencing node.d.ts?
 declare function require(name: string);
 

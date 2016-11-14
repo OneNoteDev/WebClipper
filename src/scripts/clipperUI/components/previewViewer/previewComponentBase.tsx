@@ -1,6 +1,6 @@
 import {ClientType} from "../../../clientType";
 import {Constants} from "../../../constants";
-import {Utils} from "../../../utils";
+import {ObjectUtils} from "../../../objectUtils";
 
 import {PreviewGlobalInfo} from "../../../previewInfo";
 
@@ -42,7 +42,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 	}
 
 	private handleTitleChange(newTitleText: string) {
-		let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		let previewGlobalInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
 			previewTitleText: newTitleText
 		} as PreviewGlobalInfo);
 

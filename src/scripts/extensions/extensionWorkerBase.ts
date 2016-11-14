@@ -1,10 +1,12 @@
+import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
+import {ClipperUrls} from "../clipperUrls";
+import {CookieUtils} from "../cookieUtils";
 import {Constants} from "../constants";
 import {Polyfills} from "../polyfills";
 import {AuthType, UserInfo, UpdateReason} from "../userInfo";
 import {Settings} from "../settings";
-import {Utils} from "../utils";
 
 import {TooltipProps} from "../clipperUI/tooltipProps";
 import {TooltipType} from "../clipperUI/tooltipType";
@@ -332,7 +334,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 	protected launchPopupAndWaitForClose(url: string): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			let signInWindow: Window = Utils.openPopupWindow(url);
+			let signInWindow: Window = BrowserUtils.openPopupWindow(url);
 
 			let errorObject;
 			let popupMessageHandler = (event: MessageEvent) => {
@@ -443,7 +445,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 */
 	private doSignOutActionInFrontEnd(authType: AuthType) {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signOutUrl = Utils.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.createHiddenIFrame, {
 			param: signOutUrl
 		});
@@ -625,7 +627,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	// Remove after some time...
 	private logDeviceIdMapEvent() {
 		let deviceIdInStorage = this.clientInfo.get().clipperId;
-		let deviceIdInCookie = Utils.readCookie("MicrosoftApplicationsTelemetryDeviceId");
+		let deviceIdInCookie = CookieUtils.readCookie("MicrosoftApplicationsTelemetryDeviceId");
 		if (deviceIdInCookie !== deviceIdInStorage) {
 			let deviceIdMapEvent = new Log.Event.BaseEvent(Log.Event.Label.DeviceIdMap);
 			deviceIdMapEvent.setCustomProperty(Log.PropertyName.Custom.DeviceIdInStorage, deviceIdInStorage);

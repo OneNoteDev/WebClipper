@@ -1,10 +1,12 @@
 import {ClientType} from "../../../scripts/clientType";
-import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
-import {HelperFunctions} from "../../helperFunctions";
 import {Constants} from "../../../scripts/constants";
+import {Utils} from "../../../scripts/utils";
+
+import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
+
 import {Footer} from "../../../scripts/clipperUI/components/footer";
 
-import {Utils} from "../../../scripts/utils";
+import {HelperFunctions} from "../../helperFunctions";
 
 export module TestConstants {
 	export module LogCategories {

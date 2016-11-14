@@ -1,6 +1,8 @@
 import {Constants} from "../../../constants";
+import {ObjectUtils} from "../../../objectUtils";
 import {PreviewGlobalInfo} from "../../../previewInfo";
-import {Utils} from "../../../utils";
+
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Highlighter} from "../../../highlighting/highlighter";
 
@@ -78,7 +80,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	}
 
 	private changeFontFamily(serif: boolean) {
-		let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		let previewGlobalInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
 			serif: serif
 		} as PreviewGlobalInfo);
 
@@ -95,7 +97,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 			newFontSize = Constants.Settings.maximumFontSize;
 		}
 
-		let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		let previewGlobalInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
 			fontSize: newFontSize
 		} as PreviewGlobalInfo);
 
@@ -158,7 +160,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 				let firstHighlighted = highlightablePreviewBody.querySelector("span.highlighted[data-timestamp='" + timestamp + "']");
 				if (firstHighlighted) {
 					let deleteHighlight = document.createElement("img") as HTMLImageElement;
-					deleteHighlight.src = Utils.getImageResourceUrl("editoroptions/delete_button.png");
+					deleteHighlight.src = ExtensionUtils.getImageResourceUrl("editoroptions/delete_button.png");
 					deleteHighlight.className = Constants.Classes.deleteHighlightButton;
 					deleteHighlight.setAttribute("data-timestamp", "" + timestamp);
 					firstHighlighted.insertBefore(deleteHighlight, firstHighlighted.childNodes[0]);
@@ -185,7 +187,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 			this.state.textHighlighter.doHighlight();
 		} else {
 			// No selection found, so we actually toggle the highlighter functionality
-			let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+			let previewGlobalInfo = ObjectUtils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
 				highlighterEnabled: !this.props.clipperState.previewGlobalInfo.highlighterEnabled
 			} as PreviewGlobalInfo);
 

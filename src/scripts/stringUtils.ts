@@ -1,4 +1,5 @@
-import {Utils} from "./utils";
+import {ObjectUtils} from "./objectUtils";
+
 import * as _ from "lodash";
 
 export module StringUtils {
@@ -7,7 +8,7 @@ export module StringUtils {
 	 * corresponding to the numbers in that range. It ignores invalid input, sorts it, and removes duplicates
 	 */
 	export function parsePageRange(text: string, maxRange?: number): number[] {
-		if (Utils.isNullOrUndefined(text)) {
+		if (ObjectUtils.isNullOrUndefined(text)) {
 			return;
 		}
 

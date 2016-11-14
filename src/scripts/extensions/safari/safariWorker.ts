@@ -1,8 +1,10 @@
+import {AuthType} from "../../userInfo";
 import {ClientInfo} from "../../clientInfo";
 import {ClientType} from "../../clientType";
+import {ClipperUrls} from "../../clipperUrls";
 import {Constants} from "../../constants";
-import {AuthType} from "../../userInfo";
-import {Utils} from "../../utils";
+import {ObjectUtils} from "../../objectUtils";
+import {UrlUtils} from "../../urlUtils";
 
 import {Communicator} from "../../communicator/communicator";
 import {SmartValue} from "../../communicator/smartValue";
@@ -54,7 +56,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 	 */
 	protected doSignInAction(authType: AuthType): Promise<boolean> {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signInUrl = Utils.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		let signInUrl = ClipperUrls.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		return this.launchSafariPopup(signInUrl, Constants.Urls.Authentication.authRedirectUrl);
 	}
@@ -64,7 +66,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 	 */
 	protected doSignOutAction(authType: AuthType) {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signOutUrl = Utils.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		// The signout doesn't work in an iframe in the Safari background page, so we need to launch a popup instead
 		this.launchSafariPopup(signOutUrl);
@@ -148,13 +150,13 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 			let redirectOccurred = false;
 			let errorObject;
 
-			if (!Utils.isNullOrUndefined(autoCloseDestinationUrl)) {
+			if (!ObjectUtils.isNullOrUndefined(autoCloseDestinationUrl)) {
 				newWindow.addEventListener("navigate", (event) => {
 					if (event && event.target && event.target.url && !event.target.url.toLowerCase().indexOf(autoCloseDestinationUrl)) {
 						redirectOccurred = true;
 
-						let error = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.error);
-						let errorDescription = Utils.getQueryValue(event.target.url, Constants.Urls.QueryParams.errorDescription);
+						let error = UrlUtils.getQueryValue(event.target.url, Constants.Urls.QueryParams.error);
+						let errorDescription = UrlUtils.getQueryValue(event.target.url, Constants.Urls.QueryParams.errorDescription);
 						if (error || errorDescription) {
 							errorObject = { error: error, errorDescription: errorDescription };
 						}
