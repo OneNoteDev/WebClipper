@@ -1,6 +1,6 @@
 import {ClientType} from "../../../scripts/clientType";
 import {Constants} from "../../../scripts/constants";
-import {Utils} from "../../../scripts/utils";
+import {StringUtils} from "../../../scripts/stringUtils";
 
 import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
 
@@ -22,7 +22,7 @@ let startingState;
 QUnit.module("footer", {
 	beforeEach: () => {
 		startingState = HelperFunctions.getMockClipperState();
-		Clipper.sessionId.set(Utils.generateGuid());
+		Clipper.sessionId.set(StringUtils.generateGuid());
 		defaultComponent =
 			<Footer clipperState={ startingState } />;
 	}

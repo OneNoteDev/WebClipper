@@ -1,7 +1,7 @@
 import {ClientType} from "../scripts/clientType";
 import {ClipperUrls} from "../scripts/clipperUrls";
 import {Constants} from "../scripts/constants";
-import {Utils} from "../scripts/utils";
+import {StringUtils} from "../scripts/stringUtils";
 
 import {HelperFunctions} from "./helperFunctions";
 
@@ -18,7 +18,7 @@ export module TestConstants {
 
 test("The generated feedback url should be correct with url query values set appropriately", () => {
 	let startingState = HelperFunctions.getMockClipperState();
-	let usid: string = Utils.generateGuid();
+	let usid: string = StringUtils.generateGuid();
 
 	let url = ClipperUrls.generateFeedbackUrl(startingState, usid, TestConstants.LogCategories.oneNoteClipperUsage);
 	strictEqual(url.indexOf("#"), -1,

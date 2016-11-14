@@ -13,8 +13,8 @@ import {AuthType, UserInfo, UpdateReason} from "../userInfo";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
 import {ResponsePackage} from "../responsePackage";
+import {StringUtils} from "../stringUtils";
 import {UserInfoData} from "../userInfo";
-import {Utils} from "../utils";
 import {UrlUtils} from "../urlUtils";
 
 declare var browser;
@@ -142,7 +142,7 @@ export class AuthenticationHelper {
 			let userInfoUrl = UrlUtils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
 			let retrieveUserInformationEvent = new Log.Event.PromiseEvent(Log.Event.Label.RetrieveUserInformation);
 
-			let correlationId = Utils.generateGuid();
+			let correlationId = StringUtils.generateGuid();
 			retrieveUserInformationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 			let headers = {};

@@ -11,7 +11,7 @@ import {Constants} from "../../scripts/constants";
 import {ClientType} from "../../scripts/clientType";
 import {ObjectUtils} from "../../scripts/objectUtils";
 import {Settings} from "../../scripts/settings";
-import {Utils} from "../../scripts/utils";
+import {StringUtils} from "../../scripts/stringUtils";
 
 import {HelperFunctions} from "../helperFunctions";
 
@@ -278,7 +278,7 @@ test("getFeedbackUrlIfExists returns a feedback url if log category for ratings 
 	});
 
 	let clipperState = HelperFunctions.getMockClipperState();
-	Clipper.sessionId.set(Utils.generateGuid());
+	Clipper.sessionId.set(StringUtils.generateGuid());
 
 	let expectedFeedbackUrl = "https://www.onenote.com/feedback"
 		+ "?LogCategory=" + Settings.getSetting("LogCategory_RatingsPrompt")

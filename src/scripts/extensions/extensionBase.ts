@@ -3,8 +3,8 @@ import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {Experiments} from "../experiments";
 import {ResponsePackage} from "../responsePackage";
+import {StringUtils} from "../stringUtils";
 import {UrlUtils} from "../urlUtils";
-import {Utils} from "../utils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
 
@@ -253,7 +253,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	 */
 	private static generateClipperId(): string {
 		let clipperPrefix = "ON";
-		return clipperPrefix + "-" + Utils.generateGuid();
+		return clipperPrefix + "-" + StringUtils.generateGuid();
 	}
 
 	/**

@@ -1,7 +1,7 @@
 import {Constants} from "../constants";
 import {Settings} from "../settings";
+import {StringUtils} from "../stringUtils";
 import {ObjectUtils} from "../objectUtils";
-import {Utils} from "../utils";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {ClipperState} from "../clipperUI/clipperState";
@@ -40,7 +40,7 @@ export class AugmentationHelper {
 		return new Promise<AugmentationResult>((resolve, reject) => {
 			let augmentationEvent = new Log.Event.PromiseEvent(Log.Event.Label.AugmentationApiCall);
 
-			let correlationId = Utils.generateGuid();
+			let correlationId = StringUtils.generateGuid();
 			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[], request: XMLHttpRequest }) => {
