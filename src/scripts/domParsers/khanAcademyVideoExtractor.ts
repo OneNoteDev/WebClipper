@@ -2,7 +2,7 @@ import {VideoExtractor} from "./videoExtractor";
 import {VideoUtils} from "./videoUtils";
 import {YoutubeVideoExtractor} from "./youtubeVideoExtractor";
 
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 
 export class KhanAcademyVideoExtractor implements VideoExtractor {
 	private youtubeExtractor: YoutubeVideoExtractor;
@@ -24,12 +24,12 @@ export class KhanAcademyVideoExtractor implements VideoExtractor {
 	}
 
 	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
-		if (Utils.isNullOrUndefined(pageContent)) {
+		if (ObjectUtils.isNullOrUndefined(pageContent)) {
 			return;
 		}
 
 		let videoIds = this.getVideoIds(pageUrl, pageContent);
-		if (Utils.isNullOrUndefined(videoIds) || videoIds.length === 0) {
+		if (ObjectUtils.isNullOrUndefined(videoIds) || videoIds.length === 0) {
 			return;
 		}
 

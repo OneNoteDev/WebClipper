@@ -1,6 +1,5 @@
 import {Constants} from "../constants";
 import {Clipper} from "./frontEndGlobals";
-import {Utils} from "../utils";
 
 export abstract class ComponentBase<TState, TProps> {
 	public state: TState;

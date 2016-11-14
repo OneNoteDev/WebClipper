@@ -1,10 +1,14 @@
 import {Constants} from "../../constants";
-import {Localization} from "../../localization/localization";
 import {PreviewGlobalInfo} from "../../previewInfo";
-import {Utils} from "../../utils";
+
+import {ExtensionUtils} from "../../extensions/extensionUtils";
+
+import {Localization} from "../../localization/localization";
 
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
+
+import * as _ from "lodash";
 
 interface AnnotationInputState {
 	opened: boolean;
@@ -49,13 +53,9 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 
 	onDoneEditing(e: Event) {
 		let value = (e.target as HTMLTextAreaElement).value.trim();
-		let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			annotation: value
-		} as PreviewGlobalInfo);
-
-		this.props.clipperState.setState({
-			previewGlobalInfo: previewGlobalInfo
-		});
+		} as PreviewGlobalInfo), this.props.clipperState.setState);
 
 		// We do this as if we trigger this on the mousedown instead, the hide causes some buttons to
 		// reposition themselves, and we cannot guarantee that the subsequent mouseup will be on the
@@ -79,7 +79,7 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 			return (
 				<div id={Constants.Ids.annotationContainer}>
 					<a id={Constants.Ids.annotationPlaceholder} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} {...this.enableInvoke(this.handleAnnotateButton, 210)}>
-						<img src={Utils.getImageResourceUrl("editorOptions/add_icon_purple.png")} />
+						<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon_purple.png")} />
 						<span>{Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")}</span>
 					</a>
 				</div>

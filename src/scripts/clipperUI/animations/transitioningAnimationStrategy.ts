@@ -1,6 +1,6 @@
 declare var Velocity: jquery.velocity.VelocityStatic;
 
-import {Utils} from "../../utils";
+import {ObjectUtils} from "../../objectUtils";
 
 import {SmartValue} from "../../communicator/smartValue";
 
@@ -32,7 +32,7 @@ export abstract class TransitioningAnimationStrategy<TOptions extends Transition
 	constructor(animationDuration: number, options: TOptions, animationState?: SmartValue<AnimationState>) {
 		animationState = animationState || new SmartValue<AnimationState>();
 
-		if (Utils.isNullOrUndefined(animationState.get())) {
+		if (ObjectUtils.isNullOrUndefined(animationState.get())) {
 			animationState.set(AnimationState.Out);
 		}
 

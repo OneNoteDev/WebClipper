@@ -1,5 +1,3 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
 import {Status} from "../clipperUI/status";
@@ -11,7 +9,7 @@ import * as Log from "../logging/log";
 import {Constants} from "../constants";
 import {PageInfo} from "../pageInfo";
 import {Settings} from "../settings";
-import {Utils} from "../utils";
+import {StringUtils} from "../stringUtils";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
 
@@ -29,7 +27,7 @@ export class FullPageScreenshotHelper {
 			Clipper.getUserSessionIdWhenDefined().then((sessionId) => {
 				let fullPageScreenshotEvent = new Log.Event.PromiseEvent(Log.Event.Label.FullPageScreenshotCall);
 
-				let correlationId = Utils.generateGuid();
+				let correlationId = StringUtils.generateGuid();
 				fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 				let headers = {};

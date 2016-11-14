@@ -1,6 +1,6 @@
 import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
-import {Utils} from "../../utils";
+import {ObjectUtils} from "../../objectUtils";
 
 import {SmartValue} from "../../communicator/smartValue";
 
@@ -50,7 +50,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 				currentAnimationState: this.props.animationState,
 				contentToAnimate: this.getContentToAnimate(),
 				extShouldAnimateIn: () => {
-					return (Utils.isNullOrUndefined(panel.state.userSelectedRatingsPromptStage) ||
+					return (ObjectUtils.isNullOrUndefined(panel.state.userSelectedRatingsPromptStage) ||
 						panel.state.userSelectedRatingsPromptStage === panel.state.currentRatingsPromptStage);
 				},
 				extShouldAnimateOut: () => {
@@ -246,7 +246,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 
 		let message: string = this.getMessage(this.state.currentRatingsPromptStage);
 
-		if (!Utils.isNullOrUndefined(message)) {
+		if (!ObjectUtils.isNullOrUndefined(message)) {
 			let buttons: DialogButton[] = this.getDialogButtons(this);
 			let panelAnimationStrategy = this.getPanelAnimationStrategy(this);
 

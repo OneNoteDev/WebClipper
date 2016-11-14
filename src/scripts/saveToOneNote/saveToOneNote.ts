@@ -1,7 +1,7 @@
 import {Constants} from "../constants";
 import {PromiseUtils} from "../promiseUtils";
 import {Settings} from "../settings";
-import {Utils} from "../utils";
+import {StringUtils} from "../stringUtils";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
 
@@ -144,7 +144,7 @@ export class SaveToOneNote {
 	private getApi(): OneNoteApi.IOneNoteApi {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.correlationId] = Utils.generateGuid();
+		headers[Constants.HeaderValues.correlationId] = StringUtils.generateGuid();
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 
 		let api = new OneNoteApi.OneNoteApi(this.accessToken, undefined /* timeout */, headers);

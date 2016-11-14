@@ -1,5 +1,5 @@
 import {Constants} from "../constants";
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
 
@@ -16,7 +16,7 @@ export class TooltipHelper {
 	}
 
 	public getTooltipInformation(storageKeyBase: string, tooltipType: TooltipType): number {
-		if (Utils.isNullOrUndefined(storageKeyBase) || Utils.isNullOrUndefined(tooltipType)) {
+		if (ObjectUtils.isNullOrUndefined(storageKeyBase) || ObjectUtils.isNullOrUndefined(tooltipType)) {
 			throw new Error("Invalid argument passed to getTooltipInformation");
 		}
 
@@ -27,7 +27,7 @@ export class TooltipHelper {
 	}
 
 	public setTooltipInformation(storageKeyBase: string, tooltipType: TooltipType, value: string): void {
-		if (Utils.isNullOrUndefined(storageKeyBase) || Utils.isNullOrUndefined(tooltipType)) {
+		if (ObjectUtils.isNullOrUndefined(storageKeyBase) || ObjectUtils.isNullOrUndefined(tooltipType)) {
 			throw new Error("Invalid argument passed to setTooltipInformation");
 		}
 
@@ -36,7 +36,7 @@ export class TooltipHelper {
 	}
 
 	public tooltipDelayIsOver(tooltipType: TooltipType, curTime: number): boolean {
-		if (Utils.isNullOrUndefined(tooltipType) || Utils.isNullOrUndefined(curTime)) {
+		if (ObjectUtils.isNullOrUndefined(tooltipType) || ObjectUtils.isNullOrUndefined(curTime)) {
 			throw new Error("Invalid argument passed to tooltipDelayIsOver");
 		}
 
@@ -69,7 +69,7 @@ export class TooltipHelper {
 	}
 
 	public static getStorageKeyForTooltip(storageKeyBase: string, tooltipType: TooltipType): string {
-		if (Utils.isNullOrUndefined(storageKeyBase) || Utils.isNullOrUndefined(tooltipType)) {
+		if (ObjectUtils.isNullOrUndefined(storageKeyBase) || ObjectUtils.isNullOrUndefined(tooltipType)) {
 			throw new Error("Invalid argument passed to getStorageKeyForTooltip");
 		}
 

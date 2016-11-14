@@ -2,11 +2,11 @@ import {Constants} from "../../constants";
 
 import {AugmentationModel} from "../../contentCapture/augmentationHelper";
 
+import {ExtensionUtils} from "../../extensions/extensionUtils";
+
 import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
-
-import {Utils} from "../../utils";
 
 import {ClipMode} from "../clipMode";
 import {Clipper} from "../frontEndGlobals";
@@ -48,7 +48,7 @@ class ClippingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 	render() {
 		return (
 			<div id={Constants.Ids.clipperApiProgressContainer} className="progressPadding">
-				<SpriteAnimation spriteUrl={Utils.getImageResourceUrl("spinner_loop.png")} imageHeight={32} totalFrameCount={21} loop={true}/>
+				<SpriteAnimation spriteUrl={ExtensionUtils.getImageResourceUrl("spinner_loop.png")} imageHeight={32} totalFrameCount={21} loop={true}/>
 				<span className="actionLabelFont messageLabel"
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 					{this.getProgressLabel()}

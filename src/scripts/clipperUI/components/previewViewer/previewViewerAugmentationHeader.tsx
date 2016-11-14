@@ -1,5 +1,6 @@
 ﻿import {Constants} from "../../../constants";
-import {Utils} from "../../../utils";
+
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Localization} from "../../../localization/localization";
 
@@ -29,7 +30,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 				id={Constants.Ids.highlightButton}
 				{...this.enableInvoke(this.props.toggleHighlight, 100) }
 				className={classForHighlighter}
-				src={Utils.getImageResourceUrl(imgSrc) } />
+				src={ExtensionUtils.getImageResourceUrl(imgSrc) } />
 			]
 		};
 	}
@@ -64,12 +65,12 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 				<button className={HeaderClasses.Button.controlButton}
 					type="button" {...this.enableInvoke(this.props.changeFontSize, 103, false) }
 					id={Constants.Ids.decrementFontSize}>
-					<img src={Utils.getImageResourceUrl("editorOptions/font_down.png") } />
+					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_down.png") } />
 				</button>,
 				<button className={HeaderClasses.Button.controlButton}
 					type="button" {...this.enableInvoke(this.props.changeFontSize, 104, true) }
 					id={Constants.Ids.incrementFontSize}>
-					<img src={Utils.getImageResourceUrl("editorOptions/font_up.png") } />
+					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_up.png") } />
 				</button>
 			]
 		};

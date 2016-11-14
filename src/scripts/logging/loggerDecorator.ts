@@ -1,6 +1,6 @@
 import {SmartValue} from "../communicator/smartValue";
 
-import {Utils} from "../utils";
+import {StringUtils} from "../stringUtils";
 
 import * as Log from "./log";
 import {Context} from "./context";
@@ -63,7 +63,7 @@ export abstract class LoggerDecorator extends SessionLogger {
 			// In the case where the session has Ended, we default to there being no session id as it wouldn't
 			// make sense having one
 			sessionId = this.currentSessionState === Log.Session.State.Started ?
-				"cccccccc-" + Utils.generateGuid().substring(9) :
+				"cccccccc-" + StringUtils.generateGuid().substring(9) :
 				undefined;
 		}
 

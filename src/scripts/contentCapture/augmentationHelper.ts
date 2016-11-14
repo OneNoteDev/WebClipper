@@ -1,8 +1,7 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {Constants} from "../constants";
 import {Settings} from "../settings";
-import {Utils} from "../utils";
+import {StringUtils} from "../stringUtils";
+import {ObjectUtils} from "../objectUtils";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {ClipperState} from "../clipperUI/clipperState";
@@ -41,7 +40,7 @@ export class AugmentationHelper {
 		return new Promise<AugmentationResult>((resolve, reject) => {
 			let augmentationEvent = new Log.Event.PromiseEvent(Log.Event.Label.AugmentationApiCall);
 
-			let correlationId = Utils.generateGuid();
+			let correlationId = StringUtils.generateGuid();
 			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[], request: XMLHttpRequest }) => {
@@ -131,7 +130,7 @@ export class AugmentationHelper {
 
 	public static getArticlePreviewElement(doc: Document): HTMLElement {
 		let mainContainers = doc.getElementsByClassName("MainArticleContainer");
-		if (Utils.isNullOrUndefined(mainContainers) || Utils.isNullOrUndefined(mainContainers[0])) {
+		if (ObjectUtils.isNullOrUndefined(mainContainers) || ObjectUtils.isNullOrUndefined(mainContainers[0])) {
 			return doc.body;
 		}
 		return mainContainers[0] as HTMLElement;
@@ -149,7 +148,7 @@ export class AugmentationHelper {
 
 		DomUtils.addEmbeddedVideosWhereSupported(previewElement, pageContent, url).then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
 			// only log when supported video is found on page
-			if (!Utils.isNullOrUndefined(videoSrcUrls)) {
+			if (!ObjectUtils.isNullOrUndefined(videoSrcUrls)) {
 				addEmbeddedVideoEvent.setCustomProperty(Log.PropertyName.Custom.VideoSrcUrl, JSON.stringify(videoSrcUrls.map(function (v) { return v.srcAttribute; })));
 				addEmbeddedVideoEvent.setCustomProperty(Log.PropertyName.Custom.VideoDataOriginalSrcUrl, JSON.stringify(videoSrcUrls.map(function (v) { return v.dataOriginalSrcAttribute; })));
 				Clipper.logger.logEvent(addEmbeddedVideoEvent);

@@ -1,16 +1,15 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {AuthType, UpdateReason, UserInfo} from "../userInfo";
+import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
+import {ObjectUtils} from "../objectUtils";
 import {PageInfo} from "../pageInfo";
 import {Polyfills} from "../polyfills";
 import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
 import {Settings} from "../settings";
-import {Utils} from "../utils";
-
 import {TooltipType} from "./tooltipType";
+import {UrlUtils} from "../urlUtils";
 
 import {Communicator} from "../communicator/communicator";
 import {IFrameMessageHandler} from "../communicator/iframeMessageHandler";
@@ -158,7 +157,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		Clipper.getInjectCommunicator().subscribeAcrossCommunicator(pageInfo, Constants.SmartValueKeys.pageInfo, (updatedPageInfo: PageInfo) => {
 			if (updatedPageInfo) {
-				let newPreviewGlobalInfo = Utils.createUpdatedObject(this.state.previewGlobalInfo, {
+				let newPreviewGlobalInfo = _.extend(this.state.previewGlobalInfo, {
 					previewTitleText: updatedPageInfo.contentTitle
 				} as PreviewGlobalInfo);
 
@@ -173,7 +172,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.captureBookmarkContent();
 
 				Clipper.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[updatedPageInfo.contentType]);
-				Clipper.logger.setContextProperty(Log.Context.Custom.InvokeHostname, Utils.getHostname(updatedPageInfo.rawUrl));
+				Clipper.logger.setContextProperty(Log.Context.Custom.InvokeHostname, UrlUtils.getHostname(updatedPageInfo.rawUrl));
 				Clipper.logger.setContextProperty(Log.Context.Custom.PageLanguage, updatedPageInfo.contentLocale);
 			}
 		});
@@ -380,7 +379,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		});
 
 		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.createHiddenIFrame, (url: string) => {
-			Utils.appendHiddenIframeToDocument(url);
+			BrowserUtils.appendHiddenIframeToDocument(url);
 		});
 
 		let userInfoUpdateCb = (updatedUser: UserInfo) => {
@@ -441,13 +440,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.LocalFilesNotAllowedPanelShown));
 			}
 
-			let newPreviewInfo = Utils.createUpdatedObject(this.state.pdfPreviewInfo, {
+			_.assign(_.extend(this.state.pdfPreviewInfo, {
 				isLocalFileAndNotAllowed: false
-			});
-
-			this.state.setState({
-				pdfPreviewInfo: newPreviewInfo
-			});
+			}), this.state.setState);
 		});
 
 		Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {
@@ -534,7 +529,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private initializeNumSuccessfulClips(): void {
 		Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClips, (numClipsAsStr: string) => {
 			let numClips: number = parseInt(numClipsAsStr, 10);
-			this.state.numSuccessfulClips = Utils.isNullOrUndefined(numClips) || isNaN(numClips) ? 0 : numClips;
+			this.state.numSuccessfulClips = ObjectUtils.isNullOrUndefined(numClips) || isNaN(numClips) ? 0 : numClips;
 		});
 	}
 
@@ -558,7 +553,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		}
 
-		if (this.state && this.state.pageInfo && Utils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
+		if (this.state && this.state.pageInfo && UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
 			return ClipMode.Augmentation;
 		} else {
 			return ClipMode.FullPage;

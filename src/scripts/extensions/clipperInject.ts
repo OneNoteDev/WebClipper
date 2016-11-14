@@ -3,7 +3,7 @@ import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {PageInfo} from "../pageInfo";
 import {UserInfo, AuthType} from "../userInfo";
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 
 import {Communicator} from "../communicator/communicator";
 import {CommunicatorPassthrough} from "../communicator/communicatorPassthrough";
@@ -143,7 +143,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 	protected checkForNoOps() {
 		// Ensure the frame was created and is visible
 		let clipperFrame = document.getElementById(Constants.Ids.clipperUiFrame);
-		let frameWasNotInjected = Utils.isNullOrUndefined(clipperFrame);
+		let frameWasNotInjected = ObjectUtils.isNullOrUndefined(clipperFrame);
 		let url = window.location.href;
 
 		if (frameWasNotInjected) {

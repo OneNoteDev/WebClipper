@@ -1,7 +1,6 @@
 /// <reference path="../../../../node_modules/onenotepicker/target/oneNotePicker.d.ts"/>
 
 import {Constants} from "../../constants";
-import {Utils} from "../../utils";
 import {Settings} from "../../settings";
 
 import {Localization} from "../../localization/localization";

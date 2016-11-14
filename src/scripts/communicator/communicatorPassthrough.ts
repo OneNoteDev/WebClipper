@@ -1,6 +1,5 @@
 import {Communicator, CommDataPackage} from "./communicator";
 import {MessageHandler} from "./messageHandler";
-import {Utils} from "../utils";
 
 /**
  * Links two communicators together and after initialization, passes all communication from either to the other

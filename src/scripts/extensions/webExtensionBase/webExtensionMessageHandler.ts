@@ -1,5 +1,3 @@
-/// <reference path="./w3cExtension.d.ts"/>
-
 import {MessageHandler} from "../../communicator/messageHandler";
 import {WebExtension} from "./webExtension";
 

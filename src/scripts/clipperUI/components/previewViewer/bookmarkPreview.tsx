@@ -1,7 +1,9 @@
 import {Constants} from "../../../constants";
-import {Utils} from "../../../utils";
+import {ObjectUtils} from "../../../objectUtils";
 
 import {BookmarkResult} from "../../../contentCapture/bookmarkHelper";
+
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Localization} from "../../../localization/localization";
 
@@ -54,7 +56,7 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 
 	protected getSpinner(): any {
 		let spinner = <SpriteAnimation
-			spriteUrl={Utils.getImageResourceUrl("spinner_loop_colored.png") }
+			spriteUrl={ExtensionUtils.getImageResourceUrl("spinner_loop_colored.png") }
 			imageHeight={65}
 			imageWidth={45}
 			totalFrameCount={21}
@@ -81,12 +83,12 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		let url = result.url;
 
 		let secondColumnTdStyle = "";
-		if (!Utils.isNullOrUndefined(result.thumbnailSrc)) {
+		if (!ObjectUtils.isNullOrUndefined(result.thumbnailSrc)) {
 			secondColumnTdStyle += "padding-left:16px;";
 		}
 
 		let urlTdStyle = "white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
-		if (!Utils.isNullOrUndefined(result.description)) {
+		if (!ObjectUtils.isNullOrUndefined(result.description)) {
 			urlTdStyle += "padding-bottom:13px;";
 		}
 
@@ -111,7 +113,7 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	}
 
 	private renderTitleIfExists(title: string) {
-		if (!Utils.isNullOrUndefined(title) && title.length > 0) {
+		if (!ObjectUtils.isNullOrUndefined(title) && title.length > 0) {
 			return (
 				<tr>
 					<td>
@@ -123,7 +125,7 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	}
 
 	private renderDescriptionIfExists(description: string) {
-		if (!Utils.isNullOrUndefined(description) && description.length > 0) {
+		if (!ObjectUtils.isNullOrUndefined(description) && description.length > 0) {
 			return (
 				<tr>
 					<td style="word-wrap:break-word;">{description}</td>
@@ -133,7 +135,7 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	}
 
 	private renderThumbnailIfExists(thumbnailSrc: string) {
-		if (!Utils.isNullOrUndefined(thumbnailSrc) && thumbnailSrc.length > 0) {
+		if (!ObjectUtils.isNullOrUndefined(thumbnailSrc) && thumbnailSrc.length > 0) {
 			let thumbnailSize = "112";
 			return (
 				<td width={thumbnailSize} style="padding-top:9px;">

@@ -1,7 +1,10 @@
+import {BrowserUtils} from "../../browserUtils";
 import {ClientType} from "../../clientType";
+import {ClipperUrls} from "../../clipperUrls";
 import {Constants} from "../../constants";
 import {AuthType} from "../../userInfo";
-import {Utils} from "../../utils";
+
+import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {Localization} from "../../localization/localization";
 
@@ -59,9 +62,9 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 
 		if (!this.feedbackWindowRef || this.feedbackWindowRef.closed) {
 			if (!this.feedbackUrl) {
-				this.feedbackUrl = Utils.generateFeedbackUrl(this.props.clipperState, Clipper.getUserSessionId(), Constants.LogCategories.oneNoteClipperUsage);
+				this.feedbackUrl = ClipperUrls.generateFeedbackUrl(this.props.clipperState, Clipper.getUserSessionId(), Constants.LogCategories.oneNoteClipperUsage);
 			}
-			this.feedbackWindowRef = Utils.openPopupWindow(this.feedbackUrl);
+			this.feedbackWindowRef = BrowserUtils.openPopupWindow(this.feedbackUrl);
 		}
 	}
 
@@ -74,7 +77,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 				<div>
 					<div className="footerButtonsLeft confineText">
 						<a id={Constants.Ids.feedbackButton} {...this.enableInvoke(this.handleFeedbackButton, 80) }>
-							<img id={Constants.Ids.feedbackImage} src={Utils.getImageResourceUrl("feedback_smiley.png")}
+							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")}
 								alt={Localization.getLocalizedString("WebClipper.Action.Feedback") }/>
 							<span>{Localization.getLocalizedString("WebClipper.Action.Feedback") }</span>
 						</a>
@@ -82,7 +85,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 					{showUserInfo
 						? (<div className="footerButtonsRight">
 								<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.userControlHandler, 81) }>
-									<img id={Constants.Ids.userDropdownArrow} src={Utils.getImageResourceUrl("dropdown_arrow.png")} />
+									<img id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 									<div id={Constants.Ids.currentUserDetails}>
 									{
 										this.props.clipperState.userResult.data.user.fullName

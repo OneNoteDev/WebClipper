@@ -12,9 +12,9 @@ import {Logger} from "../../logging/logger";
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
 
+import {ClipperUrls} from "../../clipperUrls";
 import {Constants} from "../../constants";
 import {AuthType} from "../../userInfo";
-import {Utils} from "../../utils";
 
 import {ChangeLog} from "../../versioning/changeLog";
 
@@ -84,7 +84,7 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 	 */
 	protected doSignInAction(authType: AuthType): Promise<boolean> {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signInUrl = Utils.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		let signInUrl = ClipperUrls.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		return this.launchPopupAndWaitForClose(signInUrl);
 	}
@@ -94,7 +94,7 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 	 */
 	protected doSignOutAction(authType: AuthType) {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signOutUrl = Utils.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		let iframe = document.createElement("iframe");
 		iframe.hidden = true;
