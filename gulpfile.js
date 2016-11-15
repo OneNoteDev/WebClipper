@@ -4,6 +4,7 @@ var require;
 
 var argv = require("yargs").argv;
 var browserify = require("browserify");
+var browserifyInc = require("browserify-incremental");
 var concat = require("gulp-concat");
 var del = require("del");
 var fileExists = require("file-exists");
@@ -26,6 +27,7 @@ var source = require("vinyl-source-stream");
 var ts = require("gulp-typescript");
 var tslint = require("gulp-tslint");
 var uglify = require("gulp-uglify");
+var xtend = require("xtend");
 var zip = require("gulp-zip");
 
 var PATHS = {
@@ -272,23 +274,36 @@ gulp.task("bundleBookmarklet", function() {
 	return merge(bookmarkletTask);
 });
 
-gulp.task("bundleChrome", function() {
-	var chromeExtensionTask = browserify(PATHS.BUILDROOT + "scripts/extensions/chrome/chromeExtension.js")
+gulp.task("bundleChrome", function () {
+	var b = browserify(xtend(browserifyInc.args, {
+			debug: true,
+			extensions: [".js", ".jsx"],
+			cache: {},
+			packageCache: {},
+			fullPaths: true
+		}));
+	browserifyInc(b, { cacheFile: "./browserify-cache.json" });
+	b.add(PATHS.BUILDROOT + "scripts/extensions/chrome/chromeExtension.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/chrome/chromeDebugLoggingInject.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/chrome/chromeInject.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/chrome/chromePageNavInject.js");
+
+	var chromeExtensionTask = b
 		.bundle()
 		.pipe(source("chromeExtension.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var chromeDebugLoggingInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/chrome/chromeDebugLoggingInject.js")
+	var chromeDebugLoggingInjectTask = b
 		.bundle()
 		.pipe(source("chromeDebugLoggingInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var chromeInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/chrome/chromeInject.js")
+	var chromeInjectTask = b
 		.bundle()
 		.pipe(source("chromeInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var chromePageNavInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/chrome/chromePageNavInject.js")
+	var chromePageNavInjectTask = b
 		.bundle()
 		.pipe(source("chromePageNavInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
@@ -296,23 +311,36 @@ gulp.task("bundleChrome", function() {
 	return merge(chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
 });
 
-gulp.task("bundleEdge", function() {
-	var edgeExtensionTask = browserify(PATHS.BUILDROOT + "scripts/extensions/edge/edgeExtension.js")
+gulp.task("bundleEdge", function () {
+	var b = browserify(xtend(browserifyInc.args, {
+			debug: true,
+			extensions: [".js", ".jsx"],
+			cache: {},
+			packageCache: {},
+			fullPaths: true
+		}));
+	browserifyInc(b, { cacheFile: "./browserify-cache.json" });
+	b.add(PATHS.BUILDROOT + "scripts/extensions/edge/edgeExtension.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/edge/edgeDebugLoggingInject.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/edge/edgeInject.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/edge/edgePageNavInject.js");
+
+	var edgeExtensionTask = b
 		.bundle()
 		.pipe(source("edgeExtension.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var edgeDebugLoggingInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/edge/edgeDebugLoggingInject.js")
+	var edgeDebugLoggingInjectTask = b
 		.bundle()
 		.pipe(source("edgeDebugLoggingInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var edgeInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/edge/edgeInject.js")
+	var edgeInjectTask = b
 		.bundle()
 		.pipe(source("edgeInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var edgePageNavInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/edge/edgePageNavInject.js")
+	var edgePageNavInjectTask = b
 		.bundle()
 		.pipe(source("edgePageNavInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
@@ -320,23 +348,36 @@ gulp.task("bundleEdge", function() {
 	return merge(edgeExtensionTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
 });
 
-gulp.task("bundleFirefox", function() {
-	var firefoxExtensionTask = browserify(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxExtension.js")
+gulp.task("bundleFirefox", function () {
+	var b = browserify(xtend(browserifyInc.args, {
+			debug: true,
+			extensions: [".js", ".jsx"],
+			cache: {},
+			packageCache: {},
+			fullPaths: true
+		}));
+	browserifyInc(b, { cacheFile: "./browserify-cache.json" });
+	b.add(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxExtension.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxDebugLoggingInject.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxInject.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxPageNavInject.js");
+
+	var firefoxExtensionTask = b
 		.bundle()
 		.pipe(source("firefoxExtension.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var firefoxDebugLoggingInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxDebugLoggingInject.js")
+	var firefoxDebugLoggingInjectTask = b
 		.bundle()
 		.pipe(source("firefoxDebugLoggingInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var firefoxInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxInject.js")
+	var firefoxInjectTask = b
 		.bundle()
 		.pipe(source("firefoxInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var firefoxPageNavInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxPageNavInject.js")
+	var firefoxPageNavInjectTask = b
 		.bundle()
 		.pipe(source("firefoxPageNavInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
@@ -344,23 +385,36 @@ gulp.task("bundleFirefox", function() {
 	return merge(firefoxExtensionTask, firefoxDebugLoggingInjectTask, firefoxInjectTask, firefoxPageNavInjectTask);
 });
 
-gulp.task("bundleSafari", function() {
-	var safariExtensionTask = browserify(PATHS.BUILDROOT + "scripts/extensions/safari/safariExtension.js")
+gulp.task("bundleSafari", function () {
+	var b = browserify(xtend(browserifyInc.args, {
+		debug: true,
+		extensions: [".js", ".jsx"],
+		cache: {},
+		packageCache: {},
+		fullPaths: true
+	}));
+	browserifyInc(b, { cacheFile: "./browserify-cache.json" });
+	b.add(PATHS.BUILDROOT + "scripts/extensions/safari/safariExtension.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/safari/safariDebugLoggingInject.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/safari/safariInject.js");
+	b.add(PATHS.BUILDROOT + "scripts/extensions/safari/safariPageNavInject.js");
+
+	var safariExtensionTask = b
 		.bundle()
 		.pipe(source("safariExtension.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var safariDebugLoggingInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/safari/safariDebugLoggingInject.js")
+	var safariDebugLoggingInjectTask = b
 		.bundle()
 		.pipe(source("safariDebugLoggingInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var safariInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/safari/safariInject.js")
+	var safariInjectTask = b
 		.bundle()
 		.pipe(source("safariInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 
-	var safariPageNavInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/safari/safariPageNavInject.js")
+	var safariPageNavInjectTask = b
 		.bundle()
 		.pipe(source("safariPageNavInject.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
@@ -368,13 +422,25 @@ gulp.task("bundleSafari", function() {
 	return merge(safariExtensionTask, safariDebugLoggingInjectTask, safariInjectTask, safariPageNavInjectTask);
 });
 
-gulp.task("bundleTests", function() {
-	var tasks = globby.sync(["**/*.js"], { cwd: PATHS.BUILDROOT + "tests" }).map(function(filePath) {
-		return browserify(PATHS.BUILDROOT + "tests/" + filePath, { debug: true })
-			.bundle()
+gulp.task("bundleTests", function () {
+	var filePaths = globby.sync(["**/*.js"], { cwd: PATHS.BUILDROOT + "tests" });
+	var tasks = [];
+	for (var i = 0; i < filePaths.length; i++) {
+		var filePath = filePaths[i];
+		var b = browserify(xtend(browserifyInc.args, {
+			debug: true,
+			extensions: [".js", ".jsx"],
+			cache: {},
+			packageCache: {},
+			fullPaths: true
+		}));
+
+		browserifyInc(b, { cacheFile: "./browserify-cache.json" });
+		b.add(PATHS.BUILDROOT + "tests/" + filePath);
+		tasks.push(b.bundle()
 			.pipe(source(filePath))
-			.pipe(gulp.dest(PATHS.BUNDLEROOT + "tests"));
-	});
+			.pipe(gulp.dest(PATHS.BUNDLEROOT + "tests")));
+	}
 
 	return merge(tasks);
 });
