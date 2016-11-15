@@ -13,20 +13,48 @@ import {ClipperStateUtilities} from "../clipperStateUtilities";
 import {ComponentBase} from "../componentBase";
 import {Status} from "../status";
 
+import {PdfClipOptions} from "../components/pdfClipOptions";
+
 export interface OptionsPanelProp extends ClipperStateProp {
 	onStartClip: () => void;
 	onPopupToggle: (shouldNowBeOpen: boolean) => void;
 }
 
 class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
+	getCurrentClippingOptions(): any {
+		const currentMode = this.props.clipperState.currentMode.get();
+		switch (currentMode) {
+			case ClipMode.Pdf:
+				return <PdfClipOptions
+					shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
+					allPages={this.props.clipperState.pdfPreviewInfo.allPages}
+					shouldDistributePages={this.props.clipperState.pdfPreviewInfo.shouldDistributePages}
+					// onCheckboxChange={this.onCheckboxChange.bind(this)}
+					// onSelectionChange={this.onSelectionChange.bind(this)}
+					// onTextChange={this.onTextChange.bind(this)}
+					clipperState={this.props.clipperState} />;
+				// return <PreviewViewerPdfHeader
+				// 	shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
+				// 	allPages={this.props.clipperState.pdfPreviewInfo.allPages}
+				// 	onCheckboxChange={this.onCheckboxChange.bind(this)}
+				// 	onSelectionChange={this.onSelectionChange.bind(this)}
+				// 	onTextChange={this.onTextChange.bind(this)}
+				// 	clipperState={this.props.clipperState} />;
+			default:
+				return undefined;
+		}
+	}
+
 	render() {
 		let clipButtonEnabled = ClipperStateUtilities.clipButtonEnabled(this.props.clipperState);
 		let clipButtonContainerClassName = clipButtonEnabled ? "wideButtonContainer" : "wideButtonContainer disabled";
+		let clippingOptionsToRender = this.getCurrentClippingOptions();
 
 		return (
 			<div className="optionsPanel">
 				<ModeButtonSelector clipperState={this.props.clipperState} />
 				<SectionPicker onPopupToggle={this.props.onPopupToggle.bind(this)} clipperState={this.props.clipperState} />
+				{clippingOptionsToRender}
 
 				<div id={Constants.Ids.clipButtonContainer} className={clipButtonContainerClassName}>
 					{clipButtonEnabled

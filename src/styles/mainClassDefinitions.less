@@ -132,6 +132,161 @@
 	}
 }
 
+.clipOptionsContainer {
+	text-align: left;
+	margin-top: 12px;
+
+	.clipOptionsTitleContainer {
+		margin-bottom: 3px;
+
+		.clipOptionsTitle {
+			font-size: 15px;
+			color: white;
+			font-family: @SegoeUi;
+		}
+	}
+
+	// PDF
+	.pdf-label {
+		font-size: 15px;
+		font-family: @SegoeUi;
+		color: #fff;
+		cursor: pointer;
+		position: relative;
+		margin-left: 26px;
+		line-height: 20px;
+	}
+
+	.pdf-radio-indicator-fill {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 9px;
+		height: 9px;
+		background-color: white;
+		border-radius: 100%;
+	}
+
+	.pdf-control {
+		cursor: pointer; 
+		position: relative; 
+		outline: none; 
+		line-height: 28px;
+	}
+
+	.pdf-indicator {
+		position: absolute;
+		top: 7px;
+		left: 0px;
+		width: 14px;
+		height: 14px;
+
+		&.pdf-checkbox-indicator {
+			border: 1px solid white;
+			border-radius: 2px;
+			background-color: @OneNotePurpleTransparent;
+		}
+
+		&.pdf-radio-indicator {
+			border: 1px solid white;
+			border-radius: 100%;
+		}
+	}
+
+	.checkbox {
+		position: absolute;
+		top: 7px;
+		left: 6px;
+		width: 4px;
+		height: 11px;
+		transform: rotate(45deg);
+		border: 1px solid white;
+		background: transparent;
+		border-width: 0 1px 1px 0;
+	}
+
+	#attachmentCheckboxControl {
+		float: right;
+		margin-right: 24px;
+	}
+	
+	.popover {
+		background: #e81123;
+		color: #fff;
+		opacity: 1;
+		position: absolute;
+		z-index: 5;
+		transform: translateY(10px);
+		transition: all 0.25s ease-out;
+		box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
+		border-radius: 4px;
+		padding: 4px;
+		font-size: 15px;
+		line-height: 20px;
+		// The left margin is 22px to account for the custom radio button
+		// If we want to extend 10px to the right outside of the margin
+		// We have to be 22px - 10px = 12px inside the left margin 
+		right: -10px; 
+		left: 12px;
+		text-align: center;
+		pointer-events: none;
+
+		&:before {
+			position: absolute;
+			left: 50%;
+			content: " ";
+			width: 0; // CSS triangles are built using only borders
+			height: 0;
+			top: -9px; // 9px to account for height of the triangle, and to overlap the border
+			margin-left: -13px; // no idea why this works
+			border-left: solid transparent 10px;
+			border-right: solid transparent 10px;
+			border-bottom: solid #e81123 10px;
+		}
+	}
+
+	#rangeInput {
+		margin-left: 22px;
+		border-radius: 2px;
+		background-color:  @DarkBackgroundColor;
+		height: 26px;
+		line-height: 20px;
+		padding-left: 6px;
+		width: 128px;
+		border: none;
+		font-family: @SegoeUi;
+		font-size: 14px;
+		color: rgba(255,255,255,0.70);
+		outline: none;
+		user-select: auto;
+		
+		&.invalid {
+			border: #e81123 1px solid;
+			height: 24px;
+		}
+
+		&::-webkit-input-placeholder {
+			font-style: italic;
+			color: @ClipperLightFontColor;
+		}
+
+		&:-moz-placeholder {
+			font-style: italic;
+			color: @ClipperLightFontColor;
+		}
+
+		&::-moz-placeholder {
+			font-style: italic;
+			color: @ClipperLightFontColor;
+		}
+
+		&:-ms-input-placeholder {
+			font-style: italic;
+			color: @ClipperLightFontColor;
+		}
+	}
+}
+
 .messageLabel {
 	white-space: normal;
 }

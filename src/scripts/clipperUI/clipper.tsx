@@ -98,6 +98,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				isLocalFileAndNotAllowed: true,
 				selectedPageRange: "",
 				shouldAttachPdf: false,
+				shouldDistributePages: false
 			},
 
 			reset: () => {

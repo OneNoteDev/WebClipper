@@ -11,7 +11,7 @@ export interface PdfPreviewInfo {
 	isLocalFileAndNotAllowed?: boolean;
 	selectedPageRange?: string;
 	shouldAttachPdf?: boolean;
-	batchPages?: boolean;
+	shouldDistributePages?: boolean;
 };
 
 export interface PreviewInfo {
