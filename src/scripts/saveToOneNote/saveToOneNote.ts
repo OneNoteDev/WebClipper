@@ -91,17 +91,11 @@ export class SaveToOneNote {
 	}
 
 	private batch(saveable: OneNoteSaveable): Promise<any> {
-		// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
-		// When the getPageContent returns a 200, we start PATCHing the page.
 		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
 		return _.range(saveable.getNumPatches()).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
-					// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
-					// completes processing, so we add an artificial timeout before the next PATCH to try and ensure that they get
-					// processed in the order that they were sent.
-
-					// Parallelize the PATCH request intervals with the fetching of the next set of dataUrls
+					// Parallelize the BATCH request intervals with the fetching of the next set of dataUrls
 					let getRevisionsPromise = this.getBatchWithLogging(saveable, i);
 					let timeoutPromise = PromiseUtils.wait(timeBetweenPatchRequests);
 
