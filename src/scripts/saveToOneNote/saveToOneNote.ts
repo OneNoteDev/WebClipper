@@ -92,7 +92,7 @@ export class SaveToOneNote {
 
 	private batch(saveable: OneNoteSaveable): Promise<any> {
 		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
-		return _.range(saveable.getNumPatches()).reduce((chainedPromise, i) => {
+		return _.range(saveable.getNumBatches()).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
 					// Parallelize the BATCH request intervals with the fetching of the next set of dataUrls

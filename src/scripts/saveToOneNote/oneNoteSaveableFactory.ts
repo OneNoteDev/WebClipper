@@ -12,6 +12,7 @@ import {Localization} from "../localization/localization";
 import {OneNoteSaveable} from "./oneNoteSaveable";
 import {OneNoteSaveablePage} from "./oneNoteSaveablePage";
 import {OneNoteSaveablePdf} from "./oneNoteSaveablePdf";
+import {OneNoteSaveablePdfBatched} from "./OneNoteSaveablePdfBatched";
 
 import * as _ from "lodash";
 
@@ -151,15 +152,15 @@ export class OneNoteSaveableFactory {
 			let pageIndexes: number[] = clipperState.pdfPreviewInfo.allPages ?
 				_.range(pdf.numPages()) :
 				StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, pdf.numPages()).map(value => value - 1);
+			
 			// great, now we have all the page ranges
 			// But instead of a page, we want to return a big ol' BATCH request
-			let necessaryPdfOptions = {
-				titleText: clipperState.previewGlobalInfo.previewTitleText,
-				annotation: clipperState.previewGlobalInfo.annotation,
-				contentLocale: clipperState.pageInfo.contentLocale,
-				saveLocation: clipperState.saveLocation
-			};
-			return new OneNoteSaveablePdf(page, pdf, pageIndexes, necessaryPdfOptions);
+			if (clipperState.pdfPreviewInfo.shouldDistributePages) {
+				console.log("batch it up");
+				return new OneNoteSaveablePdfBatched(page, pdf, pageIndexes, clipperState.pageInfo.contentLocale, clipperState.saveLocation, clipperState.previewGlobalInfo.previewTitleText);
+			} else {
+				return new OneNoteSaveablePdf(page, pdf, pageIndexes);
+			}
 		}
 		return new OneNoteSaveablePage(page);
 	}
