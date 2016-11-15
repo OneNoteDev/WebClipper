@@ -327,6 +327,16 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		}
 	}
 
+	getCurrentClippingOptions(): any {
+		const currentMode = this.props.clipperState.currentMode.get();
+		switch (currentMode) {
+			case ClipMode.Pdf:
+				return <PdfClipOptions clipperState={this.props.clipperState} />;
+			default:
+				return undefined;
+		}
+	}
+
 	getCurrentFooter(): any {
 		let panelType = this.state.currentPanel;
 		switch (panelType) {
@@ -352,6 +362,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 	render() {
 		let panelToRender = this.getCurrentPanel();
 		let closeButtonToRender = this.getCloseButtonForType();
+		let clippingOptionsToRender = this.getCurrentClippingOptions();
 		let footerToRender = this.getCurrentFooter();
 
 		return (
@@ -361,6 +372,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 					<div className={Constants.Classes.heightAnimator} {...this.onElementDraw(this.onHeightAnimatorDraw)}>
 						<div className={Constants.Classes.panelAnimator} {...this.onElementDraw(this.onPanelAnimatorDraw)}>
 							{panelToRender}
+							{}
 							{footerToRender}
 						</div>
 					</div>
