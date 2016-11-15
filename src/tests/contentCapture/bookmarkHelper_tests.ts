@@ -1,7 +1,11 @@
 import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
+
 import {BookmarkError, BookmarkHelper, BookmarkResult, MetadataKeyValuePair} from "../../scripts/contentCapture/bookmarkHelper";
+
+import {ObjectUtils} from "../../scripts/objectUtils";
+
 import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
-import {Utils} from "../../scripts/utils";
+
 import {HelperFunctions} from "../helperFunctions";
 
 QUnit.module("bookmarkHelper", {
@@ -82,7 +86,7 @@ module TestHelper {
 					break;
 				case StandardMetadata.FallbackDescription:
 					let descIndexer: number;
-					if (Utils.isNullOrUndefined(fallbackIndexer)) {
+					if (ObjectUtils.isNullOrUndefined(fallbackIndexer)) {
 						// if not provided, get a random fallback description
 						descIndexer = TestHelper.getRandomNumber(BookmarkHelper.fallbackDescriptionKeyValuePairs.length - 1);
 					} else {
@@ -99,7 +103,7 @@ module TestHelper {
 					break;
 				case StandardMetadata.FallbackThumbnail:
 					let thumbnailIndexer: number;
-					if (Utils.isNullOrUndefined(fallbackIndexer)) {
+					if (ObjectUtils.isNullOrUndefined(fallbackIndexer)) {
 						// if not provided, get a random fallback thumbnail src
 						thumbnailIndexer = TestHelper.getRandomNumber(BookmarkHelper.fallbackThumbnailKeyValuePairs.length - 1);
 					} else {

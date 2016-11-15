@@ -1,11 +1,9 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 // 9/28/2016 - We need to go back and update sanitize-html to the latest .d.ts once
 // they rename `sanitize` to `sanitizeHtml`, which is the name of the actually exported function
 declare let sanitizeHtml;
 
 import {Constants} from "../constants";
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 import {VideoUtils} from "./videoUtils";
 
 import {VideoExtractorFactory} from "./VideoExtractorFactory";
@@ -349,31 +347,29 @@ export module DomUtils {
 	 * Add embedded videos to the article preview where supported
 	 */
 	export function addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<EmbeddedVideoIFrameSrcs[]> {
-		return new Promise<EmbeddedVideoIFrameSrcs[]>((resolve, reject: (error: OneNoteApi.GenericError) => void) => {
-			let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
-			if (!supportedDomain) {
-				resolve();
+		let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
+		if (!supportedDomain) {
+			return Promise.resolve();
+		}
+
+		let iframes: HTMLIFrameElement[] = [];
+		try {
+			// Construct the appropriate videoExtractor based on the Domain we are on
+			let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
+			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
+
+			// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
+			// to render them later
+			if (extractor) {
+				iframes = iframes.concat(extractor.createEmbeddedVideos(pageUrl, pageContent));
 			}
+		} catch (e) {
+			// if we end up here, we're unexpectedly broken
+			// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
+			return Promise.reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
+		}
 
-			let iframes: HTMLIFrameElement[] = [];
-			try {
-				// Construct the appropriate videoExtractor based on the Domain we are on
-				let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
-				let extractor = VideoExtractorFactory.createVideoExtractor(domain);
-
-				// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
-				// to render them later
-				if (extractor) {
-					iframes = iframes.concat(extractor.createEmbeddedVideos(pageUrl, pageContent));
-				}
-			} catch (e) {
-				// if we end up here, we're unexpectedly broken
-				// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
-				reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
-			}
-
-			resolve(addVideosToElement(previewElement, iframes));
-		});
+		return Promise.resolve(addVideosToElement(previewElement, iframes));
 	}
 
 	/**
@@ -396,7 +392,7 @@ export module DomUtils {
 	 * Ordering of iframes in the array will be respected.
 	 */
 	function addVideosToElement(previewElement: HTMLElement, iframeNodes: HTMLIFrameElement[]): EmbeddedVideoIFrameSrcs[] {
-		if (Utils.isNullOrUndefined(previewElement) || Utils.isNullOrUndefined(iframeNodes) || iframeNodes.length === 0) {
+		if (ObjectUtils.isNullOrUndefined(previewElement) || ObjectUtils.isNullOrUndefined(iframeNodes) || iframeNodes.length === 0) {
 			return;
 		}
 
@@ -404,7 +400,7 @@ export module DomUtils {
 
 		let lastInsertedNode: Node;
 		for (let node of iframeNodes) {
-			if (Utils.isNullOrUndefined(node.src) || Utils.isNullOrUndefined(node.getAttribute(dataOriginalSrcAttribute))) {
+			if (ObjectUtils.isNullOrUndefined(node.src) || ObjectUtils.isNullOrUndefined(node.getAttribute(dataOriginalSrcAttribute))) {
 				// iframe constructed without a src or data-original-src attribute (somehow)
 				// invalid construction, but we want record of it happening
 				videoSrcUrls.push({ srcAttribute: "", dataOriginalSrcAttribute: "" });
@@ -427,7 +423,7 @@ export module DomUtils {
 	 */
 	function insertIFrame(container: HTMLElement, newNode: Node, lastInsertedNode?: Node): Node {
 		let referenceNode;
-		if (Utils.isNullOrUndefined(lastInsertedNode)) {
+		if (ObjectUtils.isNullOrUndefined(lastInsertedNode)) {
 			referenceNode = container.children[0]; // initial referenceNode
 		} else {
 			referenceNode = lastInsertedNode.nextSibling;
@@ -684,7 +680,7 @@ export module DomUtils {
 	 */
 	export function getImageDataUrl(imageSrcUrl: string): Promise<string> {
 		return new Promise<string>((resolve: (result: string) => void, reject: (error: OneNoteApi.GenericError) => void) => {
-			if (Utils.isNullOrUndefined(imageSrcUrl) || imageSrcUrl === "") {
+			if (ObjectUtils.isNullOrUndefined(imageSrcUrl) || imageSrcUrl === "") {
 				reject({ error: "image source is undefined or empty" });
 			}
 
@@ -714,7 +710,7 @@ export module DomUtils {
 			image.onerror = (ev: Event) => {
 				let erroredImg: HTMLImageElement = ev.currentTarget as HTMLImageElement;
 				let erroredImgSrc: string;
-				if (!Utils.isNullOrUndefined(erroredImg)) {
+				if (!ObjectUtils.isNullOrUndefined(erroredImg)) {
 					erroredImgSrc = erroredImg.src;
 				}
 				reject({ error: "onerror occurred fetching " + erroredImgSrc});

@@ -1,5 +1,4 @@
 import {Constants} from "../constants";
-import {Utils} from "../utils";
 
 import {Localization} from "../localization/localization";
 

@@ -1,6 +1,7 @@
 import {Constants} from "../constants";
 import {Polyfills} from "../polyfills";
-import {Utils} from "../utils";
+
+import {ExtensionUtils} from "../extensions/extensionUtils";
 
 import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
@@ -68,7 +69,7 @@ class UnsupportedBrowserClass {
 					localizedStringFetchAttemptCompleted: Status.Failed
 				});
 			}
-		}, () => {
+		}).catch(() => {
 			this.setState({
 				localizedStringFetchAttemptCompleted: Status.Failed
 			});
@@ -93,7 +94,7 @@ class UnsupportedBrowserClass {
 						{tag: "div", attrs: {className: Constants.Classes.panelAnimator, style: "left: 0px; opacity: 1;"}, children: [
 							{tag: "div", attrs: {id: Constants.Ids.signInContainer}, children: [
 								{tag: "div", attrs: {className: "signInPadding"}, children: [
-									{tag: "img", attrs: {id: Constants.Ids.signInLogo, src: Utils.getImageResourceUrl("onenote_logo_clipper.png")}},
+									{tag: "img", attrs: {id: Constants.Ids.signInLogo, src: ExtensionUtils.getImageResourceUrl("onenote_logo_clipper.png")}},
 									{tag: "div", attrs: {id: Constants.Ids.signInMessageLabelContainer, "class": "messageLabelContainer"}, children: [
 										{tag: "span", attrs: {"class": "messageLabel", style: Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}, children: [
 											this.attemptingFetchLocalizedStrings() ? "" : Localization.getLocalizedString("WebClipper.Label.OneNoteClipper")

@@ -1,5 +1,3 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {SmartValue} from "../communicator/smartValue";
 
 import * as Log from "../logging/log";
@@ -11,11 +9,13 @@ import {HttpWithRetries} from "../http/HttpWithRetries";
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
-import {Constants} from "../constants";
-import {ResponsePackage} from "../responsePackage";
-import {UserInfoData} from "../userInfo";
 import {AuthType, UserInfo, UpdateReason} from "../userInfo";
-import {Utils} from "../utils";
+import {Constants} from "../constants";
+import {ObjectUtils} from "../objectUtils";
+import {ResponsePackage} from "../responsePackage";
+import {StringUtils} from "../stringUtils";
+import {UserInfoData} from "../userInfo";
+import {UrlUtils} from "../urlUtils";
 
 declare var browser;
 
@@ -46,7 +46,7 @@ export class AuthenticationHelper {
 					this.logger.logJsonParseUnexpected(storedUserInformation);
 				}
 
-				if (currentInfo && currentInfo.data && Utils.isNumeric(currentInfo.data.accessTokenExpiration)) {
+				if (currentInfo && currentInfo.data && ObjectUtils.isNumeric(currentInfo.data.accessTokenExpiration)) {
 					// Expiration is in seconds, not milliseconds. Give additional leniency to account for response time.
 					updateInterval = Math.max((currentInfo.data.accessTokenExpiration * 1000) - 180000, 0);
 				}
@@ -139,10 +139,10 @@ export class AuthenticationHelper {
 	 */
 	public retrieveUserInformation(clipperId: string, cookie: string = undefined): Promise<ResponsePackage<string>> {
 		return new Promise<ResponsePackage<string>>((resolve, reject: (error: OneNoteApi.RequestError) => void) => {
-			let userInfoUrl = Utils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
+			let userInfoUrl = UrlUtils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
 			let retrieveUserInformationEvent = new Log.Event.PromiseEvent(Log.Event.Label.RetrieveUserInformation);
 
-			let correlationId = Utils.generateGuid();
+			let correlationId = StringUtils.generateGuid();
 			retrieveUserInformationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 			let headers = {};
@@ -150,7 +150,7 @@ export class AuthenticationHelper {
 			headers[Constants.HeaderValues.correlationId] = correlationId;
 
 			let postData = "";
-			if (!Utils.isNullOrUndefined(cookie)) {
+			if (!ObjectUtils.isNullOrUndefined(cookie)) {
 				// The data is encoded/decoded automatically, but because the '+' sign can also be interpreted as a space, we want to explicitly encode this one.
 				postData = cookie.replace(/\+/g, "%2B");
 			}

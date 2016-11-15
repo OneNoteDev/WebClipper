@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.2.15 (November 14, 2016)
+	- Improvement: Improved logging around the PDF scenario.
+	- Improvement: Added retry logic around the XHR requests.
+	- Improvement: Cleaned up the promise logic and logging around the SaveToOneNote object.
+
 ## 3.2.11 (October 28, 2016)
 	- Bug: Removed the code which caused a need for additional permissions in Chrome.
 

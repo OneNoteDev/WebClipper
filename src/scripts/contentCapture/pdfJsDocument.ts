@@ -17,10 +17,8 @@ export class PdfJsDocument implements PdfDocument {
 	}
 
 	public getByteLength(): Promise<number> {
-		return new Promise<number>((resolve) => {
-			this.getData().then((buffer) => {
-				resolve(buffer.length);
-			});
+		return this.getData().then((buffer) => {
+			return Promise.resolve(buffer.length);
 		});
 	}
 

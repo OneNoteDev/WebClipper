@@ -1,7 +1,7 @@
 import {Constants} from "../constants";
 import {PromiseUtils} from "../promiseUtils";
 import {Settings} from "../settings";
-import {Utils} from "../utils";
+import {StringUtils} from "../stringUtils";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
 
@@ -42,15 +42,13 @@ export class SaveToOneNote {
 				return this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
 					return Promise.resolve(responsePackage);
 				});
-			}).catch((error) => {
-				return Promise.reject(error);
 			});
 		} else {
 			return this.saveWithoutCheckingPatchPermissions(options);
 		}
 	}
 
-	public rejectIfNoPatchPermissions(saveLocation: string): Promise<void> {
+	private rejectIfNoPatchPermissions(saveLocation: string): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			Clipper.getStoredValue(ClipperStorageKeys.hasPatchPermissions, (hasPermissions) => {
 				// We have checked their permissions successfully in the past, or the user signed in on this device (with the latest scope)
@@ -71,7 +69,7 @@ export class SaveToOneNote {
 		});
 	}
 
-	public saveWithoutCheckingPatchPermissions(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
+	private saveWithoutCheckingPatchPermissions(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
 		return options.page.getPage().then((page) => {
 			return this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
 				if (options.page.getNumPatches() > 0) {
@@ -86,7 +84,7 @@ export class SaveToOneNote {
 		});
 	}
 
-	public patch(pageId: string, saveable: OneNoteSaveable): Promise<any> {
+	private patch(pageId: string, saveable: OneNoteSaveable): Promise<any> {
 		// As of 10/27/16, the page is not always ready when the 200 is returned, so we wait a bit, and then getPageContent with retries
 		// When the getPageContent returns a 200, we start PATCHing the page.
 		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
@@ -146,7 +144,7 @@ export class SaveToOneNote {
 	private getApi(): OneNoteApi.IOneNoteApi {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.correlationId] = Utils.generateGuid();
+		headers[Constants.HeaderValues.correlationId] = StringUtils.generateGuid();
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 
 		let api = new OneNoteApi.OneNoteApi(this.accessToken, undefined /* timeout */, headers);

@@ -1,5 +1,5 @@
 import {ErrorUtils, Failure, PropertyName, Status} from "../log";
-import {Utils} from "../../utils";
+import {ObjectUtils} from "../../objectUtils";
 
 export module Event {
 	export enum Category {
@@ -167,7 +167,7 @@ export module Event {
 
 		protected isEventData(labelOrData: Event.Label | BaseEventData) {
 			let tryCastAsEventData: BaseEventData = <BaseEventData>labelOrData;
-			if (tryCastAsEventData && !Utils.isNullOrUndefined(tryCastAsEventData.Label)) {
+			if (tryCastAsEventData && !ObjectUtils.isNullOrUndefined(tryCastAsEventData.Label)) {
 				return true;
 			}
 			return false;

@@ -1,6 +1,6 @@
 import {Constants} from "../constants";
 import {PageInfo} from "../pageInfo";
-import {Utils} from "../utils";
+import {UrlUtils} from "../urlUtils";
 
 import {DomUtils} from "../domParsers/domUtils";
 
@@ -107,7 +107,7 @@ export class PageNavInject extends FrameInjectBase<FrameInjectOptions> {
 	 */
 	private setPageInfoContextProperties(): void {
 		this.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[DomUtils.getPageContentType(document)]);
-		this.logger.setContextProperty(Log.Context.Custom.InvokeHostname, Utils.getHostname(document.URL));
+		this.logger.setContextProperty(Log.Context.Custom.InvokeHostname, UrlUtils.getHostname(document.URL));
 		this.logger.setContextProperty(Log.Context.Custom.PageLanguage, DomUtils.getLocale(document));
 	}
 }

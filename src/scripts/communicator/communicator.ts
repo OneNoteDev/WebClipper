@@ -1,6 +1,5 @@
 import {MessageHandler} from "./messageHandler";
 import {SmartValue} from "./smartValue";
-import {Utils} from "../utils";
 
 export interface CommDataPackage {
 	data?: Object;

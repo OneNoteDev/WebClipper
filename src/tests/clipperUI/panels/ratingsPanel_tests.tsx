@@ -11,8 +11,8 @@ import {StubSessionLogger} from "../../../scripts/logging/stubSessionLogger";
 import {ClipperStorageKeys} from "../../../scripts/storage/clipperStorageKeys";
 
 import {Constants} from "../../../scripts/constants";
+import {ObjectUtils} from "../../../scripts/objectUtils";
 import {Settings} from "../../../scripts/settings";
-import {Utils} from "../../../scripts/utils";
 
 import {HelperFunctions} from "../../helperFunctions";
 
@@ -244,7 +244,7 @@ test("'Rate' click at RatingsPromptStage.Rate not available when rate url does n
 	m.redraw(true);
 
 	let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
-	ok(Utils.isNullOrUndefined(ratePositive), "'Rate' button should not exist");
+	ok(ObjectUtils.isNullOrUndefined(ratePositive), "'Rate' button should not exist");
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });
@@ -288,7 +288,7 @@ test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url d
 	m.redraw(true);
 
 	let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
-	ok(Utils.isNullOrUndefined(rateNegative), "'No Thanks' button should not exist");
+	ok(ObjectUtils.isNullOrUndefined(rateNegative), "'No Thanks' button should not exist");
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });
@@ -336,7 +336,7 @@ test("'Feedback' click at RatingsPromptStage.Feedback not available when feedbac
 	m.redraw(true);
 
 	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
-	ok(Utils.isNullOrUndefined(feedbackPositive), "'Feedback' button should not exist");
+	ok(ObjectUtils.isNullOrUndefined(feedbackPositive), "'Feedback' button should not exist");
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });
@@ -384,7 +384,7 @@ test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedba
 	m.redraw(true);
 
 	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
-	ok(Utils.isNullOrUndefined(feedbackNegative), "'No Thanks' button should not exist");
+	ok(ObjectUtils.isNullOrUndefined(feedbackNegative), "'No Thanks' button should not exist");
 
 	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
 });

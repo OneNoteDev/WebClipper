@@ -1,7 +1,6 @@
 /// <reference path="../../../../node_modules/onenotepicker/target/oneNotePicker.d.ts"/>
 
 import {Constants} from "../../constants";
-import {Utils} from "../../utils";
 import {Settings} from "../../settings";
 
 import {Localization} from "../../localization/localization";
@@ -141,7 +140,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 					this.setState(freshNotebooksAsState);
 					resolve(freshNotebooksAsState);
-				}, (failure: OneNoteApi.RequestError) => {
+				}).catch((failure: OneNoteApi.RequestError) => {
 					this.setState({
 						apiResponseCode: OneNoteApiUtils.getApiResponseCode(failure)
 					});
@@ -210,17 +209,11 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			this.setDataSource();
 		}
 
-		return new Promise<OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>>((resolve, reject) => {
-			let headers: { [key: string]: string } = {};
-			headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-			headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
+		let headers: { [key: string]: string } = {};
+		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+		headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-			SectionPickerClass.dataSource.getNotebooks(headers).then((responsePackage: OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>) => {
-				resolve(responsePackage);
-			}, (failure: OneNoteApi.RequestError) => {
-				reject(failure);
-			});
-		});
+		return SectionPickerClass.dataSource.getNotebooks(headers);
 	}
 
 	// Given a notebook list, converts it to state form where the curSection is the default section (or undefined if not found)

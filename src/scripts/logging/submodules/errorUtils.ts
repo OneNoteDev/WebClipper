@@ -1,8 +1,8 @@
 import {ClientInfo} from "../../clientInfo";
 import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
+import {ObjectUtils} from "../../objectUtils";
 import {Settings} from "../../settings";
-import {Utils} from "../../utils";
 
 import {SmartValue} from "../../communicator/smartValue";
 
@@ -73,7 +73,7 @@ export module ErrorUtils {
 		propsObject[Constants.Urls.QueryParams.failureInfo] = ErrorUtils.toString(data.properties.failureInfo);
 		propsObject[Constants.Urls.QueryParams.stackTrace] = data.properties.stackTrace;
 
-		if (!Utils.isNullOrUndefined(data.properties.failureId)) {
+		if (!ObjectUtils.isNullOrUndefined(data.properties.failureId)) {
 			propsObject[Constants.Urls.QueryParams.failureId] = data.properties.failureId;
 		}
 
@@ -158,9 +158,9 @@ export module ErrorUtils {
 	 */
 	function addDelayedSetValuesOnNoOp(props: {[key: string]: string}, clientInfo?: SmartValue<ClientInfo>): void {
 		if (clientInfo) {
-			props[Constants.Urls.QueryParams.clientType] = Utils.isNullOrUndefined(clientInfo.get()) ? unknownValue : ClientType[clientInfo.get().clipperType];
-			props[Constants.Urls.QueryParams.clipperVersion] = Utils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperVersion;
-			props[Constants.Urls.QueryParams.clipperId] = Utils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperId;
+			props[Constants.Urls.QueryParams.clientType] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : ClientType[clientInfo.get().clipperType];
+			props[Constants.Urls.QueryParams.clipperVersion] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperVersion;
+			props[Constants.Urls.QueryParams.clipperId] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperId;
 		}
 	}
 }

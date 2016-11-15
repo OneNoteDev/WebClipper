@@ -1,14 +1,17 @@
 import {ClientType} from "../clientType";
+import {ClipperUrls} from "../clipperUrls";
 import {Constants} from "../constants";
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 import {Settings} from "../settings";
+
+import * as Log from "../logging/log";
+
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
+
 import {Version} from "../versioning/version";
 
 import {ClipperState} from "./clipperState";
 import {Clipper} from "./frontEndGlobals";
-
-import * as Log from "../logging/log";
 
 // ordered by stage progression
 export enum RatingsPromptStage {
@@ -55,8 +58,8 @@ export class RatingsHelper {
 	 */
 	public static getFeedbackUrlIfExists(clipperState: ClipperState): string {
 		let ratingsPromptLogCategory: string = Settings.getSetting("LogCategory_RatingsPrompt");
-		if (!Utils.isNullOrUndefined(ratingsPromptLogCategory) && ratingsPromptLogCategory.length > 0) {
-			return Utils.generateFeedbackUrl(clipperState, Clipper.getUserSessionId(), ratingsPromptLogCategory);
+		if (!ObjectUtils.isNullOrUndefined(ratingsPromptLogCategory) && ratingsPromptLogCategory.length > 0) {
+			return ClipperUrls.generateFeedbackUrl(clipperState, Clipper.getUserSessionId(), ratingsPromptLogCategory);
 		}
 	}
 
@@ -121,7 +124,7 @@ export class RatingsHelper {
 	public static ratingsPromptEnabledForClient(clientType: ClientType): boolean {
 		let settingName: string = RatingsHelper.getRatingsPromptEnabledSettingNameForClient(clientType);
 		let isEnabledAsStr: string = Settings.getSetting(settingName);
-		return !Utils.isNullOrUndefined(isEnabledAsStr) && isEnabledAsStr.toLowerCase() === "true";
+		return !ObjectUtils.isNullOrUndefined(isEnabledAsStr) && isEnabledAsStr.toLowerCase() === "true";
 	}
 
 	/**
@@ -156,7 +159,7 @@ export class RatingsHelper {
 	 * Public for testing
 	 */
 	public static badRatingVersionDelayIsOver(badRatingVersionAsStr: string, lastSeenVersionAsStr: string): boolean {
-		if (Utils.isNullOrUndefined(badRatingVersionAsStr)) {
+		if (ObjectUtils.isNullOrUndefined(badRatingVersionAsStr)) {
 			// value has never been set, no bad rating given
 			return true;
 		}
@@ -230,13 +233,13 @@ export class RatingsHelper {
 	 * Implementation of the logic described in the setShowRatingsPromptState(...) description
 	 */
 	private static shouldShowRatingsPromptInternal(clipperState: ClipperState, event: Log.Event.PromiseEvent, logEventInfo: RatingsLoggingInfo): boolean {
-		if (Utils.isNullOrUndefined(clipperState)) {
+		if (ObjectUtils.isNullOrUndefined(clipperState)) {
 			event.setStatus(Log.Status.Failed);
 			event.setFailureInfo({ error: "Clipper state is null or undefined" });
 			return false;
 		}
 
-		if (!Utils.isNullOrUndefined(clipperState.showRatingsPrompt)) {
+		if (!ObjectUtils.isNullOrUndefined(clipperState.showRatingsPrompt)) {
 			// Return cached value in clipper state since it already exists
 			logEventInfo.usedCachedValue = true;
 			return clipperState.showRatingsPrompt;
@@ -308,6 +311,6 @@ export class RatingsHelper {
 	}
 
 	private static doNotPromptRatingsIsSet(doNotPromptRatingsStr: string): boolean {
-		return !Utils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true";
+		return !ObjectUtils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true";
 	}
 }

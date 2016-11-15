@@ -1,5 +1,6 @@
 import {Constants} from "../../../constants";
-import {Utils} from "../../../utils";
+
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Localization} from "../../../localization/localization";
 
@@ -32,7 +33,7 @@ class PreviewViewerRegionHeaderClass extends PreviewViewerHeaderComponentBase<{}
 					className={HeaderClasses.Button.controlButton}
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }
 					type="button">
-					<img src={Utils.getImageResourceUrl("editorOptions/add_icon.png")} />
+					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon.png")} />
 					<span>{Localization.getLocalizedString("WebClipper.Preview.Header.AddAnotherRegionButtonLabel")}</span>
 				</button>
 			]

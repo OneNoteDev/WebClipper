@@ -1,7 +1,8 @@
 import {Constants} from "../../../constants";
-import {Utils} from "../../../utils";
 
 import {AugmentationModel, AugmentationResult} from "../../../contentCapture/augmentationHelper";
+
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Localization} from "../../../localization/localization";
 
@@ -70,7 +71,7 @@ class AugmentationPreview extends EditorPreviewComponentBase<EditorPreviewState,
 
 	private getSpinner(): any {
 		let spinner = <SpriteAnimation
-			spriteUrl={Utils.getImageResourceUrl("spinner_loop_colored.png") }
+			spriteUrl={ExtensionUtils.getImageResourceUrl("spinner_loop_colored.png") }
 			imageHeight={65}
 			imageWidth={45}
 			totalFrameCount={21}

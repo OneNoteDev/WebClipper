@@ -32,31 +32,24 @@ export class CachedHttp {
 			updateInterval = 0;
 		}
 
-		return new Promise<TimeStampedData>((resolve, reject) => {
-			let value = this.cache.getValue(key);
-			let keyIsPresent = !!value;
-			if (keyIsPresent) {
-				let valueAsJson: TimeStampedData;
-				try {
-					valueAsJson = JSON.parse(value);
-				} catch (e) {
-					reject({ error: e });
-				}
-
-				let valueHasExpired = CachedHttp.valueHasExpired(valueAsJson, updateInterval);
-
-				if (!valueHasExpired) {
-					resolve(valueAsJson);
-					return;
-				}
+		let value = this.cache.getValue(key);
+		let keyIsPresent = !!value;
+		if (keyIsPresent) {
+			let valueAsJson: TimeStampedData;
+			try {
+				valueAsJson = JSON.parse(value);
+			} catch (e) {
+				return Promise.reject({ error: e });
 			}
 
-			this.getAndCacheRemoteValue(key, getRemoteValue).then((timeStampedData) => {
-				resolve(timeStampedData);
-			}, (error) => {
-				reject(error);
-			});
-		});
+			let valueHasExpired = CachedHttp.valueHasExpired(valueAsJson, updateInterval);
+
+			if (!valueHasExpired) {
+				return Promise.resolve(valueAsJson);
+			}
+		}
+
+		return this.getAndCacheRemoteValue(key, getRemoteValue);
 	}
 
 	protected getAndCacheRemoteValue(key: string, getRemoteValue: GetResponseAsync): Promise<TimeStampedData> {
@@ -68,19 +61,17 @@ export class CachedHttp {
 			throw new Error("getRemoteValue must be non-undefined");
 		}
 
-		return new Promise<TimeStampedData>((resolve, reject) => {
-			getRemoteValue().then((responsePackage) => {
-				let setValue: TimeStampedData = this.setTimeStampedValue(key, responsePackage.parsedResponse);
-				if (!setValue) {
-					// Fresh data from the remote was unavailable
-					this.cache.removeKey(key);
-				}
-				resolve(setValue);
-			}, (error: OneNoteApi.RequestError) => {
-				// TODO: Don't use OneNoteApi.RequestError
+		return getRemoteValue().then((responsePackage) => {
+			let setValue: TimeStampedData = this.setTimeStampedValue(key, responsePackage.parsedResponse);
+			if (!setValue) {
+				// Fresh data from the remote was unavailable
 				this.cache.removeKey(key);
-				reject(error);
-			});
+			}
+			return Promise.resolve(setValue);
+		}).catch((error: OneNoteApi.RequestError) => {
+			// TODO: Don't use OneNoteApi.RequestError
+			this.cache.removeKey(key);
+			return Promise.reject(error);
 		});
 	}
 

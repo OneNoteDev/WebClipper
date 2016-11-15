@@ -1,7 +1,6 @@
 declare var Velocity: jquery.velocity.VelocityStatic;
 
 import {Constants} from "../constants";
-import {Utils} from "../utils";
 
 import {SmartValue} from "../communicator/smartValue";
 

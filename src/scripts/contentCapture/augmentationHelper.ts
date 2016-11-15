@@ -1,8 +1,7 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {Constants} from "../constants";
 import {Settings} from "../settings";
-import {Utils} from "../utils";
+import {StringUtils} from "../stringUtils";
+import {ObjectUtils} from "../objectUtils";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {ClipperState} from "../clipperUI/clipperState";
@@ -41,7 +40,7 @@ export class AugmentationHelper {
 		return new Promise<AugmentationResult>((resolve, reject) => {
 			let augmentationEvent = new Log.Event.PromiseEvent(Log.Event.Label.AugmentationApiCall);
 
-			let correlationId = Utils.generateGuid();
+			let correlationId = StringUtils.generateGuid();
 			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[], request: XMLHttpRequest }) => {
@@ -72,8 +71,7 @@ export class AugmentationHelper {
 				}
 
 				augmentationEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, AugmentationModel[result.ContentModel]);
-
-			}, (failure: OneNoteApi.RequestError) => {
+			}).catch((failure: OneNoteApi.RequestError) => {
 				OneNoteApiUtils.logOneNoteApiRequestError(augmentationEvent, failure);
 				reject();
 			}).then(() => {
@@ -103,40 +101,36 @@ export class AugmentationHelper {
 	 * Returns the augmented preview text.
 	 */
 	public static makeAugmentationRequest(url: string, locale: string, pageContent: string, requestCorrelationId: string): Promise<OneNoteApi.ResponsePackage<any>> {
-		return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject: (error: OneNoteApi.RequestError) => void) => {
-			Clipper.getUserSessionIdWhenDefined().then((sessionId) => {
-				let augmentationApiUrl = Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + url + "&lang=" + locale;
+		return Clipper.getUserSessionIdWhenDefined().then((sessionId) => {
+			let augmentationApiUrl = Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + url + "&lang=" + locale;
 
-				let headers = {};
-				headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-				headers[Constants.HeaderValues.noAuthKey] = "true";
-				headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
-				headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
+			let headers = {};
+			headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+			headers[Constants.HeaderValues.noAuthKey] = "true";
+			headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
+			headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-				HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
-					let parsedResponse: any;
-					try {
-						parsedResponse = JSON.parse(request.response);
-					} catch (e) {
-						Clipper.logger.logJsonParseUnexpected(request.response);
-						return reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
-					}
+			return HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
+				let parsedResponse: any;
+				try {
+					parsedResponse = JSON.parse(request.response);
+				} catch (e) {
+					Clipper.logger.logJsonParseUnexpected(request.response);
+					return Promise.reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
+				}
 
-					let responsePackage = {
-						parsedResponse: parsedResponse,
-						request: request
-					};
-					resolve(responsePackage);
-				}, (error: OneNoteApi.RequestError) => {
-					reject(error);
-				});
+				let responsePackage = {
+					parsedResponse: parsedResponse,
+					request: request
+				};
+				return Promise.resolve(responsePackage);
 			});
 		});
 	}
 
 	public static getArticlePreviewElement(doc: Document): HTMLElement {
 		let mainContainers = doc.getElementsByClassName("MainArticleContainer");
-		if (Utils.isNullOrUndefined(mainContainers) || Utils.isNullOrUndefined(mainContainers[0])) {
+		if (ObjectUtils.isNullOrUndefined(mainContainers) || ObjectUtils.isNullOrUndefined(mainContainers[0])) {
 			return doc.body;
 		}
 		return mainContainers[0] as HTMLElement;
@@ -154,7 +148,7 @@ export class AugmentationHelper {
 
 		DomUtils.addEmbeddedVideosWhereSupported(previewElement, pageContent, url).then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
 			// only log when supported video is found on page
-			if (!Utils.isNullOrUndefined(videoSrcUrls)) {
+			if (!ObjectUtils.isNullOrUndefined(videoSrcUrls)) {
 				addEmbeddedVideoEvent.setCustomProperty(Log.PropertyName.Custom.VideoSrcUrl, JSON.stringify(videoSrcUrls.map(function (v) { return v.srcAttribute; })));
 				addEmbeddedVideoEvent.setCustomProperty(Log.PropertyName.Custom.VideoDataOriginalSrcUrl, JSON.stringify(videoSrcUrls.map(function (v) { return v.dataOriginalSrcAttribute; })));
 				Clipper.logger.logEvent(addEmbeddedVideoEvent);

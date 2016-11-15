@@ -1,11 +1,10 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {Experiments} from "../experiments";
 import {ResponsePackage} from "../responsePackage";
-import {Utils} from "../utils";
+import {StringUtils} from "../stringUtils";
+import {UrlUtils} from "../urlUtils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
 
@@ -41,7 +40,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
-	protected static version = "3.2.15";
+	protected static version = "3.2.16";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
@@ -125,22 +124,18 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
 		let locale = navigator.language || (<any>navigator).userLanguage;
 
-		return new Promise<{}>((resolve, reject) => {
-			LocalizationHelper.makeLocStringsFetchRequest(locale).then((responsePackage) => {
-				try {
-					let locStringsDict = JSON.parse(responsePackage.parsedResponse);
-					if (locStringsDict) {
-						this.clipperData.setValue(ClipperStorageKeys.locale, locale);
-						this.clipperData.setValue(ClipperStorageKeys.locStrings, responsePackage.parsedResponse);
-						Localization.setLocalizedStrings(locStringsDict);
-					}
-					resolve(locStringsDict);
-				} catch (e) {
-					reject();
+		return LocalizationHelper.makeLocStringsFetchRequest(locale).then((responsePackage) => {
+			try {
+				let locStringsDict = JSON.parse(responsePackage.parsedResponse);
+				if (locStringsDict) {
+					this.clipperData.setValue(ClipperStorageKeys.locale, locale);
+					this.clipperData.setValue(ClipperStorageKeys.locStrings, responsePackage.parsedResponse);
+					Localization.setLocalizedStrings(locStringsDict);
 				}
-			}, (error) => {
-				reject();
-			});
+				return Promise.resolve(locStringsDict);
+			} catch (e) {
+				return Promise.reject(undefined);
+			}
 		});
 	}
 
@@ -150,10 +145,10 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected getClipperInstalledPageUrl(clipperId: string, clipperType: ClientType, isInlineInstall: boolean): string {
 		let installUrl: string = Constants.Urls.clipperInstallPageUrl;
 
-		installUrl = Utils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clientType, ClientType[clipperType]);
-		installUrl = Utils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperId, clipperId);
-		installUrl = Utils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperVersion,  ExtensionBase.getExtensionVersion());
-		installUrl = Utils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.inlineInstall, isInlineInstall.toString());
+		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clientType, ClientType[clipperType]);
+		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperId, clipperId);
+		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperVersion,  ExtensionBase.getExtensionVersion());
+		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.inlineInstall, isInlineInstall.toString());
 
 		this.logger.logTrace(Log.Trace.Label.RequestForClipperInstalledPageUrl, Log.Trace.Level.Information, installUrl);
 
@@ -171,36 +166,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	/**
-	 * Returns the current flighting assignment for the user
-	 */
-	protected getFlightingAssignments(clipperId: string): Promise<any> {
-		let fetchNonLocalData = () => {
-			return new Promise<ResponsePackage<string>>((resolve, reject) => {
-				let userFlightUrl = Utils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
-				HttpWithRetries.get(userFlightUrl).then((request) => {
-					resolve({
-						request: request,
-						parsedResponse: request.responseText
-					});
-				}, (error) => {
-					reject(error);
-				});
-			});
-		};
-
-		return new Promise((resolve: (formattedFlights: string[]) => void, reject: (error: OneNoteApi.GenericError) => void) => {
-			this.clipperData.getFreshValue(ClipperStorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
-				// The response comes as a string array in the form [flight1, flight2, flight3],
-				// needs to be in CSV format for ODIN cooker, so we rejoin w/o spaces
-				let parsedResponse: string[] = successfulResponse.data.Features ? successfulResponse.data.Features : [];
-				resolve(parsedResponse);
-			}, (error: OneNoteApi.GenericError) => {
-				reject(error);
-			});
-		});
-	}
-
-	/**
 	 * Gets the last seen version from storage, and returns undefined if there is none in storage
 	 */
 	protected getLastSeenVersion(): Version {
@@ -212,7 +177,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		return new Promise<ChangeLog.Update[]>((resolve, reject) => {
 			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
-			let changelogUrl = Utils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
+			let changelogUrl = UrlUtils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
 			HttpWithRetries.get(changelogUrl).then((request: XMLHttpRequest) => {
 				try {
 					let schemas: ChangeLog.Schema[] = JSON.parse(request.responseText);
@@ -254,7 +219,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	 */
 	private static generateClipperId(): string {
 		let clipperPrefix = "ON";
-		return clipperPrefix + "-" + Utils.generateGuid();
+		return clipperPrefix + "-" + StringUtils.generateGuid();
 	}
 
 	/**
@@ -265,13 +230,37 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 		this.getFlightingAssignments(this.clientInfo.get().clipperId).then((flights: string[]) => {
 			this.updateClientInfoWithFlightInformation(flights);
-		}, (error: OneNoteApi.GenericError) => {
+		}).catch((error: OneNoteApi.GenericError) => {
 			this.updateClientInfoWithFlightInformation([]);
 
 			getFlightingEvent.setStatus(Log.Status.Failed);
 			getFlightingEvent.setFailureInfo(error);
 		}).then(() => {
 			this.logger.logEvent(getFlightingEvent);
+		});
+	}
+
+	/**
+	 * Returns the current flighting assignment for the user
+	 */
+	private getFlightingAssignments(clipperId: string): Promise<any> {
+		let fetchNonLocalData = () => {
+			return new Promise<ResponsePackage<string>>((resolve, reject) => {
+				let userFlightUrl = UrlUtils.addUrlQueryValue(Constants.Urls.userFlightingEndpoint, Constants.Urls.QueryParams.clipperId, clipperId);
+				HttpWithRetries.get(userFlightUrl).then((request) => {
+					resolve({
+						request: request,
+						parsedResponse: request.responseText
+					});
+				});
+			});
+		};
+
+		return this.clipperData.getFreshValue(ClipperStorageKeys.flightingInfo, fetchNonLocalData, Experiments.updateIntervalForFlights).then((successfulResponse) => {
+			// The response comes as a string array in the form [flight1, flight2, flight3],
+			// needs to be in CSV format for ODIN cooker, so we rejoin w/o spaces
+			let parsedResponse: string[] = successfulResponse.data.Features ? successfulResponse.data.Features : [];
+			return Promise.resolve(parsedResponse);
 		});
 	}
 
