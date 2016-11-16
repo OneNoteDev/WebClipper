@@ -1071,7 +1071,7 @@ gulp.task("minify", function(callback) {
 // RUN
 ////////////////////////////////////////
 gulp.task("runTests", function() {
-	return qunit(PATHS.TARGET.TESTS + "index.html");
+	return qunit(PATHS.TARGET.TESTS + "index.html", {timeout: 10});
 });
 
 ////////////////////////////////////////
