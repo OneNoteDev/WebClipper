@@ -10,7 +10,6 @@
   <ItemGroup>
     <Content Include="*.json" />
     <Content Include="*.js" />
-    <Content Include="serverRoot\server.js" />
     <Content Include="src\**\*" Exclude="src\**\*.ts*" />
     <TypeScriptCompile Include="src\**\*.ts*" />
     <TypeScriptCompile Include="node_modules\@types\**\*.d.ts*" />
