@@ -27,7 +27,7 @@ require("./clipperUI/components/previewViewer/selectionPreview_tests");
 require("./clipperUI/components/sectionPicker_tests");
 require("./clipperUI/panels/changeLogPanel_tests");
 // TODO: These haven't been running for a while, and either need to be fixed or removed
-//require("./clipperUI/panels/clippingPanelWithDelayedMessage_tests");
+////require("./clipperUI/panels/clippingPanelWithDelayedMessage_tests");
 require("./clipperUI/panels/clippingPanel_tests");
 require("./clipperUI/panels/dialogPanel_tests");
 require("./clipperUI/panels/optionsPanel_tests");
@@ -36,7 +36,7 @@ require("./clipperUI/panels/signInPanel_tests");
 require("./clipperUI/mainController_tests");
 require("./clipperUI/oneNoteApiUtils_tests");
 // TODO: These haven't been running for a while, and either need to be fixed or removed
-//require("./clipperUI/previewViewer_tests");
+////require("./clipperUI/previewViewer_tests");
 require("./clipperUI/ratingsHelper_tests");
 require("./clipperUI/regionSelector_tests");
 
