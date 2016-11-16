@@ -32,6 +32,7 @@ export class ClippingPanelWithDelayedMessageTests extends TestModule {
 		test("If passed a delay of 0, the panel should display the delayed message as soon as it is instantiated", () => {
 			let expectedMessage = "hello world";
 			HelperFunctions.mountToFixture(<ClippingPanelWithDelayedMessage clipperState={this.mockClipperState} delay={0} message={expectedMessage} />);
+			HelperFunctions.tick(this.clock, 1);
 
 			let clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(clipProgressDelayedMessage, "The clip progress delayed message should render immediately");
@@ -47,10 +48,12 @@ export class ClippingPanelWithDelayedMessageTests extends TestModule {
 			let clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(!clipProgressDelayedMessage, "The clip progress delayed message should not render immediately");
 
-			this.clock.tick(delay - 500);
+			HelperFunctions.tick(this.clock, delay - 1);
+			clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(!clipProgressDelayedMessage, "The clip progress delayed message should not render just before the delay");
 
-			this.clock.tick(500);
+			HelperFunctions.tick(this.clock, 1);
+			clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(clipProgressDelayedMessage, "The clip progress delayed message should render after the delay");
 			strictEqual(clipProgressDelayedMessage.innerText, expectedMessage,
 				"The message should be rendered in the clip progress delayed message");
@@ -59,6 +62,7 @@ export class ClippingPanelWithDelayedMessageTests extends TestModule {
 		test("If passed a delay < 0, the panel should display the delayed message as soon as it is instantiated", () => {
 			let expectedMessage = "hello world";
 			HelperFunctions.mountToFixture(<ClippingPanelWithDelayedMessage clipperState={this.mockClipperState} delay={-10000} message={expectedMessage} />);
+			HelperFunctions.tick(this.clock, 1);
 
 			let clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(clipProgressDelayedMessage, "The clip progress delayed message should render immediately");

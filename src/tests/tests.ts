@@ -17,8 +17,7 @@ import "./clipperUI/components/sectionPicker_tests";
 
 import "./clipperUI/panels/changeLogPanel_tests";
 import "./clipperUI/panels/clippingPanel_tests";
-// TODO: These haven't been running for a while, and either need to be fixed or removed
-// import "./clipperUI/panels/clippingPanelWithDelayedMessage_tests";
+import "./clipperUI/panels/clippingPanelWithDelayedMessage_tests";
 import "./clipperUI/panels/dialogPanel_tests";
 import "./clipperUI/panels/optionsPanel_tests";
 import "./clipperUI/panels/ratingsPanel_tests";
@@ -26,7 +25,6 @@ import "./clipperUI/panels/signInPanel_tests";
 
 import "./clipperUI/mainController_tests";
 import "./clipperUI/oneNoteApiUtils_tests";
-// TODO: These haven't been running for a while, and either need to be fixed or removed
 import "./clipperUI/previewViewer_tests";
 import "./clipperUI/ratingsHelper_tests";
 import "./clipperUI/regionSelector_tests";
