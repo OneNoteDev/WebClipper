@@ -26,6 +26,9 @@ QUnit.module("ratingsHelper", {
 		mockStorageCache = {};
 		HelperFunctions.mockFrontEndGlobals(mockStorage, mockStorageCache);
 		RatingsHelper.preCacheNeededValues();
+	},
+	afterEach: () => {
+		Settings.setSettingsJsonForTesting(undefined);
 	}
 });
 
