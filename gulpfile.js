@@ -367,15 +367,11 @@ gulp.task("bundleSafari", function() {
 	return merge(safariExtensionTask, safariDebugLoggingInjectTask, safariInjectTask, safariPageNavInjectTask);
 });
 
-gulp.task("bundleTests", function() {
-	var tasks = globby.sync(["**/*.js"], { cwd: PATHS.BUILDROOT + "tests" }).map(function(filePath) {
-		return browserify(PATHS.BUILDROOT + "tests/" + filePath, { debug: true })
-			.bundle()
-			.pipe(source(filePath))
-			.pipe(gulp.dest(PATHS.BUNDLEROOT + "tests"));
-	});
-
-	return merge(tasks);
+gulp.task("bundleTests", function () {
+	return browserify(PATHS.BUILDROOT + "tests/tests.js")
+		.bundle()
+		.pipe(source("tests.js"))
+		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 });
 
 gulp.task("bundle", function(callback) {
@@ -860,7 +856,7 @@ function exportSafariLibFiles() {
 
 function exportTestJS() {
 	var targetDir = PATHS.TARGET.TESTS;
-	var defaultExportJSTask = gulp.src(PATHS.BUNDLEROOT + "tests/**", { base: PATHS.BUNDLEROOT + "tests/" })
+	var defaultExportJSTask = gulp.src(PATHS.BUNDLEROOT + "tests.js")
 		.pipe(gulp.dest(targetDir));
 
 	var logManagerExportJSTask = gulp.src(PATHS.BUNDLEROOT + "logManager.js")
