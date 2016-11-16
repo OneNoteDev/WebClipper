@@ -26,7 +26,6 @@ var source = require("vinyl-source-stream");
 var ts = require("gulp-typescript");
 var tslint = require("gulp-tslint");
 var uglify = require("gulp-uglify");
-var xtend = require("xtend");
 var zip = require("gulp-zip");
 
 var PATHS = {
