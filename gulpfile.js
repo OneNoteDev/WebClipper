@@ -215,10 +215,9 @@ gulp.task("tslint", function() {
 // BUNDLE
 ////////////////////////////////////////
 function generateBrowserifyTasks(folderPath, files, standalone) {
-	var cachedBrowserify = getCachedBrowserify(standalone);
-
 	var tasks = [];
 	for (var i = 0; i < files.length; i++) {
+		var cachedBrowserify = getCachedBrowserify(standalone);
 		cachedBrowserify.add(folderPath + files[i]);
 		tasks.push(cachedBrowserify.bundle()
 			.pipe(source(files[i]))
@@ -238,7 +237,7 @@ function getCachedBrowserify(standalone) {
 		fullPaths: true
 	};
 	if (standalone) {
-        opts.standalone = standalone;
+		opts.standalone = standalone;
 	}
 	var b = browserify(xtend(browserifyInc.args, opts));
 	browserifyInc(b, { cacheFile: "./browserify-cache.json" });
@@ -587,7 +586,7 @@ function exportChromeSrcFiles() {
 	var commonWebExtensionFiles = exportCommonWebExtensionFiles(targetDir);
 
 	var chromeTask = gulp.src([
-			PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json"
+		PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json"
 	]).pipe(gulp.dest(targetDir));
 
 	return merge(srcCommonTask, commonWebExtensionFiles, chromeTask);
