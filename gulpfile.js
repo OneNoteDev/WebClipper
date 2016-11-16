@@ -4,7 +4,6 @@ var require;
 
 var argv = require("yargs").argv;
 var browserify = require("browserify");
-var browserifyInc = require("browserify-incremental");
 var concat = require("gulp-concat");
 var del = require("del");
 var fileExists = require("file-exists");
@@ -214,34 +213,15 @@ gulp.task("tslint", function() {
 ////////////////////////////////////////
 // BUNDLE
 ////////////////////////////////////////
-function generateBrowserifyTasks(folderPath, files, standalone) {
+function generateBrowserifyTasks(folderPath, files) {
 	var tasks = [];
 	for (var i = 0; i < files.length; i++) {
-		var cachedBrowserify = getCachedBrowserify(standalone);
-		cachedBrowserify.add(folderPath + files[i]);
-		tasks.push(cachedBrowserify.bundle()
+		tasks.push(browserify(folderPath + files[i])
+			.bundle()
 			.pipe(source(files[i]))
 			.pipe(gulp.dest(PATHS.BUNDLEROOT)));
 	}
-
 	return tasks;
-}
-
-// TODO refactor the stadalone param to pass in override options
-function getCachedBrowserify(standalone) {
-	var opts = {
-		debug: true,
-		extensions: [".js", ".jsx"],
-		cache: {},
-		packageCache: {},
-		fullPaths: true
-	};
-	if (standalone) {
-		opts.standalone = standalone;
-	}
-	var b = browserify(xtend(browserifyInc.args, opts));
-	browserifyInc(b, { cacheFile: "./browserify-cache.json" });
-	return b;
 }
 
 gulp.task("bundleAppendIsInstalledMarker", function () {
@@ -277,12 +257,10 @@ gulp.task("bundleLogManager", function () {
 });
 
 gulp.task("bundleBookmarklet", function() {
-	var cachedBrowserify = getCachedBrowserify();
-	cachedBrowserify.add(PATHS.BUILDROOT + "scripts/extensions/bookmarklet/bookmarkletInject.js");
-	var task = cachedBrowserify.bundle()
+	return browserify(PATHS.BUILDROOT + "scripts/extensions/bookmarklet/bookmarkletInject.js")
+		.bundle()
 		.pipe(source("bookmarklet.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-	return task;
 });
 
 gulp.task("bundleChrome", function() {
