@@ -21,7 +21,7 @@ export class PreviewViewerTests extends TestModule {
 	private stringsJson = require("../../strings.json");
 
 	protected module() {
-		return "previewViewerFullPageMode";
+		return "previewViewer";
 	}
 
 	protected tests() {
@@ -141,33 +141,13 @@ export class PreviewViewerTests extends TestModule {
 			ok(previewHeaderInput.readOnly);
 		});
 
-		test("When the pdf screenshot response is a failure, the preview should display an error message in Full Page mode", () => {
-			let expectedMessage = "An error message.";
-
-			let clipperState = HelperFunctions.getMockClipperState();
-			clipperState.pageInfo.contentType = OneNoteApi.ContentType.EnhancedUrl;
-			clipperState.currentMode.set(ClipMode.FullPage);
-			clipperState.pdfResult = {
-				data: new SmartValue<PdfScreenshotResult>({ failureMessage: expectedMessage }),
-				status: Status.Failed
-			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
-
-			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
-			strictEqual(previewHeaderInput.value, expectedMessage,
-				"The title of the page should be displayed in the preview title");
-			ok(previewHeaderInput.readOnly);
-		});
-
-		QUnit.module("previewViewerRegionMode", {});
-
 		test("The tab order flow from the header to the preview title is correct in Region mode, and each tab index should not be less than 1", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
 			HelperFunctions.mountToFixture(defaultComponent);
 
 			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.addRegionControl, elem: document.getElementById(Constants.Ids.addRegionControl) },
+				{ name: Constants.Ids.addRegionControl, elem: document.getElementById(Constants.Ids.addAnotherRegionButton) },
 				{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
 			];
 
@@ -336,8 +316,6 @@ export class PreviewViewerTests extends TestModule {
 					"The image should render the data url in state");
 			}
 		});
-
-		QUnit.module("previewViewerAugmentationMode", {});
 
 		let sansSerifFontFamily = this.stringsJson["WebClipper.FontFamily.Preview.SansSerifDefault"];
 		let sansSerifDefaultFontSize = this.stringsJson["WebClipper.FontSize.Preview.SansSerifDefault"];
@@ -646,7 +624,7 @@ export class PreviewViewerTests extends TestModule {
 				highlightButton.click();
 			});
 
-			ok(augmentationPreview.state.highlighterEnabled);
+			ok(augmentationPreview.props.clipperState.previewGlobalInfo.highlighterEnabled);
 		});
 
 		test("If the user is highlighting (i.e., highlighting mode is active), then the 'active' class should be applied to the highlightButton in Augmentation mode", () => {
