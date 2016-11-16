@@ -314,12 +314,10 @@ gulp.task("bundleSafari", function () {
 });
 
 gulp.task("bundleTests", function () {
-	var cachedBrowserify = getCachedBrowserify();
-	cachedBrowserify.add(PATHS.BUILDROOT + "tests/tests.js");
-	var task = cachedBrowserify.bundle()
+	return browserify(PATHS.BUILDROOT + "tests/tests.js")
+		.bundle()
 		.pipe(source("tests.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT + "tests"));
-	return task;
+		.pipe(gulp.dest(PATHS.BUNDLEROOT));
 });
 
 gulp.task("bundle", function(callback) {
@@ -804,7 +802,7 @@ function exportSafariLibFiles() {
 
 function exportTestJS() {
 	var targetDir = PATHS.SERVERROOT + "tests/";
-	var defaultExportJSTask = gulp.src(PATHS.BUNDLEROOT + "tests/**", { base: PATHS.BUNDLEROOT + "tests/" })
+	var defaultExportJSTask = gulp.src(PATHS.BUNDLEROOT + "tests.js")
 		.pipe(gulp.dest(targetDir));
 
 	var logManagerExportJSTask = gulp.src(PATHS.BUNDLEROOT + "logManager.js")
