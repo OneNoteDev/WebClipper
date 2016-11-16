@@ -36,7 +36,6 @@ var PATHS = {
 	BUILDROOT: "build/",
 	BUNDLEROOT: "build/bundles/",
 	LIBROOT: "lib/",
-	SERVERROOT: "serverRoot/root/",
 	TARGET: {
 		ROOT: "target/",
 		BOOKMARKLET: "target/bookmarklet/",
@@ -45,7 +44,8 @@ var PATHS = {
 		EDGE_EXTENSION: "target/edge/OneNoteWebClipper/edgeextension/manifest/extension/",
 		FIREFOX: "target/firefox/",
 		// Note: The Safari extension folder MUST end in ".safariextension"
-		SAFARI: "target/clipper.safariextension/"
+		SAFARI: "target/clipper.safariextension/",
+		TESTS: "target/tests/"
 	},
 	NODE_MODULES: "node_modules/",
 	INTERNAL: {
@@ -75,8 +75,7 @@ gulp.task("clean", ["cleanInternal"], function(callback) {
 	return del([
 		PATHS.BUILDROOT,
 		PATHS.BUNDLEROOT,
-		PATHS.TARGET.ROOT,
-		PATHS.SERVERROOT
+		PATHS.TARGET.ROOT
 	], callback);
 });
 
@@ -426,7 +425,7 @@ targetDirHasExportedCommonJs[PATHS.TARGET.CHROME] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.EDGE_EXTENSION] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.FIREFOX] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.SAFARI] = false;
-targetDirHasExportedCommonJs[PATHS.SERVERROOT + "clipper/"] = false;
+targetDirHasExportedCommonJs[PATHS.TARGET.TESTS] = false;
 function exportCommonJS(targetDir) {
 	if (!targetDirHasExportedCommonJs[targetDir]) {
 		var defaultExportTask = gulp.src([
@@ -860,7 +859,7 @@ function exportSafariLibFiles() {
 }
 
 function exportTestJS() {
-	var targetDir = PATHS.SERVERROOT + "tests/";
+	var targetDir = PATHS.TARGET.TESTS;
 	var defaultExportJSTask = gulp.src(PATHS.BUNDLEROOT + "tests/**", { base: PATHS.BUNDLEROOT + "tests/" })
 		.pipe(gulp.dest(targetDir));
 
@@ -871,7 +870,7 @@ function exportTestJS() {
 }
 
 function exportTestSrcFiles() {
-	var targetDir = PATHS.SERVERROOT + "tests/";
+	var targetDir = PATHS.TARGET.TESTS;
 
 	return gulp.src(PATHS.SRC.ROOT + "tests/tests.html")
 		.pipe(rename("index.html"))
@@ -879,7 +878,7 @@ function exportTestSrcFiles() {
 }
 
 function exportTestLibFiles() {
-	var targetDir = PATHS.SERVERROOT + "tests/";
+	var targetDir = PATHS.TARGET.TESTS;
 
 	var testLibFiles = [
 		PATHS.LIBROOT + "tests/bind_polyfill.js",
@@ -992,10 +991,9 @@ gulp.task("exportJS", function() {
 	var edgeTask = exportEdgeJS();
 	var firefoxTask = exportFirefoxJS();
 	var safariTask = exportSafariJS();
-	var exampleTask = exportBookmarkletJS(PATHS.SERVERROOT + "clipper/");
 	var testTask = exportTestJS();
 
-	return merge(bookmarkletTask, chromeTask, edgeTask, firefoxTask, safariTask, exampleTask, testTask);
+	return merge(bookmarkletTask, chromeTask, edgeTask, firefoxTask, safariTask, testTask);
 });
 
 gulp.task("exportCSS", function() {
@@ -1003,9 +1001,8 @@ gulp.task("exportCSS", function() {
 	var chromeTask = exportChromeCSS();
 	var edgeTask = exportEdgeCSS();
 	var safariTask = exportSafariCSS();
-	var exampleTask = exportBookmarkletCSS(PATHS.SERVERROOT + "clipper/");
 
-	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, exampleTask);
+	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask);
 });
 
 gulp.task("exportSrcFiles", function() {
@@ -1013,10 +1010,9 @@ gulp.task("exportSrcFiles", function() {
 	var chromeTask = exportChromeSrcFiles();
 	var edgeTask = exportEdgeSrcFiles();
 	var safariTask = exportSafariSrcFiles();
-	var exampleTask = exportBookmarkletSrcFiles(PATHS.SERVERROOT + "clipper/");
 	var testTask = exportTestSrcFiles();
 
-	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, exampleTask, testTask);
+	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, testTask);
 });
 
 gulp.task("export", function(callback) {
@@ -1079,7 +1075,7 @@ gulp.task("minify", function(callback) {
 // RUN
 ////////////////////////////////////////
 gulp.task("runTests", function() {
-	return qunit(PATHS.SERVERROOT + "tests/index.html");
+	return qunit(PATHS.TARGET.TESTS + "/index.html");
 });
 
 ////////////////////////////////////////
