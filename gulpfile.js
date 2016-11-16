@@ -314,18 +314,12 @@ gulp.task("bundleSafari", function () {
 });
 
 gulp.task("bundleTests", function () {
-	// We have to generate a new cachedBrowserify on the inner loop to prevent EMFILE errors
-	var filePaths = globby.sync(["**/*.js"], { cwd: PATHS.BUILDROOT + "tests" });
-	var tasks = [];
-	for (var i = 0; i < filePaths.length; i++) {
-		var filePath = filePaths[i];
-		var cachedBrowserify = getCachedBrowserify();
-		cachedBrowserify.add(PATHS.BUILDROOT + "tests/" + filePath);
-		tasks.push(cachedBrowserify.bundle()
-			.pipe(source(filePath))
-			.pipe(gulp.dest(PATHS.BUNDLEROOT + "tests")));
-	}
-	return merge(tasks);
+	var cachedBrowserify = getCachedBrowserify();
+	cachedBrowserify.add(PATHS.BUILDROOT + "tests/tests.js");
+	var task = cachedBrowserify.bundle()
+		.pipe(source("tests.js"))
+		.pipe(gulp.dest(PATHS.BUNDLEROOT + "tests"));
+	return task;
 });
 
 gulp.task("bundle", function(callback) {

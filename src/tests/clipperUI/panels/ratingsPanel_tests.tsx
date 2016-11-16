@@ -15,22 +15,9 @@ import {ObjectUtils} from "../../../scripts/objectUtils";
 import {Settings} from "../../../scripts/settings";
 
 import {HelperFunctions} from "../../helperFunctions";
+import {TestModule} from "../../testModule";
 
-let mockStorage: { [key: string]: string };
-let mockStorageCache: { [key: string]: string };
-
-QUnit.module("ratingsPanel", {
-	beforeEach: () => {
-		Settings.setSettingsJsonForTesting({});
-
-		mockStorage = {};
-		mockStorageCache = {};
-		HelperFunctions.mockFrontEndGlobals(mockStorage, mockStorageCache);
-		RatingsHelper.preCacheNeededValues();
-	}
-});
-
-export module TestConstants {
+module TestConstants {
 	export module LogCategories {
 		export var oneNoteClipperUsage = "OneNoteClipperUsage";
 	}
@@ -39,352 +26,378 @@ export module TestConstants {
 	}
 }
 
-test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.Rate when rate url exists", (assert: QUnitAssert) => {
-	let done = assert.async();
+export class RatingsPanelTests extends TestModule {
+	private mockStorage: { [key: string]: string };
+	private mockStorageCache: { [key: string]: string };
 
-	Settings.setSettingsJsonForTesting({
-		"ChromeExtension_RatingUrl": {
-			"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
-		}
-	});
+	protected module() {
+		return "ratingsPanel";
+	}
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+	protected beforeEach() {
+		Settings.setSettingsJsonForTesting({});
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+		this.mockStorage = {};
+		this.mockStorageCache = {};
+		HelperFunctions.mockFrontEndGlobals(this.mockStorage, this.mockStorageCache);
+		RatingsHelper.preCacheNeededValues();
+	}
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+	protected afterEach() {
+		Settings.setSettingsJsonForTesting(undefined);
+	}
 
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-	});
+	protected tests() {
+		test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.Rate when rate url exists", (assert: QUnitAssert) => {
+			let done = assert.async();
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Rate]);
+			Settings.setSettingsJsonForTesting({
+				"ChromeExtension_RatingUrl": {
+					"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
+				}
+			});
 
-	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, "true");
-		done();
-	});
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.End when rate url does not exist", (assert: QUnitAssert) => {
-	let done = assert.async();
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
+			HelperFunctions.simulateAction(() => {
+				initPositive.click();
+			});
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Rate]);
 
-	let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-	HelperFunctions.simulateAction(() => {
-		initPositive.click();
-	});
+			Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+				strictEqual(doNotPromptRatingsAsStr, "true");
+				done();
+			});
+		});
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
+		test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.End when rate url does not exist", (assert: QUnitAssert) => {
+			let done = assert.async();
 
-	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, "true");
-		done();
-	});
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goes to RatingsPromptStage.Feedback when feedback url exists (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
-	let done = assert.async();
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	Settings.setSettingsJsonForTesting({
-		"LogCategory_RatingsPrompt": {
-			"Value": TestConstants.LogCategories.oneNoteClipperUsage
-		}
-	});
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
+			let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
+			HelperFunctions.simulateAction(() => {
+				initPositive.click();
+			});
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+				strictEqual(doNotPromptRatingsAsStr, "true");
+				done();
+			});
+		});
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+		test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goes to RatingsPromptStage.Feedback when feedback url exists (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
+			let done = assert.async();
 
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
+			Settings.setSettingsJsonForTesting({
+				"LogCategory_RatingsPrompt": {
+					"Value": TestConstants.LogCategories.oneNoteClipperUsage
+				}
+			});
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Feedback]);
+			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, undefined, "doNotPromptRatings should be undefined");
-		done();
-	});
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goes to RatingsPromptStage.End when feedback url does not exist (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
-	let done = assert.async();
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
+			HelperFunctions.simulateAction(() => {
+				initNegative.click();
+			});
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Feedback]);
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+				strictEqual(doNotPromptRatingsAsStr, undefined, "doNotPromptRatings should be undefined");
+				done();
+			});
+		});
 
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
+		test("'Negative' click at RatingsPromptStage.Init without a prior bad rating goes to RatingsPromptStage.End when feedback url does not exist (and doNotPromptRatings === undefined)", (assert: QUnitAssert) => {
+			let done = assert.async();
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
+			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, undefined, "doNotPromptRatings should be undefined");
-		done();
-	});
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets doNotPromptRatings to 'true' (feedback url exists)", (assert: QUnitAssert) => {
-	let done = assert.async();
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	Settings.setSettingsJsonForTesting({
-		"LogCategory_RatingsPrompt": {
-			"Value": TestConstants.LogCategories.oneNoteClipperUsage
-		}
-	});
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
+			let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
+			HelperFunctions.simulateAction(() => {
+				initNegative.click();
+			});
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+				strictEqual(doNotPromptRatingsAsStr, undefined, "doNotPromptRatings should be undefined");
+				done();
+			});
+		});
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+		test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets doNotPromptRatings to 'true' (feedback url exists)", (assert: QUnitAssert) => {
+			let done = assert.async();
 
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
+			Settings.setSettingsJsonForTesting({
+				"LogCategory_RatingsPrompt": {
+					"Value": TestConstants.LogCategories.oneNoteClipperUsage
+				}
+			});
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Feedback]);
+			Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, "true");
-		done();
-	});
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets doNotPromptRatings to 'true' (feedback url does not exist)", (assert: QUnitAssert) => {
-	let done = assert.async();
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
-	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
+			HelperFunctions.simulateAction(() => {
+				initNegative.click();
+			});
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.Feedback]);
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+				strictEqual(doNotPromptRatingsAsStr, "true");
+				done();
+			});
+		});
 
-	let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-	HelperFunctions.simulateAction(() => {
-		initNegative.click();
-	});
+		test("'Negative' click at RatingsPromptStage.Init with a prior bad rating sets doNotPromptRatings to 'true' (feedback url does not exist)", (assert: QUnitAssert) => {
+			let done = assert.async();
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
+			Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
+			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-	Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
-		strictEqual(doNotPromptRatingsAsStr, "true");
-		done();
-	});
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End when rate url exists", () => {
-	Settings.setSettingsJsonForTesting({
-		"ChromeExtension_RatingUrl": {
-			"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
-		}
-	});
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
+			HelperFunctions.simulateAction(() => {
+				initNegative.click();
+			});
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
 
-	// skip to RATE panel
-	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
-	m.redraw(true);
+			Clipper.getStoredValue(ClipperStorageKeys.doNotPromptRatings, (doNotPromptRatingsAsStr: string) => {
+				strictEqual(doNotPromptRatingsAsStr, "true");
+				done();
+			});
+		});
 
-	let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
-	HelperFunctions.simulateAction(() => {
-		ratePositive.click();
-	});
+		test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End when rate url exists", () => {
+			Settings.setSettingsJsonForTesting({
+				"ChromeExtension_RatingUrl": {
+					"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
+				}
+			});
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'Rate' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			// skip to RATE panel
+			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
+			m.redraw(true);
 
-	// skip to RATE panel
-	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
-	m.redraw(true);
+			let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
+			HelperFunctions.simulateAction(() => {
+				ratePositive.click();
+			});
 
-	let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
-	ok(ObjectUtils.isNullOrUndefined(ratePositive), "'Rate' button should not exist");
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
+		});
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
-});
+		test("'Rate' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.None when rate url exists", () => {
-	Settings.setSettingsJsonForTesting({
-		"ChromeExtension_RatingUrl": {
-			"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
-		}
-	});
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			// skip to RATE panel
+			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
+			m.redraw(true);
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
+			ok(ObjectUtils.isNullOrUndefined(ratePositive), "'Rate' button should not exist");
 
-	// skip to RATE panel
-	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
-	m.redraw(true);
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
+		});
 
-	let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
-	HelperFunctions.simulateAction(() => {
-		rateNegative.click();
-	});
+		test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.None when rate url exists", () => {
+			Settings.setSettingsJsonForTesting({
+				"ChromeExtension_RatingUrl": {
+					"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
+				}
+			});
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			// skip to RATE panel
+			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
+			m.redraw(true);
 
-	// skip to RATE panel
-	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
-	m.redraw(true);
+			let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
+			HelperFunctions.simulateAction(() => {
+				rateNegative.click();
+			});
 
-	let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
-	ok(ObjectUtils.isNullOrUndefined(rateNegative), "'No Thanks' button should not exist");
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
+		});
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
-});
+		test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage.End when feedback url exists", () => {
-	Settings.setSettingsJsonForTesting({
-		"LogCategory_RatingsPrompt": {
-			"Value": TestConstants.LogCategories.oneNoteClipperUsage
-		}
-	});
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			// skip to RATE panel
+			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
+			m.redraw(true);
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
+			ok(ObjectUtils.isNullOrUndefined(rateNegative), "'No Thanks' button should not exist");
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
+		});
 
-	// skip to FEEDBACK panel
-	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
-	m.redraw(true);
+		test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage.End when feedback url exists", () => {
+			Settings.setSettingsJsonForTesting({
+				"LogCategory_RatingsPrompt": {
+					"Value": TestConstants.LogCategories.oneNoteClipperUsage
+				}
+			});
 
-	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
-	HelperFunctions.simulateAction(() => {
-		feedbackPositive.click();
-	});
+			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'Feedback' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
-	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			// skip to FEEDBACK panel
+			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
+			m.redraw(true);
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
+			HelperFunctions.simulateAction(() => {
+				feedbackPositive.click();
+			});
 
-	// skip to FEEDBACK panel
-	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
-	m.redraw(true);
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.End]);
+		});
 
-	let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
-	ok(ObjectUtils.isNullOrUndefined(feedbackPositive), "'Feedback' button should not exist");
+		test("'Feedback' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
+			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStage.None when feedback url exists", () => {
-	Settings.setSettingsJsonForTesting({
-		"LogCategory_RatingsPrompt": {
-			"Value": TestConstants.LogCategories.oneNoteClipperUsage
-		}
-	});
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			// skip to FEEDBACK panel
+			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
+			m.redraw(true);
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
+			ok(ObjectUtils.isNullOrUndefined(feedbackPositive), "'Feedback' button should not exist");
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
+		});
 
-	// skip to FEEDBACK panel
-	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
-	m.redraw(true);
+		test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStage.None when feedback url exists", () => {
+			Settings.setSettingsJsonForTesting({
+				"LogCategory_RatingsPrompt": {
+					"Value": TestConstants.LogCategories.oneNoteClipperUsage
+				}
+			});
 
-	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
-	HelperFunctions.simulateAction(() => {
-		feedbackNegative.click();
-	});
+			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
 
-test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
-	Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-	let clipperState = HelperFunctions.getMockClipperState();
-	clipperState.showRatingsPrompt = true;
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
 
-	let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+			// skip to FEEDBACK panel
+			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
+			m.redraw(true);
 
-	let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
+			HelperFunctions.simulateAction(() => {
+				feedbackNegative.click();
+			});
 
-	// skip to FEEDBACK panel
-	controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
-	m.redraw(true);
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
+		});
 
-	let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
-	ok(ObjectUtils.isNullOrUndefined(feedbackNegative), "'No Thanks' button should not exist");
+		test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
+			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-	strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
-});
+			let clipperState = HelperFunctions.getMockClipperState();
+			clipperState.showRatingsPrompt = true;
+
+			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
+
+			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+
+			// skip to FEEDBACK panel
+			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
+			m.redraw(true);
+
+			let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
+			ok(ObjectUtils.isNullOrUndefined(feedbackNegative), "'No Thanks' button should not exist");
+
+			strictEqual(RatingsPromptStage[controllerInstance.state.userSelectedRatingsPromptStage], RatingsPromptStage[RatingsPromptStage.None]);
+		});
+	}
+}
+
+(new RatingsPanelTests()).runTests();

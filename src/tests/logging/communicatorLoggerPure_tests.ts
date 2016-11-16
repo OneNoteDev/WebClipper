@@ -7,85 +7,95 @@ import {Communicator} from "../../scripts/communicator/communicator";
 import * as Log from "../../scripts/logging/log";
 import {CommunicatorLoggerPure} from "../../scripts/logging/communicatorLoggerPure";
 
-let stubCommunicator: Communicator;
-let communicatorLoggerPure: CommunicatorLoggerPure;
+import {TestModule} from "../testModule";
 
-QUnit.module("communicatorLoggerPure", {
-	beforeEach: () => {
-		stubCommunicator = sinon.createStubInstance(Communicator) as any;
-		communicatorLoggerPure = new CommunicatorLoggerPure(stubCommunicator);
+export class CommunicatorLoggerPureTests extends TestModule {
+	private stubCommunicator: Communicator;
+	private communicatorLoggerPure: CommunicatorLoggerPure;
+
+	protected module() {
+		return "communicatorLoggerPure";
 	}
-});
 
-test("logEvent should call callRemoteFunction on the communicator", () => {
-	let event = new Log.Event.BaseEvent(0);
-	communicatorLoggerPure.logEvent(event);
+	protected beforeEach() {
+		this.stubCommunicator = sinon.createStubInstance(Communicator) as any;
+		this.communicatorLoggerPure = new CommunicatorLoggerPure(this.stubCommunicator);
+	}
 
-	let callRemoteFunctionSpy = <Sinon.SinonSpy>stubCommunicator.callRemoteFunction;
-	ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
-	ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
-		"callRemoteFunction should be called with the telemetry function key");
-});
+	protected tests() {
+		test("logEvent should call callRemoteFunction on the communicator", () => {
+			let event = new Log.Event.BaseEvent(0);
+			this.communicatorLoggerPure.logEvent(event);
 
-test("logFailure should call callRemoteFunction on the communicator", () => {
-	communicatorLoggerPure.logFailure(0, 0);
+			let callRemoteFunctionSpy = <Sinon.SinonSpy>this.stubCommunicator.callRemoteFunction;
+			ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
+			ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
+				"callRemoteFunction should be called with the telemetry function key");
+		});
 
-	let callRemoteFunctionSpy = <Sinon.SinonSpy>stubCommunicator.callRemoteFunction;
-	ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
-	ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
-		"callRemoteFunction should be called with the telemetry function key");
-});
+		test("logFailure should call callRemoteFunction on the communicator", () => {
+			this.communicatorLoggerPure.logFailure(0, 0);
 
-test("logUserFunnel should call callRemoteFunction on the communicator", () => {
-	communicatorLoggerPure.logUserFunnel(0);
+			let callRemoteFunctionSpy = <Sinon.SinonSpy>this.stubCommunicator.callRemoteFunction;
+			ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
+			ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
+				"callRemoteFunction should be called with the telemetry function key");
+		});
 
-	let callRemoteFunctionSpy = <Sinon.SinonSpy>stubCommunicator.callRemoteFunction;
-	ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
-	ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
-		"callRemoteFunction should be called with the telemetry function key");
-});
+		test("logUserFunnel should call callRemoteFunction on the communicator", () => {
+			this.communicatorLoggerPure.logUserFunnel(0);
 
-test("logSession should call callRemoteFunction on the communicator", () => {
-	communicatorLoggerPure.logSessionStart();
+			let callRemoteFunctionSpy = <Sinon.SinonSpy>this.stubCommunicator.callRemoteFunction;
+			ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
+			ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
+				"callRemoteFunction should be called with the telemetry function key");
+		});
 
-	let callRemoteFunctionSpy = <Sinon.SinonSpy>stubCommunicator.callRemoteFunction;
-	ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
-	ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
-		"callRemoteFunction should be called with the telemetry function key");
-});
+		test("logSession should call callRemoteFunction on the communicator", () => {
+			this.communicatorLoggerPure.logSessionStart();
 
-test("logTrace should call callRemoteFunction on the communicator", () => {
-	communicatorLoggerPure.logTrace(0, 0);
+			let callRemoteFunctionSpy = <Sinon.SinonSpy>this.stubCommunicator.callRemoteFunction;
+			ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
+			ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
+				"callRemoteFunction should be called with the telemetry function key");
+		});
 
-	let callRemoteFunctionSpy = <Sinon.SinonSpy>stubCommunicator.callRemoteFunction;
-	ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
-	ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
-		"callRemoteFunction should be called with the telemetry function key");
-});
+		test("logTrace should call callRemoteFunction on the communicator", () => {
+			this.communicatorLoggerPure.logTrace(0, 0);
 
-test("pushToStream should call callRemoteFunction on the communicator", () => {
-	communicatorLoggerPure.pushToStream(0, "x");
+			let callRemoteFunctionSpy = <Sinon.SinonSpy>this.stubCommunicator.callRemoteFunction;
+			ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
+			ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
+				"callRemoteFunction should be called with the telemetry function key");
+		});
 
-	let callRemoteFunctionSpy = <Sinon.SinonSpy>stubCommunicator.callRemoteFunction;
-	ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
-	ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
-		"callRemoteFunction should be called with the telemetry function key");
-});
+		test("pushToStream should call callRemoteFunction on the communicator", () => {
+			this.communicatorLoggerPure.pushToStream(0, "x");
 
-test("logClickEvent should call callRemoteFunction on the communicator", () => {
-	communicatorLoggerPure.logClickEvent("abc");
+			let callRemoteFunctionSpy = <Sinon.SinonSpy>this.stubCommunicator.callRemoteFunction;
+			ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
+			ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
+				"callRemoteFunction should be called with the telemetry function key");
+		});
 
-	let callRemoteFunctionSpy = <Sinon.SinonSpy>stubCommunicator.callRemoteFunction;
-	ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
-	ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
-		"callRemoteFunction should be called with the telemetry function key");
-});
+		test("logClickEvent should call callRemoteFunction on the communicator", () => {
+			this.communicatorLoggerPure.logClickEvent("abc");
 
-test("setContextProperty should call callRemoteFunction on the communicator", () => {
-	communicatorLoggerPure.setContextProperty("xyz", "abc");
+			let callRemoteFunctionSpy = <Sinon.SinonSpy>this.stubCommunicator.callRemoteFunction;
+			ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
+			ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
+				"callRemoteFunction should be called with the telemetry function key");
+		});
 
-	let callRemoteFunctionSpy = <Sinon.SinonSpy>stubCommunicator.callRemoteFunction;
-	ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
-	ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
-		"callRemoteFunction should be called with the telemetry function key");
-});
+		test("setContextProperty should call callRemoteFunction on the communicator", () => {
+			this.communicatorLoggerPure.setContextProperty("xyz", "abc");
+
+			let callRemoteFunctionSpy = <Sinon.SinonSpy>this.stubCommunicator.callRemoteFunction;
+			ok(callRemoteFunctionSpy.calledOnce, "callRemoteFunction was called once");
+			ok(callRemoteFunctionSpy.calledWith(Constants.FunctionKeys.telemetry),
+				"callRemoteFunction should be called with the telemetry function key");
+		});
+	}
+}
+
+(new CommunicatorLoggerPureTests()).runTests();
