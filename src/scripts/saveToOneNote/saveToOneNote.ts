@@ -79,13 +79,11 @@ export class SaveToOneNote {
 					return this.patch(pageId, options.page).then(() => {
 						return Promise.resolve(responsePackage);
 					});
-				}
-				// } else if (options.page.getNumBatches() > 0) {
-				// 	return this.batch(options.page).then(() => {
-				// 		return Promise.resolve(responsePackage);
-				// 	});
-				// }
-				else {
+				} else if (options.page.getNumBatches() > 0) {
+					return this.batch(options.page).then(() => {
+						return Promise.resolve(responsePackage);
+					});
+				} else {
 					return Promise.resolve(responsePackage);
 				}
 			});

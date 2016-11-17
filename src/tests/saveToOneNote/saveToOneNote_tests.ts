@@ -454,7 +454,7 @@ test("When saving a pdf and a save location is specified, if the PATCH call fail
 	});
 });
 
-test("When saving a pdf as a BATCH, and createPage and all subsequent BATCH calls succeed, save() should resolve with the parsed response and request in a responsePackage", (assert: QUnitAssert) => {
+test("When saving a pdf as a BATCH, if createPage and all subsequent BATCH calls succeed, save() should resolve with the parsed response and request in a responsePackage", (assert: QUnitAssert) => {
 	let done = assert.async();
 
 	let saveLocation = "sectionId";
@@ -464,8 +464,6 @@ test("When saving a pdf as a BATCH, and createPage and all subsequent BATCH call
 	let createPageJson = {
 		id: pageId
 	};
-
-	ok(true);
 
 	// Create initial page
 	server.respondWith(
@@ -483,10 +481,6 @@ test("When saving a pdf as a BATCH, and createPage and all subsequent BATCH call
 	let page = getMockSaveablePdfBatched([0, 1], saveLocation, titleText);
 
 	saveToOneNote.save({ page: page, saveLocation: saveLocation }).then((responsePackage) => {
-
-	});
-
-	saveToOneNote.save({ page: getMockSaveablePage(), saveLocation: saveLocation }).then((responsePackage) => {
 		deepEqual(responsePackage.parsedResponse, createPageJson, "The parsedResponse field should be the response in json form");
 		ok(responsePackage.request, "The request field should be defined");
 	}, (error) => {
@@ -496,17 +490,74 @@ test("When saving a pdf as a BATCH, and createPage and all subsequent BATCH call
 	});
 });
 
-test("When saving a pdf as a BATCH, and the initial createPage call fails, save() should reject() with the error object", (assert: QUnitAssert)  => {
+test("When saving a pdf as a BATCH, if createPage call fails, save() should reject() with the error object", (assert: QUnitAssert)  => {
 	let done = assert.async();
-	ok(true);
+	
+	let saveLocation = "sectionId";
+	const titleText = "PDF.pdf";
+
+	let pageId = "abc";
+	let createPageJson = {
+		id: pageId
+	};
+
+	// Create initial page
+	server.respondWith(
+		"POST", "https://www.onenote.com/api/v1.0/me/notes/sections/" + saveLocation + "/pages",
+		[404, { "Content-Type": "application/json" },
+		JSON.stringify(createPageJson)
+	]);
+
+	let page = getMockSaveablePdfBatched([0, 1], saveLocation, titleText);
+
+	saveToOneNote.save({ page: page, saveLocation: saveLocation }).then((responsePackage) => {
+		ok(false, "resolve should not be called");
+	}, (error) => {
+		deepEqual(error,
+			{ error: "Unexpected response status", statusCode: 404, responseHeaders: { "Content-Type": "application/json" }, response: JSON.stringify(createPageJson), timeout: 30000 },
+			"The error object should be returned in the reject");
+	}).then(() => {
+		done();
+	});
 });
 
-test("When saving a pdf as a BATCH, and the initial createPage succeeds, but the BATCH fails, save() should reject() with the error object", (assert: QUnitAssert)  => {
+test("When saving a pdf as a BATCH, if createPage succeeds, but the BATCH fails, save() should reject() with the error object", (assert: QUnitAssert)  => {
 	let done = assert.async();
-	ok(true);
+
+	let saveLocation = "sectionId";
+	const titleText = "PDF.pdf";
+
+	let pageId = "abc";
+	let createPageJson = {
+		id: pageId
+	};
+
+	// Create initial page
+	server.respondWith(
+		"POST", "https://www.onenote.com/api/v1.0/me/notes/sections/" + saveLocation + "/pages",
+		[200, { "Content-Type": "application/json" },
+		JSON.stringify(createPageJson)
+        ]);
+
+    let batchResponse = "";
+    
+	// Send BATCH request
+	server.respondWith(
+		"POST", "https://www.onenote.com/api/beta/$batch",
+		[404, { "Content-Type": "application/json" },
+			JSON.stringify(batchResponse)
+		]);
+
+	let page = getMockSaveablePdfBatched([0, 1], saveLocation, titleText);    
+    
+	saveToOneNote.save({ page: page, saveLocation: saveLocation }).then((responsePackage) => {
+		ok(false, "resolve should not be called");
+	}, (error) => {
+		deepEqual(error,
+			{ error: "Unexpected response status", statusCode: 404, responseHeaders: { "Content-Type": "application/json" }, response: JSON.stringify(batchResponse), timeout: 30000 },
+			"The error object should be returned in the reject");
+	}).then(() => {
+		done();
+	});
 });
 
-test("When saving a pdf as a BATCH, if any of the BATCH calls fail, save() should reject() with the error object", (assert: QUnitAssert)  => {
-	let done = assert.async();
-	ok(true);
-});

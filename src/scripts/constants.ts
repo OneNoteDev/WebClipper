@@ -26,6 +26,7 @@ export module Constants {
 
 		// pdfPreviewViewer
 		export var attachmentOverlay = "attachment-overlay";
+		export var centeredInCanvas = "centered-in-canvas";
 		export var overlay = "overlay";
 		export var overlayHidden = "overlay-hidden";
 		export var overlayNumber = "overlay-number";

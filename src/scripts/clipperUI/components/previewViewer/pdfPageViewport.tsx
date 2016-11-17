@@ -47,6 +47,7 @@ class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
 			</div>
 		);
 	}
+
 }
 
 let component = PdfPageViewportClass.componentize();
