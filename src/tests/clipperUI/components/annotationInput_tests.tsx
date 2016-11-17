@@ -5,7 +5,6 @@ import {AnnotationInput} from "../../../scripts/clipperUI/components/annotationI
 import {ClipperState} from "../../../scripts/clipperUI/clipperState";
 import {ComponentBase} from "../../../scripts/clipperUI/componentBase";
 
-import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";

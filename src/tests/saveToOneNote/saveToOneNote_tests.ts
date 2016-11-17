@@ -14,8 +14,7 @@ import {OneNoteSaveablePdf} from "../../scripts/saveToOneNote/oneNoteSaveablePdf
 
 import {ClipperStorageKeys} from "../../scripts/storage/clipperStorageKeys";
 
-import {HelperFunctions} from "../helperFunctions";
-
+import {AsyncUtils} from "../asyncUtils";
 import {TestModule} from "../testModule";
 
 export class SaveToOneNoteTests extends TestModule {
@@ -27,7 +26,7 @@ export class SaveToOneNoteTests extends TestModule {
 	}
 
 	protected beforeEach() {
-		HelperFunctions.mockSetTimeout();
+		AsyncUtils.mockSetTimeout();
 		this.server = sinon.fakeServer.create();
 		this.server.respondImmediately = true;
 
@@ -35,7 +34,7 @@ export class SaveToOneNoteTests extends TestModule {
 	}
 
 	protected afterEach() {
-		HelperFunctions.restoreSetTimeout();
+		AsyncUtils.restoreSetTimeout();
 		this.server.restore();
 	}
 

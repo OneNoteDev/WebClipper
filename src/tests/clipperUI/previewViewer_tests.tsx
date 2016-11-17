@@ -12,7 +12,6 @@ import {SmartValue} from "../../scripts/communicator/smartValue";
 
 import {Constants} from "../../scripts/constants";
 
-import {HelperFunctions} from "../helperFunctions";
 import {MithrilUtils} from "../mithrilUtils";
 import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";

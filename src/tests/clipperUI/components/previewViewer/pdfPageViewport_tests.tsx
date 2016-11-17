@@ -1,6 +1,5 @@
 import {PdfPageViewport} from "../../../../scripts/clipperUI/components/previewViewer/pdfPageViewport";
 
-import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 

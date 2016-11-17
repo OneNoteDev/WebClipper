@@ -11,7 +11,6 @@ import {InvokeMode} from "../../../scripts/extensions/invokeOptions";
 
 import {ClientType} from "../../../scripts/clientType";
 
-import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";

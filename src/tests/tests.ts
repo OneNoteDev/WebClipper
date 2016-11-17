@@ -1,14 +1,14 @@
+/// <reference path="../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
+
+// Initialization for all tests
 import {Polyfills} from "../scripts/polyfills";
+import {Clipper} from "../scripts/clipperUI/frontEndGlobals";
+import {Communicator} from "../scripts/communicator/communicator";
+import {StubSessionLogger} from "../scripts/logging/stubSessionLogger";
+import {MockMessageHandler} from "./communicator/mockMessageHandler";
 
 Polyfills.init();
 
-// TODO move this into an init()
-import {Clipper} from "../scripts/clipperUI/frontEndGlobals";
-import {Communicator} from "../scripts/communicator/communicator";
-import {MockMessageHandler} from "./communicator/mockMessageHandler";
-import {StubSessionLogger} from "../scripts/logging/stubSessionLogger";
-import {MockConsole} from "./logging/mockConsole";
-import {ProductionRequirements} from "../scripts/logging/context";
 Clipper.setInjectCommunicator(new Communicator(new MockMessageHandler(), "INJECT_MOCK_COMM"));
 Clipper.setExtensionCommunicator(new Communicator(new MockMessageHandler(), "EXTENSION_MOCK_COMM"));
 Clipper.logger = new StubSessionLogger();

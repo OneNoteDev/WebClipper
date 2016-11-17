@@ -6,7 +6,7 @@ import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
 
 import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCapture/augmentationHelper";
 
-import {HelperFunctions} from "../helperFunctions";
+import {AsyncUtils} from "../asyncUtils";
 import {MithrilUtils} from "../mithrilUtils";
 import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
@@ -22,7 +22,7 @@ export class AugmentationHelperTests extends TestModule {
 		this.server = sinon.fakeServer.create();
 		this.server.respondImmediately = true;
 
-		HelperFunctions.mockSetTimeout();
+		AsyncUtils.mockSetTimeout();
 
 		// The augmentation call waits on the session id, so we need to set this
 		Clipper.sessionId.set("abcde");
@@ -30,7 +30,7 @@ export class AugmentationHelperTests extends TestModule {
 
 	protected afterEach() {
 		this.server.restore();
-		HelperFunctions.restoreSetTimeout();
+		AsyncUtils.restoreSetTimeout();
 		Clipper.sessionId.set(undefined);
 	}
 

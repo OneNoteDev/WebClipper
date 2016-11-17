@@ -8,7 +8,6 @@ import {SectionPicker, SectionPickerClass, SectionPickerState} from "../../../sc
 
 import {ClipperStorageKeys} from "../../../scripts/storage/clipperStorageKeys";
 
-import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";

@@ -8,7 +8,6 @@ import {AugmentationModel} from "../../../../scripts/contentCapture/augmentation
 
 import {AugmentationPreview} from "../../../../scripts/clipperUI/components/previewViewer/augmentationPreview";
 
-import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";

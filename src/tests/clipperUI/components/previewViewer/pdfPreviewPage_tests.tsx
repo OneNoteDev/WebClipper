@@ -2,7 +2,6 @@ import {Constants} from "../../../../scripts/constants";
 
 import {PdfPreviewPage, PdfPreviewPageProp} from "../../../../scripts/clipperUI/components/previewViewer/pdfPreviewPage";
 
-import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 

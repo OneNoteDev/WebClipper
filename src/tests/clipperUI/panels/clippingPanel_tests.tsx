@@ -8,7 +8,6 @@ import {ClippingPanel} from "../../../scripts/clipperUI/panels/clippingPanel";
 
 import {AugmentationModel} from "../../../scripts/contentCapture/augmentationHelper";
 
-import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";

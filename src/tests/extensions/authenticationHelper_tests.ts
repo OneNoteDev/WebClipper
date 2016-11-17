@@ -5,7 +5,7 @@ import {ClipperData} from "../../scripts/storage/clipperData";
 import {Logger} from "../../scripts/logging/logger";
 import {UserInfoData} from "../../scripts/userInfo";
 
-import {HelperFunctions} from "../helperFunctions";
+import {AsyncUtils} from "../asyncUtils";
 import {TestModule} from "../testModule";
 
 declare let setTimeout;
@@ -145,7 +145,7 @@ export class AuthenticationHelperSinonTests extends TestModule {
 		this.server = sinon.fakeServer.create();
 		this.server.respondImmediately = true;
 
-		HelperFunctions.mockSetTimeout();
+		AsyncUtils.mockSetTimeout();
 
 		this.mockClipperData = sinon.createStubInstance(ClipperData) as any;
 		this.mockLogger = sinon.createStubInstance(Logger) as any;
@@ -154,7 +154,7 @@ export class AuthenticationHelperSinonTests extends TestModule {
 
 	protected afterEach() {
 		this.server.restore();
-		HelperFunctions.restoreSetTimeout();
+		AsyncUtils.restoreSetTimeout();
 	}
 
 	protected tests() {

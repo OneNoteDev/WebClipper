@@ -4,7 +4,6 @@ import {AuthType, UpdateReason} from "../../../scripts/userInfo";
 import {Status} from "../../../scripts/clipperUI/status";
 import {SignInPanel} from "../../../scripts/clipperUI/panels/signInPanel";
 
-import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";

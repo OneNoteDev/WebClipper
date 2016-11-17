@@ -5,7 +5,6 @@ import {PreviewViewerAugmentationHeader, PreviewViewerAugmentationHeaderProp} fr
 
 import {Constants} from "../../../../scripts/constants";
 
-import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 

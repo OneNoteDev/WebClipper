@@ -4,7 +4,6 @@ import {AugmentationHelper} from "../../scripts/contentCapture/augmentationHelpe
 
 import {DomUtils} from "../../scripts/domParsers/domUtils";
 
-import {HelperFunctions} from "../helperFunctions";
 import {TestModule} from "../testModule";
 import {MithrilUtils} from "../mithrilUtils";
 

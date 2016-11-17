@@ -6,7 +6,6 @@ import {Status} from "../../../../scripts/clipperUI/status";
 
 import {RegionPreview} from "../../../../scripts/clipperUI/components/previewViewer/regionPreview";
 
-import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";

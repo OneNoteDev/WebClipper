@@ -6,7 +6,6 @@ import {ObjectUtils} from "../../scripts/objectUtils";
 
 import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
 
-import {HelperFunctions} from "../helperFunctions";
 import {TestModule} from "../testModule";
 
 export class BookmarkHelperTests extends TestModule {

@@ -10,7 +10,6 @@ import {PdfScreenshotResult} from "../../../../scripts/contentCapture/pdfScreens
 
 import {PdfPreview} from "../../../../scripts/clipperUI/components/previewViewer/pdfPreview";
 
-import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";

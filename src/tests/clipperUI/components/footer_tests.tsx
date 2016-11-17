@@ -6,7 +6,6 @@ import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
 
 import {Footer} from "../../../scripts/clipperUI/components/footer";
 
-import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";

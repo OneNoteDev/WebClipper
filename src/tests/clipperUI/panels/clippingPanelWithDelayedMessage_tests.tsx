@@ -8,7 +8,6 @@ import {Status} from "../../../scripts/clipperUI/status";
 
 import {ClippingPanelWithDelayedMessage} from "../../../scripts/clipperUI/panels/clippingPanelWithDelayedMessage";
 
-import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";

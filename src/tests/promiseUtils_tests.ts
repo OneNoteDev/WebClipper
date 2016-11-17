@@ -1,6 +1,6 @@
 import {PromiseUtils, RetryOptions} from "../scripts/promiseUtils";
 
-import {HelperFunctions} from "./helperFunctions";
+import {AsyncUtils} from "./asyncUtils";
 import {TestModule} from "./testModule";
 
 export class PromiseUtilsTests extends TestModule {
@@ -14,11 +14,11 @@ export class PromiseUtilsTests extends TestModule {
 
 	protected beforeEach() {
 		this.callCount = 0;
-		HelperFunctions.mockSetTimeout();
+		AsyncUtils.mockSetTimeout();
 	}
 
 	protected afterEach() {
-		HelperFunctions.restoreSetTimeout();
+		AsyncUtils.restoreSetTimeout();
 	}
 
 	protected tests() {

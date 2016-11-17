@@ -8,7 +8,6 @@ import {OptionsPanel, OptionsPanelProp} from "../../../scripts/clipperUI/panels/
 
 import {AugmentationModel} from "../../../scripts/contentCapture/augmentationHelper";
 
-import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";

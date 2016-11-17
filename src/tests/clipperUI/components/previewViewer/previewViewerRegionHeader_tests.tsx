@@ -5,7 +5,6 @@ import {Status} from "../../../../scripts/clipperUI/status";
 
 import {Constants} from "../../../../scripts/constants";
 
-import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";

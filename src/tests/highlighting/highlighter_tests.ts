@@ -1,6 +1,5 @@
 import {Highlighter} from "../../scripts/highlighting/highlighter";
 
-import {HelperFunctions} from "../helperFunctions";
 import {MithrilUtils} from "../mithrilUtils";
 import {TestModule} from "../testModule";
 

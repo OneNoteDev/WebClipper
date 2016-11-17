@@ -5,7 +5,6 @@ import {ClipMode} from "../../../../scripts/clipperUI/clipMode";
 
 import {SelectionPreview} from "../../../../scripts/clipperUI/components/previewViewer/selectionPreview";
 
-import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";

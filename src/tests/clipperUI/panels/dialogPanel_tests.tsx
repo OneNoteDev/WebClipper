@@ -5,7 +5,6 @@ import {DialogButton, DialogPanel} from "../../../scripts/clipperUI/panels/dialo
 
 import {StubSessionLogger} from "../../../scripts/logging/stubSessionLogger";
 
-import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 

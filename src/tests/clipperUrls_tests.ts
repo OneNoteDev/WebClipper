@@ -3,7 +3,6 @@ import {ClipperUrls} from "../scripts/clipperUrls";
 import {Constants} from "../scripts/constants";
 import {StringUtils} from "../scripts/stringUtils";
 
-import {HelperFunctions} from "./helperFunctions";
 import {MockProps} from "./mockProps";
 import {TestModule} from "./testModule";
 
