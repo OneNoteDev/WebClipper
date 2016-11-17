@@ -113,6 +113,28 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		);
 	}
 
+	getOnePageForEntirePdfRadioElement(): any {
+		return (
+			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 190, false) }>
+				<div class="pdf-indicator pdf-radio-indicator">
+					{!this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+				</div>
+				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForAllPdfPages")}</span>
+			</div>
+		);
+	}
+
+	getOnePageForEachPdfPageRadioElement(): any {
+		return (
+			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 190, true) }>
+				<div class="pdf-indicator pdf-radio-indicator">
+					{this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+				</div>
+				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForEachPdfPage")}</span>
+			</div>
+		);
+	}
+
 	getAttachmentCheckbox(): any {
 		if (this.props.clipperState.pdfResult.status !== Status.Succeeded || this.props.clipperState.pdfResult.data.get().byteLength >= Constants.Settings.maximumMimeSizeLimit) {
 			return (
@@ -158,8 +180,9 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 				</div>
 				{this.getAllPagesRadioElement()}
 				{this.getPageRangeRadioElement()}
+				{this.getOnePageForEachPdfPageRadioElement()}
+				{this.getOnePageForEntirePdfRadioElement()}
 				{this.getAttachmentCheckbox()}
-				{this.getDistributePagesCheckbox()}
 			</div>
 		);
 

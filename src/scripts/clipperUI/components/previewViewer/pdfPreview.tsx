@@ -252,15 +252,15 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	}
 
 	protected getHeader(): any {
-		// return <PreviewViewerPdfHeader2 dummy />;
-		return <PreviewViewerPdfHeader
-			invalidRange={this.state.invalidRange}
-			shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
-			allPages={this.props.clipperState.pdfPreviewInfo.allPages}
-			onCheckboxChange={this.onCheckboxChange.bind(this)}
-			onSelectionChange={this.onSelectionChange.bind(this)}
-			onTextChange={this.onTextChange.bind(this)}
-			clipperState={this.props.clipperState} />;
+		return <PreviewViewerPdfHeader2 dummy />;
+		// return <PreviewViewerPdfHeader
+		// 	invalidRange={this.state.invalidRange}
+		// 	shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
+		// 	allPages={this.props.clipperState.pdfPreviewInfo.allPages}
+		// 	onCheckboxChange={this.onCheckboxChange.bind(this)}
+		// 	onSelectionChange={this.onSelectionChange.bind(this)}
+		// 	onTextChange={this.onTextChange.bind(this)}
+		// 	clipperState={this.props.clipperState} />;
 	}
 
 	protected getStatus(): Status {

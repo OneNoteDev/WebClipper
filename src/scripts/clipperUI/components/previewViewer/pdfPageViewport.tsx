@@ -35,7 +35,7 @@ class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
 			totalFrameCount={21}
 			loop={true} />;
 
-		return <div className={Constants.Classes.centeredInPreview}>{spinner}</div>;
+		return <div className={Constants.Classes.centeredInCanvas}>{spinner}</div>;
 	}
 
 	public render() {
