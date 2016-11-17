@@ -64,7 +64,7 @@
     "ssl-root-cas": "1.2.2",
     "tslint": "3.15.1",
     "typescript": "2.0.9",
-    "urijs": "1.18.2",
+    "urijs": "git://github.com/mttwc/URI.js.git#5f858d7d5142732784e02c64f126e79f1eb723c7",
     "velocity-animate": "1.2.3",
     "vinyl-source-stream": "1.1.0",
     "yargs": "6.0.0"
