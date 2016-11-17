@@ -6,6 +6,7 @@ import {PreviewViewerPdfHeader, PreviewViewerPdfHeaderProp} from "../../../../sc
 import {Constants} from "../../../../scripts/constants";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 import {ClipperState} from "../../../../scripts/clipperUI/clipperState";
@@ -50,7 +51,7 @@ export class PreviewViewerPdfHeaderTests extends TestModule {
 	protected tests() {
 		test("Given that the user selected all pages, the tabbing should flow from all pages radio button to page selection radio button to attachment checkbox button,"
 			+ "and each tab index should not be less than 1", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let elementsInExpectedTabOrder = [
 				{ name: Constants.Ids.radioAllPagesLabel, elem: document.getElementById(Constants.Ids.radioAllPagesLabel) },
@@ -70,7 +71,7 @@ export class PreviewViewerPdfHeaderTests extends TestModule {
 
 		test("Given that the user selected page ranges, the tabbing should flow from all pages radio button to page selection radio button to attachment checkbox button,"
 			+ "and each tab index should not be less than 1", () => {
-			HelperFunctions.mountToFixture(<PreviewViewerPdfHeader
+			MithrilUtils.mountToFixture(<PreviewViewerPdfHeader
 				onCheckboxChange={this.mockProp.onCheckboxChange}
 				onTextChange={this.mockProp.onTextChange}
 				onSelectionChange={this.mockProp.onSelectionChange}
@@ -98,7 +99,7 @@ export class PreviewViewerPdfHeaderTests extends TestModule {
 		test("Given that the user selected page ranges, and MIME size limit was exceeded, the tabbing should flow from all pages radio button to page selection radio button to range input,"
 			+ "and each tab index should not be less than 1", () => {
 			this.clipperState.pdfResult.data.get().byteLength = Constants.Settings.maximumMimeSizeLimit;
-			HelperFunctions.mountToFixture(<PreviewViewerPdfHeader
+			MithrilUtils.mountToFixture(<PreviewViewerPdfHeader
 				onCheckboxChange={this.mockProp.onCheckboxChange}
 				onTextChange={this.mockProp.onTextChange}
 				onSelectionChange={this.mockProp.onSelectionChange}
@@ -123,12 +124,12 @@ export class PreviewViewerPdfHeaderTests extends TestModule {
 		});
 
 		test("Given that the user selected all pages, the range input text box should not be present", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 			ok(!document.getElementById(Constants.Ids.rangeInput), "The range input should not be present");
 		});
 
 		test("Given that the user selected page ranges, the range input text box should be present", () => {
-			HelperFunctions.mountToFixture(<PreviewViewerPdfHeader
+			MithrilUtils.mountToFixture(<PreviewViewerPdfHeader
 				onCheckboxChange={this.mockProp.onCheckboxChange}
 				onTextChange={this.mockProp.onTextChange}
 				onSelectionChange={this.mockProp.onSelectionChange}

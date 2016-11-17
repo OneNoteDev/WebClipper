@@ -1,7 +1,7 @@
 import {ModeButton} from "../../../scripts/clipperUI/components/modeButton";
 
 import {HelperFunctions} from "../../helperFunctions";
-
+import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 
 module TestConstants {
@@ -33,9 +33,9 @@ export class ModeButtonTests extends TestModule {
 
 	protected tests() {
 		test("A non-selected button should not have extra styling applied to it", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let modeButton = HelperFunctions.getFixture().firstElementChild;
+			let modeButton = MithrilUtils.getFixture().firstElementChild;
 			ok(!modeButton.classList.contains(TestConstants.Classes.selected),
 				"The mode button should not have extra styling applied to it");
 		});
@@ -43,7 +43,7 @@ export class ModeButtonTests extends TestModule {
 		test("A selected button should have extra styling applied to it", () => {
 			let startingState = HelperFunctions.getMockModeButtonProps();
 			startingState.selected = true;
-			HelperFunctions.mountToFixture(<ModeButton
+			MithrilUtils.mountToFixture(<ModeButton
 					imgSrc={startingState.imgSrc}
 					label={startingState.label}
 					myMode={startingState.myMode}
@@ -52,48 +52,50 @@ export class ModeButtonTests extends TestModule {
 					onModeSelected={startingState.onModeSelected}
 					tooltipText={startingState.tooltipText}/>);
 
-			let modeButton = HelperFunctions.getFixture().firstElementChild;
+			let modeButton = MithrilUtils.getFixture().firstElementChild;
 			ok(modeButton.classList.contains(TestConstants.Classes.selected),
 				"The mode button should have extra styling applied to it");
 		});
 
 		test("A button should be labeled with its label prop", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let modeButton = HelperFunctions.getFixture().firstElementChild;
+			let modeButton = MithrilUtils.getFixture().firstElementChild;
 			let label = modeButton.getElementsByClassName(TestConstants.Classes.label)[0] as Node;
 			strictEqual(label.textContent, this.mockModeButtonProps.label,
 				"The mode button should be labeled with: " + this.mockModeButtonProps.label);
 		});
 
 		test("A button's tab index should match its tabIndex prop", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let modeButton = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			strictEqual(modeButton.tabIndex, this.mockModeButtonProps.tabIndex,
 				"The mode button's tab index should be: " + this.mockModeButtonProps.tabIndex);
 		});
 
 		test("A button's image src should match its imgSrc prop", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let modeButton = HelperFunctions.getFixture().firstElementChild;
+			let modeButton = MithrilUtils.getFixture().firstElementChild;
 			let label = modeButton.getElementsByClassName(TestConstants.Classes.icon)[0] as HTMLImageElement;
-			strictEqual(HelperFunctions.getBaseFileName(label.src), HelperFunctions.getBaseFileName(this.mockModeButtonProps.imgSrc),
+
+			// endsWith is polyfilled
+			ok((label.src as any).endsWith(this.mockModeButtonProps.imgSrc),
 				"The mode button's icon src should be: " + this.mockModeButtonProps.imgSrc);
 		});
 
 		test("A button's title attribute should match its tooltipText prop", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let modeButton = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			strictEqual(modeButton.title, this.mockModeButtonProps.tooltipText);
 		});
 
 		test("A button with undefined tooltipText should have an undefined title attribute", () => {
 			let startingState = HelperFunctions.getMockModeButtonProps();
 			startingState.tooltipText = undefined;
-			HelperFunctions.mountToFixture(<ModeButton
+			MithrilUtils.mountToFixture(<ModeButton
 					imgSrc={startingState.imgSrc}
 					label={startingState.label}
 					myMode={startingState.myMode}
@@ -102,7 +104,7 @@ export class ModeButtonTests extends TestModule {
 					onModeSelected={startingState.onModeSelected}
 					tooltipText={startingState.tooltipText}/>);
 
-			let modeButton = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			strictEqual(modeButton.title, "");
 		});
 	}

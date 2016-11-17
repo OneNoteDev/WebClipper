@@ -6,6 +6,7 @@ import {Status} from "../../scripts/clipperUI/status";
 import {DomUtils} from "../../scripts/domParsers/domUtils";
 
 import {HelperFunctions} from "../helperFunctions";
+import {MithrilUtils} from "../mithrilUtils";
 import {TestModule} from "../testModule";
 
 import {DataUrls} from "./regionSelector_tests_dataUrls";
@@ -25,12 +26,12 @@ export class RegionSelectorTests extends TestModule {
 
 	protected tests() {
 		test("The innerFrame's dimensions should match corners p1 (top left) and p2 (bottom right)", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 50, y: 60 };
 			let point2: Point = { x: 75, y: 100 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -51,12 +52,12 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The innerFrame's dimensions should match corners p1 (bottom left) and p2 (top right)", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 50, y: 60 };
 			let point2: Point = { x: 75, y: 30 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -77,12 +78,12 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The innerFrame's dimensions should match corners p1 (top right) and p2 (bottom left)", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 50, y: 60 };
 			let point2: Point = { x: 20, y: 100 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -103,12 +104,12 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The innerFrame's dimensions should match corners p1 (bottom right) and p2 (top left)", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 50, y: 60 };
 			let point2: Point = { x: 10, y: 10 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -129,12 +130,12 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The innerFrame's left and top values should be allowed to go negative if xMin and yMin are 0", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 0, y: 0 };
 			let point2: Point = { x: 75, y: 100 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -155,7 +156,7 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The innerFrame should not exist if no points have been registered, and the outerFrame should", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 			ok(document.getElementById(Constants.Ids.outerFrame),
 				"The outer frame should be rendered");
 			ok(!document.getElementById(Constants.Ids.innerFrame),
@@ -163,9 +164,9 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The innerFrame should not exist if only the first point has been registered, and the outerFrame should", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = { x: 50, y: 50 };
 			});
 
@@ -176,7 +177,7 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The outerFrame should be the size of the window", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			ok(document.getElementById(Constants.Ids.outerFrame),
 				"The outer frame should be rendered");
@@ -189,12 +190,12 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The outerFrame should not paint over the space occupied by the innerFrame", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 50, y: 60 };
 			let point2: Point = { x: 53, y: 63 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -213,12 +214,12 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The outerFrame should paint over the space not occupied by the innerFrame", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 45, y: 20 };
 			let point2: Point = { x: 47, y: 23 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -282,7 +283,7 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The winWidth and winHeight states should be equal to the window's innerWidth and innerHeight by default", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 			strictEqual(controllerInstance.state.winWidth, window.innerWidth,
 				"The winHeight state should equal window.innerWidth");
 			strictEqual(controllerInstance.state.winHeight, window.innerHeight,
@@ -290,7 +291,7 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The state's firstPoint and secondPoint should update accordingly after a drag event", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let from: Point = { x: 100, y: 100 };
 			let to: Point = { x: 200, y: 200 };
@@ -307,7 +308,7 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The state's firstPoint and secondPoint should be undefined if the drag distance is zero", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point: Point = { x: 100, y: 100 };
 
@@ -321,7 +322,7 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The state's firstPoint and secondPoint should be undefined if the horizontal drag distance is zero", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let from: Point = { x: 100, y: 100 };
 			let to: Point = { x: 100, y: 200 };
@@ -336,7 +337,7 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The state's firstPoint and secondPoint should be undefined if the vertical drag distance is zero", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let from: Point = { x: 100, y: 100 };
 			let to: Point = { x: 200, y: 100 };
@@ -351,7 +352,7 @@ export class RegionSelectorTests extends TestModule {
 		});
 
 		test("The state's secondPoint should be updated in the middle of the drag (i.e., before mouseup)", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let from: Point = { x: 100, y: 100 };
 			let to: Point = { x: 200, y: 200 };
@@ -368,7 +369,7 @@ export class RegionSelectorTests extends TestModule {
 
 		test("For a single white pixel as the region selection, its quality should not be downgraded", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let img = new Image();
 			let canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -386,7 +387,7 @@ export class RegionSelectorTests extends TestModule {
 
 		test("For a large image as the region selection, the resulting image should be downgraded sufficiently to not exceed maxBytesForMediaTypes", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let img = new Image();
 			let canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -403,12 +404,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("When the region selection is turned into a canvas, the canvas width and height should be the absolute distance between (x1,x2) and (y1,y2) respectively", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 50, y: 75 };
 			let point2: Point = { x: 51, y: 76 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -423,12 +424,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("When the region selection is turned into a canvas, the canvas width and height should be correct when the base image is large", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 50, y: 75 };
 			let point2: Point = { x: 200, y: 400 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -443,12 +444,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("When the region selection is turned into a canvas, the canvas width and height should be correct when p1 > p2", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 400, y: 200 };
 			let point2: Point = { x: 200, y: 100 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -463,12 +464,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("When the region selection is turned into a canvas, the canvas width and height should be correct when p1 is northeast of p2", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 400, y: 100 };
 			let point2: Point = { x: 200, y: 200 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -483,12 +484,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("Given the base image is a white transparent background with 2x2 black on the top left, check that the canvas captures it", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 0, y: 0 };
 			let point2: Point = { x: 3, y: 3 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -526,12 +527,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("createSelectionAsCanvas should call reject if the base image url is empty", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 0, y: 0 };
 			let point2: Point = { x: 3, y: 3 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -548,12 +549,12 @@ export class RegionSelectorTests extends TestModule {
 		test("createSelectionAsCanvas should call reject if the base image url is null", (assert: QUnitAssert) => {
 			/* tslint:disable:no-null-keyword */
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 0, y: 0 };
 			let point2: Point = { x: 3, y: 3 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -570,12 +571,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("createSelectionAsCanvas should call reject if the base image url is undefined", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 0, y: 0 };
 			let point2: Point = { x: 3, y: 3 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -591,11 +592,11 @@ export class RegionSelectorTests extends TestModule {
 
 		test("createSelectionAsCanvas should call reject if the first point is undefined", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point2: Point = { x: 3, y: 3 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.secondPoint2 = point2;
 			});
 
@@ -610,11 +611,11 @@ export class RegionSelectorTests extends TestModule {
 
 		test("createSelectionAsCanvas should call reject if the second point is undefined", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 0, y: 0 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 			});
 
@@ -629,7 +630,7 @@ export class RegionSelectorTests extends TestModule {
 
 		test("createSelectionAsCanvas should call reject if both points are undefined", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			controllerInstance.createSelectionAsCanvas(DataUrls.twoByTwoUpperCornerBlackOnTransparentUrl).then((canvas: HTMLCanvasElement) => {
 				ok(false, "The promise should not be resolved");
@@ -642,12 +643,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("saveCompressedSelectionToState should resolve with the canvas in the general case", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 0, y: 0 };
 			let point2: Point = { x: 3, y: 3 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -662,12 +663,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("saveCompressedSelectionToState should set the regionResult state to success in the general case", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 0, y: 0 };
 			let point2: Point = { x: 3, y: 3 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -683,12 +684,12 @@ export class RegionSelectorTests extends TestModule {
 
 		test("saveCompressedSelectionToState should append the result on subsequent calls", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let point1: Point = { x: 0, y: 0 };
 			let point2: Point = { x: 3, y: 3 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -704,7 +705,7 @@ export class RegionSelectorTests extends TestModule {
 				point1 = { x: 1, y: 1 };
 				point2 = { x: 2, y: 2 };
 
-				HelperFunctions.simulateAction(() => {
+				MithrilUtils.simulateAction(() => {
 					controllerInstance.state.firstPoint = point1;
 					controllerInstance.state.secondPoint = point2;
 				});
@@ -723,7 +724,7 @@ export class RegionSelectorTests extends TestModule {
 
 		test("saveCompressedSelectionToState should unset the user's selection in the reject case", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			controllerInstance.saveCompressedSelectionToState(undefined).then((canvas: HTMLCanvasElement) => {
 				ok(false, "The promise should not be resolved");
@@ -741,7 +742,7 @@ export class RegionSelectorTests extends TestModule {
 
 		test("The captured content should display the inner frame", (assert: QUnitAssert) => {
 			let done = assert.async();
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let innerFrame = document.getElementById(Constants.Ids.innerFrame) as HTMLDivElement;
 			ok(!innerFrame, "The inner frame shouldn't exist when there are no points");
@@ -749,7 +750,7 @@ export class RegionSelectorTests extends TestModule {
 			let point1: Point = { x: 0, y: 0 };
 			let point2: Point = { x: 3, y: 3 };
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.firstPoint = point1;
 				controllerInstance.state.secondPoint = point2;
 			});
@@ -759,7 +760,7 @@ export class RegionSelectorTests extends TestModule {
 
 			controllerInstance.saveCompressedSelectionToState(DataUrls.twoByTwoUpperCornerBlackOnTransparentUrl).then((canvas: HTMLCanvasElement) => {
 				// Let a redraw occur
-				HelperFunctions.simulateAction(() => {});
+				MithrilUtils.simulateAction(() => {});
 
 				innerFrame = document.getElementById(Constants.Ids.innerFrame) as HTMLDivElement;
 				ok(innerFrame, "The inner frame should exist when we've taken the screenshot");

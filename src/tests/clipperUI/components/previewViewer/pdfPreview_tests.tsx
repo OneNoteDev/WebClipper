@@ -11,6 +11,7 @@ import {PdfScreenshotResult} from "../../../../scripts/contentCapture/pdfScreens
 import {PdfPreview} from "../../../../scripts/clipperUI/components/previewViewer/pdfPreview";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 import {MockPdfDocument, MockPdfValues} from "../../../contentCapture/mockPdfDocument";
@@ -28,7 +29,7 @@ export class PdfPreviewTests extends TestModule {
 		test("The PDF page header should be displayed in PDF mode", () => {
 			let mockClipperState = this.getMockPdfModeState();
 			let defaultComponent = <PdfPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let idsThatShouldNotExist = [Constants.Ids.addRegionControl, Constants.Ids.highlightControl,
 				Constants.Ids.serifControl, Constants.Ids.decrementFontSize, Constants.Ids.incrementFontSize];
@@ -46,7 +47,7 @@ export class PdfPreviewTests extends TestModule {
 		test("The editable title of the page should be displayed in the preview title in PDF mode", () => {
 			let mockClipperState = this.getMockPdfModeState();
 			let defaultComponent = <PdfPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, mockClipperState.previewGlobalInfo.previewTitleText,
@@ -60,7 +61,7 @@ export class PdfPreviewTests extends TestModule {
 				data: new SmartValue<PdfScreenshotResult>(),
 				status: Status.NotStarted
 			};
-			HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -78,7 +79,7 @@ export class PdfPreviewTests extends TestModule {
 				data: new SmartValue<PdfScreenshotResult>(),
 				status: Status.InProgress
 			};
-			HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -92,8 +93,8 @@ export class PdfPreviewTests extends TestModule {
 
 		test("When no data urls are present in state, a canvas should be rendered for every page, but the image should not be rendered", () => {
 			let clipperState = this.getMockPdfModeState();
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.renderedPageIndexes = {};
 			});
 
@@ -106,8 +107,8 @@ export class PdfPreviewTests extends TestModule {
 
 		test("When data urls are present in state, a canvas should be rendered for every page, as well as images", () => {
 			let clipperState = this.getMockPdfModeState();
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 			});
 
@@ -125,8 +126,8 @@ export class PdfPreviewTests extends TestModule {
 
 		test("When a subset of data urls are present in state, a canvas should be rendered for every page, and every image for each page in the subset", () => {
 			let clipperState = this.getMockPdfModeState();
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.renderedPageIndexes = { "0": MockPdfValues.pageDataUrls[0] };
 			});
 
@@ -147,8 +148,8 @@ export class PdfPreviewTests extends TestModule {
 				selectedPageRange: "1,3",
 				shouldAttachPdf: false
 			};
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 			});
 
@@ -163,8 +164,8 @@ export class PdfPreviewTests extends TestModule {
 				selectedPageRange: "",
 				shouldAttachPdf: false
 			};
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 			});
 
@@ -179,8 +180,8 @@ export class PdfPreviewTests extends TestModule {
 				selectedPageRange: "1,3",
 				shouldAttachPdf: false
 			};
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 			});
 			let imagesCanvases = document.getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas);
@@ -203,8 +204,8 @@ export class PdfPreviewTests extends TestModule {
 				selectedPageRange: "-1,2",
 				shouldAttachPdf: false
 			};
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 			});
 
@@ -220,7 +221,7 @@ export class PdfPreviewTests extends TestModule {
 				selectedPageRange: "",
 				shouldAttachPdf: true,
 			};
-			HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
 			strictEqual(document.getElementsByClassName(Constants.Classes.attachmentOverlay).length, 1, "The attachment overlay should be present in the content body");
 		});
@@ -232,7 +233,7 @@ export class PdfPreviewTests extends TestModule {
 				selectedPageRange: "",
 				shouldAttachPdf: false,
 			};
-			HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
 			strictEqual(document.getElementsByClassName(Constants.Classes.attachmentOverlay).length, 0, "The attachment overlay should NOT be present in the content body");
 		});
@@ -244,7 +245,7 @@ export class PdfPreviewTests extends TestModule {
 				data: new SmartValue<PdfScreenshotResult>({ failureMessage: expectedMessage }),
 				status: Status.Failed
 			};
-			HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, expectedMessage,
@@ -254,8 +255,8 @@ export class PdfPreviewTests extends TestModule {
 
 		test("When the showPageNumbers state is true, the number overlays should be visible on all canvases when all images are loaded", () => {
 			let clipperState = this.getMockPdfModeState();
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.showPageNumbers = true;
 				pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 			});
@@ -274,8 +275,8 @@ export class PdfPreviewTests extends TestModule {
 
 		test("When the showPageNumbers state is true, the number overlays should be visible on all canvases when no images are loaded", () => {
 			let clipperState = this.getMockPdfModeState();
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.showPageNumbers = true;
 				pdfPreview.state.renderedPageIndexes = {};
 			});
@@ -294,8 +295,8 @@ export class PdfPreviewTests extends TestModule {
 
 		test("When the showPageNumbers state is false, the number overlays should not be visible on all canvases when all images are loaded", () => {
 			let clipperState = this.getMockPdfModeState();
-			let pdfPreview = HelperFunctions.mountToFixture(<PdfPreview clipperState={clipperState} />);
-			HelperFunctions.simulateAction(() => {
+			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
+			MithrilUtils.simulateAction(() => {
 				pdfPreview.state.showPageNumbers = false;
 				pdfPreview.state.renderedPageIndexes = MockPdfValues.pageDataUrlsMap;
 			});

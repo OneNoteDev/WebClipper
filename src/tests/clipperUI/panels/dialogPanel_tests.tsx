@@ -6,6 +6,7 @@ import {DialogButton, DialogPanel} from "../../../scripts/clipperUI/panels/dialo
 import {StubSessionLogger} from "../../../scripts/logging/stubSessionLogger";
 
 import {HelperFunctions} from "../../helperFunctions";
+import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 
 export class DialogPanelTests extends TestModule {
@@ -29,7 +30,7 @@ export class DialogPanelTests extends TestModule {
 				}
 			}] as DialogButton[];
 
-			HelperFunctions.mountToFixture(<DialogPanel message={expectedMessage} buttons={buttons}/>);
+			MithrilUtils.mountToFixture(<DialogPanel message={expectedMessage} buttons={buttons}/>);
 			strictEqual(document.getElementById(Constants.Ids.dialogMessage).innerText, expectedMessage,
 				"The message should be rendered on the dialog panel");
 
@@ -40,7 +41,7 @@ export class DialogPanelTests extends TestModule {
 				"The button label should be the same as the one passed in");
 
 			strictEqual(count, 0, "The button callback should have not been called yet");
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				renderedButtons[0].click();
 			});
 			strictEqual(count, 1, "The button callback should be called once");
@@ -64,7 +65,7 @@ export class DialogPanelTests extends TestModule {
 				}
 			}] as DialogButton[];
 
-			HelperFunctions.mountToFixture(<DialogPanel message={expectedMessage} buttons={buttons}/>);
+			MithrilUtils.mountToFixture(<DialogPanel message={expectedMessage} buttons={buttons}/>);
 			strictEqual(document.getElementById(Constants.Ids.dialogMessage).innerText, expectedMessage,
 				"The message should be rendered on the dialog panel");
 
@@ -77,13 +78,13 @@ export class DialogPanelTests extends TestModule {
 			}
 
 			strictEqual(countA, 0, "The A button callback should have not been called yet");
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				renderedButtons[0].click();
 			});
 			strictEqual(countA, 1, "The A button callback should be called once");
 
 			strictEqual(countB, 0, "The B button callback should have not been called yet");
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				renderedButtons[1].click();
 			});
 			strictEqual(countB, 1, "The B button callback should be called once");
@@ -93,7 +94,7 @@ export class DialogPanelTests extends TestModule {
 			let expectedMessage = "hello world";
 			let buttons = [] as DialogButton[];
 
-			HelperFunctions.mountToFixture(<DialogPanel message={expectedMessage} buttons={buttons}/>);
+			MithrilUtils.mountToFixture(<DialogPanel message={expectedMessage} buttons={buttons}/>);
 			strictEqual(document.getElementById(Constants.Ids.dialogMessage).innerText, expectedMessage,
 				"The message should be rendered on the dialog panel");
 
@@ -109,7 +110,7 @@ export class DialogPanelTests extends TestModule {
 				{ id: "b", label: "b", handler: undefined },
 				{ id: "c", label: "c", handler: undefined }
 			] as DialogButton[];
-			HelperFunctions.mountToFixture(<DialogPanel message={expectedMessage} buttons={buttons}/>);
+			MithrilUtils.mountToFixture(<DialogPanel message={expectedMessage} buttons={buttons}/>);
 
 			let dialogButtonContainer = document.getElementById(Constants.Ids.dialogButtonContainer);
 			let renderedButtons = dialogButtonContainer.getElementsByTagName("a");

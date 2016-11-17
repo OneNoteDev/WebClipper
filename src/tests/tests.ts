@@ -1,3 +1,7 @@
+import {Polyfills} from "../scripts/polyfills";
+
+Polyfills.init();
+
 import "./clipperUI/components/previewViewer/augmentationPreview_tests";
 import "./clipperUI/components/previewViewer/fullPagePreview_tests";
 import "./clipperUI/components/previewViewer/pdfPageViewport_tests";

@@ -6,6 +6,7 @@ import {ClipperState} from "../../../scripts/clipperUI/clipperState";
 import {ComponentBase} from "../../../scripts/clipperUI/componentBase";
 
 import {HelperFunctions} from "../../helperFunctions";
+import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 
 export class AnnotationInputTests extends TestModule {
@@ -22,9 +23,9 @@ export class AnnotationInputTests extends TestModule {
 
 	protected tests() {
 		test("The annotation container should expand to reveal the annotation field when the annotation placeholder is clicked", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let annotationContainer = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			let annotationContainerChildren = annotationContainer.children;
 			strictEqual(annotationContainerChildren.length, 1,
 				"By default, the annotation container should only contain one child");
@@ -33,7 +34,7 @@ export class AnnotationInputTests extends TestModule {
 			strictEqual(annotationPlaceholder.id, Constants.Ids.annotationPlaceholder,
 				"The annotation placeholder should be the only child of the container");
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationPlaceholder.click();
 			});
 
@@ -46,19 +47,19 @@ export class AnnotationInputTests extends TestModule {
 		});
 
 		test("The annotation container should remain open on blur if the annotation field is populated with non whitespace", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let annotationContainer = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			let annotationContainerChildren = annotationContainer.children;
 			let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationPlaceholder.click();
 			});
 
 			let annotationField = document.getElementById(Constants.Ids.annotationField) as HTMLTextAreaElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationField.focus();
 				annotationField.value = "Non whitespace annotation";
 				annotationField.blur();
@@ -74,19 +75,19 @@ export class AnnotationInputTests extends TestModule {
 		});
 
 		test("The annotation container should close on blur if the annotation field is empty", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let annotationContainer = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			let annotationContainerChildren = annotationContainer.children;
 			let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationPlaceholder.click();
 			});
 
 			let annotationField = document.getElementById(Constants.Ids.annotationField) as HTMLTextAreaElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationField.focus();
 				annotationField.value = "";
 				annotationField.blur();
@@ -102,19 +103,19 @@ export class AnnotationInputTests extends TestModule {
 		});
 
 		test("The annotation container should close on blur if the annotation field is whitespace", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let annotationContainer = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			let annotationContainerChildren = annotationContainer.children;
 			let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationPlaceholder.click();
 			});
 
 			let annotationField = document.getElementById(Constants.Ids.annotationField) as HTMLTextAreaElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationField.focus();
 				annotationField.value = "   \n";
 				annotationField.blur();
@@ -130,19 +131,19 @@ export class AnnotationInputTests extends TestModule {
 		});
 
 		test("The opened state should be false by default", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			strictEqual(controllerInstance.state.opened, false, "The opened state should be false by default");
 		});
 
 		test("The opened state should be true after clicking on the annotation placeholder", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let annotationContainer = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			let annotationContainerChildren = annotationContainer.children;
 			let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationPlaceholder.click();
 			});
 
@@ -150,19 +151,19 @@ export class AnnotationInputTests extends TestModule {
 		});
 
 		test("The opened state should be true on blur after populating the annotation field with non whitespace", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let annotationContainer = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			let annotationContainerChildren = annotationContainer.children;
 			let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationPlaceholder.click();
 			});
 
 			let annotationField = document.getElementById(Constants.Ids.annotationField) as HTMLTextAreaElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationField.focus();
 				annotationField.value = "Non whitespace annotation";
 				annotationField.blur();
@@ -173,19 +174,19 @@ export class AnnotationInputTests extends TestModule {
 		});
 
 		test("The opened state should be false on blur after populating the annotation field with whitespace", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let annotationContainer = HelperFunctions.getFixture().firstElementChild as HTMLElement;
+			let annotationContainer = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			let annotationContainerChildren = annotationContainer.children;
 			let annotationPlaceholder = annotationContainerChildren[0] as HTMLElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationPlaceholder.click();
 			});
 
 			let annotationField = document.getElementById(Constants.Ids.annotationField) as HTMLTextAreaElement;
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				annotationField.focus();
 				annotationField.value = "";
 				annotationField.blur();

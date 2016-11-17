@@ -3,6 +3,7 @@ import {Constants} from "../../../../scripts/constants";
 import {PdfPreviewPage, PdfPreviewPageProp} from "../../../../scripts/clipperUI/components/previewViewer/pdfPreviewPage";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 import {pdfDataUrls, pdfDataUrlDimensions} from "./pdfDataUrls";
@@ -14,24 +15,24 @@ export class PdfPreviewPageTests extends TestModule {
 
 	protected tests() {
 		test("Given that the page is selected, the image container's opacity should be set to 1", () => {
-		let pdfPreviewPage = HelperFunctions.mountToFixture(
+		let pdfPreviewPage = MithrilUtils.mountToFixture(
 			<PdfPreviewPage viewportDimensions={{ width: 50, height: 50 }}
 				imgUrl={pdfDataUrls[0]} index={0} showPageNumber={false} isSelected={true} />);
 
-		let container = HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas)[0];
+		let container = MithrilUtils.getFixture().getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas)[0];
 		ok(!container.classList.contains(Constants.Classes.unselected), "The unselected class should not be applied to the container");
-		strictEqual(HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.unselected).length, 0,
+		strictEqual(MithrilUtils.getFixture().getElementsByClassName(Constants.Classes.unselected).length, 0,
 			"The unselected class should not be applied anywhere");
 	});
 
 	test("Given that the page is not selected, the image container's opacity should be set to 0.3", () => {
-		let pdfPreviewPage = HelperFunctions.mountToFixture(
+		let pdfPreviewPage = MithrilUtils.mountToFixture(
 			<PdfPreviewPage viewportDimensions={{ width: 50, height: 50 }}
 				imgUrl={pdfDataUrls[0]} index={0} showPageNumber={false} isSelected={false} />);
 
-		let container = HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas)[0];
+		let container = MithrilUtils.getFixture().getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas)[0];
 		ok(container.classList.contains(Constants.Classes.unselected), "The unselected class should be applied to the container");
-		strictEqual(HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.unselected).length, 1,
+		strictEqual(MithrilUtils.getFixture().getElementsByClassName(Constants.Classes.unselected).length, 1,
 			"The unselected class should only be applied once in the component");
 	});
 
@@ -40,11 +41,11 @@ export class PdfPreviewPageTests extends TestModule {
 	test("Given that showPageNumber is true, the page number should be shown", () => {
 		let index = 19;
 		let expectedPageNumber = "" + (index + 1);
-		let pdfPreviewPage = HelperFunctions.mountToFixture(
+		let pdfPreviewPage = MithrilUtils.mountToFixture(
 			<PdfPreviewPage viewportDimensions={{ width: 50, height: 50 }}
 				imgUrl={pdfDataUrls[0]} index={index} showPageNumber={true} isSelected={true} />);
 
-		let overlay = HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
+		let overlay = MithrilUtils.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
 		strictEqual(overlay.innerText, expectedPageNumber, "The page number shown should be the index + 1");
 		ok(!overlay.classList.contains(Constants.Classes.overlayHidden), "The overlay should not be hidden");
 	});
@@ -52,11 +53,11 @@ export class PdfPreviewPageTests extends TestModule {
 	test("Given that showPageNumber is true, but the page is not selected, the page number should still be shown", () => {
 		let index = 19;
 		let expectedPageNumber = "" + (index + 1);
-		let pdfPreviewPage = HelperFunctions.mountToFixture(
+		let pdfPreviewPage = MithrilUtils.mountToFixture(
 			<PdfPreviewPage viewportDimensions={{ width: 50, height: 50 }}
 				imgUrl={pdfDataUrls[0]} index={index} showPageNumber={true} isSelected={false} />);
 
-		let overlay = HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
+		let overlay = MithrilUtils.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
 		strictEqual(overlay.innerText, expectedPageNumber, "The page number shown should be the index + 1");
 		ok(!overlay.classList.contains(Constants.Classes.overlayHidden), "The overlay should not be hidden");
 	});
@@ -64,11 +65,11 @@ export class PdfPreviewPageTests extends TestModule {
 	test("Given that showPageNumber is true, but the imgUrl is undefined, the page number should still be shown", () => {
 		let index = 19;
 		let expectedPageNumber = "" + (index + 1);
-		let pdfPreviewPage = HelperFunctions.mountToFixture(
+		let pdfPreviewPage = MithrilUtils.mountToFixture(
 			<PdfPreviewPage viewportDimensions={{ width: 50, height: 50 }}
 				index={index} showPageNumber={true} isSelected={true} />);
 
-		let overlay = HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
+		let overlay = MithrilUtils.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
 		strictEqual(overlay.innerText, expectedPageNumber, "The page number shown should be the index + 1");
 		ok(!overlay.classList.contains(Constants.Classes.overlayHidden), "The overlay should not be hidden");
 	});
@@ -76,21 +77,21 @@ export class PdfPreviewPageTests extends TestModule {
 	test("Given that showPageNumber is true and the index is 0, the page number should be shown", () => {
 		let index = 0;
 		let expectedPageNumber = "" + (index + 1);
-		let pdfPreviewPage = HelperFunctions.mountToFixture(
+		let pdfPreviewPage = MithrilUtils.mountToFixture(
 			<PdfPreviewPage viewportDimensions={{ width: 50, height: 50 }}
 				imgUrl={pdfDataUrls[0]} index={index} showPageNumber={true} isSelected={true} />);
 
-		let overlay = HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
+		let overlay = MithrilUtils.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
 		strictEqual(overlay.innerText, expectedPageNumber, "The page number shown should be the index + 1");
 		ok(!overlay.classList.contains(Constants.Classes.overlayHidden), "The overlay should not be hidden");
 	});
 
 	test("Given that showPageNumber is false, the page number should not be shown", () => {
-		let pdfPreviewPage = HelperFunctions.mountToFixture(
+		let pdfPreviewPage = MithrilUtils.mountToFixture(
 			<PdfPreviewPage viewportDimensions={{ width: 50, height: 50 }}
 				imgUrl={pdfDataUrls[0]} index={10} showPageNumber={false} isSelected={true} />);
 
-		let overlay = HelperFunctions.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
+		let overlay = MithrilUtils.getFixture().getElementsByClassName(Constants.Classes.overlay)[0] as HTMLElement;
 		ok(overlay.classList.contains(Constants.Classes.overlayHidden), "The overlay should be hidden");
 	});
 	}

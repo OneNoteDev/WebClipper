@@ -7,6 +7,7 @@ import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
 import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCapture/augmentationHelper";
 
 import {HelperFunctions} from "../helperFunctions";
+import {MithrilUtils} from "../mithrilUtils";
 import {TestModule} from "../testModule";
 
 export class AugmentationHelperTests extends TestModule {
@@ -123,7 +124,7 @@ export class AugmentationHelperSinonTests extends TestModule {
 	}
 
 	protected beforeEach() {
-		this.fixture = HelperFunctions.getFixture() as HTMLDivElement;
+		this.fixture = MithrilUtils.getFixture() as HTMLDivElement;
 	}
 
 	protected tests() {

@@ -5,6 +5,7 @@ import {Status} from "../../../scripts/clipperUI/status";
 import {SignInPanel} from "../../../scripts/clipperUI/panels/signInPanel";
 
 import {HelperFunctions} from "../../helperFunctions";
+import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 
 declare function require(name: string);
@@ -29,7 +30,7 @@ export class SignInPanelTests extends TestModule {
 
 	protected tests() {
 		test("The sign in panel should display the correct default message when the override is not specified", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			strictEqual(document.getElementById(Constants.Ids.signInText).innerText, this.stringsJson["WebClipper.Label.SignInDescription"],
 				"The displayed message should be the default");
@@ -38,7 +39,7 @@ export class SignInPanelTests extends TestModule {
 		test("The sign in panel should display the token refresh error message when we're unable to refresh it", () => {
 			let state = HelperFunctions.getMockClipperState();
 			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.TokenRefreshForPendingClip } };
-			let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
 
 			strictEqual(document.getElementById(Constants.Ids.signInText).innerText, this.stringsJson["WebClipper.Error.GenericExpiredTokenRefreshError"],
 				"The displayed message should be the correct error message");
@@ -47,7 +48,7 @@ export class SignInPanelTests extends TestModule {
 		test("The sign in panel should display the sign in failed message when sign in failed", () => {
 			let state = HelperFunctions.getMockClipperState();
 			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt } };
-			let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
 
 			strictEqual(document.getElementById(Constants.Ids.signInText).innerText, this.stringsJson["WebClipper.Error.SignInUnsuccessful"],
 				"The displayed message should be the correct error message");
@@ -56,7 +57,7 @@ export class SignInPanelTests extends TestModule {
 		test("The sign in panel should display the sign in description when the sign in attempt was cancelled", () => {
 			let state = HelperFunctions.getMockClipperState();
 			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInCancel } };
-			let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
 
 			strictEqual(document.getElementById(Constants.Ids.signInText).innerText, this.stringsJson["WebClipper.Label.SignInDescription"],
 				"The displayed message should be the sign in description message");
@@ -67,10 +68,10 @@ export class SignInPanelTests extends TestModule {
 			let onSignInInvoked = (chosenType: AuthType) => {
 				type = chosenType;
 			};
-			let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={HelperFunctions.getMockClipperState()} onSignInInvoked={onSignInInvoked}/>);
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={HelperFunctions.getMockClipperState()} onSignInInvoked={onSignInInvoked}/>);
 
 			let msaButton = document.getElementById(Constants.Ids.signInButtonMsa);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				msaButton.click();
 			});
 
@@ -82,10 +83,10 @@ export class SignInPanelTests extends TestModule {
 			let onSignInInvoked = (chosenType: AuthType) => {
 				type = chosenType;
 			};
-			let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={HelperFunctions.getMockClipperState() } onSignInInvoked={onSignInInvoked}/>);
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={HelperFunctions.getMockClipperState() } onSignInInvoked={onSignInInvoked}/>);
 
 			let orgIdButton = document.getElementById(Constants.Ids.signInButtonOrgId);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				orgIdButton.click();
 			});
 

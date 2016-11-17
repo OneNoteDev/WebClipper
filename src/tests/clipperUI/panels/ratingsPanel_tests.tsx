@@ -15,6 +15,7 @@ import {ObjectUtils} from "../../../scripts/objectUtils";
 import {Settings} from "../../../scripts/settings";
 
 import {HelperFunctions} from "../../helperFunctions";
+import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 
 module TestConstants {
@@ -58,10 +59,10 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				initPositive.click();
 			});
 
@@ -81,10 +82,10 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			let initPositive = document.getElementById(Constants.Ids.ratingsButtonInitYes);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				initPositive.click();
 			});
 
@@ -112,10 +113,10 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				initNegative.click();
 			});
 
@@ -137,10 +138,10 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				initNegative.click();
 			});
 
@@ -169,10 +170,10 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				initNegative.click();
 			});
 
@@ -195,10 +196,10 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			let initNegative = document.getElementById(Constants.Ids.ratingsButtonInitNo);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				initNegative.click();
 			});
 
@@ -222,14 +223,14 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			// skip to RATE panel
 			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
 			m.redraw(true);
 
 			let ratePositive = document.getElementById(Constants.Ids.ratingsButtonRateYes);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				ratePositive.click();
 			});
 
@@ -242,7 +243,7 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			// skip to RATE panel
 			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
@@ -266,14 +267,14 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			// skip to RATE panel
 			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
 			m.redraw(true);
 
 			let rateNegative = document.getElementById(Constants.Ids.ratingsButtonRateNo);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				rateNegative.click();
 			});
 
@@ -286,7 +287,7 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			// skip to RATE panel
 			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Rate });
@@ -312,14 +313,14 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			// skip to FEEDBACK panel
 			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
 			m.redraw(true);
 
 			let feedbackPositive = document.getElementById(Constants.Ids.ratingsButtonFeedbackYes);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				feedbackPositive.click();
 			});
 
@@ -334,7 +335,7 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			// skip to FEEDBACK panel
 			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
@@ -360,14 +361,14 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			// skip to FEEDBACK panel
 			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });
 			m.redraw(true);
 
 			let feedbackNegative = document.getElementById(Constants.Ids.ratingsButtonFeedbackNo);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				feedbackNegative.click();
 			});
 
@@ -382,7 +383,7 @@ export class RatingsPanelTests extends TestModule {
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
 
-			let controllerInstance = HelperFunctions.mountToFixture(ratingsPanel);
+			let controllerInstance = MithrilUtils.mountToFixture(ratingsPanel);
 
 			// skip to FEEDBACK panel
 			controllerInstance.setState({ currentRatingsPromptStage: RatingsPromptStage.Feedback });

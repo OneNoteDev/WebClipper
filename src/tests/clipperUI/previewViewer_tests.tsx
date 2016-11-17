@@ -13,6 +13,7 @@ import {SmartValue} from "../../scripts/communicator/smartValue";
 import {Constants} from "../../scripts/constants";
 
 import {HelperFunctions} from "../helperFunctions";
+import {MithrilUtils} from "../mithrilUtils";
 import {TestModule} from "../testModule";
 
 declare function require(name: string);
@@ -28,7 +29,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The full page header should be displayed in Full Page mode", () => {
 			let mockClipperState = this.getMockFullPageModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			ok(!document.getElementById(Constants.Ids.addRegionControl), "The region control should not exist");
 
@@ -41,7 +42,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The editable title of the page should be displayed in the preview title in Full Page mode", () => {
 			let mockClipperState = this.getMockFullPageModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, mockClipperState.previewGlobalInfo.previewTitleText,
@@ -56,7 +57,7 @@ export class PreviewViewerTests extends TestModule {
 				data: undefined,
 				status: Status.NotStarted
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -75,7 +76,7 @@ export class PreviewViewerTests extends TestModule {
 				data: undefined,
 				status: Status.InProgress
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -94,7 +95,7 @@ export class PreviewViewerTests extends TestModule {
 				data: undefined,
 				status: Status.Succeeded
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.NoContentFound"],
@@ -108,7 +109,7 @@ export class PreviewViewerTests extends TestModule {
 		test("There should be one image rendered for every data url in state in Full Page mode", () => {
 			let mockClipperState = this.getMockFullPageModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let images = previewBody.getElementsByTagName("IMG");
@@ -133,7 +134,7 @@ export class PreviewViewerTests extends TestModule {
 				},
 				status: Status.Failed
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, expectedMessage,
@@ -144,7 +145,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The tab order flow from the header to the preview title is correct in Region mode, and each tab index should not be less than 1", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let elementsInExpectedTabOrder = [
 				{ name: Constants.Ids.addRegionControl, elem: document.getElementById(Constants.Ids.addAnotherRegionButton) },
@@ -164,7 +165,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The tab order flow from the preview title through the region delete buttons is correct in Region mode, and each tab index should not be less than 1", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let elementsInExpectedTabOrder = [
 				{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
@@ -193,7 +194,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The region header and all related controls should be displayed in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			ok(document.getElementById(Constants.Ids.addRegionControl), "The region control should exist");
 
@@ -206,7 +207,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The editable title of the page should be displayed in the preview title in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, mockClipperState.previewGlobalInfo.previewTitleText,
@@ -217,7 +218,7 @@ export class PreviewViewerTests extends TestModule {
 		test("There should be one image rendered for every data url in state in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let selections = previewBody.getElementsByClassName(Constants.Classes.regionSelection);
@@ -236,7 +237,7 @@ export class PreviewViewerTests extends TestModule {
 		test("When multiple images are rendered, clicking a middle image's remove button should remove it and only it in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let selections = previewBody.getElementsByClassName(Constants.Classes.regionSelection);
@@ -247,7 +248,7 @@ export class PreviewViewerTests extends TestModule {
 			mockClipperState.regionResult.data.splice(indexToRemove, 1);
 
 			let removeButton = selections[indexToRemove].getElementsByClassName(Constants.Classes.regionSelectionRemoveButton)[0] as HTMLAnchorElement;
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				removeButton.click();
 			});
 
@@ -264,7 +265,7 @@ export class PreviewViewerTests extends TestModule {
 		test("When multiple images are rendered, clicking the first image's remove button should remove it and only it in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let selections = previewBody.getElementsByClassName(Constants.Classes.regionSelection);
@@ -275,7 +276,7 @@ export class PreviewViewerTests extends TestModule {
 			mockClipperState.regionResult.data.splice(indexToRemove, 1);
 
 			let removeButton = selections[indexToRemove].getElementsByClassName(Constants.Classes.regionSelectionRemoveButton)[0] as HTMLAnchorElement;
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				removeButton.click();
 			});
 
@@ -292,7 +293,7 @@ export class PreviewViewerTests extends TestModule {
 		test("When multiple images are rendered, clicking the last image's remove button should remove it and only it in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let selections = previewBody.getElementsByClassName(Constants.Classes.regionSelection);
@@ -303,7 +304,7 @@ export class PreviewViewerTests extends TestModule {
 			mockClipperState.regionResult.data.splice(indexToRemove, 1);
 
 			let removeButton = selections[indexToRemove].getElementsByClassName(Constants.Classes.regionSelectionRemoveButton)[0] as HTMLAnchorElement;
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				removeButton.click();
 			});
 
@@ -326,7 +327,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The tab order flow from the header to the preview title is correct in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let elementsInExpectedTabOrder = [
 				{ name: Constants.Ids.highlightButton, elem: document.getElementById(Constants.Ids.highlightButton) },
@@ -346,7 +347,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The augmentation header and all related controls should be displayed in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			ok(!document.getElementById(Constants.Ids.addRegionControl), "The region control should not exist");
 
@@ -359,7 +360,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The editable title of the page should be displayed in the preview title in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, mockClipperState.previewGlobalInfo.previewTitleText,
@@ -370,7 +371,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The augmented content of the page should be displayed in preview body in Augmentation Mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			strictEqual(document.getElementById(Constants.Ids.previewBody).innerText,
 				mockClipperState.augmentationPreviewInfo.previewBodyHtml,
@@ -384,7 +385,7 @@ export class PreviewViewerTests extends TestModule {
 				data: undefined,
 				status: Status.Succeeded
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.NoContentFound"],
@@ -402,7 +403,7 @@ export class PreviewViewerTests extends TestModule {
 				data: undefined,
 				status: Status.NotStarted
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -421,7 +422,7 @@ export class PreviewViewerTests extends TestModule {
 				data: undefined,
 				status: Status.InProgress
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -440,7 +441,7 @@ export class PreviewViewerTests extends TestModule {
 				data: undefined,
 				status: Status.NotStarted
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -459,7 +460,7 @@ export class PreviewViewerTests extends TestModule {
 				data: undefined,
 				status: Status.InProgress
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -482,7 +483,7 @@ export class PreviewViewerTests extends TestModule {
 				},
 				status: Status.Failed
 			};
-			HelperFunctions.mountToFixture(<PreviewViewer clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<PreviewViewer clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, expectedMessage,
@@ -493,7 +494,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The default font-size and font-family should be the same as those specified in strings.json in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			strictEqual(previewBody.style.fontSize, sansSerifDefaultFontSize);
@@ -503,19 +504,19 @@ export class PreviewViewerTests extends TestModule {
 		test("On clicking Serif, the fontFamily should be changed to the fontFamily specified in strings.json, and then back upon clicking Sans-Serif in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let serifButton = document.getElementById(Constants.Ids.serif);
 			let sansSerifButton = document.getElementById(Constants.Ids.sansSerif);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				serifButton.click();
 			});
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			strictEqual(serifFontFamily, previewBody.style.fontFamily);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				sansSerifButton.click();
 			});
 
@@ -525,18 +526,18 @@ export class PreviewViewerTests extends TestModule {
 		test("Clicking on the same fontFamily button multiple times should only set that fontFamily once in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let serifButton = document.getElementById(Constants.Ids.serif);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				serifButton.click();
 			});
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			strictEqual(serifFontFamily, previewBody.style.fontFamily);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				serifButton.click();
 			});
 
@@ -546,7 +547,7 @@ export class PreviewViewerTests extends TestModule {
 		test("The default fontSize should be the sansSerif default fontSize, and should increment by two and decrement by two for each click on up and down respectively in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let increaseFontSizeButton = document.getElementById(Constants.Ids.incrementFontSize);
 			let decreaseFontSizeButton = document.getElementById(Constants.Ids.decrementFontSize);
@@ -558,13 +559,13 @@ export class PreviewViewerTests extends TestModule {
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			strictEqual(parseInt(previewBody.style.fontSize, 10), parseInt(sansSerifDefaultFontSize, 10));
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				decreaseFontSizeButton.click();
 			});
 
 			strictEqual(parseInt(previewBody.style.fontSize, 10), smallerFontSize);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				increaseFontSizeButton.click();
 				increaseFontSizeButton.click();
 				increaseFontSizeButton.click();
@@ -579,12 +580,12 @@ export class PreviewViewerTests extends TestModule {
 
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let increaseFontSizeButton = document.getElementById(Constants.Ids.incrementFontSize);
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				for (let i = 0; i < (numClicks + 5); i++) {
 					increaseFontSizeButton.click();
 				}
@@ -599,12 +600,12 @@ export class PreviewViewerTests extends TestModule {
 
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let decreaseFontSizeButton = document.getElementById(Constants.Ids.decrementFontSize);
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				for (let i = 0; i < (numClicks + 5); i++) {
 					decreaseFontSizeButton.click();
 				}
@@ -616,11 +617,11 @@ export class PreviewViewerTests extends TestModule {
 		test("If the user clicks the highlight button, the internal state should show that 'Highlighting' is enabled in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
+			let augmentationPreview = MithrilUtils.mountToFixture(defaultComponent);
 
 			let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				highlightButton.click();
 			});
 
@@ -630,23 +631,23 @@ export class PreviewViewerTests extends TestModule {
 		test("If the user is highlighting (i.e., highlighting mode is active), then the 'active' class should be applied to the highlightButton in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				highlightButton.click();
 			});
 
 			// We do this to manually trigger a config call
-			HelperFunctions.simulateAction(() => {});
+			MithrilUtils.simulateAction(() => {});
 			notStrictEqual(highlightButton.className.indexOf("active"), -1, "The active class should be applied to the highlight button");
 		});
 
 		test("If the user is not highlighting (i.e., highlighting mode is active), then the 'active' class should not be applied to the highlightButton in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
@@ -657,7 +658,7 @@ export class PreviewViewerTests extends TestModule {
 			let mockClipperState = this.getMockAugmentationModeState();
 			mockClipperState.injectOptions.enableEditableTitle = false;
 			let defaultComponent = <PreviewViewer clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, mockClipperState.previewGlobalInfo.previewTitleText,
@@ -670,7 +671,7 @@ export class PreviewViewerTests extends TestModule {
 			mockClipperStateProps.injectOptions.enableAddANote = true;
 
 			let defaultComponent = <PreviewViewer clipperState={mockClipperStateProps} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			ok(document.getElementById(Constants.Ids.annotationContainer),
 				"The annotation field should be present");
@@ -681,7 +682,7 @@ export class PreviewViewerTests extends TestModule {
 			mockClipperStateProps.injectOptions.enableAddANote = false;
 
 			let defaultComponent = <PreviewViewer clipperState={mockClipperStateProps} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			ok(!document.getElementById(Constants.Ids.annotationContainer),
 				"The annotation field should not be present");

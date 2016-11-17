@@ -11,6 +11,7 @@ import {PdfScreenshotResult} from "../../../../scripts/contentCapture/pdfScreens
 import {FullPagePreview} from "../../../../scripts/clipperUI/components/previewViewer/fullPagePreview";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 declare function require(name: string);
@@ -26,7 +27,7 @@ export class FullPagePreviewTests extends TestModule {
 		test("The full page header should be displayed in Full Page mode", () => {
 			let mockClipperState = this.getMockFullPageModeState();
 			let defaultComponent = <FullPagePreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			ok(!document.getElementById(Constants.Ids.addRegionControl), "The region control should not exist");
 
@@ -39,7 +40,7 @@ export class FullPagePreviewTests extends TestModule {
 		test("The editable title of the page should be displayed in the preview title in Full Page mode", () => {
 			let mockClipperState = this.getMockFullPageModeState();
 			let defaultComponent = <FullPagePreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, mockClipperState.previewGlobalInfo.previewTitleText,
@@ -54,7 +55,7 @@ export class FullPagePreviewTests extends TestModule {
 				data: undefined,
 				status: Status.NotStarted
 			};
-			HelperFunctions.mountToFixture(<FullPagePreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<FullPagePreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -73,7 +74,7 @@ export class FullPagePreviewTests extends TestModule {
 				data: undefined,
 				status: Status.InProgress
 			};
-			HelperFunctions.mountToFixture(<FullPagePreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<FullPagePreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -92,7 +93,7 @@ export class FullPagePreviewTests extends TestModule {
 				data: undefined,
 				status: Status.Succeeded
 			};
-			HelperFunctions.mountToFixture(<FullPagePreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<FullPagePreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.NoContentFound"],
@@ -106,7 +107,7 @@ export class FullPagePreviewTests extends TestModule {
 		test("There should be one image rendered for every data url in state in Full Page mode", () => {
 			let mockClipperState = this.getMockFullPageModeState();
 			let defaultComponent = <FullPagePreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let images = previewBody.getElementsByTagName("IMG");
@@ -131,7 +132,7 @@ export class FullPagePreviewTests extends TestModule {
 				},
 				status: Status.Failed
 			};
-			HelperFunctions.mountToFixture(<FullPagePreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<FullPagePreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, expectedMessage,

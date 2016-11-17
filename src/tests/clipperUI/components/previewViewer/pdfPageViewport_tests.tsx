@@ -1,6 +1,7 @@
 import {PdfPageViewport} from "../../../../scripts/clipperUI/components/previewViewer/pdfPageViewport";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 import {pdfDataUrls, pdfDataUrlDimensions} from "./pdfDataUrls";
@@ -15,11 +16,11 @@ export class PdfPageViewportTests extends TestModule {
 			let expectedWidth = pdfDataUrlDimensions[0].width;
 			let expectedHeight = pdfDataUrlDimensions[0].height;
 
-			let pdfPageViewport = HelperFunctions.mountToFixture(
+			let pdfPageViewport = MithrilUtils.mountToFixture(
 				<PdfPageViewport viewportDimensions={{ width: parseInt(expectedWidth, 10), height: parseInt(expectedHeight, 10) }}
 					imgUrl={pdfDataUrls[0]} index={0} />);
 
-			let container = HelperFunctions.getFixture().firstChild as HTMLElement;
+			let container = MithrilUtils.getFixture().firstChild as HTMLElement;
 			let containerComputedStyle = window.getComputedStyle(container);
 			strictEqual(containerComputedStyle.maxWidth, expectedWidth, "The container's max width should be the specified viewport width");
 
@@ -35,11 +36,11 @@ export class PdfPageViewportTests extends TestModule {
 			let expectedWidth = pdfDataUrlDimensions[0].width;
 			let expectedHeight = pdfDataUrlDimensions[0].height;
 
-			let pdfPageViewport = HelperFunctions.mountToFixture(
+			let pdfPageViewport = MithrilUtils.mountToFixture(
 				<PdfPageViewport viewportDimensions={{ width: parseInt(expectedWidth, 10), height: parseInt(expectedHeight, 10) }}
 					index={0} />);
 
-			let container = HelperFunctions.getFixture().firstChild as HTMLElement;
+			let container = MithrilUtils.getFixture().firstChild as HTMLElement;
 			let containerComputedStyle = window.getComputedStyle(container);
 			strictEqual(containerComputedStyle.width, expectedWidth, "The container's width should be the specified viewport width");
 			strictEqual(containerComputedStyle.height, expectedHeight, "The container's height should be the specified viewport width");
@@ -51,22 +52,22 @@ export class PdfPageViewportTests extends TestModule {
 		test("Given the index, the component should render the container with the index stored in the attribute 'data-pageindex'", () => {
 			let expectedIndex = 11;
 
-			let pdfPageViewport = HelperFunctions.mountToFixture(
+			let pdfPageViewport = MithrilUtils.mountToFixture(
 				<PdfPageViewport viewportDimensions={{ width: 20, height: 15 }}
 					imgUrl={pdfDataUrls[0]} index={expectedIndex} />);
 
-			let container = HelperFunctions.getFixture().firstChild as HTMLElement;
+			let container = MithrilUtils.getFixture().firstChild as HTMLElement;
 			strictEqual((container.dataset as any).pageindex, "" + expectedIndex, "The index should be stored in the data-pageindex attribute");
 		});
 
 		test("Given the index, but not an imgUrl, the component should still render the container with the index stored in the attribute 'data-pageindex'", () => {
 			let expectedIndex = 999;
 
-			let pdfPageViewport = HelperFunctions.mountToFixture(
+			let pdfPageViewport = MithrilUtils.mountToFixture(
 				<PdfPageViewport viewportDimensions={{ width: 20, height: 15 }}
 					index={expectedIndex} />);
 
-			let container = HelperFunctions.getFixture().firstChild as HTMLElement;
+			let container = MithrilUtils.getFixture().firstChild as HTMLElement;
 			strictEqual((container.dataset as any).pageindex, "" + expectedIndex, "The index should be stored in the data-pageindex attribute");
 		});
 	}

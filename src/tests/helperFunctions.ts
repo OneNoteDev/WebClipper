@@ -4,8 +4,6 @@ import * as sinon from "sinon";
 
 import {ClientType} from "../scripts/clientType";
 
-import {Polyfills} from "../scripts/polyfills";
-
 import {ClipMode} from "../scripts/clipperUI/clipMode";
 import {ClipperState} from "../scripts/clipperUI/clipperState";
 import {Clipper} from "../scripts/clipperUI/frontEndGlobals";
@@ -37,8 +35,6 @@ import {MockMessageHandler} from "./communicator/mockMessageHandler";
 
 import {MockConsole} from "./logging/mockConsole";
 
-Polyfills.init();
-
 let theRealSetTimeout;
 declare let setTimeout;
 
@@ -46,14 +42,6 @@ declare let setTimeout;
  * Common functions required across multiple test files
  */
 export module HelperFunctions {
-	export function getBaseFileName(path: string): string {
-		return path.split("/").pop().split(".")[0];
-	}
-
-	export function getFixture(): Element {
-		return document.getElementById("qunit-fixture");
-	}
-
 	export function getMockClipperState(): ClipperState {
 		Clipper.setInjectCommunicator(new Communicator(new MockMessageHandler(), "INJECT_MOCK_COMM"));
 		Clipper.setExtensionCommunicator(new Communicator(new MockMessageHandler(), "EXTENSION_MOCK_COMM"));
@@ -427,33 +415,5 @@ export module HelperFunctions {
 			return mockStorageCacheRef[key];
 		};
 		Clipper.logger = new StubSessionLogger();
-	}
-
-	export function mountToFixture(component): any {
-		let fixture = HelperFunctions.getFixture();
-		let controllerInstance = m.mount(fixture, component);
-		m.redraw(true);
-		return controllerInstance;
-	}
-
-	export function tick(clock: sinon.SinonFakeTimers, time: number) {
-		clock.tick(time);
-		m.redraw(true);
-	}
-
-	export function simulateAction(action: () => void) {
-		action();
-		m.redraw(true);
-	}
-
-	export function mergeObjects(obj1: {}, obj2: {}): {} {
-		let merged = {};
-		for (let key in obj1) {
-			merged[key] = obj1[key];
-		}
-		for (let key in obj2) {
-			merged[key] = obj2[key];
-		}
-		return merged;
 	}
 }

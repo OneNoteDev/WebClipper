@@ -6,6 +6,7 @@ import {ClipMode} from "../../../../scripts/clipperUI/clipMode";
 import {SelectionPreview} from "../../../../scripts/clipperUI/components/previewViewer/selectionPreview";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 export class SelectionPreviewTests extends TestModule {
@@ -23,7 +24,7 @@ export class SelectionPreviewTests extends TestModule {
 
 	protected tests() {
 		test("The selection's highlightable preview body should render the content", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
 			strictEqual(highlightablePreviewBody.innerText,
@@ -38,7 +39,7 @@ export class SelectionPreviewTests extends TestModule {
 		test("The selection preview's highlightable preview body should render the content as HTML, not purely text", () => {
 			this.mockClipperState.selectionPreviewInfo.previewBodyHtml = "<div>The selection</div>";
 			this.defaultComponent = <SelectionPreview clipperState={this.mockClipperState} />;
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
 

@@ -9,6 +9,7 @@ import {AugmentationModel} from "../../../../scripts/contentCapture/augmentation
 import {AugmentationPreview} from "../../../../scripts/clipperUI/components/previewViewer/augmentationPreview";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 declare function require(name: string);
@@ -30,7 +31,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("The tab order flow from the header to the preview title is correct in Augmentation mode, and each tab index should not be less than 1", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let elementsInExpectedTabOrder = [
 				{ name: Constants.Ids.highlightButton, elem: document.getElementById(Constants.Ids.highlightButton) },
@@ -54,7 +55,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("The augmentation header and all related controls should be displayed in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			ok(!document.getElementById(Constants.Ids.addRegionControl), "The region control should not exist");
 
@@ -67,7 +68,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("The editable title of the page should be displayed in the preview title in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, mockClipperState.previewGlobalInfo.previewTitleText,
@@ -78,7 +79,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("The augmented content of the page should be displayed in the highlightable preview body in Augmentation Mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			strictEqual(document.getElementById(Constants.Ids.highlightablePreviewBody).innerHTML,
 				mockClipperState.augmentationPreviewInfo.previewBodyHtml,
@@ -92,7 +93,7 @@ export class AugmentationPreviewTests extends TestModule {
 				data: undefined,
 				status: Status.Succeeded
 			};
-			HelperFunctions.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.NoContentFound"],
@@ -110,7 +111,7 @@ export class AugmentationPreviewTests extends TestModule {
 				data: undefined,
 				status: Status.NotStarted
 			};
-			HelperFunctions.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -129,7 +130,7 @@ export class AugmentationPreviewTests extends TestModule {
 				data: undefined,
 				status: Status.InProgress
 			};
-			HelperFunctions.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -148,7 +149,7 @@ export class AugmentationPreviewTests extends TestModule {
 				data: undefined,
 				status: Status.NotStarted
 			};
-			HelperFunctions.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -167,7 +168,7 @@ export class AugmentationPreviewTests extends TestModule {
 				data: undefined,
 				status: Status.InProgress
 			};
-			HelperFunctions.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, this.stringsJson["WebClipper.Preview.LoadingMessage"],
@@ -190,7 +191,7 @@ export class AugmentationPreviewTests extends TestModule {
 				},
 				status: Status.Failed
 			};
-			HelperFunctions.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
+			MithrilUtils.mountToFixture(<AugmentationPreview clipperState={clipperState} />);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, expectedMessage,
@@ -201,7 +202,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("The default font-size and font-family should be the same as those specified in strings.json in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			strictEqual(previewBody.style.fontSize, this.sansSerifDefaultFontSize);
@@ -211,19 +212,19 @@ export class AugmentationPreviewTests extends TestModule {
 		test("On clicking Serif, the fontFamily should be changed to the fontFamily specified in strings.json, and then back upon clicking Sans-Serif in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let serifButton = document.getElementById(Constants.Ids.serif);
 			let sansSerifButton = document.getElementById(Constants.Ids.sansSerif);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				serifButton.click();
 			});
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			strictEqual(this.serifFontFamily, previewBody.style.fontFamily);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				sansSerifButton.click();
 			});
 
@@ -233,18 +234,18 @@ export class AugmentationPreviewTests extends TestModule {
 		test("Clicking on the same fontFamily button multiple times should only set that fontFamily once in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let serifButton = document.getElementById(Constants.Ids.serif);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				serifButton.click();
 			});
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			strictEqual(this.serifFontFamily, previewBody.style.fontFamily);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				serifButton.click();
 			});
 
@@ -254,7 +255,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("The default fontSize should be the sansSerif default fontSize, and should increment by two and decrement by two for each click on up and down respectively in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let increaseFontSizeButton = document.getElementById(Constants.Ids.incrementFontSize);
 			let decreaseFontSizeButton = document.getElementById(Constants.Ids.decrementFontSize);
@@ -266,13 +267,13 @@ export class AugmentationPreviewTests extends TestModule {
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			strictEqual(parseInt(previewBody.style.fontSize, 10), parseInt(this.sansSerifDefaultFontSize, 10));
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				decreaseFontSizeButton.click();
 			});
 
 			strictEqual(parseInt(previewBody.style.fontSize, 10), smallerFontSize);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				increaseFontSizeButton.click();
 				increaseFontSizeButton.click();
 				increaseFontSizeButton.click();
@@ -287,12 +288,12 @@ export class AugmentationPreviewTests extends TestModule {
 
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let increaseFontSizeButton = document.getElementById(Constants.Ids.incrementFontSize);
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				for (let i = 0; i < (numClicks + 5); i++) {
 					increaseFontSizeButton.click();
 				}
@@ -307,12 +308,12 @@ export class AugmentationPreviewTests extends TestModule {
 
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let decreaseFontSizeButton = document.getElementById(Constants.Ids.decrementFontSize);
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				for (let i = 0; i < (numClicks + 5); i++) {
 					decreaseFontSizeButton.click();
 				}
@@ -324,7 +325,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("The default internal state should show that 'Highlighting' is disabled in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
+			let augmentationPreview = MithrilUtils.mountToFixture(defaultComponent);
 
 			let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
@@ -335,11 +336,11 @@ export class AugmentationPreviewTests extends TestModule {
 		test("If the user clicks the highlight button, the internal state should show that 'Highlighting' is enabled in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
+			let augmentationPreview = MithrilUtils.mountToFixture(defaultComponent);
 
 			let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				highlightButton.click();
 			});
 
@@ -350,7 +351,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("If the user selects something in the highlightable preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is disabled in Augmentation mode, and the item should be highlighted", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
+			let augmentationPreview = MithrilUtils.mountToFixture(defaultComponent);
 
 			// This id is necessary for the highlighting to be enabled on this element's children
 			let paragraph = document.createElement("p");
@@ -362,7 +363,7 @@ export class AugmentationPreviewTests extends TestModule {
 
 			let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				// Simulate a selection (http://stackoverflow.com/questions/6139107/programatically-select-text-in-a-contenteditable-html-element)
 				let range = document.createRange();
 				range.selectNodeContents(paragraph);
@@ -385,7 +386,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("If the user selects something outside the highlightable preview body, then clicks the highlight button, the internal state should show that 'Highlighting' is enabled in Augmentation mode, and nothing should be highlighted", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			let augmentationPreview = HelperFunctions.mountToFixture(defaultComponent);
+			let augmentationPreview = MithrilUtils.mountToFixture(defaultComponent);
 
 			// This id is necessary for the highlighting to be enabled on this element's children
 			let paragraph = document.createElement("p");
@@ -395,11 +396,11 @@ export class AugmentationPreviewTests extends TestModule {
 			paragraph.innerHTML = innerText;
 
 			// Note this is outside the preview body
-			HelperFunctions.getFixture().appendChild(paragraph);
+			MithrilUtils.getFixture().appendChild(paragraph);
 
 			let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				let range = document.createRange();
 				range.selectNodeContents(paragraph);
 				let sel = window.getSelection();
@@ -419,15 +420,15 @@ export class AugmentationPreviewTests extends TestModule {
 		test("If the user is highlighting (i.e., highlighting mode is active), then the 'active' class should be applied to the highlightButton in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				highlightButton.click();
 			});
 			// We do this to manually trigger a config call
-			HelperFunctions.simulateAction(() => {});
+			MithrilUtils.simulateAction(() => {});
 
 			notStrictEqual(highlightButton.className.indexOf("active"), -1, "The active class should be applied to the highlight button");
 		});
@@ -435,7 +436,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("If the user is not highlighting (i.e., highlighting mode is active), then the 'active' class should not be applied to the highlightButton in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let highlightButton = document.getElementById(Constants.Ids.highlightButton);
 
@@ -446,7 +447,7 @@ export class AugmentationPreviewTests extends TestModule {
 			let mockClipperState = this.getMockAugmentationModeState();
 			mockClipperState.injectOptions.enableEditableTitle = false;
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, mockClipperState.previewGlobalInfo.previewTitleText,

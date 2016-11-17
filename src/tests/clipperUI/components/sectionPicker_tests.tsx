@@ -9,6 +9,7 @@ import {SectionPicker, SectionPickerClass, SectionPickerState} from "../../../sc
 import {ClipperStorageKeys} from "../../../scripts/storage/clipperStorageKeys";
 
 import {HelperFunctions} from "../../helperFunctions";
+import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 
 module TestConstants {
@@ -128,7 +129,7 @@ export class SectionPickerTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			controllerInstance.fetchCachedNotebookAndSectionInfoAsState((response: SectionPickerState) => {
 				strictEqual(JSON.stringify(response), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
@@ -144,7 +145,7 @@ export class SectionPickerTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			controllerInstance.fetchCachedNotebookAndSectionInfoAsState((response: SectionPickerState) => {
 				strictEqual(response, undefined,
@@ -161,7 +162,7 @@ export class SectionPickerTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			controllerInstance.fetchCachedNotebookAndSectionInfoAsState((response: SectionPickerState) => {
 				strictEqual(JSON.stringify(response), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: undefined }),
@@ -182,7 +183,7 @@ export class SectionPickerTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			controllerInstance.fetchCachedNotebookAndSectionInfoAsState((response: SectionPickerState) => {
 				strictEqual(response, undefined,
@@ -323,7 +324,7 @@ export class SectionPickerSinonTests extends TestModule {
 			this.server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
 			let component = <SectionPicker onPopupToggle={() => {}} clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
@@ -368,7 +369,7 @@ export class SectionPickerSinonTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
@@ -418,7 +419,7 @@ export class SectionPickerSinonTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: undefined }),
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
@@ -474,24 +475,24 @@ export class SectionPickerSinonTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: undefined }),
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
 			// The user now clicks on a section (second section of second notebook)
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				document.getElementById(TestConstants.Ids.sectionLocationContainer).click();
 			});
 			let sectionPicker = document.getElementById(TestConstants.Ids.sectionPickerContainer).firstElementChild;
 			let second = sectionPicker.childNodes[1];
 			let secondNotebook = second.childNodes[0] as HTMLElement;
 			let secondSections = second.childNodes[1] as HTMLElement;
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				secondNotebook.click();
 			});
 			let newSelectedSection = secondSections.childNodes[1] as HTMLElement;
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				// The clickable element is actually the first childNode
 				(newSelectedSection.childNodes[0] as HTMLElement).click();
 			});
@@ -559,7 +560,7 @@ export class SectionPickerSinonTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
@@ -612,7 +613,7 @@ export class SectionPickerSinonTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
@@ -669,7 +670,7 @@ export class SectionPickerSinonTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: mockNotebooks, status: Status.Succeeded, curSection: mockSection }),
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
@@ -711,7 +712,7 @@ export class SectionPickerSinonTests extends TestModule {
 			let component = <SectionPicker
 				onPopupToggle={() => {}}
 				clipperState={clipperState} />;
-			let controllerInstance = HelperFunctions.mountToFixture(component);
+			let controllerInstance = MithrilUtils.mountToFixture(component);
 
 			strictEqual(JSON.stringify(controllerInstance.state), JSON.stringify({ notebooks: undefined, status: Status.NotStarted, curSection: undefined }),
 				"After the component is mounted, the state should be updated to reflect that notebooks and current section are not found in storage");
@@ -744,7 +745,7 @@ export class SectionPickerSinonTests extends TestModule {
 		test("fetchFreshNotebooks should parse out @odata.context from the raw 200 response and return the notebook object list and XHR in the resolve", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let notebooks = HelperFunctions.getMockNotebooks();
 			let responseJson = {
@@ -768,7 +769,7 @@ export class SectionPickerSinonTests extends TestModule {
 		test("fetchFreshNotebooks should parse out @odata.context from the raw 201 response and return the notebook object list and XHR in the resolve", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let notebooks = HelperFunctions.getMockNotebooks();
 			let responseJson = {
@@ -792,7 +793,7 @@ export class SectionPickerSinonTests extends TestModule {
 		test("fetchFreshNotebooks should reject with the error object and a copy of the response if the status code is 4XX", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let responseJson = {
 				error: "Unexpected response status",
@@ -823,7 +824,7 @@ export class SectionPickerSinonTests extends TestModule {
 		test("fetchFreshNotebooks should reject with the error object and an API response code if one is returned by the API", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let responseJson = {
 				error: {
@@ -856,7 +857,7 @@ export class SectionPickerSinonTests extends TestModule {
 		test("fetchFreshNotebooks should reject with the error object and a copy of the response if the status code is 5XX", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let responseJson = {
 				error: "Unexpected response status",

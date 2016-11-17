@@ -7,6 +7,7 @@ import {Status} from "../../../../scripts/clipperUI/status";
 import {RegionPreview} from "../../../../scripts/clipperUI/components/previewViewer/regionPreview";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 declare function require(name: string);
@@ -22,7 +23,7 @@ export class RegionPreviewTests extends TestModule {
 		test("The tab order flow from the header to the preview title is correct in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let elementsInExpectedTabOrder = [
 				{ name: Constants.Ids.addRegionControl, elem: document.getElementById(Constants.Ids.addRegionControl) },
@@ -38,7 +39,7 @@ export class RegionPreviewTests extends TestModule {
 		test("The tab order flow from the preview title through the region delete buttons is correct in Region mode, and each tab index should not be less than 1", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let elementsInExpectedTabOrder = [
 				{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
@@ -67,7 +68,7 @@ export class RegionPreviewTests extends TestModule {
 		test("The region header and all related controls should be displayed in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			ok(document.getElementById(Constants.Ids.addRegionControl), "The region control should exist");
 
@@ -80,7 +81,7 @@ export class RegionPreviewTests extends TestModule {
 		test("The editable title of the page should be displayed in the preview title in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewHeaderInput = document.getElementById(Constants.Ids.previewHeaderInput) as HTMLTextAreaElement;
 			strictEqual(previewHeaderInput.value, mockClipperState.previewGlobalInfo.previewTitleText,
@@ -91,7 +92,7 @@ export class RegionPreviewTests extends TestModule {
 		test("There should be one image rendered for every data url in state in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let selections = previewBody.getElementsByClassName(Constants.Classes.regionSelection);
@@ -110,7 +111,7 @@ export class RegionPreviewTests extends TestModule {
 		test("When multiple images are rendered, clicking a middle image's remove button should remove it and only it in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let selections = previewBody.getElementsByClassName(Constants.Classes.regionSelection);
@@ -121,7 +122,7 @@ export class RegionPreviewTests extends TestModule {
 			mockClipperState.regionResult.data.splice(indexToRemove, 1);
 
 			let removeButton = selections[indexToRemove].getElementsByClassName(Constants.Classes.regionSelectionRemoveButton)[0] as HTMLAnchorElement;
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				removeButton.click();
 			});
 
@@ -138,7 +139,7 @@ export class RegionPreviewTests extends TestModule {
 		test("When multiple images are rendered, clicking the first image's remove button should remove it and only it in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let selections = previewBody.getElementsByClassName(Constants.Classes.regionSelection);
@@ -149,7 +150,7 @@ export class RegionPreviewTests extends TestModule {
 			mockClipperState.regionResult.data.splice(indexToRemove, 1);
 
 			let removeButton = selections[indexToRemove].getElementsByClassName(Constants.Classes.regionSelectionRemoveButton)[0] as HTMLAnchorElement;
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				removeButton.click();
 			});
 
@@ -166,7 +167,7 @@ export class RegionPreviewTests extends TestModule {
 		test("When multiple images are rendered, clicking the last image's remove button should remove it and only it in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let previewBody = document.getElementById(Constants.Ids.previewBody);
 			let selections = previewBody.getElementsByClassName(Constants.Classes.regionSelection);
@@ -177,7 +178,7 @@ export class RegionPreviewTests extends TestModule {
 			mockClipperState.regionResult.data.splice(indexToRemove, 1);
 
 			let removeButton = selections[indexToRemove].getElementsByClassName(Constants.Classes.regionSelectionRemoveButton)[0] as HTMLAnchorElement;
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				removeButton.click();
 			});
 
@@ -195,7 +196,7 @@ export class RegionPreviewTests extends TestModule {
 			let mockClipperState = this.getMockRegionModeState();
 			mockClipperState.injectOptions.enableRegionClipping = false;
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let regionButtons = document.getElementsByClassName(Constants.Classes.regionSelectionRemoveButton);
 			strictEqual(regionButtons.length, 0, "No remove image buttons should be rendered");
@@ -205,7 +206,7 @@ export class RegionPreviewTests extends TestModule {
 			let mockClipperState = this.getMockRegionModeState();
 			mockClipperState.injectOptions.enableRegionClipping = false;
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
-			HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.mountToFixture(defaultComponent);
 
 			let addAnotherRegionButton = document.getElementById(Constants.Ids.addAnotherRegionButton);
 			ok(!addAnotherRegionButton, "The add another region button should not be rendered");

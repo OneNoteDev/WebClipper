@@ -6,6 +6,7 @@ import {Status} from "../../../../scripts/clipperUI/status";
 import {Constants} from "../../../../scripts/constants";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 export class PreviewViewerAugmentationHeaderTests extends TestModule {
@@ -25,22 +26,22 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 
 	protected tests() {
 		test("The addRegionControl should be visible", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 			ok(!!document.getElementById(Constants.Ids.addRegionControl));
 		});
 
 		test("The addRegionControl's buttons should be visible", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 			ok(!!document.getElementById(Constants.Ids.addAnotherRegionButton));
 		});
 
 		test("When clicking on the add region button, the regionResult prop should be set accordingly", () => {
-			let previewViewerRegionHeader = HelperFunctions.mountToFixture(this.defaultComponent);
+			let previewViewerRegionHeader = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let previousRegionResultData = this.mockClipperState.regionResult.data;
 
 			let addAnotherRegionButton = document.getElementById(Constants.Ids.addAnotherRegionButton);
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				addAnotherRegionButton.click();
 			});
 

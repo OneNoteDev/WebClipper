@@ -4,6 +4,7 @@ import {TooltipProps} from "../../../scripts/clipperUI/tooltipProps";
 import {ChangeLogPanel} from "../../../scripts/clipperUI/panels/changeLogPanel";
 
 import {HelperFunctions} from "../../helperFunctions";
+import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 
 export class ChangeLogPanelTests extends TestModule {
@@ -14,7 +15,7 @@ export class ChangeLogPanelTests extends TestModule {
 	protected tests() {
 		test("For a single update containing multiple changes, those changes should be displayed", () => {
 			let updates = HelperFunctions.getMockUpdates();
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<ChangeLogPanel updates={updates} />);
 
 			let changesElements = document.getElementsByClassName(Constants.Classes.changes);
@@ -31,7 +32,7 @@ export class ChangeLogPanelTests extends TestModule {
 
 		test("For multiple updates containing multiple changes each, all changes should be displayed", () => {
 			let updates = HelperFunctions.getMockMultipleUpdates();
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<ChangeLogPanel updates={updates} />);
 
 			let changesElements = document.getElementsByClassName(Constants.Classes.changes);
@@ -48,7 +49,7 @@ export class ChangeLogPanelTests extends TestModule {
 
 		test("For a single update containing multiple changes, check that their titles and descriptions are being displayed in order", () => {
 			let updates = HelperFunctions.getMockUpdates();
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<ChangeLogPanel updates={updates} />);
 
 			let changesElements = document.getElementsByClassName(Constants.Classes.changes);
@@ -75,7 +76,7 @@ export class ChangeLogPanelTests extends TestModule {
 
 		test("For an update containing some changes with image urls, check that they get rendered if they have an image, and not rendered if they don't", () => {
 			let updates = HelperFunctions.getMockUpdatesWithSomeImages();
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<ChangeLogPanel updates={updates} />);
 
 			let changesElements = document.getElementsByClassName(Constants.Classes.changes);
@@ -100,7 +101,7 @@ export class ChangeLogPanelTests extends TestModule {
 
 		test("For multiple updates containing multiple changes each, check that their titles and descriptions are being displayed in order", () => {
 			let updates = HelperFunctions.getMockMultipleUpdates();
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<ChangeLogPanel updates={updates} />);
 
 			let changesElements = document.getElementsByClassName(Constants.Classes.changes);

@@ -6,6 +6,7 @@ import {PreviewViewerAugmentationHeader, PreviewViewerAugmentationHeaderProp} fr
 import {Constants} from "../../../../scripts/constants";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
 import {StubSessionLogger} from "../../../../scripts/logging/stubSessionLogger";
@@ -38,34 +39,34 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 
 	protected tests() {
 		test("The highlightControl should be visible", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 			ok(!!document.getElementById(Constants.Ids.highlightControl));
 		});
 
 		test("The highlightControl's buttons should be visible", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 			ok(!!document.getElementById(Constants.Ids.highlightButton));
 		});
 
 		test("The serifControl should be visible", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 			ok(!!document.getElementById(Constants.Ids.serifControl));
 		});
 
 		test("The serifControl's buttons should be visible", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 			ok(!!document.getElementById(Constants.Ids.sansSerif));
 			ok(!!document.getElementById(Constants.Ids.serif));
 		});
 
 		test("The fontSizeControl's buttons should be visible", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 			ok(!!document.getElementById(Constants.Ids.decrementFontSize));
 			ok(!!document.getElementById(Constants.Ids.incrementFontSize));
 		});
 
 		test("The tabbing should flow from highlight to font family selectors to font size selectors, and each tab index should not be less than 1", () => {
-			HelperFunctions.mountToFixture(this.defaultComponent);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let elementsInExpectedTabOrder = [
 				{ name: Constants.Ids.highlightButton, elem: document.getElementById(Constants.Ids.highlightButton) },
@@ -86,16 +87,16 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 		});
 
 		test("The togglehighlight callback prop should be called exactly once whenever the highlight button is clicked", () => {
-			let sectionPicker = HelperFunctions.mountToFixture(this.defaultComponent);
+			let sectionPicker = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.highlightButton).click();
 			});
 
 			let spy = sectionPicker.props.toggleHighlight as Sinon.SinonSpy;
 			ok(spy.calledOnce, "toggleHighlight should be called exactly once");
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.highlightButton).click();
 			});
 
@@ -103,9 +104,9 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 		});
 
 		test("The changeFontFamily callback prop should be called with true when the serif button is clicked", () => {
-			let sectionPicker = HelperFunctions.mountToFixture(this.defaultComponent);
+			let sectionPicker = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.serif).click();
 			});
 
@@ -115,9 +116,9 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 		});
 
 		test("The changeFontFamily callback prop should be called with false when the sans-serif button is clicked", () => {
-			let sectionPicker = HelperFunctions.mountToFixture(this.defaultComponent);
+			let sectionPicker = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.sansSerif).click();
 			});
 
@@ -127,9 +128,9 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 		});
 
 		test("The changeFontSize callback prop should be called with true when the increase button is clicked", () => {
-			let sectionPicker = HelperFunctions.mountToFixture(this.defaultComponent);
+			let sectionPicker = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.incrementFontSize).click();
 			});
 
@@ -139,9 +140,9 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 		});
 
 		test("The changeFontSize callback prop should be called with false when the decrease button is clicked", () => {
-			let sectionPicker = HelperFunctions.mountToFixture(this.defaultComponent);
+			let sectionPicker = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.decrementFontSize).click();
 			});
 

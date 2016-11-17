@@ -1,10 +1,14 @@
-import {DomUtils} from "../../scripts/domParsers/domUtils";
-import {AugmentationHelper} from "../../scripts/contentCapture/augmentationHelper";
 import {Constants} from "../../scripts/constants";
-import {HelperFunctions} from "../helperFunctions";
-import {DataUrls} from "../clipperUI/regionSelector_tests_dataUrls";
 
+import {AugmentationHelper} from "../../scripts/contentCapture/augmentationHelper";
+
+import {DomUtils} from "../../scripts/domParsers/domUtils";
+
+import {HelperFunctions} from "../helperFunctions";
 import {TestModule} from "../testModule";
+import {MithrilUtils} from "../mithrilUtils";
+
+import {DataUrls} from "../clipperUI/regionSelector_tests_dataUrls";
 
 export class DomUtilsTests extends TestModule {
 	private fixture: HTMLDivElement;
@@ -16,7 +20,7 @@ export class DomUtilsTests extends TestModule {
 	protected beforeEach() {
 		// Since some of the domUtils functions expect a document object parameter, we will add
 		// all our test elements to the fixture before passing in the document object.
-		this.fixture = HelperFunctions.getFixture() as HTMLDivElement;
+		this.fixture = MithrilUtils.getFixture() as HTMLDivElement;
 	}
 
 	protected tests() {

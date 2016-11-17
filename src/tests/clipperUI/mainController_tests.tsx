@@ -1,10 +1,14 @@
-import {Constants} from "../../scripts/constants";
-import {HelperFunctions} from "../helperFunctions";
-import {TestModule} from "../testModule";
-import {MainController, MainControllerClass, PanelType} from "../../scripts/clipperUI/mainController";
 import {ClipMode} from "../../scripts/clipperUI/clipMode";
+import {MainController, MainControllerClass, PanelType} from "../../scripts/clipperUI/mainController";
 import {Status} from "../../scripts/clipperUI/status";
+
 import {SmartValue} from "../../scripts/communicator/smartValue";
+
+import {Constants} from "../../scripts/constants";
+
+import {HelperFunctions} from "../helperFunctions";
+import {MithrilUtils} from "../mithrilUtils";
+import {TestModule} from "../testModule";
 
 declare function require(name: string);
 
@@ -45,9 +49,9 @@ export class MainControllerTests extends TestModule {
 
 	protected tests() {
 		test("On the sign in panel, the tab order is correct, and each tab index should not be less than 1", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.SignInNeeded;
 			});
 
@@ -68,9 +72,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("On the clip options panel, the tab order is correct, and each tab index should not be less than 1", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClipOptions;
 			});
 
@@ -96,9 +100,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("On the region instructions panel, the tab order is correct, and each tab index should not be less than 1", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.RegionInstructions;
 			});
 
@@ -118,9 +122,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("On the clip success panel, the tab order is correct, and each tab index should not be less than 1", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClippingSuccess;
 			});
 
@@ -140,9 +144,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("On the clip failure panel, the tab order is correct, and each tab index should not be less than 1", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.props.clipperState.oneNoteApiResult.data = this.getMockRequestError();
 				controllerInstance.state.currentPanel = PanelType.ClippingFailure;
 			});
@@ -181,9 +185,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("On the clip failure panel, the right message is displayed for a particular API error code", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.props.clipperState.oneNoteApiResult.data = this.getMockRequestError();
 				controllerInstance.state.currentPanel = PanelType.ClippingFailure;
 			});
@@ -194,12 +198,12 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If the close button is clicked, the uiExpanded prop should be set to false, and getPanelTypeToShow() should return the None panel", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClipOptions;
 			});
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.closeButton).click();
 			});
 
@@ -212,7 +216,7 @@ export class MainControllerTests extends TestModule {
 		test("If the uiExpanded prop is set to false, getPanelTypeToShow() should return the None panel", () => {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.uiExpanded = false;
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -227,7 +231,7 @@ export class MainControllerTests extends TestModule {
 		test("If loc strings have not been fetched, the Loading panel should be displayed", () => {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.fetchLocStringStatus = Status.InProgress;
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -244,7 +248,7 @@ export class MainControllerTests extends TestModule {
 		test("If user info is being fetched, the Loading panel should be displayed", () => {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.userResult.status = Status.InProgress;
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -261,7 +265,7 @@ export class MainControllerTests extends TestModule {
 		test("If invoke options is being fetched, the Loading panel should be displayed", () => {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.invokeOptions = undefined;
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -276,7 +280,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If loc strings and user info have been fetched, getPanelTypeToShow() should not return the Loading panel", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			notStrictEqual(controllerInstance.getPanelTypeToShow(), PanelType.Loading,
 				"The Loading panel should be not shown when the loc strings and user info have been fetched");
@@ -285,7 +289,7 @@ export class MainControllerTests extends TestModule {
 		test("If the user's info is not available, the SignInNeeded panel should be displayed", () => {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.userResult = { status: Status.Failed };
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -303,7 +307,7 @@ export class MainControllerTests extends TestModule {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.currentMode = new SmartValue<ClipMode>(ClipMode.Region);
 			props.clipperState.regionResult.status = Status.InProgress;
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -321,7 +325,7 @@ export class MainControllerTests extends TestModule {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.currentMode = new SmartValue<ClipMode>(ClipMode.Region);
 			props.clipperState.regionResult.status = Status.NotStarted;
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -338,7 +342,7 @@ export class MainControllerTests extends TestModule {
 		test("If currently clipping to OneNote, the ClippingToApi panel should be displayed", () => {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.oneNoteApiResult.status = Status.InProgress;
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -356,7 +360,7 @@ export class MainControllerTests extends TestModule {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.oneNoteApiResult.data = this.getMockRequestError();
 			props.clipperState.oneNoteApiResult.status = Status.Failed;
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -373,7 +377,7 @@ export class MainControllerTests extends TestModule {
 		test("If clipping to OneNote succeeded, the ClippingSuccess panel should be displayed", () => {
 			let props = HelperFunctions.getMockMainControllerProps();
 			props.clipperState.oneNoteApiResult.status = Status.Succeeded;
-			let controllerInstance = HelperFunctions.mountToFixture(
+			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -388,9 +392,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("The footer should not be rendered when the Loading panel is shown", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.Loading;
 			});
 
@@ -399,9 +403,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("The footer should be rendered when the SignIn panel is shown", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.SignInNeeded;
 			});
 
@@ -410,9 +414,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("The footer should be rendered when the ClipOptions panel is shown", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClipOptions;
 			});
 
@@ -421,9 +425,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("The footer should not be rendered when the RegionInstructions panel is shown", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.RegionInstructions;
 			});
 
@@ -432,9 +436,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("The footer should not be rendered when the ClippingToApi panel is shown", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClippingToApi;
 			});
 
@@ -443,9 +447,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("The footer should be rendered when the ClippingFailure panel is shown", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.props.clipperState.oneNoteApiResult.data = this.getMockRequestError();
 				controllerInstance.state.currentPanel = PanelType.ClippingFailure;
 			});
@@ -455,9 +459,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("The footer should be not be rendered when the ClippingSuccess panel is shown", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClippingSuccess;
 			});
 
@@ -466,9 +470,9 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("The close button should not be rendered when the ClippingToApi panel is shown", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			HelperFunctions.simulateAction(() => {
+			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClippingToApi;
 			});
 
@@ -477,7 +481,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("The close button should be rendered when the panel shown is not ClippingToApi", () => {
-			let controllerInstance = HelperFunctions.mountToFixture(this.defaultComponent);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let panels = [
 				PanelType.Loading,
@@ -491,7 +495,7 @@ export class MainControllerTests extends TestModule {
 			// We have to write it this (ugly) way as the sensible way is only supported by ES6, which we're not using
 			for (let i = 0; i < panels.length; i++) {
 				let panel = panels[i];
-				HelperFunctions.simulateAction(() => {
+				MithrilUtils.simulateAction(() => {
 					controllerInstance.state.currentPanel = panel;
 				});
 				ok(document.getElementById(Constants.Ids.closeButton),

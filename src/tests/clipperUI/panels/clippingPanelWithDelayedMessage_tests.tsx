@@ -9,6 +9,7 @@ import {Status} from "../../../scripts/clipperUI/status";
 import {ClippingPanelWithDelayedMessage} from "../../../scripts/clipperUI/panels/clippingPanelWithDelayedMessage";
 
 import {HelperFunctions} from "../../helperFunctions";
+import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 
 export class ClippingPanelWithDelayedMessageTests extends TestModule {
@@ -31,8 +32,8 @@ export class ClippingPanelWithDelayedMessageTests extends TestModule {
 	protected tests() {
 		test("If passed a delay of 0, the panel should display the delayed message as soon as it is instantiated", () => {
 			let expectedMessage = "hello world";
-			HelperFunctions.mountToFixture(<ClippingPanelWithDelayedMessage clipperState={this.mockClipperState} delay={0} message={expectedMessage} />);
-			HelperFunctions.tick(this.clock, 1);
+			MithrilUtils.mountToFixture(<ClippingPanelWithDelayedMessage clipperState={this.mockClipperState} delay={0} message={expectedMessage} />);
+			MithrilUtils.tick(this.clock, 1);
 
 			let clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(clipProgressDelayedMessage, "The clip progress delayed message should render immediately");
@@ -43,16 +44,16 @@ export class ClippingPanelWithDelayedMessageTests extends TestModule {
 		test("If passed a non-zero positive delay, the panel should not display the delayed message until the delay has been passed", () => {
 			let expectedMessage = "hello world";
 			let delay = 10000;
-			HelperFunctions.mountToFixture(<ClippingPanelWithDelayedMessage clipperState={this.mockClipperState} delay={delay} message={expectedMessage} />);
+			MithrilUtils.mountToFixture(<ClippingPanelWithDelayedMessage clipperState={this.mockClipperState} delay={delay} message={expectedMessage} />);
 
 			let clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(!clipProgressDelayedMessage, "The clip progress delayed message should not render immediately");
 
-			HelperFunctions.tick(this.clock, delay - 1);
+			MithrilUtils.tick(this.clock, delay - 1);
 			clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(!clipProgressDelayedMessage, "The clip progress delayed message should not render just before the delay");
 
-			HelperFunctions.tick(this.clock, 1);
+			MithrilUtils.tick(this.clock, 1);
 			clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(clipProgressDelayedMessage, "The clip progress delayed message should render after the delay");
 			strictEqual(clipProgressDelayedMessage.innerText, expectedMessage,
@@ -61,8 +62,8 @@ export class ClippingPanelWithDelayedMessageTests extends TestModule {
 
 		test("If passed a delay < 0, the panel should display the delayed message as soon as it is instantiated", () => {
 			let expectedMessage = "hello world";
-			HelperFunctions.mountToFixture(<ClippingPanelWithDelayedMessage clipperState={this.mockClipperState} delay={-10000} message={expectedMessage} />);
-			HelperFunctions.tick(this.clock, 1);
+			MithrilUtils.mountToFixture(<ClippingPanelWithDelayedMessage clipperState={this.mockClipperState} delay={-10000} message={expectedMessage} />);
+			MithrilUtils.tick(this.clock, 1);
 
 			let clipProgressDelayedMessage = document.getElementById(Constants.Ids.clipProgressDelayedMessage);
 			ok(clipProgressDelayedMessage, "The clip progress delayed message should render immediately");
