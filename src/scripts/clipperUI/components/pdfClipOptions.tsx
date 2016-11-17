@@ -180,8 +180,8 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 				</div>
 				{this.getAllPagesRadioElement()}
 				{this.getPageRangeRadioElement()}
+				{this.getOnePageForEntirePdfRadioElement()}				
 				{this.getOnePageForEachPdfPageRadioElement()}
-				{this.getOnePageForEntirePdfRadioElement()}
 				{this.getAttachmentCheckbox()}
 			</div>
 		);

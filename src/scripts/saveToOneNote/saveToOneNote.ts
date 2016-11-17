@@ -102,7 +102,6 @@ export class SaveToOneNote {
 					Promise.all([getRevisionsPromise, timeoutPromise]).then((values) => {
 						let batchRequests = values[0] as OneNoteApi.BatchRequest[];
 						this.getApi().batchRequests(batchRequests).then(() => {
-							timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 							resolve();
 						}).catch((error) => {
 							reject(error);
