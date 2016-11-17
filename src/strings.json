@@ -99,6 +99,7 @@
 	"WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel": "All pages",
 	"WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel": "Page range",
 	"WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel": "Attach PDF File",
+	"WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage": "PDF too large to attach",
 	"WebClipper.Preview.Header.PdfDistributePagesCheckboxLabel": "Create page for each PDF page",
 	"WebClipper.Preview.Header.PdfInvalidPageRange": "Invalid page range.",
 	"WebClipper.Preview.Header.SansSerifButtonLabel": "Sans-serif",

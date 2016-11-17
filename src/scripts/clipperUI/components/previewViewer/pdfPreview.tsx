@@ -23,7 +23,9 @@ import {RotatingMessageSpriteAnimation} from "../../components/rotatingMessageSp
 import {PdfPreviewAttachment} from "./pdfPreviewAttachment";
 import {PdfPreviewPage} from "./pdfPreviewPage";
 import {PreviewComponentBase} from "./previewComponentBase";
-import {PreviewViewerPdfHeader} from "./previewViewerPdfHeader";
+import { PreviewViewerPdfHeader } from "./previewViewerPdfHeader";
+import {PreviewViewerPdfHeader2} from "./previewViewerPdfHeader2";
+
 
 import * as _ from "lodash";
 
@@ -50,7 +52,8 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	getInitialState(): PdfPreviewState {
 		return {
 			showPageNumbers: false,
-			renderedPageIndexes: {}
+			renderedPageIndexes: {},
+			invalidRange: false
 		};
 	}
 
@@ -222,6 +225,7 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	}
 
 	onTextChange(text: string) {
+		console.log("old onTextChange");
 		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
 			selectedPageRange: text
 		} as PdfPreviewInfo), this.props.clipperState.setState);
@@ -249,14 +253,15 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	}
 
 	protected getHeader(): any {
-		return <PreviewViewerPdfHeader
-			invalidRange={this.state.invalidRange}
-			shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
-			allPages={this.props.clipperState.pdfPreviewInfo.allPages}
-			onCheckboxChange={this.onCheckboxChange.bind(this)}
-			onSelectionChange={this.onSelectionChange.bind(this)}
-			onTextChange={this.onTextChange.bind(this)}
-			clipperState={this.props.clipperState} />;
+		return <PreviewViewerPdfHeader2 dummy />;
+		// return <PreviewViewerPdfHeader
+		// 	invalidRange={this.state.invalidRange}
+		// 	shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
+		// 	allPages={this.props.clipperState.pdfPreviewInfo.allPages}
+		// 	onCheckboxChange={this.onCheckboxChange.bind(this)}
+		// 	onSelectionChange={this.onSelectionChange.bind(this)}
+		// 	onTextChange={this.onTextChange.bind(this)}
+		// 	clipperState={this.props.clipperState} />;
 	}
 
 	protected getStatus(): Status {

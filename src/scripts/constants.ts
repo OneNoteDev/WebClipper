@@ -149,8 +149,9 @@ export module Constants {
 
 		// previewViewerPdfHeader
 		export var localPdfFileTitle = "localPdfFileTitle";
-		export var pageRangeControl = "pageRangeControl";
 		export var pdfControl = "pdfControl";
+		export var pdfHeaderTitle = "pdfHeaderTitle";
+		export var pageRangeControl = "pageRangeControl";
 
 		export var attachmentCheckboxControl = "attachmentCheckboxControl";
 		export var attachmentCheckboxLabel = "attachmentCheckboxLabel";

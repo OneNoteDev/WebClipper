@@ -60,18 +60,18 @@ class PreviewViewerPdfHeaderClass extends PreviewViewerHeaderComponentBase<{}, P
 					</div>
 					<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}</span>
 				</div>,
-				<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.props.onSelectionChange, 191, false) }>
-					<div class="pdf-indicator pdf-radio-indicator">
-						{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
-					</div>
-					{!this.props.allPages ?
-						<input type="text" id={Constants.Ids.rangeInput} className={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.props.onSelectionChange, 192, false) }></input>
-						: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
+				// <div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.props.onSelectionChange, 191, false) }>
+				// 	<div class="pdf-indicator pdf-radio-indicator">
+				// 		{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+				// 	</div>
+				// 	{!this.props.allPages ?
+				// 		<input type="text" id={Constants.Ids.rangeInput} className={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.props.onSelectionChange, 192, false) }></input>
+				// 		: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
 
-					{!this.props.allPages && this.props.invalidRange ?
-						<div class="popover">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange")}</div>
-						: ""}
-				</div>
+				// 	{!this.props.allPages && this.props.invalidRange ?
+				// 		<div class="popover">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange")}</div>
+				// 		: ""}
+				// </div>
 			]
 		};
 	}

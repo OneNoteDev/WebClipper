@@ -97,10 +97,10 @@
 				}
 
 				// TODO: Remove when this is replaced with full page features
-				#fullPageControl, #bookmarkControl, #regionControl {
+				#fullPageControl, #bookmarkControl, #regionControl, #pdfControl {
 					height: 32px;
 
-					#fullPageHeaderTitle, #bookmarkHeaderTitle, #regionHeaderTitle {
+					#fullPageHeaderTitle, #bookmarkHeaderTitle, #regionHeaderTitle, #pdfHeaderTitle {
 						font-size: @OneNoteH3Size;
 						cursor: default;
 						line-height: 32px;
@@ -207,6 +207,7 @@
 					position: relative; 
 					outline: none; 
 					line-height: 28px;
+					height: 28px;
 				}
 
 				.pdf-indicator {
@@ -620,14 +621,13 @@
 						}
 
 						.overlay {
-							min-width: 104px;
-							height: 104px;
-							background-color: rgba(0,0,0,.65);
+							min-width: 36px;
+							height: 36px;
+							background-color: rgba(0,0,0,.60);
 							position: absolute;
-							border-radius: 8px;
-							left: 50%;
-							top: 50%;
-							transform: translate(-50%, -50%);
+							left: 0;
+							top: 0;
+							margin-top: 24px;
 							
 							display: flex;
 							align-items: center;
@@ -644,12 +644,10 @@
 							}
 
 							.overlay-number {
-								padding-left: 10px;
-								padding-right: 10px;
-								font-size: 64px;
+								font-size: 15px;
 								font-family: @SegoeUi;
 								color: white;
-								margin-bottom: 4px;
+								margin-bottom: 2px;
 							}
 						}
 					}
