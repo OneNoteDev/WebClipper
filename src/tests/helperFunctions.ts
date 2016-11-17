@@ -1,5 +1,7 @@
 /// <reference path="../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
+import * as sinon from "sinon";
+
 import {ClientType} from "../scripts/clientType";
 
 import {Polyfills} from "../scripts/polyfills";
@@ -432,6 +434,11 @@ export module HelperFunctions {
 		let controllerInstance = m.mount(fixture, component);
 		m.redraw(true);
 		return controllerInstance;
+	}
+
+	export function tick(clock: sinon.SinonFakeTimers, time: number) {
+		clock.tick(time);
+		m.redraw(true);
 	}
 
 	export function simulateAction(action: () => void) {

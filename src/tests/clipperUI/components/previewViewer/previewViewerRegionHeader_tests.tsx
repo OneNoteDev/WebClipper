@@ -6,39 +6,48 @@ import {Status} from "../../../../scripts/clipperUI/status";
 import {Constants} from "../../../../scripts/constants";
 
 import {HelperFunctions} from "../../../helperFunctions";
+import {TestModule} from "../../../testModule";
 
-let defaultComponent;
-let mockClipperState: ClipperState;
+export class PreviewViewerAugmentationHeaderTests extends TestModule {
+	private defaultComponent;
+	private mockClipperState: ClipperState;
 
-QUnit.module("previewViewerAugmentationHeader", {
-	beforeEach: () => {
-		mockClipperState = HelperFunctions.getMockClipperState();
-		defaultComponent =
-			<PreviewViewerRegionHeader
-				clipperState={mockClipperState} />;
+	protected module() {
+		return "previewViewerAugmentationHeader";
 	}
-});
 
-test("The addRegionControl should be visible", () => {
-	HelperFunctions.mountToFixture(defaultComponent);
-	ok(!!document.getElementById(Constants.Ids.addRegionControl));
-});
+	protected beforeEach() {
+		this.mockClipperState = HelperFunctions.getMockClipperState();
+		this.defaultComponent =
+			<PreviewViewerRegionHeader
+				clipperState={this.mockClipperState} />;
+	}
 
-test("The addRegionControl's buttons should be visible", () => {
-	HelperFunctions.mountToFixture(defaultComponent);
-	ok(!!document.getElementById(Constants.Ids.addAnotherRegionButton));
-});
+	protected tests() {
+		test("The addRegionControl should be visible", () => {
+			HelperFunctions.mountToFixture(this.defaultComponent);
+			ok(!!document.getElementById(Constants.Ids.addRegionControl));
+		});
 
-test("When clicking on the add region button, the regionResult prop should be set accordingly", () => {
-	let previewViewerRegionHeader = HelperFunctions.mountToFixture(defaultComponent);
+		test("The addRegionControl's buttons should be visible", () => {
+			HelperFunctions.mountToFixture(this.defaultComponent);
+			ok(!!document.getElementById(Constants.Ids.addAnotherRegionButton));
+		});
 
-	let previousRegionResultData = mockClipperState.regionResult.data;
+		test("When clicking on the add region button, the regionResult prop should be set accordingly", () => {
+			let previewViewerRegionHeader = HelperFunctions.mountToFixture(this.defaultComponent);
 
-	let addAnotherRegionButton = document.getElementById(Constants.Ids.addAnotherRegionButton);
-	HelperFunctions.simulateAction(() => {
-		addAnotherRegionButton.click();
-	});
+			let previousRegionResultData = this.mockClipperState.regionResult.data;
 
-	deepEqual(previewViewerRegionHeader.props.clipperState.regionResult, { status: Status.InProgress, data: previousRegionResultData },
-		"The status of the region result should be in progress, and the data untouched");
-});
+			let addAnotherRegionButton = document.getElementById(Constants.Ids.addAnotherRegionButton);
+			HelperFunctions.simulateAction(() => {
+				addAnotherRegionButton.click();
+			});
+
+			deepEqual(previewViewerRegionHeader.props.clipperState.regionResult, { status: Status.InProgress, data: previousRegionResultData },
+				"The status of the region result should be in progress, and the data untouched");
+		});
+	}
+}
+
+(new PreviewViewerAugmentationHeaderTests()).runTests();

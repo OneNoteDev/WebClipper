@@ -1,86 +1,84 @@
-let require;
+import "./clipperUI/components/previewViewer/augmentationPreview_tests";
+import "./clipperUI/components/previewViewer/fullPagePreview_tests";
+import "./clipperUI/components/previewViewer/pdfPageViewport_tests";
+import "./clipperUI/components/previewViewer/pdfPreview_tests";
+import "./clipperUI/components/previewViewer/pdfPreviewPage_tests";
+import "./clipperUI/components/previewViewer/previewViewerAugmentationHeader_tests";
+import "./clipperUI/components/previewViewer/previewViewerPdfHeader_tests";
+import "./clipperUI/components/previewViewer/previewViewerRegionHeader_tests";
+import "./clipperUI/components/previewViewer/regionPreview_tests";
+import "./clipperUI/components/previewViewer/selectionPreview_tests";
 
-require("./arrayUtils_tests");
-require("./clipperUrls_tests");
-require("./experiments_tests");
-require("./objectUtils_tests");
-require("./promiseUtils_tests");
-require("./settings_tests");
-require("./stringUtils_tests");
-require("./urlUtils_tests");
+import "./clipperUI/components/annotationInput_tests";
+import "./clipperUI/components/footer_tests";
+import "./clipperUI/components/modeButton_tests";
+import "./clipperUI/components/modeButtonSelector_tests";
+import "./clipperUI/components/sectionPicker_tests";
 
-require("./clipperUI/components/annotationInput_tests");
-require("./clipperUI/components/footer_tests");
-require("./clipperUI/components/modeButtonSelector_tests");
-require("./clipperUI/components/modeButton_tests");
-require("./clipperUI/components/previewViewer/augmentationPreview_tests");
-require("./clipperUI/components/previewViewer/fullPagePreview_tests");
-require("./clipperUI/components/previewViewer/pdfDataUrls");
-require("./clipperUI/components/previewViewer/pdfPageViewport_tests");
-require("./clipperUI/components/previewViewer/pdfPreviewPage_tests");
-require("./clipperUI/components/previewViewer/pdfPreview_tests");
-require("./clipperUI/components/previewViewer/previewViewerAugmentationHeader_tests");
-require("./clipperUI/components/previewViewer/previewViewerPdfHeader_tests");
-require("./clipperUI/components/previewViewer/previewViewerRegionHeader_tests");
-require("./clipperUI/components/previewViewer/regionPreview_tests");
-require("./clipperUI/components/previewViewer/selectionPreview_tests");
-require("./clipperUI/components/sectionPicker_tests");
-require("./clipperUI/panels/changeLogPanel_tests");
-// TODO: These haven't been running for a while, and either need to be fixed or removed
-////require("./clipperUI/panels/clippingPanelWithDelayedMessage_tests");
-require("./clipperUI/panels/clippingPanel_tests");
-require("./clipperUI/panels/dialogPanel_tests");
-require("./clipperUI/panels/optionsPanel_tests");
-require("./clipperUI/panels/ratingsPanel_tests");
-require("./clipperUI/panels/signInPanel_tests");
-require("./clipperUI/mainController_tests");
-require("./clipperUI/oneNoteApiUtils_tests");
-// TODO: These haven't been running for a while, and either need to be fixed or removed
-////require("./clipperUI/previewViewer_tests");
-require("./clipperUI/ratingsHelper_tests");
-require("./clipperUI/regionSelector_tests");
+import "./clipperUI/panels/changeLogPanel_tests";
+import "./clipperUI/panels/clippingPanel_tests";
+import "./clipperUI/panels/clippingPanelWithDelayedMessage_tests";
+import "./clipperUI/panels/dialogPanel_tests";
+import "./clipperUI/panels/optionsPanel_tests";
+import "./clipperUI/panels/ratingsPanel_tests";
+import "./clipperUI/panels/signInPanel_tests";
 
-require("./communicator/communicator_tests");
-require("./communicator/iframeMessageHandler_tests");
-require("./communicator/smartValue_tests");
+import "./clipperUI/mainController_tests";
+import "./clipperUI/oneNoteApiUtils_tests";
+import "./clipperUI/previewViewer_tests";
+import "./clipperUI/ratingsHelper_tests";
+import "./clipperUI/regionSelector_tests";
 
-require("./contentCapture/augmentationHelper_tests");
-require("./contentCapture/bookmarkHelper_tests");
+import "./communicator/communicator_tests";
+import "./communicator/iframeMessageHandler_tests";
+import "./communicator/smartValue_tests";
 
-require("./domParsers/domUtils_tests");
-require("./domParsers/khanAcademyVideo_tests");
-require("./domParsers/videoUtils_tests");
-require("./domParsers/vimeoVideo_tests");
-require("./domParsers/youtubeVideo_tests");
+import "./contentCapture/augmentationHelper_tests";
+import "./contentCapture/bookmarkHelper_tests";
 
-require("./extensions/authenticationHelper_tests");
-require("./extensions/extensionBase_tests");
-require("./extensions/injectHelper_tests");
-require("./extensions/tooltipHelper_tests");
+import "./domParsers/domUtils_tests";
+import "./domParsers/videoUtils_tests";
+import "./domParsers/khanAcademyVideo_tests";
+import "./domParsers/vimeoVideo_tests";
+import "./domParsers/youtubeVideo_tests";
 
-require("./highlighting/highlighter_tests");
+import "./extensions/authenticationHelper_tests";
+import "./extensions/extensionBase_tests";
+import "./extensions/injectHelper_tests";
+import "./extensions/tooltipHelper_tests";
 
-require("./http/cachedHttp_tests");
-require("./http/clipperCachedHttp_tests");
-require("./http/http_tests");
+import "./highlighting/highlighter_tests";
 
-require("./localization/localization_tests");
-require("./localization/rtl_tests");
+import "./http/cachedHttp_tests";
+import "./http/clipperCachedHttp_tests";
+import "./http/http_tests";
 
-require("./logging/communicatorLoggerPure_tests");
-require("./logging/consoleLoggerShell_tests");
-require("./logging/context_tests");
-require("./logging/loggerDecorator_tests");
-require("./logging/logger_tests");
-require("./logging/logHelpers_tests");
-require("./logging/sessionLogger_tests");
+import "./localization/localization_tests";
+import "./localization/rtl_tests";
 
-require("./saveToOneNote/oneNoteSaveablePage_tests");
-require("./saveToOneNote/oneNoteSaveablePdf_tests");
-require("./saveToOneNote/saveToOneNote_tests");
+import "./logging/communicatorLoggerPure_tests";
+import "./logging/consoleLoggerShell_tests";
+import "./logging/context_tests";
+import "./logging/logger_tests";
+import "./logging/loggerDecorator_tests";
+import "./logging/logHelpers_tests";
+import "./logging/sessionLogger_tests";
 
-require("./storage/clipperData_tests");
-require("./storage/clipperStorageGateStrategy_tests");
+import "./saveToOneNote/oneNoteSaveablePage_tests";
+import "./saveToOneNote/oneNoteSaveablePdf_tests";
+import "./saveToOneNote/saveToOneNote_tests";
 
-require("./versioning/changeLogHelper_tests");
-require("./versioning/version_tests");
+import "./storage/clipperData_tests";
+import "./storage/clipperStorageGateStrategy_tests";
+
+import "./versioning/version_tests";
+import "./versioning/changeLogHelper_tests";
+
+import "./arrayUtils_tests";
+import "./clipperUrls_tests";
+import "./experiments_tests";
+import "./objectUtils_tests";
+import "./promiseUtils_tests";
+import "./settings_tests";
+import "./stringUtils_tests";
+import "./urlUtils_tests";
