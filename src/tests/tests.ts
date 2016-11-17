@@ -6,14 +6,12 @@ Polyfills.init();
 import {Clipper} from "../scripts/clipperUI/frontEndGlobals";
 import {Communicator} from "../scripts/communicator/communicator";
 import {MockMessageHandler} from "./communicator/mockMessageHandler";
-import {ConsoleLoggerDecorator} from "../scripts/logging/consoleLoggerDecorator";
+import {StubSessionLogger} from "../scripts/logging/stubSessionLogger";
 import {MockConsole} from "./logging/mockConsole";
 import {ProductionRequirements} from "../scripts/logging/context";
 Clipper.setInjectCommunicator(new Communicator(new MockMessageHandler(), "INJECT_MOCK_COMM"));
 Clipper.setExtensionCommunicator(new Communicator(new MockMessageHandler(), "EXTENSION_MOCK_COMM"));
-Clipper.logger = new ConsoleLoggerDecorator(new MockConsole(), {
-	contextStrategy: new ProductionRequirements()
-});
+Clipper.logger = new StubSessionLogger();
 
 import "./clipperUI/components/previewViewer/augmentationPreview_tests";
 import "./clipperUI/components/previewViewer/fullPagePreview_tests";

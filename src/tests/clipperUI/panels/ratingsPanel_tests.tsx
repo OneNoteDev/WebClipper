@@ -29,19 +29,12 @@ module TestConstants {
 }
 
 export class RatingsPanelTests extends TestModule {
-	private mockStorage: { [key: string]: string };
-	private mockStorageCache: { [key: string]: string };
-
 	protected module() {
 		return "ratingsPanel";
 	}
 
 	protected beforeEach() {
 		Settings.setSettingsJsonForTesting({});
-
-		this.mockStorage = {};
-		this.mockStorageCache = {};
-		HelperFunctions.mockFrontEndGlobals(this.mockStorage, this.mockStorageCache);
 		RatingsHelper.preCacheNeededValues();
 	}
 

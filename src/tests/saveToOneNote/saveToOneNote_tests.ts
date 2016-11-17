@@ -19,8 +19,6 @@ import {HelperFunctions} from "../helperFunctions";
 import {TestModule} from "../testModule";
 
 export class SaveToOneNoteTests extends TestModule {
-	private mockStorage: { [key: string]: string };
-	private mockStorageCache: { [key: string]: string };
 	private server: Sinon.SinonFakeServer;
 	private saveToOneNote: SaveToOneNote;
 
@@ -32,10 +30,6 @@ export class SaveToOneNoteTests extends TestModule {
 		HelperFunctions.mockSetTimeout();
 		this.server = sinon.fakeServer.create();
 		this.server.respondImmediately = true;
-
-		this.mockStorage = {};
-		this.mockStorageCache = {};
-		HelperFunctions.mockFrontEndGlobals(this.mockStorage, this.mockStorageCache);
 
 		this.saveToOneNote = new SaveToOneNote("userToken");
 	}
@@ -215,8 +209,7 @@ export class SaveToOneNoteTests extends TestModule {
 		test("When saving a pdf, save() should resolve with the parsed response and request in a responsePackage assuming the patch permission validity has been cached in localStorage", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			this.mockStorage[ClipperStorageKeys.hasPatchPermissions] = "true";
-			this.mockStorageCache[ClipperStorageKeys.hasPatchPermissions] = "true";
+			Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
 
 			let pageId = "abc";
 			let createPageJson = {
@@ -282,8 +275,7 @@ export class SaveToOneNoteTests extends TestModule {
 		test("When saving a pdf, if the page creation fails, reject should be called with the error object", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			this.mockStorage[ClipperStorageKeys.hasPatchPermissions] = "true";
-			this.mockStorageCache[ClipperStorageKeys.hasPatchPermissions] = "true";
+			Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
 
 			let responseJson = {
 				getPages: "getPages"
@@ -310,8 +302,7 @@ export class SaveToOneNoteTests extends TestModule {
 		test("When saving a pdf, if the check for page existance fails, reject should be called with the error object", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			this.mockStorage[ClipperStorageKeys.hasPatchPermissions] = "true";
-			this.mockStorageCache[ClipperStorageKeys.hasPatchPermissions] = "true";
+			Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
 
 			let pageId = "abc";
 			let createPageJson = {
@@ -350,8 +341,7 @@ export class SaveToOneNoteTests extends TestModule {
 		test("When saving a pdf, if the PATCH call fails, reject should be called with the error object", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			this.mockStorage[ClipperStorageKeys.hasPatchPermissions] = "true";
-			this.mockStorageCache[ClipperStorageKeys.hasPatchPermissions] = "true";
+			Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
 
 			let pageId = "abc";
 			let createPageJson = {
@@ -397,8 +387,7 @@ export class SaveToOneNoteTests extends TestModule {
 		test("When saving a pdf and a save location is specified, if the PATCH call fails, reject should be called with the error object", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			this.mockStorage[ClipperStorageKeys.hasPatchPermissions] = "true";
-			this.mockStorageCache[ClipperStorageKeys.hasPatchPermissions] = "true";
+			Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
 
 			let saveLocation = "sectionId";
 

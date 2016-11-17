@@ -33,7 +33,6 @@ export class RatingsHelperTests extends TestModule {
 
 	protected beforeEach() {
 		Settings.setSettingsJsonForTesting({});
-		HelperFunctions.mockFrontEndGlobals({}, {});
 		RatingsHelper.preCacheNeededValues();
 	}
 
