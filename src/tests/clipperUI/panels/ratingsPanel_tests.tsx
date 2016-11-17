@@ -43,10 +43,6 @@ export class RatingsPanelTests extends TestModule {
 		RatingsHelper.preCacheNeededValues();
 	}
 
-	protected afterEach() {
-		Settings.setSettingsJsonForTesting(undefined);
-	}
-
 	protected tests() {
 		test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.Rate when rate url exists", (assert: QUnitAssert) => {
 			let done = assert.async();

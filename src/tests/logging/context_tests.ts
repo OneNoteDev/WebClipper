@@ -9,7 +9,7 @@ export class ContextTests extends TestModule {
 	private requiredProps = ["a", "b", "c"];
 
 	protected module() {
-		return "";
+		return "context";
 	}
 
 	protected beforeEach() {

@@ -15,7 +15,7 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 	private mockProp;
 
 	protected module() {
-		return "";
+		return "previewViewerAugmentationHeader";
 	}
 
 	protected beforeEach() {

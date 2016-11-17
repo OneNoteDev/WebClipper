@@ -36,10 +36,6 @@ export class RatingsHelperTests extends TestModule {
 		RatingsHelper.preCacheNeededValues();
 	}
 
-	protected afterEach() {
-		Settings.setSettingsJsonForTesting(undefined);
-	}
-
 	protected tests() {
 		test("setNumSuccessfulClipsRatingsEnablement does not set the value when ClipperStorageKeys.doNotPromptRatings is set", (assert: QUnitAssert) => {
 			let done = assert.async();

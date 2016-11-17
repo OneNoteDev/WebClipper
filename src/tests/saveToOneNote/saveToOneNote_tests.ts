@@ -25,7 +25,7 @@ export class SaveToOneNoteTests extends TestModule {
 	private saveToOneNote: SaveToOneNote;
 
 	protected module() {
-		return "this.saveToOneNote";
+		return "saveToOneNote";
 	}
 
 	protected beforeEach() {

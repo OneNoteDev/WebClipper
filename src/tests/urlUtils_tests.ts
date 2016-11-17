@@ -7,7 +7,7 @@ import {TestModule} from "./testModule";
 
 export class UrlUtilsTests extends TestModule {
 	protected module() {
-		return "";
+		return "urlUtils";
 	}
 
 	protected tests() {

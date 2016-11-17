@@ -19,7 +19,7 @@ export class TooltipHelperTests extends TestModule {
 	private baseTime = new Date("09/27/2016 00:00:00 PM").getTime();
 
 	protected module() {
-		return "this.tooltipHelper";
+		return "tooltipHelper";
 	}
 
 	protected beforeEach() {

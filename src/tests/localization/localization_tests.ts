@@ -28,10 +28,6 @@ export class LocalizationTests extends TestModule {
 		return "localization";
 	}
 
-	protected afterEach() {
-		Localization.setLocalizedStrings(undefined);
-	}
-
 	protected tests() {
 		test("getLocalizedString returns the localized string if there is a matching key", () => {
 			let mockLocalizedStrings = this.getMockLocalizedStrings();
