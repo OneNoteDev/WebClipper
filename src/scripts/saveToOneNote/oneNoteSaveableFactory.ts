@@ -152,7 +152,7 @@ export class OneNoteSaveableFactory {
 			let pageIndexes: number[] = clipperState.pdfPreviewInfo.allPages ?
 				_.range(pdf.numPages()) :
 				StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, pdf.numPages()).map(value => value - 1);
-			
+
 			// great, now we have all the page ranges
 			// But instead of a page, we want to return a big ol' BATCH request
 			if (clipperState.pdfPreviewInfo.shouldDistributePages) {

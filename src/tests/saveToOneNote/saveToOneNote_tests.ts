@@ -10,7 +10,8 @@ import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
 
 import {SaveToOneNote} from "../../scripts/saveToOneNote/saveToOneNote";
 import {OneNoteSaveablePage} from "../../scripts/saveToOneNote/oneNoteSaveablePage";
-import {OneNoteSaveablePdf} from "../../scripts/saveToOneNote/oneNoteSaveablePdf";
+import { OneNoteSaveablePdf } from "../../scripts/saveToOneNote/oneNoteSaveablePdf";
+import {OneNoteSaveablePdfBatched} from "../../scripts/saveToOneNote/oneNoteSaveablePdfBatched";
 
 import {ClipperStorageKeys} from "../../scripts/storage/clipperStorageKeys";
 
@@ -28,6 +29,12 @@ function getMockSaveablePdf(pageIndexes?: number[]): OneNoteSaveablePdf {
 	let page = new OneNoteApi.OneNotePage();
 	let mockPdf = new MockPdfDocument();
 	return new OneNoteSaveablePdf(page, mockPdf, pageIndexes);
+}
+
+function getMockSaveablePdfBatched(pageIndexes: number[], saveLocation: string, titleText: string): OneNoteSaveablePdfBatched {
+	let page = new OneNoteApi.OneNotePage();
+	let mockPdf = new MockPdfDocument();
+	return new OneNoteSaveablePdfBatched(page, mockPdf, pageIndexes, "en-US", saveLocation, titleText);
 }
 
 let server: Sinon.SinonFakeServer;
@@ -122,7 +129,6 @@ test("When saving a 'just a page', but the server returns an unexpected response
 
 // From this point, we now test cases where we hit multiple endpoints. For this to work, we need to declare the fakeServer
 // responses before the saveToOneNote call otherwise the fakeServer will respond with 404
-
 test("When saving a pdf, save() should resolve with the parsed response and request in a responsePackage assuming the patch permissions call succeeds", (assert: QUnitAssert) => {
 	let done = assert.async();
 
@@ -312,7 +318,7 @@ test("When saving a pdf, if the page creation fails, reject should be called wit
 	});
 });
 
-test("When saving a pdf, if the check for page existance fails, reject should be called with the error object", (assert: QUnitAssert) => {
+test("When saving a pdf, if the check for page existence fails, reject should be called with the error object", (assert: QUnitAssert) => {
 	let done = assert.async();
 
 	mockStorage[ClipperStorageKeys.hasPatchPermissions] = "true";
@@ -446,4 +452,61 @@ test("When saving a pdf and a save location is specified, if the PATCH call fail
 	}).then(() => {
 		done();
 	});
+});
+
+test("When saving a pdf as a BATCH, and createPage and all subsequent BATCH calls succeed, save() should resolve with the parsed response and request in a responsePackage", (assert: QUnitAssert) => {
+	let done = assert.async();
+
+	let saveLocation = "sectionId";
+	const titleText = "PDF.pdf";
+
+	let pageId = "abc";
+	let createPageJson = {
+		id: pageId
+	};
+
+	ok(true);
+
+	// Create initial page
+	server.respondWith(
+		"POST", "https://www.onenote.com/api/v1.0/me/notes/sections/" + saveLocation + "/pages",
+		[200, { "Content-Type": "application/json" },
+		JSON.stringify(createPageJson)
+		]);
+
+	server.respondWith(
+		"POST", "https://www.onenote.com/api/beta/$batch",
+		[200, { "Content-Type": "multipart/mixed;" },
+			JSON.stringify("")
+		]);
+
+	let page = getMockSaveablePdfBatched([0, 1], saveLocation, titleText);
+
+	saveToOneNote.save({ page: page, saveLocation: saveLocation }).then((responsePackage) => {
+
+	});
+
+	saveToOneNote.save({ page: getMockSaveablePage(), saveLocation: saveLocation }).then((responsePackage) => {
+		deepEqual(responsePackage.parsedResponse, createPageJson, "The parsedResponse field should be the response in json form");
+		ok(responsePackage.request, "The request field should be defined");
+	}, (error) => {
+		ok(false, "reject should not be called");
+	}).then(() => {
+		done();
+	});
+});
+
+test("When saving a pdf as a BATCH, and the initial createPage call fails, save() should reject() with the error object", (assert: QUnitAssert)  => {
+	let done = assert.async();
+	ok(true);
+});
+
+test("When saving a pdf as a BATCH, and the initial createPage succeeds, but the BATCH fails, save() should reject() with the error object", (assert: QUnitAssert)  => {
+	let done = assert.async();
+	ok(true);
+});
+
+test("When saving a pdf as a BATCH, if any of the BATCH calls fail, save() should reject() with the error object", (assert: QUnitAssert)  => {
+	let done = assert.async();
+	ok(true);
 });

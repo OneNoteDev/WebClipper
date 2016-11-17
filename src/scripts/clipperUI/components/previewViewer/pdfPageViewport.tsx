@@ -26,7 +26,7 @@ class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
 	private getPlaceholderStyle(): string {
 		return "padding-bottom: " + ((this.props.viewportDimensions.height / this.props.viewportDimensions.width) * 100) + "%;";
 	}
-	
+
 	private getSpinner(): any {
 		let spinner = <SpriteAnimation
 			spriteUrl={ExtensionUtils.getImageResourceUrl("spinner_loop_colored.png") }

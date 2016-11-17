@@ -26,17 +26,17 @@ interface PdfClipOptionsState {
 }
 
 class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOptionsProps> {
-    private static textAreaListenerAttached = false;
-	
-   	getInitialState(): PdfClipOptionsState {
-        return {
+	private static textAreaListenerAttached = false;
+
+	getInitialState(): PdfClipOptionsState {
+		return {
 			invalidRange: false
-        } as PdfClipOptionsState;
+		} as PdfClipOptionsState;
 	}
 
 	private addTextAreaListener() {
-        document.addEventListener("input", (event) => {
-            console.log("event listener added");
+		document.addEventListener("input", (event) => {
+			console.log("event listener added");
 			let element = event.target;
 			let pageRangeField = document.getElementById(Constants.Ids.rangeInput) as HTMLTextAreaElement;
 			if (!!element && element === pageRangeField) {
@@ -63,12 +63,11 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
-    onTextChange(text: string) {
-        console.log("onTextChange: " + text);
+	onTextChange(text: string) {
+		console.log("onTextChange: " + text);
 		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
 			selectedPageRange: text
-        } as PdfPreviewInfo), this.props.clipperState.setState);
-
+		} as PdfPreviewInfo), this.props.clipperState.setState);
 
 		let pagesToShow = StringUtils.parsePageRange(text);
 		let validUpperBounds = _.every(pagesToShow, (ind: number) => {
@@ -96,7 +95,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 			</div>
 		);
 	}
-	
+
 	getPageRangeRadioElement(): any {
 		let invalidClassName = this.state.invalidRange ? "invalid" : "";
 		return (
@@ -144,14 +143,14 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		);
 	}
 
-    render() {
-        console.log("render");
-        if (!PdfClipOptionsClass.textAreaListenerAttached) {
-            console.log("render listener");
+	render() {
+		console.log("render");
+		if (!PdfClipOptionsClass.textAreaListenerAttached) {
+			console.log("render listener");
 			this.addTextAreaListener();
 			PdfClipOptionsClass.textAreaListenerAttached = true;
-        }
-		
+		}
+
 		return (
 			<div className={"clipOptionsContainer"}>
 				<div class="clipOptionsTitleContainer">
