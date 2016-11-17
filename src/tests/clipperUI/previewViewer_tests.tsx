@@ -14,6 +14,7 @@ import {Constants} from "../../scripts/constants";
 
 import {HelperFunctions} from "../helperFunctions";
 import {MithrilUtils} from "../mithrilUtils";
+import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
 
 declare function require(name: string);
@@ -126,7 +127,7 @@ export class PreviewViewerTests extends TestModule {
 		test("When the full page screenshot response is a failure, the preview should display an error message in Full Page mode", () => {
 			let expectedMessage = "An error message.";
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.FullPage);
 			clipperState.fullPageResult = {
 				data: {
@@ -379,7 +380,7 @@ export class PreviewViewerTests extends TestModule {
 		});
 
 		test("When the augmentation successfully completes, but no data is returned, the preview should indicate no content was found in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -397,7 +398,7 @@ export class PreviewViewerTests extends TestModule {
 		});
 
 		test("When the call to augmentation has not started, the preview should indicate that it is loading in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -416,7 +417,7 @@ export class PreviewViewerTests extends TestModule {
 		});
 
 		test("When augmentation is in progress, the preview should indicate that it is loading in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -435,7 +436,7 @@ export class PreviewViewerTests extends TestModule {
 		});
 
 		test("When the call to augmentation has not started, the preview should indicate that it is loading, even when data is defined in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -454,7 +455,7 @@ export class PreviewViewerTests extends TestModule {
 		});
 
 		test("When augmentation is in progress, the preview should indicate that it is loading, even when data is defined in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -475,7 +476,7 @@ export class PreviewViewerTests extends TestModule {
 		test("When the augmentation response is a failure, the preview should display an error message in Augmentation mode", () => {
 			let expectedMessage = "An error message.";
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: {
@@ -667,7 +668,7 @@ export class PreviewViewerTests extends TestModule {
 		});
 
 		test("If the add a note feature is enabled, the annotation input should be rendered", () => {
-			let mockClipperStateProps = HelperFunctions.getMockClipperState();
+			let mockClipperStateProps = MockProps.getMockClipperState();
 			mockClipperStateProps.injectOptions.enableAddANote = true;
 
 			let defaultComponent = <PreviewViewer clipperState={mockClipperStateProps} />;
@@ -678,7 +679,7 @@ export class PreviewViewerTests extends TestModule {
 		});
 
 		test("If the add a note feature is disable, the annotation input should not be rendered", () => {
-			let mockClipperStateProps = HelperFunctions.getMockClipperState();
+			let mockClipperStateProps = MockProps.getMockClipperState();
 			mockClipperStateProps.injectOptions.enableAddANote = false;
 
 			let defaultComponent = <PreviewViewer clipperState={mockClipperStateProps} />;
@@ -690,7 +691,7 @@ export class PreviewViewerTests extends TestModule {
 	}
 
 	private getMockFullPageModeState(): ClipperState {
-		let state = HelperFunctions.getMockClipperState() as ClipperState;
+		let state = MockProps.getMockClipperState() as ClipperState;
 		state.currentMode.set(ClipMode.FullPage);
 		state.fullPageResult = {
 			data: {
@@ -704,7 +705,7 @@ export class PreviewViewerTests extends TestModule {
 	}
 
 	private getMockRegionModeState(): ClipperState {
-		let state = HelperFunctions.getMockClipperState() as ClipperState;
+		let state = MockProps.getMockClipperState() as ClipperState;
 		state.currentMode.set(ClipMode.Region);
 		state.regionResult = {
 			data: ["data:image/png;base64,123", "data:image/png;base64,456", "data:image/png;base64,789", "data:image/png;base64,0"],
@@ -714,7 +715,7 @@ export class PreviewViewerTests extends TestModule {
 	}
 
 	private getMockAugmentationModeState(): ClipperState {
-		let state = HelperFunctions.getMockClipperState() as ClipperState;
+		let state = MockProps.getMockClipperState() as ClipperState;
 		state.currentMode.set(ClipMode.Augmentation);
 		state.augmentationResult = {
 			data: {

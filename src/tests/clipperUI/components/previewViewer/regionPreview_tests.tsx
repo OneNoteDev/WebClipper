@@ -8,6 +8,7 @@ import {RegionPreview} from "../../../../scripts/clipperUI/components/previewVie
 
 import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
+import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
 
 declare function require(name: string);
@@ -214,7 +215,7 @@ export class RegionPreviewTests extends TestModule {
 	}
 
 	private getMockRegionModeState(): ClipperState {
-		let state = HelperFunctions.getMockClipperState() as ClipperState;
+		let state = MockProps.getMockClipperState() as ClipperState;
 		state.currentMode.set(ClipMode.Region);
 		state.regionResult = {
 			data: ["data:image/png;base64,123", "data:image/png;base64,456", "data:image/png;base64,789", "data:image/png;base64,0"],

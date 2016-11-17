@@ -8,6 +8,7 @@ import {Constants} from "../../scripts/constants";
 
 import {HelperFunctions} from "../helperFunctions";
 import {MithrilUtils} from "../mithrilUtils";
+import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
 
 declare function require(name: string);
@@ -31,7 +32,7 @@ MainControllerClass.prototype.getInitialState = function() {
 };
 
 export class MainControllerTests extends TestModule {
-	private mockMainControllerProps = HelperFunctions.getMockMainControllerProps();
+	private mockMainControllerProps = MockProps.getMockMainControllerProps();
 	private defaultComponent;
 
 	protected module() {
@@ -214,7 +215,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If the uiExpanded prop is set to false, getPanelTypeToShow() should return the None panel", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.uiExpanded = false;
 			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
@@ -229,7 +230,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If loc strings have not been fetched, the Loading panel should be displayed", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.fetchLocStringStatus = Status.InProgress;
 			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
@@ -246,7 +247,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If user info is being fetched, the Loading panel should be displayed", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.userResult.status = Status.InProgress;
 			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
@@ -263,7 +264,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If invoke options is being fetched, the Loading panel should be displayed", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.invokeOptions = undefined;
 			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
@@ -287,7 +288,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If the user's info is not available, the SignInNeeded panel should be displayed", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.userResult = { status: Status.Failed };
 			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
@@ -304,7 +305,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If the region mode is selected and region selection is progress, the Loading panel should be displayed", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.currentMode = new SmartValue<ClipMode>(ClipMode.Region);
 			props.clipperState.regionResult.status = Status.InProgress;
 			let controllerInstance = MithrilUtils.mountToFixture(
@@ -322,7 +323,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If the region mode is selected and region selection has not started, the RegionInstructions panel should be displayed", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.currentMode = new SmartValue<ClipMode>(ClipMode.Region);
 			props.clipperState.regionResult.status = Status.NotStarted;
 			let controllerInstance = MithrilUtils.mountToFixture(
@@ -340,7 +341,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If currently clipping to OneNote, the ClippingToApi panel should be displayed", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.oneNoteApiResult.status = Status.InProgress;
 			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
@@ -357,7 +358,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If clipping to OneNote failed, the dialog panel should be displayed", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.oneNoteApiResult.data = this.getMockRequestError();
 			props.clipperState.oneNoteApiResult.status = Status.Failed;
 			let controllerInstance = MithrilUtils.mountToFixture(
@@ -375,7 +376,7 @@ export class MainControllerTests extends TestModule {
 		});
 
 		test("If clipping to OneNote succeeded, the ClippingSuccess panel should be displayed", () => {
-			let props = HelperFunctions.getMockMainControllerProps();
+			let props = MockProps.getMockMainControllerProps();
 			props.clipperState.oneNoteApiResult.status = Status.Succeeded;
 			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController

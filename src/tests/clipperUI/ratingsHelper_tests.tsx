@@ -14,6 +14,7 @@ import {Settings} from "../../scripts/settings";
 import {StringUtils} from "../../scripts/stringUtils";
 
 import {HelperFunctions} from "../helperFunctions";
+import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
 
 module TestConstants {
@@ -266,7 +267,7 @@ export class RatingsHelperTests extends TestModule {
 				}
 			});
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			Clipper.sessionId.set(StringUtils.generateGuid());
 
 			let expectedFeedbackUrl = "https://www.onenote.com/feedback"
@@ -443,7 +444,7 @@ export class RatingsHelperTests extends TestModule {
 		});
 
 		test("shouldShowRatingsPrompt returns cached false when shouldShowRatingsPrompt is already set to false", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = false;
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
@@ -451,7 +452,7 @@ export class RatingsHelperTests extends TestModule {
 		});
 
 		test("shouldShowRatingsPrompt returns cached true when shouldShowRatingsPrompt is already set to true", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
@@ -465,7 +466,7 @@ export class RatingsHelperTests extends TestModule {
 				}
 			});
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 			strictEqual(shouldShowRatingsPrompt, false);
@@ -480,7 +481,7 @@ export class RatingsHelperTests extends TestModule {
 
 			Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "tRuE");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 			strictEqual(shouldShowRatingsPrompt, false);
@@ -497,7 +498,7 @@ export class RatingsHelperTests extends TestModule {
 			Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, Constants.Settings.minClipSuccessForRatingsPrompt.toString());
 			Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, "0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 			strictEqual(shouldShowRatingsPrompt, true);
@@ -518,7 +519,7 @@ export class RatingsHelperTests extends TestModule {
 			Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.clientInfo.clipperType = ClientType.FirefoxExtension;
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
@@ -538,7 +539,7 @@ export class RatingsHelperTests extends TestModule {
 			Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 			strictEqual(shouldShowRatingsPrompt, false);
@@ -559,7 +560,7 @@ export class RatingsHelperTests extends TestModule {
 			Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 			strictEqual(shouldShowRatingsPrompt, false);
@@ -578,7 +579,7 @@ export class RatingsHelperTests extends TestModule {
 			Clipper.storeValue(ClipperStorageKeys.lastBadRatingVersion, "3.0.9");
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.0.999");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);
 			strictEqual(shouldShowRatingsPrompt, false);
@@ -596,7 +597,7 @@ export class RatingsHelperTests extends TestModule {
 			Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, (anchorClipValue + Constants.Settings.maxClipSuccessForRatingsPrompt + 1).toString());
 			Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, anchorClipValue.toString());
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.clientInfo.clipperType = ClientType.FirefoxExtension;
 
 			let shouldShowRatingsPrompt: boolean = RatingsHelper.shouldShowRatingsPrompt(clipperState);

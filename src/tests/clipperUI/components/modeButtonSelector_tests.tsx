@@ -13,6 +13,7 @@ import {ClientType} from "../../../scripts/clientType";
 
 import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
 // These are not available in constants.ts as we currently dynamically generate them
@@ -47,12 +48,12 @@ export class ModeButtonSelectorTests extends TestModule {
 
 	protected beforeEach() {
 		this.defaultComponent =
-			<ModeButtonSelector clipperState={ HelperFunctions.getMockClipperState() } />;
+			<ModeButtonSelector clipperState={ MockProps.getMockClipperState() } />;
 	}
 
 	protected tests() {
 		test("The region clipping button should not appear when enableRegionClipping is injected as false", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.injectOptions.enableRegionClipping = false;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
@@ -80,7 +81,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The region clipping button should appear when enableRegionClipping is injected as false, but invokeMode is set to image selection", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.injectOptions.enableRegionClipping = false;
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextImage;
 			MithrilUtils.mountToFixture(
@@ -97,7 +98,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The region button should be labeled 'Region' in non-Edge browsers", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.clientInfo.clipperType = ClientType.ChromeExtension;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
@@ -110,7 +111,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The region button should be labeled 'Region' in non-Edge browsers and an image was selected", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.clientInfo.clipperType = ClientType.FirefoxExtension;
 			startingState.invokeOptions = {
 				invokeMode: InvokeMode.ContextImage,
@@ -127,7 +128,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The region button should be labeled 'Image' in Edge and an image was selected", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.clientInfo.clipperType = ClientType.EdgeExtension;
 			startingState.invokeOptions = {
 				invokeMode: InvokeMode.ContextImage,
@@ -144,7 +145,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The selection button should appear when invokeMode is set to selection", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
@@ -161,7 +162,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The selection button should appear when invokeMode is set to selection, and the region button should not appear when its disabled", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.injectOptions.enableRegionClipping = false;
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;
 			MithrilUtils.mountToFixture(
@@ -178,7 +179,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The tabbing should flow in element order, assuming they are all available, and each tab index should not be less than 1", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
@@ -211,7 +212,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("Other modes' buttons should have the 'selected' class styling applied to it if it's initially set as the starting mode", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.currentMode = new SmartValue<ClipMode>(ClipMode.Region);
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
@@ -309,7 +310,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The augmentation button should be labeled according to the content model of the augmentation result", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.augmentationResult = {
 				data: {
 					ContentInHtml: "",
@@ -345,7 +346,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The augmentation button should have its image set according to the content model of the augmentation result", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.augmentationResult = {
 				data: {
 					ContentInHtml: "",
@@ -371,7 +372,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("In PDF Mode, only the PDF, Region, and Bookmark Mode Buttons should be rendered, and in that order", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.currentMode.set(ClipMode.Pdf);
 			startingState.pageInfo.contentType = OneNoteApi.ContentType.EnhancedUrl;
 
@@ -388,7 +389,7 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The bookmark clipping button should not appear when a PDF was detected but was on a local file", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			startingState.currentMode.set(ClipMode.Pdf);
 			startingState.pageInfo.contentType = OneNoteApi.ContentType.EnhancedUrl;
 			startingState.pageInfo.rawUrl = "file:///local.pdf";

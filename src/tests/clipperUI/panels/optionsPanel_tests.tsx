@@ -10,6 +10,7 @@ import {AugmentationModel} from "../../../scripts/contentCapture/augmentationHel
 
 import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
 import {MockPdfDocument, MockPdfValues} from "../../contentCapture/mockPdfDocument";
@@ -23,7 +24,7 @@ export class OptionsPanelTests extends TestModule {
 	}
 
 	protected beforeEach() {
-		let mockState = HelperFunctions.getMockClipperState();
+		let mockState = MockProps.getMockClipperState();
 		this.mockOptionsPanelProps = {
 			onStartClip: () => { this.onStartClipCalled = true; },
 			onPopupToggle: (shouldNowBeOpen: boolean) => { },

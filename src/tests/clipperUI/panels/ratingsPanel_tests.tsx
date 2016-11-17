@@ -16,6 +16,7 @@ import {Settings} from "../../../scripts/settings";
 
 import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
 module TestConstants {
@@ -54,7 +55,7 @@ export class RatingsPanelTests extends TestModule {
 				}
 			});
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -77,7 +78,7 @@ export class RatingsPanelTests extends TestModule {
 		test("'Positive' click at RatingsPromptStage.Init goes to RatingsPromptStage.End when rate url does not exist", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -108,7 +109,7 @@ export class RatingsPanelTests extends TestModule {
 
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -133,7 +134,7 @@ export class RatingsPanelTests extends TestModule {
 
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -165,7 +166,7 @@ export class RatingsPanelTests extends TestModule {
 			Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -191,7 +192,7 @@ export class RatingsPanelTests extends TestModule {
 			Clipper.storeValue(ClipperStorageKeys.lastBadRatingDate, (Date.now() - Constants.Settings.minTimeBetweenBadRatings).toString());
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -218,7 +219,7 @@ export class RatingsPanelTests extends TestModule {
 				}
 			});
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -238,7 +239,7 @@ export class RatingsPanelTests extends TestModule {
 		});
 
 		test("'Rate' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -262,7 +263,7 @@ export class RatingsPanelTests extends TestModule {
 				}
 			});
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -282,7 +283,7 @@ export class RatingsPanelTests extends TestModule {
 		});
 
 		test("'No Thanks' click at RatingsPromptStage.Rate not available when rate url does not exist (unexpected scenario)", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -308,7 +309,7 @@ export class RatingsPanelTests extends TestModule {
 
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -330,7 +331,7 @@ export class RatingsPanelTests extends TestModule {
 		test("'Feedback' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -356,7 +357,7 @@ export class RatingsPanelTests extends TestModule {
 
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;
@@ -378,7 +379,7 @@ export class RatingsPanelTests extends TestModule {
 		test("'No Thanks' click at RatingsPromptStage.Feedback not available when feedback url does not exist (unexpected scenario)", () => {
 			Clipper.storeValue(ClipperStorageKeys.lastSeenVersion, "3.1.0");
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.showRatingsPrompt = true;
 
 			let ratingsPanel = <RatingsPanel clipperState={clipperState} />;

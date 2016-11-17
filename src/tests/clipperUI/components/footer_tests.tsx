@@ -8,6 +8,7 @@ import {Footer} from "../../../scripts/clipperUI/components/footer";
 
 import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
 module TestConstants {
@@ -28,7 +29,7 @@ export class FooterTests extends TestModule {
 	}
 
 	protected beforeEach() {
-		this.startingState = HelperFunctions.getMockClipperState();
+		this.startingState = MockProps.getMockClipperState();
 		Clipper.sessionId.set(StringUtils.generateGuid());
 		this.defaultComponent =
 			<Footer clipperState={ this.startingState } />;

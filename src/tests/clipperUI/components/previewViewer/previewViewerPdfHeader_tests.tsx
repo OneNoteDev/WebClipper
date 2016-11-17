@@ -7,6 +7,7 @@ import {Constants} from "../../../../scripts/constants";
 
 import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
+import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
 
 import {ClipperState} from "../../../../scripts/clipperUI/clipperState";
@@ -32,7 +33,7 @@ export class PreviewViewerPdfHeaderTests extends TestModule {
 			shouldAttachPdf: false
 		} as any;
 
-		this.clipperState = HelperFunctions.getMockClipperState();
+		this.clipperState = MockProps.getMockClipperState();
 		this.clipperState.pdfResult.status = Status.Succeeded;
 		this.clipperState.pdfResult.data.set({
 			byteLength: Constants.Settings.maximumMimeSizeLimit - 1

@@ -7,6 +7,7 @@ import {DomUtils} from "../../scripts/domParsers/domUtils";
 
 import {HelperFunctions} from "../helperFunctions";
 import {MithrilUtils} from "../mithrilUtils";
+import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
 
 import {DataUrls} from "./regionSelector_tests_dataUrls";
@@ -19,7 +20,7 @@ export class RegionSelectorTests extends TestModule {
 	}
 
 	protected beforeEach() {
-		let mockClipperState = HelperFunctions.getMockClipperState();
+		let mockClipperState = MockProps.getMockClipperState();
 		this.defaultComponent = <RegionSelector
 			clipperState={mockClipperState} />;
 	}

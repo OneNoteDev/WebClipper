@@ -10,6 +10,7 @@ import {AugmentationModel} from "../../../scripts/contentCapture/augmentationHel
 
 import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
 declare function require(name: string);
@@ -24,7 +25,7 @@ export class ClippingPanelTests extends TestModule {
 	}
 
 	protected beforeEach() {
-		this.mockClipperState = HelperFunctions.getMockClipperState();
+		this.mockClipperState = MockProps.getMockClipperState();
 		this.mockClipperState.augmentationResult = {
 			data: {},
 			status: Status.Succeeded

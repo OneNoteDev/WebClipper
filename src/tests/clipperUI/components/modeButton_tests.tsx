@@ -2,6 +2,7 @@ import {ModeButton} from "../../../scripts/clipperUI/components/modeButton";
 
 import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
 module TestConstants {
@@ -13,7 +14,7 @@ module TestConstants {
 }
 
 export class ModeButtonTests extends TestModule {
-	private mockModeButtonProps = HelperFunctions.getMockModeButtonProps();
+	private mockModeButtonProps = MockProps.getMockModeButtonProps();
 	private defaultComponent;
 
 	protected module() {
@@ -41,7 +42,7 @@ export class ModeButtonTests extends TestModule {
 		});
 
 		test("A selected button should have extra styling applied to it", () => {
-			let startingState = HelperFunctions.getMockModeButtonProps();
+			let startingState = MockProps.getMockModeButtonProps();
 			startingState.selected = true;
 			MithrilUtils.mountToFixture(<ModeButton
 					imgSrc={startingState.imgSrc}
@@ -93,7 +94,7 @@ export class ModeButtonTests extends TestModule {
 		});
 
 		test("A button with undefined tooltipText should have an undefined title attribute", () => {
-			let startingState = HelperFunctions.getMockModeButtonProps();
+			let startingState = MockProps.getMockModeButtonProps();
 			startingState.tooltipText = undefined;
 			MithrilUtils.mountToFixture(<ModeButton
 					imgSrc={startingState.imgSrc}

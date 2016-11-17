@@ -4,6 +4,7 @@ import {Constants} from "../scripts/constants";
 import {StringUtils} from "../scripts/stringUtils";
 
 import {HelperFunctions} from "./helperFunctions";
+import {MockProps} from "./mockProps";
 import {TestModule} from "./testModule";
 
 module TestConstants {
@@ -22,7 +23,7 @@ export class ClipperUrlsTests extends TestModule {
 
 	protected tests() {
 		test("The generated feedback url should be correct with url query values set appropriately", () => {
-			let startingState = HelperFunctions.getMockClipperState();
+			let startingState = MockProps.getMockClipperState();
 			let usid: string = StringUtils.generateGuid();
 
 			let url = ClipperUrls.generateFeedbackUrl(startingState, usid, TestConstants.LogCategories.oneNoteClipperUsage);

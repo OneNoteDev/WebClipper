@@ -10,6 +10,7 @@ import {ClipperStorageKeys} from "../../../scripts/storage/clipperStorageKeys";
 
 import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
 module TestConstants {
@@ -102,7 +103,7 @@ function createSection(id: string, isDefault?: boolean): OneNoteApi.Section {
 
 export class SectionPickerTests extends TestModule {
 	private defaultComponent;
-	private mockClipperState = HelperFunctions.getMockClipperState();
+	private mockClipperState = MockProps.getMockClipperState();
 
 	protected module() {
 		return "sectionPicker";
@@ -116,9 +117,9 @@ export class SectionPickerTests extends TestModule {
 
 	protected tests() {
 		test("fetchCachedNotebookAndSectionInfoAsState should return the cached notebooks, cached current section, and the succeed status if cached information is found", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
-			let mockNotebooks = HelperFunctions.getMockNotebooks();
+			let mockNotebooks = MockProps.getMockNotebooks();
 			let mockSection = {
 				section: mockNotebooks[0].sections[0],
 				path: "A > B > C",
@@ -138,7 +139,7 @@ export class SectionPickerTests extends TestModule {
 		});
 
 		test("fetchCachedNotebookAndSectionInfoAsState should return undefined if no cached information is found", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			initializeClipperStorage(undefined, undefined);
 
@@ -154,9 +155,9 @@ export class SectionPickerTests extends TestModule {
 		});
 
 		test("fetchCachedNotebookAndSectionInfoAsState should return the cached notebooks, undefined section, and the succeed status if no cached section is found", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
-			let mockNotebooks = HelperFunctions.getMockNotebooks();
+			let mockNotebooks = MockProps.getMockNotebooks();
 			initializeClipperStorage(JSON.stringify(mockNotebooks), undefined);
 
 			let component = <SectionPicker
@@ -171,12 +172,12 @@ export class SectionPickerTests extends TestModule {
 		});
 
 		test("fetchCachedNotebookAndSectionInfoAsState should return undefined when no notebooks are found, even if section information is found", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			let mockSection = {
-				section: HelperFunctions.getMockNotebooks()[0].sections[0],
+				section: MockProps.getMockNotebooks()[0].sections[0],
 				path: "A > B > C",
-				parentId: HelperFunctions.getMockNotebooks()[0].id
+				parentId: MockProps.getMockNotebooks()[0].id
 			};
 			initializeClipperStorage(undefined, JSON.stringify(mockSection));
 
@@ -277,7 +278,7 @@ export class SectionPickerTests extends TestModule {
 
 export class SectionPickerSinonTests extends TestModule {
 	private defaultComponent;
-	private mockClipperState = HelperFunctions.getMockClipperState();
+	private mockClipperState = MockProps.getMockClipperState();
 
 	private server: Sinon.SinonFakeServer;
 
@@ -304,10 +305,10 @@ export class SectionPickerSinonTests extends TestModule {
 			"and the current section in storage is the same as the default section in the server's notebook list", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			// Set up the storage mock
-			let mockNotebooks = HelperFunctions.getMockNotebooks();
+			let mockNotebooks = MockProps.getMockNotebooks();
 			let mockSection = {
 				section: mockNotebooks[0].sections[0],
 				path: "Clipper Test > Full Page",
@@ -316,7 +317,7 @@ export class SectionPickerSinonTests extends TestModule {
 			initializeClipperStorage(JSON.stringify(mockNotebooks), JSON.stringify(mockSection), TestConstants.defaultUserInfoAsJsonString);
 
 			// After retrieving fresh notebooks, the storage should be updated with the fresh notebooks (although it's the same in this case)
-			let freshNotebooks = HelperFunctions.getMockNotebooks();
+			let freshNotebooks = MockProps.getMockNotebooks();
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 				value: freshNotebooks
@@ -355,10 +356,10 @@ export class SectionPickerSinonTests extends TestModule {
 			"and the current section in storage is the same as the default section in the server's notebook list", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			// Set up the storage mock
-			let mockNotebooks = HelperFunctions.getMockNotebooks();
+			let mockNotebooks = MockProps.getMockNotebooks();
 			let mockSection = {
 				section: mockNotebooks[0].sections[0],
 				path: "Clipper Test > Full Page",
@@ -375,7 +376,7 @@ export class SectionPickerSinonTests extends TestModule {
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
 			// After retrieving fresh notebooks, the storage should be updated with the fresh notebooks
-			let freshNotebooks = HelperFunctions.getMockNotebooks();
+			let freshNotebooks = MockProps.getMockNotebooks();
 			freshNotebooks.push(createNotebook("id", false, [], []));
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
@@ -410,10 +411,10 @@ export class SectionPickerSinonTests extends TestModule {
 			"and the current section in storage is still undefined by the time the fresh notebooks have been retrieved", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			// Set up the storage mock
-			let mockNotebooks = HelperFunctions.getMockNotebooks();
+			let mockNotebooks = MockProps.getMockNotebooks();
 			initializeClipperStorage(JSON.stringify(mockNotebooks), undefined, TestConstants.defaultUserInfoAsJsonString);
 
 			let component = <SectionPicker
@@ -425,7 +426,7 @@ export class SectionPickerSinonTests extends TestModule {
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
 			// After retrieving fresh notebooks, the storage should be updated with the fresh notebooks (although it's the same in this case)
-			let freshNotebooks = HelperFunctions.getMockNotebooks();
+			let freshNotebooks = MockProps.getMockNotebooks();
 			freshNotebooks.push(createNotebook("id", false, [], []));
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
@@ -466,10 +467,10 @@ export class SectionPickerSinonTests extends TestModule {
 			"and the current section in storage is still undefined by the time the fresh notebooks have been retrieved", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			// Set up the storage mock
-			let mockNotebooks = HelperFunctions.getMockNotebooks();
+			let mockNotebooks = MockProps.getMockNotebooks();
 			initializeClipperStorage(JSON.stringify(mockNotebooks), undefined, TestConstants.defaultUserInfoAsJsonString);
 
 			let component = <SectionPicker
@@ -511,7 +512,7 @@ export class SectionPickerSinonTests extends TestModule {
 					"The current selected section in state should have been updated with the selected section");
 
 				// After retrieving fresh notebooks, the storage should be updated with the fresh notebooks (although it's the same in this case)
-				let freshNotebooks = HelperFunctions.getMockNotebooks();
+				let freshNotebooks = MockProps.getMockNotebooks();
 				freshNotebooks.push(createNotebook("id", false, [], []));
 				let responseJson = {
 					"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
@@ -546,10 +547,10 @@ export class SectionPickerSinonTests extends TestModule {
 			" and then information is found on the server, but that selected section no longer exists.", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			// Set up the storage mock
-			let mockNotebooks = HelperFunctions.getMockNotebooks();
+			let mockNotebooks = MockProps.getMockNotebooks();
 			let mockSection = {
 				section: mockNotebooks[0].sections[0],
 				path: "Clipper Test > Full Page",
@@ -566,7 +567,7 @@ export class SectionPickerSinonTests extends TestModule {
 				"After the component is mounted, the state should be updated to reflect the notebooks and section found in storage");
 
 			// After retrieving fresh notebooks, the storage should be updated with the fresh notebooks (we deleted the cached currently selected section)
-			let freshNotebooks = HelperFunctions.getMockNotebooks();
+			let freshNotebooks = MockProps.getMockNotebooks();
 			freshNotebooks[0].sections = [];
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
@@ -599,10 +600,10 @@ export class SectionPickerSinonTests extends TestModule {
 			"the user does not make a new selection, and then notebooks is incorrectly returned as undefined or null from the server", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			// Set up the storage mock
-			let mockNotebooks = HelperFunctions.getMockNotebooks();
+			let mockNotebooks = MockProps.getMockNotebooks();
 			let mockSection = {
 				section: mockNotebooks[0].sections[0],
 				path: "Clipper Test > Full Page",
@@ -656,10 +657,10 @@ export class SectionPickerSinonTests extends TestModule {
 			"the user does not make a new selection, and the server returns an error status code", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			// Set up the storage mock
-			let mockNotebooks = HelperFunctions.getMockNotebooks();
+			let mockNotebooks = MockProps.getMockNotebooks();
 			let mockSection = {
 				section: mockNotebooks[0].sections[0],
 				path: "Clipper Test > Full Page",
@@ -704,7 +705,7 @@ export class SectionPickerSinonTests extends TestModule {
 			"the user does not make a new selection, and the server returns an error status code, therefore there's no fallback notebooks", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 
 			// Set up the storage mock
 			initializeClipperStorage(undefined, undefined, TestConstants.defaultUserInfoAsJsonString);
@@ -747,7 +748,7 @@ export class SectionPickerSinonTests extends TestModule {
 
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let notebooks = HelperFunctions.getMockNotebooks();
+			let notebooks = MockProps.getMockNotebooks();
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 				value: notebooks
@@ -771,7 +772,7 @@ export class SectionPickerSinonTests extends TestModule {
 
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let notebooks = HelperFunctions.getMockNotebooks();
+			let notebooks = MockProps.getMockNotebooks();
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
 				value: notebooks

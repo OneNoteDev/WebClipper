@@ -12,6 +12,7 @@ import {PdfPreview} from "../../../../scripts/clipperUI/components/previewViewer
 
 import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
+import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
 
 import {MockPdfDocument, MockPdfValues} from "../../../contentCapture/mockPdfDocument";
@@ -240,7 +241,7 @@ export class PdfPreviewTests extends TestModule {
 
 		test("When the pdf screenshot response is a failure, the preview should display an error message in PDF mode", () => {
 			let expectedMessage = "An error message.";
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.pdfResult = {
 				data: new SmartValue<PdfScreenshotResult>({ failureMessage: expectedMessage }),
 				status: Status.Failed
@@ -307,7 +308,7 @@ export class PdfPreviewTests extends TestModule {
 	}
 
 	private getMockPdfModeState(): ClipperState {
-		let state = HelperFunctions.getMockClipperState() as ClipperState;
+		let state = MockProps.getMockClipperState() as ClipperState;
 		state.pageInfo.contentType = OneNoteApi.ContentType.EnhancedUrl;
 		state.currentMode.set(ClipMode.Pdf);
 		state.pdfResult.data.set({

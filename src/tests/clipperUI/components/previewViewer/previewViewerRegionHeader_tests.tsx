@@ -7,6 +7,7 @@ import {Constants} from "../../../../scripts/constants";
 
 import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
+import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
 
 export class PreviewViewerAugmentationHeaderTests extends TestModule {
@@ -18,7 +19,7 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 	}
 
 	protected beforeEach() {
-		this.mockClipperState = HelperFunctions.getMockClipperState();
+		this.mockClipperState = MockProps.getMockClipperState();
 		this.defaultComponent =
 			<PreviewViewerRegionHeader
 				clipperState={this.mockClipperState} />;

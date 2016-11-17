@@ -10,6 +10,7 @@ import {AugmentationPreview} from "../../../../scripts/clipperUI/components/prev
 
 import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
+import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
 
 declare function require(name: string);
@@ -87,7 +88,7 @@ export class AugmentationPreviewTests extends TestModule {
 		});
 
 		test("When the augmentation successfully completes, but no data is returned, the preview should indicate no content was found in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -105,7 +106,7 @@ export class AugmentationPreviewTests extends TestModule {
 		});
 
 		test("When the call to augmentation has not started, the preview should indicate that it is loading in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -124,7 +125,7 @@ export class AugmentationPreviewTests extends TestModule {
 		});
 
 		test("When augmentation is in progress, the preview should indicate that it is loading in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -143,7 +144,7 @@ export class AugmentationPreviewTests extends TestModule {
 		});
 
 		test("When the call to augmentation has not started, the preview should indicate that it is loading, even when data is defined in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -162,7 +163,7 @@ export class AugmentationPreviewTests extends TestModule {
 		});
 
 		test("When augmentation is in progress, the preview should indicate that it is loading, even when data is defined in Augmentation mode", () => {
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: undefined,
@@ -183,7 +184,7 @@ export class AugmentationPreviewTests extends TestModule {
 		test("When the augmentation response is a failure, the preview should display an error message in Augmentation mode", () => {
 			let expectedMessage = "An error message.";
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.Augmentation);
 			clipperState.augmentationResult = {
 				data: {
@@ -457,7 +458,7 @@ export class AugmentationPreviewTests extends TestModule {
 	}
 
 	private getMockAugmentationModeState(): ClipperState {
-		let state = HelperFunctions.getMockClipperState() as ClipperState;
+		let state = MockProps.getMockClipperState() as ClipperState;
 		state.currentMode.set(ClipMode.Augmentation);
 		state.augmentationResult = {
 			data: {

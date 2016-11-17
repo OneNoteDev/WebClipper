@@ -6,6 +6,7 @@ import {SignInPanel} from "../../../scripts/clipperUI/panels/signInPanel";
 
 import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
 declare function require(name: string);
@@ -14,7 +15,7 @@ export class SignInPanelTests extends TestModule {
 	private stringsJson = require("../../../strings.json");
 
 	private mockSignInPanelProps = {
-		clipperState: HelperFunctions.getMockClipperState(),
+		clipperState: MockProps.getMockClipperState(),
 		onSignInInvoked: () => { }
 	};
 
@@ -37,7 +38,7 @@ export class SignInPanelTests extends TestModule {
 		});
 
 		test("The sign in panel should display the token refresh error message when we're unable to refresh it", () => {
-			let state = HelperFunctions.getMockClipperState();
+			let state = MockProps.getMockClipperState();
 			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.TokenRefreshForPendingClip } };
 			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
 
@@ -46,7 +47,7 @@ export class SignInPanelTests extends TestModule {
 		});
 
 		test("The sign in panel should display the sign in failed message when sign in failed", () => {
-			let state = HelperFunctions.getMockClipperState();
+			let state = MockProps.getMockClipperState();
 			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt } };
 			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
 
@@ -55,7 +56,7 @@ export class SignInPanelTests extends TestModule {
 		});
 
 		test("The sign in panel should display the sign in description when the sign in attempt was cancelled", () => {
-			let state = HelperFunctions.getMockClipperState();
+			let state = MockProps.getMockClipperState();
 			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInCancel } };
 			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
 
@@ -68,7 +69,7 @@ export class SignInPanelTests extends TestModule {
 			let onSignInInvoked = (chosenType: AuthType) => {
 				type = chosenType;
 			};
-			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={HelperFunctions.getMockClipperState()} onSignInInvoked={onSignInInvoked}/>);
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={MockProps.getMockClipperState()} onSignInInvoked={onSignInInvoked}/>);
 
 			let msaButton = document.getElementById(Constants.Ids.signInButtonMsa);
 			MithrilUtils.simulateAction(() => {
@@ -83,7 +84,7 @@ export class SignInPanelTests extends TestModule {
 			let onSignInInvoked = (chosenType: AuthType) => {
 				type = chosenType;
 			};
-			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={HelperFunctions.getMockClipperState() } onSignInInvoked={onSignInInvoked}/>);
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={MockProps.getMockClipperState() } onSignInInvoked={onSignInInvoked}/>);
 
 			let orgIdButton = document.getElementById(Constants.Ids.signInButtonOrgId);
 			MithrilUtils.simulateAction(() => {

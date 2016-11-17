@@ -10,6 +10,7 @@ import {ClippingPanelWithDelayedMessage} from "../../../scripts/clipperUI/panels
 
 import {HelperFunctions} from "../../helperFunctions";
 import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
 export class ClippingPanelWithDelayedMessageTests extends TestModule {
@@ -21,7 +22,7 @@ export class ClippingPanelWithDelayedMessageTests extends TestModule {
 	}
 
 	protected beforeEach() {
-		this.mockClipperState = HelperFunctions.getMockClipperState();
+		this.mockClipperState = MockProps.getMockClipperState();
 		this.clock = sinon.useFakeTimers();
 	}
 

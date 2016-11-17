@@ -8,6 +8,7 @@ import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCaptur
 
 import {HelperFunctions} from "../helperFunctions";
 import {MithrilUtils} from "../mithrilUtils";
+import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
 
 export class AugmentationHelperTests extends TestModule {
@@ -37,7 +38,7 @@ export class AugmentationHelperTests extends TestModule {
 		test("makeAugmentationRequest should return the parsed response and the original xhr in the resolved promise", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let state = HelperFunctions.getMockClipperState();
+			let state = MockProps.getMockClipperState();
 			let pageInfo = state.pageInfo;
 
 			let responseJson = [{
@@ -64,7 +65,7 @@ export class AugmentationHelperTests extends TestModule {
 		test("makeAugmentationRequest should return the error object in the rejected promise if the status code is not 200", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let state = HelperFunctions.getMockClipperState();
+			let state = MockProps.getMockClipperState();
 			let pageInfo = state.pageInfo;
 
 			let responseJson = "A *spooky* 404 message!";
@@ -88,7 +89,7 @@ export class AugmentationHelperTests extends TestModule {
 		test("makeAugmentationRequest should return the error object in the rejected promise if the status code is 200, but the response cannot be parsed as json", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let state = HelperFunctions.getMockClipperState();
+			let state = MockProps.getMockClipperState();
 			let pageInfo = state.pageInfo;
 
 			let obj = [{
@@ -130,7 +131,7 @@ export class AugmentationHelperSinonTests extends TestModule {
 	protected tests() {
 		test("getAugmentationType returns the augmentation type as a string for types that we support", () => {
 			let supported = [ AugmentationModel.Article, AugmentationModel.Recipe, AugmentationModel.Product ];
-			let state = HelperFunctions.getMockClipperState();
+			let state = MockProps.getMockClipperState();
 
 			for (let i = 0; i < supported.length; i++) {
 				state.augmentationResult.data = {
@@ -146,7 +147,7 @@ export class AugmentationHelperSinonTests extends TestModule {
 		test("getAugmentationType returns 'Article' if the augmentation result is unavailable", () => {
 			strictEqual(AugmentationHelper.getAugmentationType(undefined), AugmentationModel[AugmentationModel.Article]);
 
-			let state = HelperFunctions.getMockClipperState();
+			let state = MockProps.getMockClipperState();
 			state.augmentationResult.data = undefined;
 			strictEqual(AugmentationHelper.getAugmentationType(state), AugmentationModel[AugmentationModel.Article]);
 
@@ -155,7 +156,7 @@ export class AugmentationHelperSinonTests extends TestModule {
 		});
 
 		test("getAugmentationType returns 'Article' for types that we don't support", () => {
-			let state = HelperFunctions.getMockClipperState();
+			let state = MockProps.getMockClipperState();
 			state.augmentationResult.data = {
 				ContentInHtml: "",
 				ContentModel: AugmentationModel.BizCard,

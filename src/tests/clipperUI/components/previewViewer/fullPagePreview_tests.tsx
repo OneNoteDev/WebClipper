@@ -12,6 +12,7 @@ import {FullPagePreview} from "../../../../scripts/clipperUI/components/previewV
 
 import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
+import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
 
 declare function require(name: string);
@@ -124,7 +125,7 @@ export class FullPagePreviewTests extends TestModule {
 		test("When the full page screenshot response is a failure, the preview should display an error message in Full Page mode", () => {
 			let expectedMessage = "An error message.";
 
-			let clipperState = HelperFunctions.getMockClipperState();
+			let clipperState = MockProps.getMockClipperState();
 			clipperState.currentMode.set(ClipMode.FullPage);
 			clipperState.fullPageResult = {
 				data: {
@@ -142,7 +143,7 @@ export class FullPagePreviewTests extends TestModule {
 	}
 
 	private getMockFullPageModeState(): ClipperState {
-		let state = HelperFunctions.getMockClipperState() as ClipperState;
+		let state = MockProps.getMockClipperState() as ClipperState;
 		state.currentMode.set(ClipMode.FullPage);
 		state.fullPageResult = {
 			data: {

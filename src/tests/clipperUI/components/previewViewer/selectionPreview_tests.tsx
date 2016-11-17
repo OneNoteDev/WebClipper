@@ -7,6 +7,7 @@ import {SelectionPreview} from "../../../../scripts/clipperUI/components/preview
 
 import {HelperFunctions} from "../../../helperFunctions";
 import {MithrilUtils} from "../../../mithrilUtils";
+import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
 
 export class SelectionPreviewTests extends TestModule {
@@ -56,7 +57,7 @@ export class SelectionPreviewTests extends TestModule {
 	}
 
 	private getMockSelectionModeState(): ClipperState {
-		let state = HelperFunctions.getMockClipperState() as ClipperState;
+		let state = MockProps.getMockClipperState() as ClipperState;
 		state.currentMode.set(ClipMode.Selection);
 		state.selectionPreviewInfo = {
 			previewBodyHtml: "The selection"
