@@ -535,10 +535,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private getDefaultClipMode(): ClipMode {
-		if (this.state && this.state.pageInfo && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-			return ClipMode.Pdf;
-		}
-
 		if (this.state && this.state.invokeOptions) {
 			switch (this.state.invokeOptions.invokeMode) {
 				case InvokeMode.ContextImage:
@@ -554,8 +550,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		}
 
-		if (this.state && this.state.pageInfo && UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
-			return ClipMode.Augmentation;
+		if (this.state && this.state.pageInfo) {
+			if (UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
+				return ClipMode.Augmentation;
+			} else if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+				return ClipMode.Pdf;
+			}
 		} else {
 			return ClipMode.FullPage;
 		}
