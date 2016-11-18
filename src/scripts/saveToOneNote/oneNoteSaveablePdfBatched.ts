@@ -8,7 +8,7 @@ export class OneNoteSaveablePdfBatched implements OneNoteSaveable {
 	private static maxImagesPerPatchRequest = 15;
 
 	private page: OneNoteApi.OneNotePage;
-	private pdf: PdfDocument;
+    private pdf: PdfDocument;
 	private buckets: number[][];
 	private contentLocale: string;
 	private saveLocation: string;
@@ -16,14 +16,14 @@ export class OneNoteSaveablePdfBatched implements OneNoteSaveable {
 
 	constructor(page: OneNoteApi.OneNotePage, pdf: PdfDocument, pageIndexes: number[], contentLocale: string, saveLocation: string, titleText: string) {
 		this.page = page;
-		this.pdf = pdf;
+        this.pdf = pdf;
 		this.buckets = ArrayUtils.partition(pageIndexes, OneNoteSaveablePdfBatched.maxImagesPerPatchRequest);
 		this.contentLocale = contentLocale;
 		this.saveLocation = saveLocation;
 		this.titleText = titleText;
 	}
 
-	public getPage(): Promise<OneNoteApi.OneNotePage> {
+    public getPage(): Promise<OneNoteApi.OneNotePage> {
 		return Promise.resolve(this.page);
 	}
 

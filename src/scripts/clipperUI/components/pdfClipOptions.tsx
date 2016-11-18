@@ -19,6 +19,7 @@ interface PdfClipOptionsProps extends ClipperStateProp {
 	allPages: boolean;
 	shouldAttachPdf: boolean;
 	shouldDistributePages: boolean;
+	isPopupOpen: boolean;
 }
 
 interface PdfClipOptionsState {
@@ -36,7 +37,6 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 
 	private addTextAreaListener() {
 		document.addEventListener("input", (event) => {
-			console.log("event listener added");
 			let element = event.target;
 			let pageRangeField = document.getElementById(Constants.Ids.rangeInput) as HTMLTextAreaElement;
 			if (!!element && element === pageRangeField) {
@@ -64,25 +64,11 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 	}
 
 	onTextChange(text: string) {
-		console.log("onTextChange: " + text);
 		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
 			selectedPageRange: text
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 
-		let pagesToShow = StringUtils.parsePageRange(text);
-		let validUpperBounds = _.every(pagesToShow, (ind: number) => {
-			return ind <= this.props.clipperState.pdfResult.data.get().pdf.numPages();
-		});
 
-		if (!pagesToShow || !validUpperBounds) {
-			this.setState({
-				invalidRange: true
-			});
-		} else {
-			this.setState({
-				invalidRange: false
-			});
-		}
 	}
 
 	getAllPagesRadioElement(): any {
@@ -106,7 +92,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 				{!this.props.allPages ?
 					<input type="text" id={Constants.Ids.rangeInput} className={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 192, false) }></input>
 					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
-				{!this.props.allPages && this.state.invalidRange ?
+				{!this.props.allPages && this.state.invalidRange && !this.props.isPopupOpen ?
 					<div class="popover">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange")}</div>
 					: ""}
 			</div>
@@ -115,7 +101,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 
 	getOnePageForEntirePdfRadioElement(): any {
 		return (
-			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 190, false) }>
+			<div id={Constants.Ids.onePageForEntirePdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 190, false) }>
 				<div class="pdf-indicator pdf-radio-indicator">
 					{!this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 				</div>
@@ -126,7 +112,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 
 	getOnePageForEachPdfPageRadioElement(): any {
 		return (
-			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 190, true) }>
+			<div id={Constants.Ids.onePageForEachPdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 190, true) }>
 				<div class="pdf-indicator pdf-radio-indicator">
 					{this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 				</div>
@@ -166,9 +152,22 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 	}
 
 	render() {
-		console.log("render");
+		let pagesToShow = StringUtils.parsePageRange(text);
+		let validUpperBounds = _.every(pagesToShow, (ind: number) => {
+			return ind <= this.props.clipperState.pdfResult.data.get().pdf.numPages();
+		});
+
+		if (!pagesToShow || !validUpperBounds) {
+			this.setState({
+				invalidRange: true
+			});
+		} else {
+			this.setState({
+				invalidRange: false
+			});
+		}
+		
 		if (!PdfClipOptionsClass.textAreaListenerAttached) {
-			console.log("render listener");
 			this.addTextAreaListener();
 			PdfClipOptionsClass.textAreaListenerAttached = true;
 		}

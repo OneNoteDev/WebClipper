@@ -3,6 +3,7 @@ export module Constants {
 		// animators
 		export var heightAnimator = "height-animator";
 		export var panelAnimator = "panel-animator";
+		export var clearfix = "clearfix";
 
 		// changeLogPanel
 		export var change = "change";
@@ -153,6 +154,8 @@ export module Constants {
 		export var pdfControl = "pdfControl";
 		export var pdfHeaderTitle = "pdfHeaderTitle";
 		export var pageRangeControl = "pageRangeControl";
+		export var onePageForEntirePdfLabel = "onePageForEntirePdfLabel";
+		export var onePageForEachPdfLabel = "onePageForEachPdfLabel";
 
 		export var attachmentCheckboxControl = "attachmentCheckboxControl";
 		export var attachmentCheckboxLabel = "attachmentCheckboxLabel";

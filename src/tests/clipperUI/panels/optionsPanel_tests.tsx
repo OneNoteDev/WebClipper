@@ -20,7 +20,8 @@ QUnit.module("optionsPanel", {
 		mockOptionsPanelProps = {
 			onStartClip: () => { onStartClipCalled = true; },
 			onPopupToggle: (shouldNowBeOpen: boolean) => { },
-			clipperState: mockState
+			clipperState: mockState,
+			isPopupOpen: false
 		};
 
 		onStartClipCalled = false;

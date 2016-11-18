@@ -57,7 +57,7 @@ export class AnimatedTooltipClass extends ComponentBase<AnimatedTooltipState, An
 	render() {
 		// We have to make the renderablePanel undefined on the collapse for the vertical shrink animation to function correctly
 		let renderablePanel = (
-			<div className={Constants.Classes.heightAnimator} {...this.onElementDraw(this.onHeightAnimatorDraw) }>
+			<div className={Constants.Classes.heightAnimator + " " + Constants.Classes.clearfix} {...this.onElementDraw(this.onHeightAnimatorDraw) }>
 				{this.state.uiExpanded ? this.props.renderablePanel : undefined}
 			</div>
 		);

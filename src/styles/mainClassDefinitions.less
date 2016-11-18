@@ -217,7 +217,7 @@
 		opacity: 1;
 		position: absolute;
 		z-index: 5;
-		transform: translateY(10px);
+		transform: translateX(30px);
 		transition: all 0.25s ease-out;
 		box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
 		border-radius: 4px;
@@ -227,22 +227,24 @@
 		// The left margin is 22px to account for the custom radio button
 		// If we want to extend 10px to the right outside of the margin
 		// We have to be 22px - 10px = 12px inside the left margin 
-		right: -10px; 
-		left: 12px;
+		right: 0px; 
+		top: 0px;
 		text-align: center;
 		pointer-events: none;
+		max-width: 126px;
 
 		&:before {
 			position: absolute;
-			left: 50%;
+			left: 0;
 			content: " ";
 			width: 0; // CSS triangles are built using only borders
 			height: 0;
-			top: -9px; // 9px to account for height of the triangle, and to overlap the border
-			margin-left: -13px; // no idea why this works
-			border-left: solid transparent 10px;
-			border-right: solid transparent 10px;
-			border-bottom: solid #e81123 10px;
+			/*top: -9px; // 9px to account for height of the triangle, and to overlap the border*/
+			left: -9px;
+			margin-left: -1px; // no idea why this works
+			border-top: solid transparent 10px;
+			border-bottom: solid transparent 10px;
+			border-right: solid #e81123 10px;
 		}
 	}
 

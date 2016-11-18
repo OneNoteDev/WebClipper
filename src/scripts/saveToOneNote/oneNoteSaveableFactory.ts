@@ -20,19 +20,22 @@ export class OneNoteSaveableFactory {
 	private static maxImagesPerPatchRequest = 15;
 
 	public static getSaveable(clipperState: ClipperState): Promise<OneNoteSaveable> {
-		return new Promise<OneNoteSaveable>((resolve) => {
-			let page = OneNoteSaveableFactory.getInitialPage(clipperState);
-			OneNoteSaveableFactory.addAnnotation(page, clipperState);
-			OneNoteSaveableFactory.addClippedFromUrlToPage(page, clipperState);
-			OneNoteSaveableFactory.addPrimaryContent(page, clipperState).then(() => {
-				resolve(OneNoteSaveableFactory.pageToSaveable(page, clipperState));
-			});
+		let page = OneNoteSaveableFactory.getInitialPage(clipperState);
+		OneNoteSaveableFactory.addAnnotation(page, clipperState);
+		OneNoteSaveableFactory.addClippedFromUrlToPage(page, clipperState);
+		return OneNoteSaveableFactory.addPrimaryContent(page, clipperState).then(() => {
+			return OneNoteSaveableFactory.pageToSaveable(page, clipperState);
 		});
 	}
 
 	private static getInitialPage(clipperState: ClipperState): OneNoteApi.OneNotePage {
+		const previewTitleText = clipperState.previewGlobalInfo.previewTitleText;
+		const firstPageIndex = OneNoteSaveableFactory.getPageIndicesToSendInPdfMode(clipperState)[0];
+		const firstPageNumberAsString = (firstPageIndex + 1).toString();
+		// TODO: localize
+		const title = clipperState.pdfPreviewInfo.shouldDistributePages ? previewTitleText + ": Page " + firstPageNumberAsString : previewTitleText; 
 		return new OneNoteApi.OneNotePage(
-			clipperState.previewGlobalInfo.previewTitleText,
+			title,
 			"",
 			clipperState.pageInfo.contentLocale,
 			OneNoteSaveableFactory.getMetaData(clipperState)
@@ -137,31 +140,36 @@ export class OneNoteSaveableFactory {
 	}
 
 	private static addPdfAttachment(page: OneNoteApi.OneNotePage, clipperState: ClipperState): Promise<any> {
-		return clipperState.pdfResult.data.get().pdf.getData().then((buffer) => {
+		let pdf = clipperState.pdfResult.data.get().pdf;
+		return pdf.getData().then((buffer) => {
 			if (buffer) {
 				let attachmentName = UrlUtils.getFileNameFromUrl(clipperState.pageInfo.rawUrl, "Original.pdf");
 				page.addAttachment(buffer, attachmentName);
 			}
+
 			return Promise.resolve();
 		});
 	}
 
-	private static pageToSaveable(page: OneNoteApi.OneNotePage, clipperState: ClipperState): OneNoteSaveable {
+	private static pageToSaveable(page: OneNoteApi.OneNotePage, clipperState: ClipperState): Promise<OneNoteSaveable> {
 		if (clipperState.currentMode.get() === ClipMode.Pdf) {
 			let pdf = clipperState.pdfResult.data.get().pdf;
-			let pageIndexes: number[] = clipperState.pdfPreviewInfo.allPages ?
-				_.range(pdf.numPages()) :
-				StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, pdf.numPages()).map(value => value - 1);
-
-			// great, now we have all the page ranges
-			// But instead of a page, we want to return a big ol' BATCH request
+			let pageIndexes = OneNoteSaveableFactory.getPageIndicesToSendInPdfMode(clipperState);
 			if (clipperState.pdfPreviewInfo.shouldDistributePages) {
-				console.log("batch it up");
-				return new OneNoteSaveablePdfBatched(page, pdf, pageIndexes, clipperState.pageInfo.contentLocale, clipperState.saveLocation, clipperState.previewGlobalInfo.previewTitleText);
+				return pdf.getPageAsDataUrl(pageIndexes[0]).then((dataUrl) => {
+					page.addOnml("<p><img src=\"" + dataUrl + "\" /></p>&nbsp;");
+					// We have added the first image to the createPage call, so we remove the first page from the indices we send in the BATCH
+					return new OneNoteSaveablePdfBatched(page, pdf, pageIndexes.slice(1), clipperState.pageInfo.contentLocale, clipperState.saveLocation, clipperState.previewGlobalInfo.previewTitleText);
+				});
 			} else {
-				return new OneNoteSaveablePdf(page, pdf, pageIndexes);
+				return Promise.resolve(new OneNoteSaveablePdf(page, pdf, pageIndexes));
 			}
 		}
-		return new OneNoteSaveablePage(page);
+		return Promise.resolve(new OneNoteSaveablePage(page));
+	}
+
+	private static getPageIndicesToSendInPdfMode(clipperState: ClipperState) {
+		let pdf = clipperState.pdfResult.data.get().pdf;
+		return clipperState.pdfPreviewInfo.allPages ? _.range(pdf.numPages()) : StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, pdf.numPages()).map(value => value - 1);
 	}
 }

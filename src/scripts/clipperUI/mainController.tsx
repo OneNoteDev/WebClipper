@@ -252,9 +252,11 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				return <SignInPanel clipperState={this.props.clipperState}
 					onSignInInvoked={this.props.onSignInInvoked}/>;
 			case PanelType.ClipOptions:
-				return <OptionsPanel onPopupToggle={this.onPopupToggle.bind(this) }
+				return <OptionsPanel
+					onPopupToggle={this.onPopupToggle.bind(this)}
 					clipperState={this.props.clipperState}
-					onStartClip={this.props.onStartClip} />;
+					onStartClip={this.props.onStartClip}
+					isPopupOpen={this.popupIsOpen} />;
 			case PanelType.RegionInstructions:
 				return <RegionSelectingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingToApi:

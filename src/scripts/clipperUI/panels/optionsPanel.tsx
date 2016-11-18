@@ -18,6 +18,7 @@ import {PdfClipOptions} from "../components/pdfClipOptions";
 export interface OptionsPanelProp extends ClipperStateProp {
 	onStartClip: () => void;
 	onPopupToggle: (shouldNowBeOpen: boolean) => void;
+	isPopupOpen: boolean;
 }
 
 class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
@@ -26,6 +27,7 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 		switch (currentMode) {
 			case ClipMode.Pdf:
 				return <PdfClipOptions
+					isPopupOpen={this.props.isPopupOpen}	
 					shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
 					allPages={this.props.clipperState.pdfPreviewInfo.allPages}
 					shouldDistributePages={this.props.clipperState.pdfPreviewInfo.shouldDistributePages}

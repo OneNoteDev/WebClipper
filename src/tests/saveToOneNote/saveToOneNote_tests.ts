@@ -539,7 +539,11 @@ test("When saving a pdf as a BATCH, if createPage succeeds, but the BATCH fails,
 		JSON.stringify(createPageJson)
         ]);
 
-    let batchResponse = "";
+    let batchResponse = {
+		"error":{
+			"code":"19999","message":"Something failed, the API cannot share any more information at the time of the request.","@api.url":"http://aka.ms/onenote-errors#C19999"
+		}
+	}
     
 	// Send BATCH request
 	server.respondWith(
