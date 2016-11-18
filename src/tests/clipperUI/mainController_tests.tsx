@@ -90,7 +90,6 @@ export class MainControllerTests extends TestModule {
 			Assert.tabOrderIsIncremental([Constants.Ids.launchOneNoteButton, Constants.Ids.closeButton]);
 		});
 
-		// TODO refactor
 		test("On the clip failure panel, the tab order is correct", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
@@ -99,37 +98,10 @@ export class MainControllerTests extends TestModule {
 				controllerInstance.state.currentPanel = PanelType.ClippingFailure;
 			});
 
+			Assert.tabOrderIsIncremental([Constants.Ids.currentUserControl, Constants.Ids.closeButton ]);
+
 			let dialogButtons = document.getElementsByClassName("dialogButton");
-
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.currentUserControl, elem: dialogButtons[0] as HTMLElement },
-				{ name: Constants.Ids.closeButton, elem: document.getElementById(Constants.Ids.closeButton) }
-			];
-
-			// Buttons should have a lower tab index than the close button
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
-
-			// Buttons should have equal tab indexes
-			let expectedTabIndex: number = undefined;
-			for (let i = 0; i < dialogButtons.length; i++) {
-				let element = dialogButtons[i] as HTMLElement;
-				if (!expectedTabIndex) {
-					expectedTabIndex = element.tabIndex;
-				} else {
-					strictEqual(element.tabIndex, expectedTabIndex, "Dialog button tabs should have the same tab indexes");
-				}
-			}
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
-
-			for (let i = 0; i < dialogButtons.length; i++) {
-				ok((dialogButtons[i] as HTMLElement).tabIndex > 0);
-			}
+			Assert.equalTabIndexes(dialogButtons);
 		});
 
 		test("On the clip failure panel, the right message is displayed for a particular API error code", () => {

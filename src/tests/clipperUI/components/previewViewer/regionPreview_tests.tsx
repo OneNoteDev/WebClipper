@@ -28,7 +28,6 @@ export class RegionPreviewTests extends TestModule {
 			Assert.tabOrderIsIncremental([Constants.Ids.addAnotherRegionButton, Constants.Ids.previewHeaderInput]);
 		});
 
-		// TODO refactor
 		test("The tab order flow from the preview title through the region delete buttons is correct in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
@@ -44,8 +43,7 @@ export class RegionPreviewTests extends TestModule {
 			}
 
 			// Check the flow from the title to the first button
-			ok(elementsInExpectedTabOrder[1].elem.tabIndex > elementsInExpectedTabOrder[0].elem.tabIndex,
-				"Element " + elementsInExpectedTabOrder[1].name + " should have a greater or equal tabIndex than element " + elementsInExpectedTabOrder[0].name);
+			Assert.tabOrderIsIncrementalForElements(elementsInExpectedTabOrder.slice(0, 2));
 
 			for (let i = 2 /* Check buttons */; i < elementsInExpectedTabOrder.length; i++) {
 				// Note the '>='
@@ -54,7 +52,7 @@ export class RegionPreviewTests extends TestModule {
 			}
 
 			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
+				ok(elementsInExpectedTabOrder[i].elem.tabIndex >= 0);
 			}
 		});
 
