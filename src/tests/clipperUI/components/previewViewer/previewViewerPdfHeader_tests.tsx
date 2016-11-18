@@ -1,18 +1,19 @@
 import * as sinon from "sinon";
 
-import {Clipper} from "../../../../scripts/clipperUI/frontEndGlobals";
-import {PreviewViewerPdfHeader, PreviewViewerPdfHeaderProp} from "../../../../scripts/clipperUI/components/previewViewer/previewViewerPdfHeader";
-
 import {Constants} from "../../../../scripts/constants";
 
+import {ClipperState} from "../../../../scripts/clipperUI/clipperState";
+import {Clipper} from "../../../../scripts/clipperUI/frontEndGlobals";
+import {Status} from "../../../../scripts/clipperUI/status";
+
+import {PreviewViewerPdfHeader, PreviewViewerPdfHeaderProp} from "../../../../scripts/clipperUI/components/previewViewer/previewViewerPdfHeader";
+
+import {StubSessionLogger} from "../../../../scripts/logging/stubSessionLogger";
+
+import {Assert} from "../../../assert";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
-
-import {ClipperState} from "../../../../scripts/clipperUI/clipperState";
-import {Status} from "../../../../scripts/clipperUI/status";
-
-import {StubSessionLogger} from "../../../../scripts/logging/stubSessionLogger";
 
 export class PreviewViewerPdfHeaderTests extends TestModule {
 	private defaultComponent;
@@ -49,28 +50,12 @@ export class PreviewViewerPdfHeaderTests extends TestModule {
 	}
 
 	protected tests() {
-		test("Given that the user selected all pages, the tabbing should flow from all pages radio button to page selection radio button to attachment checkbox button,"
-			+ "and each tab index should not be less than 1", () => {
+		test("Given that the user selected all pages, the tabbing should flow from all pages radio button to page selection radio button to attachment checkbox button", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
-
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.radioAllPagesLabel, elem: document.getElementById(Constants.Ids.radioAllPagesLabel) },
-				{ name: Constants.Ids.radioPageRangeLabel, elem: document.getElementById(Constants.Ids.radioPageRangeLabel) },
-				{ name: Constants.Ids.attachmentCheckboxLabel, elem: document.getElementById(Constants.Ids.attachmentCheckboxLabel) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
-
-			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.attachmentCheckboxLabel]);
 		});
 
-		test("Given that the user selected page ranges, the tabbing should flow from all pages radio button to page selection radio button to attachment checkbox button,"
-			+ "and each tab index should not be less than 1", () => {
+		test("Given that the user selected page ranges, the tabbing should flow from all pages radio button to page selection radio button to attachment checkbox button", () => {
 			MithrilUtils.mountToFixture(<PreviewViewerPdfHeader
 				onCheckboxChange={this.mockProp.onCheckboxChange}
 				onTextChange={this.mockProp.onTextChange}
@@ -78,26 +63,10 @@ export class PreviewViewerPdfHeaderTests extends TestModule {
 				allPages={false}
 				shouldAttachPdf={this.mockProp.shouldAttachPdf}
 				clipperState={this.clipperState}/>);
-
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.radioAllPagesLabel, elem: document.getElementById(Constants.Ids.radioAllPagesLabel) },
-				{ name: Constants.Ids.radioPageRangeLabel, elem: document.getElementById(Constants.Ids.radioPageRangeLabel) },
-				{ name: Constants.Ids.rangeInput, elem: document.getElementById(Constants.Ids.rangeInput) },
-				{ name: Constants.Ids.attachmentCheckboxLabel, elem: document.getElementById(Constants.Ids.attachmentCheckboxLabel) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
-
-			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.rangeInput, Constants.Ids.attachmentCheckboxLabel]);
 		});
 
-		test("Given that the user selected page ranges, and MIME size limit was exceeded, the tabbing should flow from all pages radio button to page selection radio button to range input,"
-			+ "and each tab index should not be less than 1", () => {
+		test("Given that the user selected page ranges, and MIME size limit was exceeded, the tabbing should flow from all pages radio button to page selection radio button to range input", () => {
 			this.clipperState.pdfResult.data.get().byteLength = Constants.Settings.maximumMimeSizeLimit;
 			MithrilUtils.mountToFixture(<PreviewViewerPdfHeader
 				onCheckboxChange={this.mockProp.onCheckboxChange}
@@ -106,21 +75,7 @@ export class PreviewViewerPdfHeaderTests extends TestModule {
 				allPages={false}
 				shouldAttachPdf={this.mockProp.shouldAttachPdf}
 				clipperState={this.clipperState}/>);
-
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.radioAllPagesLabel, elem: document.getElementById(Constants.Ids.radioAllPagesLabel) },
-				{ name: Constants.Ids.radioPageRangeLabel, elem: document.getElementById(Constants.Ids.radioPageRangeLabel) },
-				{ name: Constants.Ids.rangeInput, elem: document.getElementById(Constants.Ids.rangeInput) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
-
-			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.rangeInput]);
 		});
 
 		test("Given that the user selected all pages, the range input text box should not be present", () => {
