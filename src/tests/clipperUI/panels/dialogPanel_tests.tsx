@@ -102,7 +102,8 @@ export class DialogPanelTests extends TestModule {
 			strictEqual(renderedButtons.length, 0, "No buttons should render");
 		});
 
-		test("Given some buttons, they should have equal tab indexes, and each tab index should not be less than 1", () => {
+		// TODO refactor
+		test("Given some buttons, they should have equal tab indexes", () => {
 			let expectedMessage = "hello world";
 			let buttons = [
 				{ id: "a", label: "a", handler: undefined },
@@ -121,7 +122,7 @@ export class DialogPanelTests extends TestModule {
 				} else {
 					strictEqual(element.tabIndex, expectedTabIndex, "Dialog button tabs should have the same tab indexes");
 				}
-				ok(element.tabIndex > 0);
+				ok(element.tabIndex >= 0);
 			}
 		});
 	}

@@ -40,7 +40,6 @@ import "./clipperUI/panels/signInPanel_tests";
 
 import "./clipperUI/mainController_tests";
 import "./clipperUI/oneNoteApiUtils_tests";
-import "./clipperUI/previewViewer_tests";
 import "./clipperUI/ratingsHelper_tests";
 import "./clipperUI/regionSelector_tests";
 

@@ -11,6 +11,7 @@ import {InvokeMode} from "../../../scripts/extensions/invokeOptions";
 
 import {ClientType} from "../../../scripts/clientType";
 
+import {Assert} from "../../assert";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
@@ -177,23 +178,14 @@ export class ModeButtonSelectorTests extends TestModule {
 			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
 		});
 
-		test("The tabbing should flow in element order, assuming they are all available, and each tab index should not be less than 1", () => {
+		test("The tabbing should flow in element order, assuming they are all available", () => {
 			let startingState = MockProps.getMockClipperState();
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
 
-			let modeButtonSelector = MithrilUtils.getFixture().firstElementChild;
-			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
-
-			for (let i = 1; i < buttonElements.length; i++) {
-				ok((buttonElements[i] as HTMLElement).tabIndex > (buttonElements[i - 1] as HTMLElement).tabIndex,
-					"Elements tab indexes should be in ascending order");
-			}
-
-			for (let i = 0; i < buttonElements.length; i++) {
-				ok((buttonElements[0] as HTMLElement).tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton,
+				TestConstants.Ids.augmentationButton, TestConstants.Ids.selectionButton, TestConstants.Ids.bookmarkButton]);
 		});
 
 		test("The full page button should have the 'selected' class styling applied to it by default", () => {

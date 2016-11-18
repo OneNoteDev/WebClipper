@@ -8,6 +8,7 @@ import {AugmentationModel} from "../../../../scripts/contentCapture/augmentation
 
 import {AugmentationPreview} from "../../../../scripts/clipperUI/components/previewViewer/augmentationPreview";
 
+import {Assert} from "../../../assert";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
@@ -28,28 +29,13 @@ export class AugmentationPreviewTests extends TestModule {
 	}
 
 	protected tests() {
-		test("The tab order flow from the header to the preview title is correct in Augmentation mode, and each tab index should not be less than 1", () => {
+		test("The tab order flow from the header to the preview title is correct in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 			MithrilUtils.mountToFixture(defaultComponent);
 
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.highlightButton, elem: document.getElementById(Constants.Ids.highlightButton) },
-				{ name: Constants.Ids.sansSerif, elem: document.getElementById(Constants.Ids.sansSerif) },
-				{ name: Constants.Ids.serif, elem: document.getElementById(Constants.Ids.serif) },
-				{ name: Constants.Ids.decrementFontSize, elem: document.getElementById(Constants.Ids.decrementFontSize) },
-				{ name: Constants.Ids.incrementFontSize, elem: document.getElementById(Constants.Ids.incrementFontSize) },
-				{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
-
-			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.sansSerif, Constants.Ids.serif, Constants.Ids.decrementFontSize,
+				Constants.Ids.incrementFontSize, Constants.Ids.previewHeaderInput]);
 		});
 
 		test("The augmentation header and all related controls should be displayed in Augmentation mode", () => {
@@ -282,7 +268,7 @@ export class AugmentationPreviewTests extends TestModule {
 			strictEqual(parseInt(previewBody.style.fontSize, 10), largerFontSize);
 		});
 
-		test("If the user tries to increase beyond the maximum fontSize for either Serif or SansSerif, it should cap at the max font size defined in strongs.json in Augmentation mode", () => {
+		test("If the user tries to increase beyond the maximum fontSize for either Serif or SansSerif, it should cap at the max font size defined in strings.json in Augmentation mode", () => {
 			let maximumFontSize = Constants.Settings.maximumFontSize;
 			let numClicks = (maximumFontSize - parseInt(this.sansSerifDefaultFontSize, 10)) / this.fontSizeStep;
 

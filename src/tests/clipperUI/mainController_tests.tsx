@@ -6,6 +6,7 @@ import {SmartValue} from "../../scripts/communicator/smartValue";
 
 import {Constants} from "../../scripts/constants";
 
+import {Assert} from "../assert";
 import {MithrilUtils} from "../mithrilUtils";
 import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
@@ -48,102 +49,49 @@ export class MainControllerTests extends TestModule {
 	}
 
 	protected tests() {
-		test("On the sign in panel, the tab order is correct, and each tab index should not be less than 1", () => {
+		test("On the sign in panel, the tab order is correct", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.SignInNeeded;
 			});
 
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.signInButtonMsa, elem: document.getElementById(Constants.Ids.signInButtonMsa) },
-				{ name: Constants.Ids.signInButtonOrgId, elem: document.getElementById(Constants.Ids.signInButtonOrgId) },
-				{ name: Constants.Ids.closeButton, elem: document.getElementById(Constants.Ids.closeButton) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
-
-			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.signInButtonMsa, Constants.Ids.signInButtonOrgId, Constants.Ids.closeButton]);
 		});
 
-		test("On the clip options panel, the tab order is correct, and each tab index should not be less than 1", () => {
+		test("On the clip options panel, the tab order is correct", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClipOptions;
 			});
 
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.clipButton, elem: document.getElementById(Constants.Ids.clipButton) },
-				{ name: TestConstants.Ids.fullPageButton, elem: document.getElementById(TestConstants.Ids.fullPageButton) },
-				{ name: TestConstants.Ids.regionButton, elem: document.getElementById(TestConstants.Ids.regionButton) },
-				{ name: TestConstants.Ids.augmentationButton, elem: document.getElementById(TestConstants.Ids.augmentationButton) },
-				{ name: TestConstants.Ids.sectionLocationContainer, elem: document.getElementById(TestConstants.Ids.sectionLocationContainer) },
-				{ name: Constants.Ids.feedbackButton, elem: document.getElementById(Constants.Ids.feedbackButton) },
-				{ name: Constants.Ids.currentUserControl, elem: document.getElementById(Constants.Ids.currentUserControl) },
-				{ name: Constants.Ids.closeButton, elem: document.getElementById(Constants.Ids.closeButton) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " (" + elementsInExpectedTabOrder[i].elem.tabIndex + ") should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name + " (" + elementsInExpectedTabOrder[i - 1].elem.tabIndex + ")");
-			}
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
+				TestConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
-		test("On the region instructions panel, the tab order is correct, and each tab index should not be less than 1", () => {
+		test("On the region instructions panel, the tab order is correct", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.RegionInstructions;
 			});
 
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.currentUserControl, elem: document.getElementById(Constants.Ids.regionClipCancelButton) },
-				{ name: Constants.Ids.closeButton, elem: document.getElementById(Constants.Ids.closeButton) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
-
-			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.regionClipCancelButton, Constants.Ids.closeButton]);
 		});
 
-		test("On the clip success panel, the tab order is correct, and each tab index should not be less than 1", () => {
+		test("On the clip success panel, the tab order is correct", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClippingSuccess;
 			});
 
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.launchOneNoteButton, elem: document.getElementById(Constants.Ids.launchOneNoteButton) },
-				{ name: Constants.Ids.closeButton, elem: document.getElementById(Constants.Ids.closeButton) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
-
-			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.launchOneNoteButton, Constants.Ids.closeButton]);
 		});
 
-		test("On the clip failure panel, the tab order is correct, and each tab index should not be less than 1", () => {
+		// TODO refactor
+		test("On the clip failure panel, the tab order is correct", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			MithrilUtils.simulateAction(() => {

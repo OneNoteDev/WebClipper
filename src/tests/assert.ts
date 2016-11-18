@@ -5,10 +5,10 @@ export module Assert {
 	export function tabOrderIsIncremental(elementIds: string[]) {
 		let elementsInExpectedTabOrder = elementIds.map(id => { return { name: id, elem: document.getElementById(id) }; });
 
-		// Assert non-zero positive tabIndexes
+		// Assert positive tabIndexes
 		for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
 			let tabIndex = elementsInExpectedTabOrder[i].elem.tabIndex;
-			ok(tabIndex > 0, "Element " + elementsInExpectedTabOrder[i].name + " should have a tabIndex that is greater than 0, but was: " + tabIndex);
+			ok(tabIndex >= 0, "Element " + elementsInExpectedTabOrder[i].name + " should have a positive tabIndex, but was: " + tabIndex);
 		}
 
 		if (elementIds.length < 2) {
