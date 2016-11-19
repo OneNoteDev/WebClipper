@@ -454,6 +454,36 @@ test("When saving a pdf and a save location is specified, if the PATCH call fail
 	});
 });
 
+test("When saving a pdf as a BATCH, if there is only 1 page, there should be no BATCH calls", (assert: QUnitAssert) => {
+	let done = assert.async();
+
+	let saveLocation = "sectionId";
+	const titleText = "PDF.pdf";
+
+	let pageId = "abc";
+	let createPageJson = {
+		id: pageId
+	};
+
+	// Create initial page
+	server.respondWith(
+		"POST", "https://www.onenote.com/api/v1.0/me/notes/sections/" + saveLocation + "/pages",
+		[200, { "Content-Type": "application/json" },
+			JSON.stringify(createPageJson)
+		]);
+	
+	let page = getMockSaveablePdfBatched([0], saveLocation, titleText);
+
+	saveToOneNote.save({ page: page, saveLocation: saveLocation }).then((responsePackage) => {
+		deepEqual(responsePackage.parsedResponse, createPageJson, "The parsedResponse field should be the response in json form");
+		ok(responsePackage.request, "The request field should be defined");
+	}, (error) => {
+		ok(false, "reject should not be called");
+	}).then(() => {
+		done();
+	});
+});
+
 test("When saving a pdf as a BATCH, if createPage and all subsequent BATCH calls succeed, save() should resolve with the parsed response and request in a responsePackage", (assert: QUnitAssert) => {
 	let done = assert.async();
 

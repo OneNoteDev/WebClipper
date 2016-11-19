@@ -2,6 +2,16 @@ import {ArrayUtils} from "../scripts/arrayUtils";
 
 QUnit.module("arrayUtils", {});
 
+test("createEvenBuckets should return an empty list when numItems is 0", () => {
+	deepEqual(ArrayUtils.createEvenBuckets(0, 5), []);
+});
+
+test("createEvenBuckets should throw an exception when maxBuckets is 0", () => {
+	throws(() => {
+		deepEqual(ArrayUtils.createEvenBuckets(5, 0), []);
+	}, "maxPerBucket cannot be less than 1 but was: 0");
+});
+
 test("createEvenBuckets should return identical buckets when numItems % maxPerBucket = 0", () => {
 	deepEqual(ArrayUtils.createEvenBuckets(20, 5), [5, 5, 5, 5]);
 });
@@ -25,6 +35,10 @@ test("createEvenBuckets should return a single bucket of 1 if numItems = 1", () 
 test("createEvenBuckets should return a single bucket of numItems if numItems = maxPerBucket", () => {
 	deepEqual(ArrayUtils.createEvenBuckets(100, 100), [100]);
 	deepEqual(ArrayUtils.createEvenBuckets(1, 1), [1]);
+});
+
+test("partition should return an empty list when items is 0", () => {
+	deepEqual(ArrayUtils.partition([], 2), []);
 });
 
 test("partition should bucket items evenly and in order when numItems % maxBucket = 0", () => {

@@ -158,6 +158,7 @@ export module Constants {
 		export var onePageForEachPdfLabel = "onePageForEachPdfLabel";
 
 		export var attachmentCheckboxControl = "attachmentCheckboxControl";
+		export var attachmentCheckboxDisabledLabel = "attachmentCheckboxDisabledLabel";
 		export var attachmentCheckboxLabel = "attachmentCheckboxLabel";
 
 		// previewViewerRegionHeader
