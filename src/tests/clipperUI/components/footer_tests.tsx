@@ -6,6 +6,7 @@ import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
 
 import {Footer} from "../../../scripts/clipperUI/components/footer";
 
+import {Assert} from "../../assert";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
@@ -155,32 +156,12 @@ export class FooterTests extends TestModule {
 		test("The tabbing should flow from the feedback to dropdown to sign out buttons", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let feedbackButton = document.getElementById(Constants.Ids.feedbackButton);
 			let dropdown = document.getElementById(Constants.Ids.currentUserControl);
 			MithrilUtils.simulateAction(() => {
 				dropdown.click();
 			});
-			let signOutButton = document.getElementById(Constants.Ids.signOutButton);
 
-			ok(feedbackButton.tabIndex < dropdown.tabIndex,
-				"The dropdown button's tab index should be greater than the feedback button's");
-			ok(dropdown.tabIndex < signOutButton.tabIndex,
-				"The sign out button's tab index should be greater than the dropdown button's");
-		});
-
-		test("Tab indexes should not be less than 1", () => {
-			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
-
-			let feedbackButton = document.getElementById(Constants.Ids.feedbackButton);
-			let dropdown = document.getElementById(Constants.Ids.currentUserControl);
-			MithrilUtils.simulateAction(() => {
-				dropdown.click();
-			});
-			let signOutButton = document.getElementById(Constants.Ids.signOutButton);
-
-			ok(feedbackButton.tabIndex > 0);
-			ok(dropdown.tabIndex > 0);
-			ok(signOutButton.tabIndex > 0);
+			Assert.tabOrderIsIncremental([Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.signOutButton]);
 		});
 	}
 }

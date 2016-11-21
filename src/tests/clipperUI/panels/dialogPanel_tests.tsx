@@ -5,6 +5,7 @@ import {DialogButton, DialogPanel} from "../../../scripts/clipperUI/panels/dialo
 
 import {StubSessionLogger} from "../../../scripts/logging/stubSessionLogger";
 
+import {Assert} from "../../assert";
 import {MithrilUtils} from "../../mithrilUtils";
 import {TestModule} from "../../testModule";
 
@@ -102,7 +103,7 @@ export class DialogPanelTests extends TestModule {
 			strictEqual(renderedButtons.length, 0, "No buttons should render");
 		});
 
-		test("Given some buttons, they should have equal tab indexes, and each tab index should not be less than 1", () => {
+		test("Given some buttons, they should have equal tab indexes", () => {
 			let expectedMessage = "hello world";
 			let buttons = [
 				{ id: "a", label: "a", handler: undefined },
@@ -113,16 +114,7 @@ export class DialogPanelTests extends TestModule {
 
 			let dialogButtonContainer = document.getElementById(Constants.Ids.dialogButtonContainer);
 			let renderedButtons = dialogButtonContainer.getElementsByTagName("a");
-			let expectedTabIndex: number = undefined;
-			for (let i = 0; i < renderedButtons.length; i++) {
-				let element = renderedButtons[i] as HTMLElement;
-				if (!expectedTabIndex) {
-					expectedTabIndex = element.tabIndex;
-				} else {
-					strictEqual(element.tabIndex, expectedTabIndex, "Dialog button tabs should have the same tab indexes");
-				}
-				ok(element.tabIndex > 0);
-			}
+			Assert.equalTabIndexes(renderedButtons);
 		});
 	}
 }

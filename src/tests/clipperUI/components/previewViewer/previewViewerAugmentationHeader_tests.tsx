@@ -5,6 +5,7 @@ import {PreviewViewerAugmentationHeader, PreviewViewerAugmentationHeaderProp} fr
 
 import {Constants} from "../../../../scripts/constants";
 
+import {Assert} from "../../../assert";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
@@ -64,25 +65,9 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 			ok(!!document.getElementById(Constants.Ids.incrementFontSize));
 		});
 
-		test("The tabbing should flow from highlight to font family selectors to font size selectors, and each tab index should not be less than 1", () => {
+		test("The tabbing should flow from highlight to font family selectors to font size selectors", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
-
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.highlightButton, elem: document.getElementById(Constants.Ids.highlightButton) },
-				{ name: Constants.Ids.sansSerif, elem: document.getElementById(Constants.Ids.sansSerif) },
-				{ name: Constants.Ids.serif, elem: document.getElementById(Constants.Ids.serif) },
-				{ name: Constants.Ids.decrementFontSize, elem: document.getElementById(Constants.Ids.decrementFontSize) },
-				{ name: Constants.Ids.incrementFontSize, elem: document.getElementById(Constants.Ids.incrementFontSize) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
-
-			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.sansSerif, Constants.Ids.serif, Constants.Ids.decrementFontSize, Constants.Ids.incrementFontSize]);
 		});
 
 		test("The togglehighlight callback prop should be called exactly once whenever the highlight button is clicked", () => {

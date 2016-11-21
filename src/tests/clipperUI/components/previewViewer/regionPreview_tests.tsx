@@ -6,6 +6,7 @@ import {Status} from "../../../../scripts/clipperUI/status";
 
 import {RegionPreview} from "../../../../scripts/clipperUI/components/previewViewer/regionPreview";
 
+import {Assert} from "../../../assert";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
 import {TestModule} from "../../../testModule";
@@ -24,19 +25,10 @@ export class RegionPreviewTests extends TestModule {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
 			MithrilUtils.mountToFixture(defaultComponent);
-
-			let elementsInExpectedTabOrder = [
-				{ name: Constants.Ids.addRegionControl, elem: document.getElementById(Constants.Ids.addRegionControl) },
-				{ name: Constants.Ids.previewHeaderInput, elem: document.getElementById(Constants.Ids.previewHeaderInput) }
-			];
-
-			for (let i = 1; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > elementsInExpectedTabOrder[i - 1].elem.tabIndex,
-					"Element " + elementsInExpectedTabOrder[i].name + " should have a greater tabIndex than element " + elementsInExpectedTabOrder[i - 1].name);
-			}
+			Assert.tabOrderIsIncremental([Constants.Ids.addAnotherRegionButton, Constants.Ids.previewHeaderInput]);
 		});
 
-		test("The tab order flow from the preview title through the region delete buttons is correct in Region mode, and each tab index should not be less than 1", () => {
+		test("The tab order flow from the preview title through the region delete buttons is correct in Region mode", () => {
 			let mockClipperState = this.getMockRegionModeState();
 			let defaultComponent = <RegionPreview clipperState={mockClipperState} />;
 			MithrilUtils.mountToFixture(defaultComponent);
@@ -51,8 +43,7 @@ export class RegionPreviewTests extends TestModule {
 			}
 
 			// Check the flow from the title to the first button
-			ok(elementsInExpectedTabOrder[1].elem.tabIndex > elementsInExpectedTabOrder[0].elem.tabIndex,
-				"Element " + elementsInExpectedTabOrder[1].name + " should have a greater or equal tabIndex than element " + elementsInExpectedTabOrder[0].name);
+			Assert.tabOrderIsIncrementalForElements(elementsInExpectedTabOrder.slice(0, 2));
 
 			for (let i = 2 /* Check buttons */; i < elementsInExpectedTabOrder.length; i++) {
 				// Note the '>='
@@ -61,7 +52,7 @@ export class RegionPreviewTests extends TestModule {
 			}
 
 			for (let i = 0; i < elementsInExpectedTabOrder.length; i++) {
-				ok(elementsInExpectedTabOrder[i].elem.tabIndex > 0);
+				ok(elementsInExpectedTabOrder[i].elem.tabIndex >= 0);
 			}
 		});
 
