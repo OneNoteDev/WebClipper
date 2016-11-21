@@ -12,7 +12,7 @@ interface ResponsePackage {
  * TODO: Wean this off OneNoteApi.ErrorUtils once we move the general http logic into its own package.
  */
 export class Http {
-	private static defaultTimeout = 45000;
+	protected static defaultTimeout = 45000;
 
 	public static get(url: string, headers?: any, timeout = Http.defaultTimeout, expectedCodes = [200]): Promise<XMLHttpRequest> {
 		return Http.createAndSendRequest("GET", url, headers, expectedCodes, timeout);
