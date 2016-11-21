@@ -121,13 +121,6 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		const isPdfTooLarge = this.props.clipperState.pdfResult.status === Status.Succeeded && this.props.clipperState.pdfResult.data.get().byteLength > Constants.Settings.maximumMimeSizeLimit;
 
 		return (
-			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxDisabledLabel} tabIndex={66}>
-				<div class="pdf-indicator pdf-error-circle"></div>
-				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage")}</span>
-			</div>
-		);
-		
-		return (
 			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 66, !this.props.shouldAttachPdf) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
 				{this.props.shouldAttachPdf ? <div class="checkbox"></div> : ""}
@@ -152,7 +145,6 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 			PdfClipOptionsClass.textAreaListenerAttached = true;
 		}
 
-		
 		let pagesToShow = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
 		let validUpperBounds = this.props.clipperState.pdfResult.status === Status.Succeeded ? _.every(pagesToShow, (ind: number) => {
 			return ind <= this.props.clipperState.pdfResult.data.get().pdf.numPages();
