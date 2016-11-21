@@ -1,3 +1,5 @@
+import {Constants} from "../../../../scripts/constants";
+
 import {PdfPageViewport} from "../../../../scripts/clipperUI/components/previewViewer/pdfPageViewport";
 
 import {HelperFunctions} from "../../../helperFunctions";
@@ -19,7 +21,10 @@ test("Given both the imgUrl and dimensions, the imgUrl is rendered in the compon
 	strictEqual(containerComputedStyle.maxWidth, expectedWidth, "The container's max width should be the specified viewport width");
 
 	let images = container.getElementsByTagName("img");
-	strictEqual(images.length, 1, "There should be one image present in the container");
+	strictEqual(images.length, 1, "There should be one image in the viewport");
+
+	let spinners = container.getElementsByClassName(Constants.Classes.spinner);
+	strictEqual(spinners.length, 0, "There should be no spinners in the viewport");
 
 	let imageComputedStyle = window.getComputedStyle(images[0]);
 	strictEqual(imageComputedStyle.maxWidth, expectedWidth, "The image's max width should be the specified viewport width");
@@ -40,7 +45,10 @@ test("When not given the imgUrl, the component should render a loading spinner w
 	strictEqual(containerComputedStyle.height, expectedHeight, "The container's height should be the specified viewport height + the height of the spinner");
 
 	let images = container.getElementsByTagName("img");
-	strictEqual(images.length, 1, "There should be 1 image rendered, the spinner");
+	strictEqual(images.length, 0, "There should be no images in the viewport");
+
+	let spinners = container.getElementsByClassName(Constants.Classes.spinner);
+	strictEqual(spinners.length, 1, "There should be a spinner in the viewport");
 });
 
 test("Given the index, the component should render the container with the index stored in the attribute 'data-pageindex'", () => {
