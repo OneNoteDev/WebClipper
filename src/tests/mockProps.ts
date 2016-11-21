@@ -1,18 +1,12 @@
-/// <reference path="../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {ClientType} from "../scripts/clientType";
-
-import {Polyfills} from "../scripts/polyfills";
 
 import {ClipMode} from "../scripts/clipperUI/clipMode";
 import {ClipperState} from "../scripts/clipperUI/clipperState";
-import {Clipper} from "../scripts/clipperUI/frontEndGlobals";
 import {MainControllerProps} from "../scripts/clipperUI/mainController";
 import {Status} from "../scripts/clipperUI/status";
 
 import {ModeButtonProps} from "../scripts/clipperUI/components/modeButton";
 
-import {Communicator} from "../scripts/communicator/communicator";
 import {SmartValue} from "../scripts/communicator/smartValue";
 
 import {PdfScreenshotResult} from "../scripts/contentCapture/pdfScreenshotHelper";
@@ -21,40 +15,14 @@ import {InvokeMode} from "../scripts/extensions/invokeOptions";
 
 import {Localization} from "../scripts/localization/localization";
 
-import * as Log from "../scripts/logging/log";
-import {ConsoleLoggerDecorator} from "../scripts/logging/consoleLoggerDecorator";
-import {ProductionRequirements} from "../scripts/logging/context";
-
-import {ChangeLog} from "../scripts/versioning/changeLog";
-
-import {Settings} from "../scripts/settings";
 import {UpdateReason} from "../scripts/userInfo";
 
-import {MockMessageHandler} from "./communicator/mockMessageHandler";
-
-import {MockConsole} from "./logging/mockConsole";
-
-Polyfills.init();
-
 /**
- * Common functions required across multiple test files
+ * Collection of mock props used in our tests. Mostly intended for preventing
+ * lots of boilerplate, and can be customized to suit the test's needs.
  */
-export module HelperFunctions {
-	export function getBaseFileName(path: string): string {
-		return path.split("/").pop().split(".")[0];
-	}
-
-	export function getFixture(): Element {
-		return document.getElementById("qunit-fixture");
-	}
-
+export module MockProps {
 	export function getMockClipperState(): ClipperState {
-		Clipper.setInjectCommunicator(new Communicator(new MockMessageHandler(), "INJECT_MOCK_COMM"));
-		Clipper.setExtensionCommunicator(new Communicator(new MockMessageHandler(), "EXTENSION_MOCK_COMM"));
-		Clipper.logger = new ConsoleLoggerDecorator(new MockConsole(), {
-			contextStrategy: new ProductionRequirements()
-		});
-
 		let clipperState: ClipperState = {
 			injectOptions: {
 				frameUrl: "",
@@ -117,6 +85,10 @@ export module HelperFunctions {
 				data: undefined,
 				status: Status.NotStarted
 			},
+			bookmarkResult: {
+				data: undefined,
+				status: Status.NotStarted
+			},
 
 			previewGlobalInfo: {
 				annotation: "",
@@ -141,8 +113,6 @@ export module HelperFunctions {
 				data: undefined,
 				status: Status.NotStarted
 			},
-
-			showRatingsPrompt: new SmartValue<boolean>(),
 
 			setState: (newPartialState: ClipperState) => {
 				for (let key in newPartialState) {
@@ -276,136 +246,5 @@ export module HelperFunctions {
 			},
 			tooltipText: "tooltip"
 		};
-	}
-
-	export function getMockRequiredContextProperties(): any {
-		let requiredContextProperties = { };
-		requiredContextProperties[Log.Context.toString(Log.Context.Custom.BrowserLanguage)] = "en-US";
-		requiredContextProperties[Log.Context.toString(Log.Context.Custom.ClipperType)] = "ChromeExtension";
-		requiredContextProperties[Log.Context.toString(Log.Context.Custom.FlightInfo)] = "muidflt60-clprin;premuidflt104-oit1;didfloatie";
-		requiredContextProperties[Log.Context.toString(Log.Context.Custom.InvokeHostname)] = "www.onenote.com";
-		requiredContextProperties[Log.Context.toString(Log.Context.Custom.PageLanguage)] = "en";
-		return requiredContextProperties;
-	}
-
-	export function getMockRequiredApplicationProperties(): any {
-		let requiredApplicationProperties = { };
-		requiredApplicationProperties[Log.Context.toString(Log.Context.Custom.AppInfoId)] = Settings.getSetting("App_Id");
-		requiredApplicationProperties[Log.Context.toString(Log.Context.Custom.AppInfoVersion)] = "3.0.0";
-		requiredApplicationProperties[Log.Context.toString(Log.Context.Custom.DeviceInfoId)] = "ON-a47884e1-f64c-4dfd-ad49-49508f0ae05f";
-		return requiredApplicationProperties;
-	}
-
-	export function getMockUpdates(): ChangeLog.Update[] {
-		return [{
-			"version": "3.1.0",
-			"date": "06/03/2016",
-			"changes": [{
-				"title": "t1",
-				"description": "d1",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari", "Bookmarklet"]
-			}, {
-				"title": "t2",
-				"description": "d2",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari"]
-			}, {
-				"title": "t3",
-				"description": "d3",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari"]
-			}, {
-				"title": "t4",
-				"description": "d4",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari", "Bookmarklet"]
-			}]
-		}];
-	}
-
-	export function getMockUpdatesWithSomeImages(): ChangeLog.Update[] {
-		return [{
-			"version": "3.1.0",
-			"date": "06/03/2016",
-			"changes": [{
-				"title": "t1",
-				"description": "d1",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari", "Bookmarklet"]
-			}, {
-				"title": "t2",
-				"imageUrl": "http://www.mywebsite.fake/2.jpeg",
-				"description": "d2",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari"]
-			}, {
-				"title": "t3",
-				"description": "d3",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari"]
-			}, {
-				"title": "t4",
-				"description": "d4",
-				"imageUrl": "http://www.mywebsite.fake/4.jpeg",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari", "Bookmarklet"]
-			}]
-		}];
-	}
-
-	export function getMockMultipleUpdates(): ChangeLog.Update[] {
-		return [{
-			"version": "3.1.0",
-			"date": "06/03/2016",
-			"changes": [{
-				"title": "t1",
-				"description": "d1",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari", "Bookmarklet"]
-			}, {
-				"title": "t2",
-				"description": "d2",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari"]
-			}, {
-				"title": "t3",
-				"description": "d3",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari"]
-			}, {
-				"title": "t4",
-				"description": "d4",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari", "Bookmarklet"]
-			}]
-		}, {
-			"version": "3.0.0",
-			"date": "06/03/2016",
-			"changes": [{
-				"title": "t5",
-				"description": "d5",
-				"supportedBrowsers": ["Chrome", "Firefox", "Safari", "Bookmarklet"]
-			}, {
-				"title": "t6",
-				"description": "d6",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari"]
-			}, {
-				"title": "t7",
-				"description": "d7",
-				"supportedBrowsers": ["Edge", "Chrome", "Firefox", "Safari"]
-			}]
-		}];
-	}
-
-	export function mountToFixture(component): any {
-		let fixture = HelperFunctions.getFixture();
-		let controllerInstance = m.mount(fixture, component);
-		m.redraw(true);
-		return controllerInstance;
-	}
-
-	export function simulateAction(action: () => void) {
-		action();
-		m.redraw(true);
-	}
-
-	export function mergeObjects(obj1: {}, obj2: {}): {} {
-		let merged = {};
-		for (let key in obj1) {
-			merged[key] = obj1[key];
-		}
-		for (let key in obj2) {
-			merged[key] = obj2[key];
-		}
-		return merged;
 	}
 }

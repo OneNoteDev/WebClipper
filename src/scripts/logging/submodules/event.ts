@@ -1,5 +1,5 @@
 import {ErrorUtils, Failure, PropertyName, Status} from "../log";
-import {Utils} from "../../utils";
+import {ObjectUtils} from "../../objectUtils";
 
 export module Event {
 	export enum Category {
@@ -15,35 +15,42 @@ export module Event {
 		CompressRegionSelection,
 		ClearNoOpTracker,
 		Click,
+		ClipAugmentationOptions,
+		ClipCommonOptions,
 		ClipPdfOptions,
+		ClipRegionOptions,
+		ClipSelectionOptions,
 		ClipToOneNoteAction,
 		CloseClipper,
 		ClosePageNavTooltip,
+		CreateNotebook,
+		CreatePage,
+		CreateSection,
 		DebugFeedback,
 		DeviceIdMap,
 		FetchNonLocalData,
 		FullPageScreenshotCall,
 		GetBinaryRequest,
 		GetCleanDom,
-		GetDefaultSection,
 		GetExistingUserInformation,
 		GetFlightingAssignments,
 		GetLocale,
 		GetLocalizedStrings,
+		GetNotebookByName,
 		GetNotebooks,
+		GetPage,
+		GetPageContent,
+		GetPages,
 		HandleSignInEvent,
 		HideClipperDueToSpaNavigate,
 		InvokeClipper,
 		InvokeTooltip,
 		InvokeWhatsNew,
 		LocalFilesNotAllowedPanelShown,
-		PageModifications,
-		PatchPermissionCheck,
-		PatchRequest,
-		PdfCreatePage,
-		PostToOneNoteApi,
+		PagesSearch,
+		PdfByteMetadata,
+		PdfDataUrlMetadata,
 		ProcessPdfIntoDataUrls,
-		RefreshUserToken,
 		RegionSelectionCapturing,
 		RegionSelectionLoading,
 		RegionSelectionProcessing,
@@ -52,8 +59,8 @@ export module Event {
 		SetDoNotPromptRatings,
 		ShouldShowRatingsPrompt,
 		TooltipImpression,
+		UpdatePage,
 		UserInfoUpdated,
-		WaitOnBinaryRequestBeforePdfClip,
 		WhatsNewImpression
 	}
 
@@ -160,7 +167,7 @@ export module Event {
 
 		protected isEventData(labelOrData: Event.Label | BaseEventData) {
 			let tryCastAsEventData: BaseEventData = <BaseEventData>labelOrData;
-			if (tryCastAsEventData && !Utils.isNullOrUndefined(tryCastAsEventData.Label)) {
+			if (tryCastAsEventData && !ObjectUtils.isNullOrUndefined(tryCastAsEventData.Label)) {
 				return true;
 			}
 			return false;

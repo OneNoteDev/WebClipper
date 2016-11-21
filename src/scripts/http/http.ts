@@ -1,6 +1,4 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 
 interface ResponsePackage {
 	parsedResponse: string;
@@ -21,13 +19,13 @@ export class Http {
 	}
 
 	public static post(url: string, data: any, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout): Promise<XMLHttpRequest> {
-		if (Utils.isNullOrUndefined(data)) {
+		if (ObjectUtils.isNullOrUndefined(data)) {
 			throw new Error("data must be a non-undefined object, but was: " + data);
 		}
 		return Http.createAndSendRequest("POST", url, headers, expectedCodes, timeout, data);
 	}
 
-	private static createAndSendRequest(method: string, url: string, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, data?: any): Promise<XMLHttpRequest> {
+	protected static createAndSendRequest(method: string, url: string, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, data?: any): Promise<XMLHttpRequest> {
 		if (!url) {
 			throw new Error("url must be a non-empty string, but was: " + url);
 		}

@@ -2,7 +2,7 @@ import {ComponentBase} from "../componentBase";
 import {AnimationStrategy} from "../animations/animationStrategy";
 
 import {Constants} from "../../constants";
-import {Utils} from "../../utils";
+import {ObjectUtils} from "../../objectUtils";
 
 import {Localization} from "../../localization/localization";
 
@@ -34,8 +34,8 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 	}
 
 	render() {
-		let fontFamily = !Utils.isNullOrUndefined(this.props.fontFamily) ? this.props.fontFamily : Localization.FontFamily.Semibold;
-		let buttonFontFamily = !Utils.isNullOrUndefined(this.props.buttonFontFamily) ? this.props.buttonFontFamily : Localization.FontFamily.Semibold;
+		let fontFamily = !ObjectUtils.isNullOrUndefined(this.props.fontFamily) ? this.props.fontFamily : Localization.FontFamily.Semibold;
+		let buttonFontFamily = !ObjectUtils.isNullOrUndefined(this.props.buttonFontFamily) ? this.props.buttonFontFamily : Localization.FontFamily.Semibold;
 		let containerId = this.props.containerId ? this.props.containerId : "";
 
 		return (

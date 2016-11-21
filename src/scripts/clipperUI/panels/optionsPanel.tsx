@@ -1,5 +1,3 @@
-/// <reference path="../../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {Constants} from "../../constants";
 
 import {InvokeMode} from "../../extensions/invokeOptions";
@@ -10,18 +8,19 @@ import {ModeButtonSelector} from "../components/modeButtonSelector";
 import {SectionPicker} from "../components/sectionPicker";
 
 import {ClipMode} from "../clipMode";
-import {ClipperStateHelperFunctions, ClipperStateProp} from "../clipperState";
+import {ClipperStateProp} from "../clipperState";
+import {ClipperStateUtilities} from "../clipperStateUtilities";
 import {ComponentBase} from "../componentBase";
 import {Status} from "../status";
 
-interface OptionsPanelProps extends ClipperStateProp {
+export interface OptionsPanelProp extends ClipperStateProp {
 	onStartClip: () => void;
 	onPopupToggle: (shouldNowBeOpen: boolean) => void;
 }
 
-class OptionsPanelClass extends ComponentBase<{ }, OptionsPanelProps> {
+class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 	render() {
-		let clipButtonEnabled = ClipperStateHelperFunctions.clipButtonEnabled(this.props.clipperState);
+		let clipButtonEnabled = ClipperStateUtilities.clipButtonEnabled(this.props.clipperState);
 		let clipButtonContainerClassName = clipButtonEnabled ? "wideButtonContainer" : "wideButtonContainer disabled";
 
 		return (

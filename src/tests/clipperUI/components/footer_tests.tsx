@@ -1,12 +1,16 @@
 import {ClientType} from "../../../scripts/clientType";
-import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
-import {HelperFunctions} from "../../helperFunctions";
 import {Constants} from "../../../scripts/constants";
+import {StringUtils} from "../../../scripts/stringUtils";
+
+import {Clipper} from "../../../scripts/clipperUI/frontEndGlobals";
+
 import {Footer} from "../../../scripts/clipperUI/components/footer";
 
-import {Utils} from "../../../scripts/utils";
+import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
+import {TestModule} from "../../testModule";
 
-export module TestConstants {
+module TestConstants {
 	export module LogCategories {
 		export var oneNoteClipperUsage = "OneNoteClipperUsage";
 	}
@@ -15,161 +19,170 @@ export module TestConstants {
 	}
 }
 
-let defaultComponent;
-let startingState;
-QUnit.module("footer", {
-	beforeEach: () => {
-		startingState = HelperFunctions.getMockClipperState();
-		Clipper.sessionId.set(Utils.generateGuid());
-		defaultComponent =
-			<Footer clipperState={ startingState } />;
+export class FooterTests extends TestModule {
+	private defaultComponent;
+	private startingState;
+
+	protected module() {
+		return "footer";
 	}
-});
 
-test("The footer should be collapsed by default", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+	protected beforeEach() {
+		this.startingState = MockProps.getMockClipperState();
+		Clipper.sessionId.set(StringUtils.generateGuid());
+		this.defaultComponent =
+			<Footer clipperState={ this.startingState } />;
+	}
 
-	ok(!document.getElementById(Constants.Ids.userSettingsContainer),
-		"The user settings container should not be rendered by default");
-});
+	protected tests() {
+		test("The footer should be collapsed by default", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-test("The footer should be expanded after clicking on the user control dropdown button", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			ok(!document.getElementById(Constants.Ids.userSettingsContainer),
+				"The user settings container should not be rendered by default");
+		});
 
-	let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
-	HelperFunctions.simulateAction(() => {
-		currentUserControl.click();
-	});
+		test("The footer should be expanded after clicking on the user control dropdown button", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-	ok(document.getElementById(Constants.Ids.userSettingsContainer),
-		"The user settings container should be rendered after clicking the user control dropdown button");
-});
+			let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
+			MithrilUtils.simulateAction(() => {
+				currentUserControl.click();
+			});
 
-test("The footer should be collapsed when clicking on the user control dropdown button twice", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			ok(document.getElementById(Constants.Ids.userSettingsContainer),
+				"The user settings container should be rendered after clicking the user control dropdown button");
+		});
 
-	let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
-	HelperFunctions.simulateAction(() => {
-		currentUserControl.click();
-		currentUserControl.click();
-	});
+		test("The footer should be collapsed when clicking on the user control dropdown button twice", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-	ok(!document.getElementById(Constants.Ids.userSettingsContainer),
-		"The user settings container should not be rendered after clicking the user control dropdown button twice");
-});
+			let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
+			MithrilUtils.simulateAction(() => {
+				currentUserControl.click();
+				currentUserControl.click();
+			});
 
-test("The footer should remain expanded after clicking on the user control dropdown button then losing focus", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			ok(!document.getElementById(Constants.Ids.userSettingsContainer),
+				"The user settings container should not be rendered after clicking the user control dropdown button twice");
+		});
 
-	let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
-	HelperFunctions.simulateAction(() => {
-		currentUserControl.focus();
-		currentUserControl.click();
-		currentUserControl.blur();
-	});
+		test("The footer should remain expanded after clicking on the user control dropdown button then losing focus", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-	ok(document.getElementById(Constants.Ids.userSettingsContainer),
-		"The user settings container remain open regardless of focus");
-});
+			let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
+			MithrilUtils.simulateAction(() => {
+				currentUserControl.focus();
+				currentUserControl.click();
+				currentUserControl.blur();
+			});
 
-test("The user settings opened state should match the visibility of the user settings container", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			ok(document.getElementById(Constants.Ids.userSettingsContainer),
+				"The user settings container remain open regardless of focus");
+		});
 
-	let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
-	strictEqual(controllerInstance.state.userSettingsOpened, false,
-		"userSettingsOpened should be false by default");
+		test("The user settings opened state should match the visibility of the user settings container", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-	HelperFunctions.simulateAction(() => {
-		currentUserControl.click();
-	});
-	strictEqual(controllerInstance.state.userSettingsOpened, true,
-		"userSettingsOpened should be true after the user control dropdown button has been clicked once");
+			let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
+			strictEqual(controllerInstance.state.userSettingsOpened, false,
+				"userSettingsOpened should be false by default");
 
-	HelperFunctions.simulateAction(() => {
-		currentUserControl.click();
-	});
-	strictEqual(controllerInstance.state.userSettingsOpened, false,
-		"userSettingsOpened should be false after the user control dropdown button has been clicked twice");
-});
+			MithrilUtils.simulateAction(() => {
+				currentUserControl.click();
+			});
+			strictEqual(controllerInstance.state.userSettingsOpened, true,
+				"userSettingsOpened should be true after the user control dropdown button has been clicked once");
 
-test("The footer fields should be populated with the current user's info", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			MithrilUtils.simulateAction(() => {
+				currentUserControl.click();
+			});
+			strictEqual(controllerInstance.state.userSettingsOpened, false,
+				"userSettingsOpened should be false after the user control dropdown button has been clicked twice");
+		});
 
-	let currentUserName = document.getElementById(Constants.Ids.currentUserName);
-	let currentUserId = document.getElementById(Constants.Ids.currentUserId);
-	strictEqual(currentUserName.innerText, startingState.userResult.data.user.fullName);
-	strictEqual(currentUserId.innerText, startingState.userResult.data.user.emailAddress);
+		test("The footer fields should be populated with the current user's info", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-	let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
-	HelperFunctions.simulateAction(() => {
-		currentUserControl.click();
-	});
-	let currentUserEmail = document.getElementById(Constants.Ids.currentUserEmail);
-	strictEqual(currentUserEmail.innerText, startingState.userResult.data.user.emailAddress);
-});
+			let currentUserName = document.getElementById(Constants.Ids.currentUserName);
+			let currentUserId = document.getElementById(Constants.Ids.currentUserId);
+			strictEqual(currentUserName.innerText, this.startingState.userResult.data.user.fullName);
+			strictEqual(currentUserId.innerText, this.startingState.userResult.data.user.emailAddress);
 
-test("On clicking the sign out button, the user state must be set to undefined and userSettingsOpened state should be set to false", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			let currentUserControl = document.getElementById(Constants.Ids.currentUserControl);
+			MithrilUtils.simulateAction(() => {
+				currentUserControl.click();
+			});
+			let currentUserEmail = document.getElementById(Constants.Ids.currentUserEmail);
+			strictEqual(currentUserEmail.innerText, this.startingState.userResult.data.user.emailAddress);
+		});
 
-	HelperFunctions.simulateAction(() => {
-		document.getElementById(Constants.Ids.currentUserControl).click();
-	});
-	HelperFunctions.simulateAction(() => {
-		document.getElementById(Constants.Ids.signOutButton).click();
-	});
+		test("On clicking the sign out button, the user state must be set to undefined and userSettingsOpened state should be set to false", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-	strictEqual(controllerInstance.props.clipperState.user, undefined,
-		"User token should be set to undefined on signout");
-	strictEqual(controllerInstance.state.userSettingsOpened, false,
-		"userSettingsOpened should be set to false on signout");
-});
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.currentUserControl).click();
+			});
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.signOutButton).click();
+			});
 
-test("The feedback popup should not be open by default", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			strictEqual(controllerInstance.props.clipperState.user, undefined,
+				"User token should be set to undefined on signout");
+			strictEqual(controllerInstance.state.userSettingsOpened, false,
+				"userSettingsOpened should be set to false on signout");
+		});
 
-	let feedbackWindowRef = controllerInstance.getFeedbackWindowRef();
-	ok(!feedbackWindowRef || feedbackWindowRef.closed,
-		"Popup should not be opened by default");
-});
+		test("The feedback popup should not be open by default", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-test("On clicking the feedback button, a popup should open", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			let feedbackWindowRef = controllerInstance.getFeedbackWindowRef();
+			ok(!feedbackWindowRef || feedbackWindowRef.closed,
+				"Popup should not be opened by default");
+		});
 
-	HelperFunctions.simulateAction(() => {
-		document.getElementById(Constants.Ids.feedbackButton).click();
-	});
+		test("On clicking the feedback button, a popup should open", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-	ok(!controllerInstance.getFeedbackWindowRef().closed,
-		"Popup should open when feedback button is clicked");
-});
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.feedbackButton).click();
+			});
 
-test("The tabbing should flow from the feedback to dropdown to sign out buttons", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			ok(!controllerInstance.getFeedbackWindowRef().closed,
+				"Popup should open when feedback button is clicked");
+		});
 
-	let feedbackButton = document.getElementById(Constants.Ids.feedbackButton);
-	let dropdown = document.getElementById(Constants.Ids.currentUserControl);
-	HelperFunctions.simulateAction(() => {
-		dropdown.click();
-	});
-	let signOutButton = document.getElementById(Constants.Ids.signOutButton);
+		test("The tabbing should flow from the feedback to dropdown to sign out buttons", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-	ok(feedbackButton.tabIndex < dropdown.tabIndex,
-		"The dropdown button's tab index should be greater than the feedback button's");
-	ok(dropdown.tabIndex < signOutButton.tabIndex,
-		"The sign out button's tab index should be greater than the dropdown button's");
-});
+			let feedbackButton = document.getElementById(Constants.Ids.feedbackButton);
+			let dropdown = document.getElementById(Constants.Ids.currentUserControl);
+			MithrilUtils.simulateAction(() => {
+				dropdown.click();
+			});
+			let signOutButton = document.getElementById(Constants.Ids.signOutButton);
 
-test("Tab indexes should not be less than 1", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+			ok(feedbackButton.tabIndex < dropdown.tabIndex,
+				"The dropdown button's tab index should be greater than the feedback button's");
+			ok(dropdown.tabIndex < signOutButton.tabIndex,
+				"The sign out button's tab index should be greater than the dropdown button's");
+		});
 
-	let feedbackButton = document.getElementById(Constants.Ids.feedbackButton);
-	let dropdown = document.getElementById(Constants.Ids.currentUserControl);
-	HelperFunctions.simulateAction(() => {
-		dropdown.click();
-	});
-	let signOutButton = document.getElementById(Constants.Ids.signOutButton);
+		test("Tab indexes should not be less than 1", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-	ok(feedbackButton.tabIndex > 0);
-	ok(dropdown.tabIndex > 0);
-	ok(signOutButton.tabIndex > 0);
-});
+			let feedbackButton = document.getElementById(Constants.Ids.feedbackButton);
+			let dropdown = document.getElementById(Constants.Ids.currentUserControl);
+			MithrilUtils.simulateAction(() => {
+				dropdown.click();
+			});
+			let signOutButton = document.getElementById(Constants.Ids.signOutButton);
+
+			ok(feedbackButton.tabIndex > 0);
+			ok(dropdown.tabIndex > 0);
+			ok(signOutButton.tabIndex > 0);
+		});
+	}
+}
+
+(new FooterTests()).runTests();

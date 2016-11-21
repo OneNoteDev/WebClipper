@@ -1,16 +1,15 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {AuthType, UpdateReason, UserInfo} from "../userInfo";
+import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
+import {ObjectUtils} from "../objectUtils";
 import {PageInfo} from "../pageInfo";
 import {Polyfills} from "../polyfills";
 import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
 import {Settings} from "../settings";
-import {Utils} from "../utils";
-
 import {TooltipType} from "./tooltipType";
+import {UrlUtils} from "../urlUtils";
 
 import {Communicator} from "../communicator/communicator";
 import {IFrameMessageHandler} from "../communicator/iframeMessageHandler";
@@ -38,18 +37,22 @@ import * as Log from "../logging/log";
 import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
 import {Logger} from "../logging/logger";
 
+import {OneNoteSaveableFactory} from "../saveToOneNote/oneNoteSaveableFactory";
+import {SaveToOneNote, SaveToOneNoteOptions} from "../saveToOneNote/saveToOneNote";
+import {SaveToOneNoteLogger} from "../saveToOneNote/saveToOneNoteLogger";
+
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
-import {ClipperState, ClipperStateHelperFunctions} from "./clipperState";
+import {ClipperState} from "./clipperState";
+import {ClipperStateUtilities} from "./clipperStateUtilities";
 import {ComponentBase} from "./componentBase";
 import {MainController} from "./mainController";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {PreviewViewer} from "./previewViewer";
 import {RatingsHelper} from "./ratingsHelper";
 import {RegionSelector} from "./regionSelector";
-import {SaveToOneNote, StartClipPackage} from "./saveToOneNote";
 import {Status} from "./status";
 
 import * as _ from "lodash";
@@ -92,12 +95,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			selectionPreviewInfo: {},
 			pdfPreviewInfo: {
 				allPages: true,
-				localFilesAllowed: true,
+				isLocalFileAndNotAllowed: true,
 				selectedPageRange: "",
 				shouldAttachPdf: false,
 			},
-
-			showRatingsPrompt: new SmartValue<boolean>(),
 
 			reset: () => {
 				this.state.setState(this.getResetState());
@@ -108,8 +109,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private getResetState(): ClipperState {
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
-			oneNoteApiResult: { status: Status.NotStarted },
-			showRatingsPrompt: new SmartValue<boolean>()
+			oneNoteApiResult: { status: Status.NotStarted }
 		};
 	}
 
@@ -157,7 +157,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		Clipper.getInjectCommunicator().subscribeAcrossCommunicator(pageInfo, Constants.SmartValueKeys.pageInfo, (updatedPageInfo: PageInfo) => {
 			if (updatedPageInfo) {
-				let newPreviewGlobalInfo = Utils.createUpdatedObject(this.state.previewGlobalInfo, {
+				let newPreviewGlobalInfo = _.extend(this.state.previewGlobalInfo, {
 					previewTitleText: updatedPageInfo.contentTitle
 				} as PreviewGlobalInfo);
 
@@ -172,7 +172,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.captureBookmarkContent();
 
 				Clipper.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[updatedPageInfo.contentType]);
-				Clipper.logger.setContextProperty(Log.Context.Custom.InvokeHostname, Utils.getHostname(updatedPageInfo.rawUrl));
+				Clipper.logger.setContextProperty(Log.Context.Custom.InvokeHostname, UrlUtils.getHostname(updatedPageInfo.rawUrl));
 				Clipper.logger.setContextProperty(Log.Context.Custom.PageLanguage, updatedPageInfo.contentLocale);
 			}
 		});
@@ -246,7 +246,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.state.setState({
 					fullPageResult: {
 						data: {
-							failureMessage: Localization.getLocalizedString("WebClipper.Preview.FullPageModeGenericError")
+							failureMessage: Localization.getLocalizedString("WebClipper.Preview.NoFullPageScreenshotFound")
 						},
 						status: Status.Failed
 					}
@@ -379,7 +379,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		});
 
 		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.createHiddenIFrame, (url: string) => {
-			Utils.appendHiddenIframeToDocument(url);
+			BrowserUtils.appendHiddenIframeToDocument(url);
 		});
 
 		let userInfoUpdateCb = (updatedUser: UserInfo) => {
@@ -436,17 +436,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.extensionNotAllowedToAccessLocalFiles, () => {
 			// We only want to log one time per session
-			if (this.state.pdfPreviewInfo.localFilesAllowed) {
+			if (this.state.pdfPreviewInfo.isLocalFileAndNotAllowed) {
 				Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.LocalFilesNotAllowedPanelShown));
 			}
 
-			let newPreviewInfo = Utils.createUpdatedObject(this.state.pdfPreviewInfo, {
-				localFilesAllowed: false
-			});
-
-			this.state.setState({
-				pdfPreviewInfo: newPreviewInfo
-			});
+			_.assign(_.extend(this.state.pdfPreviewInfo, {
+				isLocalFileAndNotAllowed: false
+			}), this.state.setState);
 		});
 
 		Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {
@@ -485,27 +481,27 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(Clipper.sessionId, Constants.SmartValueKeys.sessionId);
 			Clipper.logger = new CommunicatorLoggerPure(Clipper.getExtensionCommunicator());
 
+			this.initializeInjectCommunicator(pageInfo, clientInfo);
+
+			// When tabbing from outside the iframe, we want to set focus to the lowest tabindex element in our iframe
+			Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.tabToLowestIndexedElement, () => {
+				let tabbables = document.querySelectorAll("[tabindex]");
+				let lowestTabIndexElement: HTMLElement;
+				if (tabbables.length > 0) {
+					for (let i = 0; i < tabbables.length; i++) {
+						let tabbable = tabbables[i] as HTMLElement;
+						if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
+							lowestTabIndexElement = tabbable;
+						}
+					}
+
+					lowestTabIndexElement.focus();
+				}
+			});
+
 			// initialize here since it depends on storage in the extension
 			this.initializeNumSuccessfulClips();
 			RatingsHelper.preCacheNeededValues();
-		});
-
-		this.initializeInjectCommunicator(pageInfo, clientInfo);
-
-		// When tabbing from outside the iframe, we want to set focus to the lowest tabindex element in our iframe
-		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.tabToLowestIndexedElement, () => {
-			let tabbables = document.querySelectorAll("[tabindex]");
-			let lowestTabIndexElement: HTMLElement;
-			if (tabbables.length > 0) {
-				for (let i = 0; i < tabbables.length; i++) {
-					let tabbable = tabbables[i] as HTMLElement;
-					if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
-						lowestTabIndexElement = tabbable;
-					}
-				}
-
-				lowestTabIndexElement.focus();
-			}
 		});
 
 		clientInfo.subscribe((updatedClientInfo) => {
@@ -531,23 +527,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private initializeNumSuccessfulClips(): void {
-		new Promise<string>((resolve, reject) => {
-			Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClips, (numClipsAsStr: string) => {
-				resolve(numClipsAsStr);
-			});
-		}).then((numClipsAsStr: string) => {
+		Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClips, (numClipsAsStr: string) => {
 			let numClips: number = parseInt(numClipsAsStr, 10);
-			if (Utils.isNullOrUndefined(numClips) || isNaN(numClips)) {
-				// when the value does not exist yet or is invalid, we initialize it to 0
-				numClips = 0;
-			}
-
-			this.state.numSuccessfulClips = new SmartValue<number>(numClips);
-
-			// subscribe after initial set to storage value
-			this.state.numSuccessfulClips.subscribe(() => {
-				this.state.showRatingsPrompt.set(RatingsHelper.shouldShowRatingsPrompt(this.state));
-			}, { callOnSubscribe: false });
+			this.state.numSuccessfulClips = ObjectUtils.isNullOrUndefined(numClips) || isNaN(numClips) ? 0 : numClips;
 		});
 	}
 
@@ -571,7 +553,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		}
 
-		if (this.state && this.state.pageInfo && Utils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
+		if (this.state && this.state.pageInfo && UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
 			return ClipMode.Augmentation;
 		} else {
 			return ClipMode.FullPage;
@@ -671,70 +653,62 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}});
 	}
 
-	// Refactor this to do the correct thing based on the this.state.currentMode.get()	
 	private startClip(): void {
-		Clipper.storeValue(ClipperStorageKeys.lastClippedDate, Date.now().toString());
+		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
+
+		this.storeLastClippedInformation();
+		SaveToOneNoteLogger.logClip(this.state);
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
-		let mode = ClipMode[this.state.currentMode.get()];
+		OneNoteSaveableFactory.getSaveable(this.state).then((saveable) => {
+			let saveOptions: SaveToOneNoteOptions = {
+				page: saveable,
+				saveLocation: this.state.saveLocation
+			};
+			let saveToOneNote = new SaveToOneNote(this.state.userResult.data.user.accessToken);
+			saveToOneNote.save(saveOptions).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
+				let createPageResponse = Array.isArray(responsePackage) ? responsePackage[0] : responsePackage;
+				clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, createPageResponse.request.getResponseHeader(Constants.HeaderValues.correlationId));
+
+				let numSuccessfulClips = this.state.numSuccessfulClips + 1;
+				Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numSuccessfulClips.toString());
+				this.state.setState({
+					oneNoteApiResult: { data: createPageResponse.parsedResponse, status: Status.Succeeded },
+					numSuccessfulClips: numSuccessfulClips,
+					showRatingsPrompt: RatingsHelper.shouldShowRatingsPrompt(this.state)
+				});
+			}).catch((error: OneNoteApi.RequestError) => {
+				OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
+				this.state.setState({ oneNoteApiResult: { data: error, status: Status.Failed } });
+			}).then(() => {
+				Clipper.logger.logEvent(clipEvent);
+			});
+		});
+	}
+
+	private storeLastClippedInformation() {
+		Clipper.storeValue(ClipperStorageKeys.lastClippedDate, Date.now().toString());
 
 		if (this.state.currentMode.get() === ClipMode.Pdf) {
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesInPdf, this.state.pdfResult.data.get().pdf.numPages());
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Pdf], Date.now().toString());
 		}
 
 		if (this.state.currentMode.get() === ClipMode.Augmentation) {
-			let styles = {
-				fontSize: this.state.previewGlobalInfo.fontSize,
-				serif: this.state.previewGlobalInfo.serif
-			};
 			// Record lastClippedDate for each different augmentationMode so we can upsell the augmentation mode
 			// to users who haven't Clipped this mode in a while
 			let augmentationTypeAsString = AugmentationHelper.getAugmentationType(this.state);
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, augmentationTypeAsString);
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.Styles, JSON.stringify(styles));
 		}
+
 		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
 		}
-		clipEvent.setCustomProperty(Log.PropertyName.Custom.ClipMode, mode);
-
-		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
-		this.state.showRatingsPrompt.subscribe((shouldShow: boolean) => {
-			let statusToSet: Status = SaveToOneNote.getClipSuccessStatus(this.state);
-			this.state.setState({ oneNoteApiResult: { status: statusToSet } });
-		}, { callOnSubscribe: false });
-
-		SaveToOneNote.startClip(this.state).then((startClipPackage: StartClipPackage) => {
-			let responsePackage = startClipPackage.responsePackage;
-			let createPageResponse = Array.isArray(responsePackage) ? responsePackage[0] : responsePackage;
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, createPageResponse.request.getResponseHeader(Constants.HeaderValues.correlationId));
-			clipEvent.setCustomProperty(Log.PropertyName.Custom.AnnotationAdded, startClipPackage.annotationAdded);
-
-			// set oneNoteApiResult.data first with status still InProgress, then check for correct status to set
-			this.state.setState({ oneNoteApiResult: { data: createPageResponse.parsedResponse, status: Status.InProgress } });
-			let statusToSet: Status = SaveToOneNote.getClipSuccessStatus(this.state);
-			this.state.setState({ oneNoteApiResult: { data: createPageResponse.parsedResponse, status: statusToSet } });
-		}, (error: OneNoteApi.RequestError) => {
-			OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
-
-			this.state.setState({ oneNoteApiResult: { data: error, status: Status.Failed } });
-		}).then(() => {
-			if (this.state.currentMode.get() === ClipMode.Pdf) {
-				clipEvent.stopTimer();
-				const totalPagesClipped = SaveToOneNote.getAllPdfPageIndexesToBeSent().length;
-				clipEvent.setCustomProperty(Log.PropertyName.Custom.TotalPagesClipped, totalPagesClipped);
-				clipEvent.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, clipEvent.getDuration() / totalPagesClipped);
-			}
-			Clipper.logger.logEvent(clipEvent);
-		});
 	}
 
 	private static shouldShowOptions(state: ClipperState): boolean {
 		return (state.uiExpanded &&
-			ClipperStateHelperFunctions.isUserLoggedIn(state) &&
+			ClipperStateUtilities.isUserLoggedIn(state) &&
 			state.oneNoteApiResult.status === Status.NotStarted &&
 			!state.badState);
 	}

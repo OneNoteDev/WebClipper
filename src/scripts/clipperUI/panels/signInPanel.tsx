@@ -1,7 +1,8 @@
 import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
 import {AuthType, UpdateReason} from "../../userInfo";
-import {Utils} from "../../utils";
+
+import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {Localization} from "../../localization/localization";
 
@@ -62,7 +63,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 		return (
 			<div id={Constants.Ids.signInContainer}>
 				<div className="signInPadding">
-					<img id={Constants.Ids.signInLogo} src={Utils.getImageResourceUrl("onenote_logo_clipper.png")} />
+					<img id={Constants.Ids.signInLogo} src={ExtensionUtils.getImageResourceUrl("onenote_logo_clipper.png")} />
 					<div id={Constants.Ids.signInMessageLabelContainer} className="messageLabelContainer">
 						<span className="messageLabel"
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>

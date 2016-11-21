@@ -1,4 +1,6 @@
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
+
+import {UrlUtils} from "../urlUtils";
 
 import {VideoExtractor} from "./VideoExtractor";
 import {KhanAcademyVideoExtractor} from "./khanAcademyVideoExtractor";
@@ -23,11 +25,11 @@ export module VideoUtils {
 		}
 
 		let pageUrlAsLowerCase = pageUrl.toLowerCase();
-		if (!Utils.onWhitelistedDomain(pageUrlAsLowerCase)) {
+		if (!UrlUtils.onWhitelistedDomain(pageUrlAsLowerCase)) {
 			return;
 		}
 
-		let hostname = Utils.getHostname(pageUrlAsLowerCase).toLowerCase();
+		let hostname = UrlUtils.getHostname(pageUrlAsLowerCase).toLowerCase();
 
 		for (let domainEnum in SupportedVideoDomains) {
 			let domain = SupportedVideoDomains[domainEnum];
@@ -40,7 +42,7 @@ export module VideoUtils {
 	}
 
 	export function matchRegexFromPageContent(pageContent: string, regexes: RegExp[]): string[] {
-		if (Utils.isNullOrUndefined(pageContent)) {
+		if (ObjectUtils.isNullOrUndefined(pageContent)) {
 			return;
 		}
 

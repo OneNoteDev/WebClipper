@@ -1,6 +1,6 @@
 import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
-import {Utils} from "../../utils";
+import {UrlUtils} from "../../urlUtils";
 
 import {TooltipType} from "../../clipperUI/tooltipType";
 
@@ -67,7 +67,7 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 	}
 
 	protected checkIfTabIsOnWhitelistedUrl(tab: SafariBrowserTab): boolean {
-		return Utils.onWhitelistedDomain(tab.url);
+		return UrlUtils.onWhitelistedDomain(tab.url);
 	}
 
 	protected createWorker(tab: SafariBrowserTab): SafariWorker {
@@ -85,7 +85,7 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 	}
 
 	protected checkIfTabMatchesATooltipType(tab: SafariBrowserTab, tooltipTypes: TooltipType[]): TooltipType {
-		return Utils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
+		return UrlUtils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
 	}
 
 	protected checkIfTabIsAVideoDomain(tab: SafariBrowserTab): boolean {

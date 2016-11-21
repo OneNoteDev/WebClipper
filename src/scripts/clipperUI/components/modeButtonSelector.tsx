@@ -1,9 +1,9 @@
 import {ClientType} from "../../clientType";
 import {Experiments} from "../../experiments";
-import {Utils} from "../../utils";
 
 import {AugmentationHelper} from "../../contentCapture/augmentationHelper";
 
+import {ExtensionUtils} from "../../extensions/extensionUtils";
 import {InvokeMode} from "../../extensions/invokeOptions";
 
 import {Localization} from "../../localization/localization";
@@ -26,7 +26,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			return undefined;
 		}
 
-		return <ModeButton imgSrc={Utils.getImageResourceUrl("pdf.png") }
+		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("pdf.png") }
 			label={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button")}
 			myMode={ClipMode.Pdf} tabIndex={39} selected={currentMode === ClipMode.Pdf}
 			onModeSelected={this.onModeSelected.bind(this) }
@@ -42,7 +42,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		let augmentationLabel: string = Localization.getLocalizedString("WebClipper.ClipType." + augmentationType + ".Button");
 		let augmentationTooltip = Localization.getLocalizedString("WebClipper.ClipType.Button.Tooltip").replace("{0}", augmentationLabel);
 
-		return <ModeButton imgSrc={Utils.getImageResourceUrl(augmentationType + ".png") }
+		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl(augmentationType + ".png") }
 			label={augmentationLabel} myMode={ClipMode.Augmentation}
 			tabIndex={42} selected={currentMode === ClipMode.Augmentation}
 			onModeSelected={this.onModeSelected.bind(this) }
@@ -54,7 +54,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			return undefined;
 		}
 
-		return <ModeButton imgSrc={Utils.getImageResourceUrl("fullpage.png")}
+		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("fullpage.png")}
 			label={Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button")}
 			myMode={ClipMode.FullPage} tabIndex={40}
 			selected={currentMode === ClipMode.FullPage}
@@ -70,7 +70,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			return undefined;
 		}
 
-		return <ModeButton imgSrc={Utils.getImageResourceUrl("region.png") }
+		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("region.png") }
 			label={Localization.getLocalizedString(this.getRegionModeButtonLabel())}
 			myMode={ClipMode.Region} tabIndex={41} selected={currentMode === ClipMode.Region}
 			onModeSelected={this.onModeSelected.bind(this) }
@@ -92,7 +92,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			return undefined;
 		}
 
-		return <ModeButton imgSrc={Utils.getImageResourceUrl("select.png") }
+		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("select.png") }
 			label={Localization.getLocalizedString("WebClipper.ClipType.Selection.Button")}
 			myMode={ClipMode.Selection} tabIndex={43} selected={currentMode === ClipMode.Selection}
 			onModeSelected={this.onModeSelected.bind(this) }
@@ -103,7 +103,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		if (this.props.clipperState.pageInfo.rawUrl.indexOf("file:///") === 0) {
 			return undefined;
 		}
-		return <ModeButton imgSrc={Utils.getImageResourceUrl("bookmark.png") }
+		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("bookmark.png") }
 			label={Localization.getLocalizedString("WebClipper.ClipType.Bookmark.Button") }
 			myMode={ClipMode.Bookmark} tabIndex={44} selected={currentMode === ClipMode.Bookmark}
 			onModeSelected={this.onModeSelected.bind(this) }

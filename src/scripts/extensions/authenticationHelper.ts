@@ -1,21 +1,21 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {SmartValue} from "../communicator/smartValue";
 
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
 import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
-import {Http} from "../http/http";
+import {HttpWithRetries} from "../http/HttpWithRetries";
 
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
-import {Constants} from "../constants";
-import {ResponsePackage} from "../responsePackage";
-import {UserInfoData} from "../userInfo";
 import {AuthType, UserInfo, UpdateReason} from "../userInfo";
-import {Utils} from "../utils";
+import {Constants} from "../constants";
+import {ObjectUtils} from "../objectUtils";
+import {ResponsePackage} from "../responsePackage";
+import {StringUtils} from "../stringUtils";
+import {UserInfoData} from "../userInfo";
+import {UrlUtils} from "../urlUtils";
 
 declare var browser;
 
@@ -46,7 +46,7 @@ export class AuthenticationHelper {
 					this.logger.logJsonParseUnexpected(storedUserInformation);
 				}
 
-				if (currentInfo && currentInfo.data && Utils.isNumeric(currentInfo.data.accessTokenExpiration)) {
+				if (currentInfo && currentInfo.data && ObjectUtils.isNumeric(currentInfo.data.accessTokenExpiration)) {
 					// Expiration is in seconds, not milliseconds. Give additional leniency to account for response time.
 					updateInterval = Math.max((currentInfo.data.accessTokenExpiration * 1000) - 180000, 0);
 				}
@@ -96,7 +96,7 @@ export class AuthenticationHelper {
 		return new Promise<string>((resolve) => {
 			// This is to work around a bug in Edge where the cookies.get call doesn't return if the cookie isn't set and there is more
 			// than one tab open.  Basically, we're giving it 3 seconds to return and then giving up.
-			let getCookieTimeout  = setTimeout(() => {
+			let getCookieTimeout = setTimeout(() => {
 				resolve(undefined);
 			}, 3000);
 
@@ -106,6 +106,7 @@ export class AuthenticationHelper {
 					resolve(cookie ? cookie.value : "");
 				});
 			} else {
+				clearTimeout(getCookieTimeout);
 				resolve(undefined);
 			}
 		});
@@ -138,24 +139,23 @@ export class AuthenticationHelper {
 	 */
 	public retrieveUserInformation(clipperId: string, cookie: string = undefined): Promise<ResponsePackage<string>> {
 		return new Promise<ResponsePackage<string>>((resolve, reject: (error: OneNoteApi.RequestError) => void) => {
-			let userInfoUrl = Utils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
-
+			let userInfoUrl = UrlUtils.addUrlQueryValue(Constants.Urls.Authentication.userInformationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
 			let retrieveUserInformationEvent = new Log.Event.PromiseEvent(Log.Event.Label.RetrieveUserInformation);
 
-			let correlationId = Utils.generateGuid();
-			retrieveUserInformationEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
+			let correlationId = StringUtils.generateGuid();
+			retrieveUserInformationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 			let headers = {};
 			headers["Content-type"] = "application/x-www-form-urlencoded";
 			headers[Constants.HeaderValues.correlationId] = correlationId;
 
 			let postData = "";
-			if (!Utils.isNullOrUndefined(cookie)) {
+			if (!ObjectUtils.isNullOrUndefined(cookie)) {
 				// The data is encoded/decoded automatically, but because the '+' sign can also be interpreted as a space, we want to explicitly encode this one.
 				postData = cookie.replace(/\+/g, "%2B");
 			}
 
-			Http.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
+			HttpWithRetries.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
 				let response = request.response;
 				// The false case is expected behavior if the user has not signed in or credentials have expired
 				resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });

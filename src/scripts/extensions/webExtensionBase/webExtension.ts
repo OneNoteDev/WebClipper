@@ -1,8 +1,7 @@
-/// <reference path="./w3cExtension.d.ts"/>
 import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
 import {ResponsePackage} from "../../responsePackage";
-import {Utils} from "../../utils";
+import {UrlUtils} from "../../urlUtils";
 
 import {TooltipType} from "../../clipperUI/tooltipType";
 
@@ -64,7 +63,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	protected checkIfTabIsOnWhitelistedUrl(tab: W3CTab): boolean {
-		return Utils.onWhitelistedDomain(tab.url);
+		return UrlUtils.onWhitelistedDomain(tab.url);
 	}
 
 	protected createWorker(tab: W3CTab): WebExtensionWorker {
@@ -84,7 +83,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	protected checkIfTabMatchesATooltipType(tab: W3CTab, tooltipTypes: TooltipType[]): TooltipType {
-		return Utils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
+		return UrlUtils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
 	}
 
 	protected checkIfTabIsAVideoDomain(tab: W3CTab): boolean {

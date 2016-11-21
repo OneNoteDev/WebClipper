@@ -1,4 +1,5 @@
-import {Utils} from "./utils";
+import {ObjectUtils} from "./objectUtils";
+
 import * as _ from "lodash";
 
 export module StringUtils {
@@ -7,7 +8,7 @@ export module StringUtils {
 	 * corresponding to the numbers in that range. It ignores invalid input, sorts it, and removes duplicates
 	 */
 	export function parsePageRange(text: string, maxRange?: number): number[] {
-		if (Utils.isNullOrUndefined(text)) {
+		if (ObjectUtils.isNullOrUndefined(text)) {
 			return;
 		}
 
@@ -57,5 +58,12 @@ export module StringUtils {
 	export function countPageRange(text: string): number {
 		let pages = parsePageRange(text);
 		return pages ? pages.length : 0;
+	}
+
+	export function generateGuid(): string {
+		return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+			let r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 0x3 | 0x8);
+			return v.toString(16);
+		});
 	}
 }

@@ -1,17 +1,18 @@
 import {ClientType} from "../../../clientType";
 import {Constants} from "../../../constants";
-import {Utils} from "../../../utils";
 
 import {PreviewGlobalInfo} from "../../../previewInfo";
 
 import {Localization} from "../../../localization/localization";
 
 import {ClipMode} from "../../clipMode";
-import {ClipperStateHelperFunctions, ClipperStateProp} from "../../clipperState";
+import {ClipperStateProp} from "../../clipperState";
 import {ComponentBase} from "../../componentBase";
 import {Status} from "../../status";
 
 import {AnnotationInput} from "../annotationInput";
+
+import * as _ from "lodash";
 
 export abstract class PreviewComponentBase<TState, TProps extends ClipperStateProp>
 	extends ComponentBase<TState, TProps> {
@@ -42,13 +43,9 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 	}
 
 	private handleTitleChange(newTitleText: string) {
-		let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			previewTitleText: newTitleText
-		} as PreviewGlobalInfo);
-
-		this.props.clipperState.setState({
-			previewGlobalInfo: previewGlobalInfo
-		});
+		} as PreviewGlobalInfo), this.props.clipperState.setState);
 	}
 
 	private getPreviewTitle(contentTitle: string, titleIsEditable: boolean, inProgressClassIfApplicable: string): any {
@@ -131,8 +128,6 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		let editableTitleEnabled = this.props.clipperState.injectOptions && this.props.clipperState.injectOptions.enableEditableTitle;
 		let titleIsEditable = editableTitleEnabled && this.getStatus() === Status.Succeeded &&
 			contentTitle === this.props.clipperState.previewGlobalInfo.previewTitleText;
-
-		let clipButtonEnabled = ClipperStateHelperFunctions.clipButtonEnabled(this.props.clipperState);
 
 		let fontFamilyString = (this.props.clipperState.previewGlobalInfo.serif) ? "WebClipper.FontFamily.Preview.SerifDefault" : "WebClipper.FontFamily.Preview.SansSerifDefault";
 		let previewStyle = {

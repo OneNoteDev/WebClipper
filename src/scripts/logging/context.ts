@@ -1,4 +1,4 @@
-import {Utils} from "../utils";
+import {ObjectUtils} from "../objectUtils";
 
 import * as Log from "./log";
 
@@ -30,7 +30,7 @@ export class ProductionRequirements implements Context {
 	}
 
 	requirementsAreMet(contextProps: { [key: string]: string | number | boolean }): boolean {
-		if (Utils.isNullOrUndefined(contextProps)) {
+		if (ObjectUtils.isNullOrUndefined(contextProps)) {
 			return false;
 		}
 		for (let i = 0; i < this.requiredProperties.length; ++i) {

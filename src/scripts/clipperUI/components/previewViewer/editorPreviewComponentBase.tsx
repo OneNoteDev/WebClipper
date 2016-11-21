@@ -1,6 +1,7 @@
 import {Constants} from "../../../constants";
 import {PreviewGlobalInfo} from "../../../previewInfo";
-import {Utils} from "../../../utils";
+
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Highlighter} from "../../../highlighting/highlighter";
 
@@ -10,6 +11,8 @@ import {Status} from "../../status";
 
 import {PreviewComponentBase} from "./previewComponentBase";
 import {PreviewViewerAugmentationHeader} from "./previewViewerAugmentationHeader";
+
+import * as _ from "lodash";
 
 export interface EditorPreviewState {
 	textHighlighter?: any;
@@ -78,13 +81,9 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	}
 
 	private changeFontFamily(serif: boolean) {
-		let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			serif: serif
-		} as PreviewGlobalInfo);
-
-		this.props.clipperState.setState({
-			previewGlobalInfo: previewGlobalInfo
-		});
+		} as PreviewGlobalInfo), this.props.clipperState.setState);
 	}
 
 	private changeFontSize(increase: boolean) {
@@ -95,13 +94,9 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 			newFontSize = Constants.Settings.maximumFontSize;
 		}
 
-		let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			fontSize: newFontSize
-		} as PreviewGlobalInfo);
-
-		this.props.clipperState.setState({
-			previewGlobalInfo: previewGlobalInfo
-		});
+		} as PreviewGlobalInfo), this.props.clipperState.setState);
 	}
 
 	private deleteHighlight(timestamp: number) {
@@ -158,7 +153,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 				let firstHighlighted = highlightablePreviewBody.querySelector("span.highlighted[data-timestamp='" + timestamp + "']");
 				if (firstHighlighted) {
 					let deleteHighlight = document.createElement("img") as HTMLImageElement;
-					deleteHighlight.src = Utils.getImageResourceUrl("editoroptions/delete_button.png");
+					deleteHighlight.src = ExtensionUtils.getImageResourceUrl("editoroptions/delete_button.png");
 					deleteHighlight.className = Constants.Classes.deleteHighlightButton;
 					deleteHighlight.setAttribute("data-timestamp", "" + timestamp);
 					firstHighlighted.insertBefore(deleteHighlight, firstHighlighted.childNodes[0]);
@@ -185,13 +180,9 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 			this.state.textHighlighter.doHighlight();
 		} else {
 			// No selection found, so we actually toggle the highlighter functionality
-			let previewGlobalInfo = Utils.createUpdatedObject(this.props.clipperState.previewGlobalInfo, {
+			_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 				highlighterEnabled: !this.props.clipperState.previewGlobalInfo.highlighterEnabled
-			} as PreviewGlobalInfo);
-
-			this.props.clipperState.setState({
-				previewGlobalInfo: previewGlobalInfo
-			});
+			} as PreviewGlobalInfo), this.props.clipperState.setState);
 		}
 	}
 

@@ -1,6 +1,4 @@
-﻿import {Utils} from "../utils";
-
-import * as Log from "./log";
+﻿import * as Log from "./log";
 import {ConsoleOutput} from "./consoleOutput";
 
 export class ConsoleLoggerShell {

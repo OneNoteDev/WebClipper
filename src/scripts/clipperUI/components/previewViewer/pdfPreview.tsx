@@ -1,19 +1,21 @@
-/// <reference path="../../../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {Constants} from "../../../constants";
+import {ObjectUtils} from "../../../objectUtils";
 import {PdfPreviewInfo} from "../../../previewInfo";
 import {StringUtils} from "../../../stringUtils";
-import {Utils} from "../../../utils";
+import {UrlUtils} from "../../../urlUtils";
 
 import {SmartValue} from "../../../communicator/smartValue";
-
-import {DomUtils} from "../../../domParsers/domUtils";
 
 import {FullPageScreenshotResult} from "../../../contentCapture/fullPageScreenshotHelper";
 import {PdfScreenshotHelper, PdfScreenshotResult} from "../../../contentCapture/pdfScreenshotHelper";
 
+import {DomUtils} from "../../../domParsers/domUtils";
+
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
+
 import {Localization} from "../../../localization/localization";
 
+import {ClipMode} from "../../clipMode";
 import {ClipperStateProp, DataResult} from "../../clipperState";
 import {Status} from "../../status";
 
@@ -180,7 +182,7 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		PdfPreviewClass.latestScrollListener = (event) => {
 			let element = event.target as HTMLElement;
 			if (!!element && element.id === Constants.Ids.previewContentContainer) {
-				if (Utils.isNumeric(PdfPreviewClass.scrollListenerTimeout)) {
+				if (ObjectUtils.isNumeric(PdfPreviewClass.scrollListenerTimeout)) {
 					clearTimeout(PdfPreviewClass.scrollListenerTimeout);
 				}
 				PdfPreviewClass.scrollListenerTimeout = setTimeout(() => {
@@ -188,7 +190,7 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 						showPageNumbers: false
 					});
 					// We piggyback the scroll listener to determine what pages the user is looking at, then render them
-					if (this.props.clipperState.pdfResult.status === Status.Succeeded) {
+					if (this.props.clipperState.currentMode.get() === ClipMode.Pdf && this.props.clipperState.pdfResult.status === Status.Succeeded) {
 						this.setDataUrlsOfImagesInViewportInState();
 					}
 				}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
@@ -215,25 +217,15 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	}
 
 	onSelectionChange(selection: boolean) {
-		// TODO: change this to _.assign, _.extend
-		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
+		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
 			allPages: selection
-		} as PdfPreviewInfo);
-
-		this.props.clipperState.setState({
-			pdfPreviewInfo: newPdfPreviewInfo
-		});
+		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
 	onTextChange(text: string) {
-		// TODO: change this to _.assign, _.extend
-		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
+		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
 			selectedPageRange: text
-		} as PdfPreviewInfo);
-
-		this.props.clipperState.setState({
-			pdfPreviewInfo: newPdfPreviewInfo
-		});
+		} as PdfPreviewInfo), this.props.clipperState.setState);
 
 		let pagesToShow = StringUtils.parsePageRange(text);
 		let validUpperBounds = _.every(pagesToShow, (ind: number) => {
@@ -252,13 +244,9 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	}
 
 	onCheckboxChange(checked: boolean) {
-		let newPdfPreviewInfo = Utils.createUpdatedObject(this.props.clipperState.pdfPreviewInfo, {
+		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
 			shouldAttachPdf: checked
-		} as PdfPreviewInfo);
-
-		this.props.clipperState.setState({
-			pdfPreviewInfo: newPdfPreviewInfo
-		});
+		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
 	protected getHeader(): any {
@@ -315,7 +303,7 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 				// In OneNote we don't display the extension
 				let shouldAttachPdf = this.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
 				let defaultAttachmentName = "Original.pdf";
-				let fullAttachmentName = this.props.clipperState.pageInfo ? Utils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
+				let fullAttachmentName = this.props.clipperState.pageInfo ? UrlUtils.getFileNameFromUrl(this.props.clipperState.pageInfo.rawUrl, defaultAttachmentName) : defaultAttachmentName;
 				if (shouldAttachPdf) {
 					contentBody.push(<PdfPreviewAttachment name={fullAttachmentName.split(".")[0]}/>);
 				}
@@ -335,7 +323,7 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 
 	private getSpinner(): any {
 		let spinner = <RotatingMessageSpriteAnimation
-			spriteUrl={Utils.getImageResourceUrl("spinner_loop_colored.png") }
+			spriteUrl={ExtensionUtils.getImageResourceUrl("spinner_loop_colored.png") }
 			imageHeight={65}
 			imageWidth={45}
 			totalFrameCount={21}

@@ -1,7 +1,6 @@
 declare var Velocity: jquery.velocity.VelocityStatic;
 
 import {Constants} from "../constants";
-import {Utils} from "../utils";
 
 import {SmartValue} from "../communicator/smartValue";
 
@@ -11,7 +10,8 @@ import * as Log from "../logging/log";
 
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
-import {ClipperStateProp, ClipperStateHelperFunctions} from "./clipperState";
+import {ClipperStateProp} from "./clipperState";
+import {ClipperStateUtilities} from "./clipperStateUtilities";
 import {ComponentBase} from "./componentBase";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {Status} from "./status";
@@ -166,7 +166,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			return PanelType.Loading;
 		}
 
-		if (!ClipperStateHelperFunctions.isUserLoggedIn(this.props.clipperState)) {
+		if (!ClipperStateUtilities.isUserLoggedIn(this.props.clipperState)) {
 			return PanelType.SignInNeeded;
 		}
 
@@ -307,7 +307,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 					this.state.ratingsPanelAnimationState = new SmartValue<AnimationState>(AnimationState.Out);
 				}
 
-				if (this.props.clipperState.showRatingsPrompt && this.props.clipperState.showRatingsPrompt.get()) {
+				if (this.props.clipperState.showRatingsPrompt) {
 					panels.push(<RatingsPanel clipperState={this.props.clipperState} animationState={this.state.ratingsPanelAnimationState} />);
 				}
 

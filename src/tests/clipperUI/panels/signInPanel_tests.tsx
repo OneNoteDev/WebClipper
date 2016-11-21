@@ -1,85 +1,98 @@
-import {HelperFunctions} from "../../helperFunctions";
 import {Constants} from "../../../scripts/constants";
-import {AuthType} from "../../../scripts/userInfo";
+import {AuthType, UpdateReason} from "../../../scripts/userInfo";
+
 import {Status} from "../../../scripts/clipperUI/status";
 import {SignInPanel} from "../../../scripts/clipperUI/panels/signInPanel";
-import {UpdateReason} from "../../../scripts/userInfo";
+
+import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
+import {TestModule} from "../../testModule";
 
 declare function require(name: string);
-let stringsJson = require("../../../strings.json");
 
-let mockSignInPanelProps = {
-	clipperState: HelperFunctions.getMockClipperState(),
-	onSignInInvoked: () => { }
-};
+export class SignInPanelTests extends TestModule {
+	private stringsJson = require("../../../strings.json");
 
-let defaultComponent;
-QUnit.module("signInPanel", {
-	beforeEach: () => {
-		defaultComponent = <SignInPanel {...mockSignInPanelProps}/>;
+	private mockSignInPanelProps = {
+		clipperState: MockProps.getMockClipperState(),
+		onSignInInvoked: () => { }
+	};
+
+	private defaultComponent;
+
+	protected module() {
+		return "signInPanel";
 	}
-});
 
-test("The sign in panel should display the correct default message when the override is not specified", () => {
-	let controllerInstance = HelperFunctions.mountToFixture(defaultComponent);
+	protected beforeEach() {
+		this.defaultComponent = <SignInPanel {...this.mockSignInPanelProps}/>;
+	}
 
-	strictEqual(document.getElementById(Constants.Ids.signInText).innerText, stringsJson["WebClipper.Label.SignInDescription"],
-		"The displayed message should be the default");
-});
+	protected tests() {
+		test("The sign in panel should display the correct default message when the override is not specified", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-test("The sign in panel should display the token refresh error message when we're unable to refresh it", () => {
-	let state = HelperFunctions.getMockClipperState();
-	state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.TokenRefreshForPendingClip } };
-	let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={mockSignInPanelProps.onSignInInvoked}/>);
+			strictEqual(document.getElementById(Constants.Ids.signInText).innerText, this.stringsJson["WebClipper.Label.SignInDescription"],
+				"The displayed message should be the default");
+		});
 
-	strictEqual(document.getElementById(Constants.Ids.signInText).innerText, stringsJson["WebClipper.Error.GenericExpiredTokenRefreshError"],
-		"The displayed message should be the correct error message");
-});
+		test("The sign in panel should display the token refresh error message when we're unable to refresh it", () => {
+			let state = MockProps.getMockClipperState();
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.TokenRefreshForPendingClip } };
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
 
-test("The sign in panel should display the sign in failed message when sign in failed", () => {
-	let state = HelperFunctions.getMockClipperState();
-	state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt } };
-	let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={mockSignInPanelProps.onSignInInvoked}/>);
+			strictEqual(document.getElementById(Constants.Ids.signInText).innerText, this.stringsJson["WebClipper.Error.GenericExpiredTokenRefreshError"],
+				"The displayed message should be the correct error message");
+		});
 
-	strictEqual(document.getElementById(Constants.Ids.signInText).innerText, stringsJson["WebClipper.Error.SignInUnsuccessful"],
-		"The displayed message should be the correct error message");
-});
+		test("The sign in panel should display the sign in failed message when sign in failed", () => {
+			let state = MockProps.getMockClipperState();
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt } };
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
 
-test("The sign in panel should display the sign in description when the sign in attempt was cancelled", () => {
-	let state = HelperFunctions.getMockClipperState();
-	state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInCancel } };
-	let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={mockSignInPanelProps.onSignInInvoked}/>);
+			strictEqual(document.getElementById(Constants.Ids.signInText).innerText, this.stringsJson["WebClipper.Error.SignInUnsuccessful"],
+				"The displayed message should be the correct error message");
+		});
 
-	strictEqual(document.getElementById(Constants.Ids.signInText).innerText, stringsJson["WebClipper.Label.SignInDescription"],
-		"The displayed message should be the sign in description message");
-});
+		test("The sign in panel should display the sign in description when the sign in attempt was cancelled", () => {
+			let state = MockProps.getMockClipperState();
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInCancel } };
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked}/>);
 
-test("The callback should be passed the MSA auth type if the user clicks on the MSA button", () => {
-	let type: AuthType;
-	let onSignInInvoked = (chosenType: AuthType) => {
-		type = chosenType;
-	};
-	let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={HelperFunctions.getMockClipperState()} onSignInInvoked={onSignInInvoked}/>);
+			strictEqual(document.getElementById(Constants.Ids.signInText).innerText, this.stringsJson["WebClipper.Label.SignInDescription"],
+				"The displayed message should be the sign in description message");
+		});
 
-	let msaButton = document.getElementById(Constants.Ids.signInButtonMsa);
-	HelperFunctions.simulateAction(() => {
-		msaButton.click();
-	});
+		test("The callback should be passed the MSA auth type if the user clicks on the MSA button", () => {
+			let type: AuthType;
+			let onSignInInvoked = (chosenType: AuthType) => {
+				type = chosenType;
+			};
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={MockProps.getMockClipperState()} onSignInInvoked={onSignInInvoked}/>);
 
-	strictEqual(type, AuthType.Msa, "The MSA auth type should be recorded");
-});
+			let msaButton = document.getElementById(Constants.Ids.signInButtonMsa);
+			MithrilUtils.simulateAction(() => {
+				msaButton.click();
+			});
 
-test("The callback should be passed the OrgId auth type if the user clicks on the OrgId button", () => {
-	let type: AuthType;
-	let onSignInInvoked = (chosenType: AuthType) => {
-		type = chosenType;
-	};
-	let controllerInstance = HelperFunctions.mountToFixture(<SignInPanel clipperState={HelperFunctions.getMockClipperState() } onSignInInvoked={onSignInInvoked}/>);
+			strictEqual(type, AuthType.Msa, "The MSA auth type should be recorded");
+		});
 
-	let orgIdButton = document.getElementById(Constants.Ids.signInButtonOrgId);
-	HelperFunctions.simulateAction(() => {
-		orgIdButton.click();
-	});
+		test("The callback should be passed the OrgId auth type if the user clicks on the OrgId button", () => {
+			let type: AuthType;
+			let onSignInInvoked = (chosenType: AuthType) => {
+				type = chosenType;
+			};
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={MockProps.getMockClipperState() } onSignInInvoked={onSignInInvoked}/>);
 
-	strictEqual(type, AuthType.OrgId, "The OrgId auth type should be recorded");
-});
+			let orgIdButton = document.getElementById(Constants.Ids.signInButtonOrgId);
+			MithrilUtils.simulateAction(() => {
+				orgIdButton.click();
+			});
+
+			strictEqual(type, AuthType.OrgId, "The OrgId auth type should be recorded");
+		});
+	}
+}
+
+(new SignInPanelTests()).runTests();

@@ -1,17 +1,15 @@
-/// <reference path="../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
 import {Status} from "../clipperUI/status";
 
-import {Http} from "../http/http";
+import {HttpWithRetries} from "../http/httpWithRetries";
 
 import * as Log from "../logging/log";
 
 import {Constants} from "../constants";
 import {PageInfo} from "../pageInfo";
 import {Settings} from "../settings";
-import {Utils} from "../utils";
+import {StringUtils} from "../stringUtils";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
 
@@ -29,8 +27,8 @@ export class FullPageScreenshotHelper {
 			Clipper.getUserSessionIdWhenDefined().then((sessionId) => {
 				let fullPageScreenshotEvent = new Log.Event.PromiseEvent(Log.Event.Label.FullPageScreenshotCall);
 
-				let correlationId = Utils.generateGuid();
-				fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.RequestCorrelationId, correlationId);
+				let correlationId = StringUtils.generateGuid();
+				fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
 				let headers = {};
 				headers[Constants.HeaderValues.accept] = "application/json";
@@ -44,7 +42,7 @@ export class FullPageScreenshotHelper {
 					OneNoteApiUtils.logOneNoteApiRequestError(fullPageScreenshotEvent, error);
 				};
 
-				Http.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((request: XMLHttpRequest) => {
+				HttpWithRetries.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((request: XMLHttpRequest) => {
 					if (request.status === 200) {
 						try {
 							resolve(JSON.parse(request.response) as FullPageScreenshotResult);
