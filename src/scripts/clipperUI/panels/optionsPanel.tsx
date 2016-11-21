@@ -27,7 +27,7 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 		switch (currentMode) {
 			case ClipMode.Pdf:
 				return <PdfClipOptions
-					isPopupOpen={this.props.isPopupOpen}	
+					isPopupOpen={this.props.isPopupOpen}
 					shouldAttachPdf={this.props.clipperState.pdfPreviewInfo.shouldAttachPdf}
 					allPages={this.props.clipperState.pdfPreviewInfo.allPages}
 					shouldDistributePages={this.props.clipperState.pdfPreviewInfo.shouldDistributePages}

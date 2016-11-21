@@ -33,7 +33,7 @@ export class OneNoteSaveableFactory {
 		const firstPageIndex = OneNoteSaveableFactory.getPageIndicesToSendInPdfMode(clipperState)[0];
 		const firstPageNumberAsString = (firstPageIndex + 1).toString();
 		// TODO: localize
-		const title = clipperState.pdfPreviewInfo.shouldDistributePages ? previewTitleText + ": Page " + firstPageNumberAsString : previewTitleText; 
+		const title = clipperState.pdfPreviewInfo.shouldDistributePages ? previewTitleText + ": Page " + firstPageNumberAsString : previewTitleText;
 		return new OneNoteApi.OneNotePage(
 			title,
 			"",

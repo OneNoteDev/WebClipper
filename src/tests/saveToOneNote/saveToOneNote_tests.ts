@@ -471,8 +471,9 @@ test("When saving a pdf as a BATCH, if there is only 1 page, there should be no 
 		[200, { "Content-Type": "application/json" },
 			JSON.stringify(createPageJson)
 		]);
-	
-	let page = getMockSaveablePdfBatched([0], saveLocation, titleText);
+
+	// If there is one page, we slice the first index off of pageIndexes, and pass an empty array into the page
+	let page = getMockSaveablePdfBatched([], saveLocation, titleText);
 
 	saveToOneNote.save({ page: page, saveLocation: saveLocation }).then((responsePackage) => {
 		deepEqual(responsePackage.parsedResponse, createPageJson, "The parsedResponse field should be the response in json form");
@@ -522,7 +523,7 @@ test("When saving a pdf as a BATCH, if createPage and all subsequent BATCH calls
 
 test("When saving a pdf as a BATCH, if createPage call fails, save() should reject() with the error object", (assert: QUnitAssert)  => {
 	let done = assert.async();
-	
+
 	let saveLocation = "sectionId";
 	const titleText = "PDF.pdf";
 
@@ -567,14 +568,16 @@ test("When saving a pdf as a BATCH, if createPage succeeds, but the BATCH fails,
 		"POST", "https://www.onenote.com/api/v1.0/me/notes/sections/" + saveLocation + "/pages",
 		[200, { "Content-Type": "application/json" },
 		JSON.stringify(createPageJson)
-        ]);
+		]);
 
-    let batchResponse = {
-		"error":{
-			"code":"19999","message":"Something failed, the API cannot share any more information at the time of the request.","@api.url":"http://aka.ms/onenote-errors#C19999"
+	let batchResponse = {
+		"error": {
+			"code": "19999",
+			"message": "Something failed, the API cannot share any more information at the time of the request.",
+			"@api.url": "http://aka.ms/onenote-errors#C19999"
 		}
-	}
-    
+	};
+
 	// Send BATCH request
 	server.respondWith(
 		"POST", "https://www.onenote.com/api/beta/$batch",
@@ -582,8 +585,8 @@ test("When saving a pdf as a BATCH, if createPage succeeds, but the BATCH fails,
 			JSON.stringify(batchResponse)
 		]);
 
-	let page = getMockSaveablePdfBatched([0, 1], saveLocation, titleText);    
-    
+	let page = getMockSaveablePdfBatched([0, 1], saveLocation, titleText);
+
 	saveToOneNote.save({ page: page, saveLocation: saveLocation }).then((responsePackage) => {
 		ok(false, "resolve should not be called");
 	}, (error) => {
@@ -594,4 +597,3 @@ test("When saving a pdf as a BATCH, if createPage succeeds, but the BATCH fails,
 		done();
 	});
 });
-

@@ -26,7 +26,7 @@ test("Given both the imgUrl and dimensions, the imgUrl is rendered in the compon
 	strictEqual(imageComputedStyle.maxHeight, expectedHeight, "The image's max height should be the specified viewport height");
 });
 
-test("When not given the imgUrl, the component should render a blank viewport with the specified dimensions", () => {
+test("When not given the imgUrl, the component should render a loading spinner with the specified dimensions", () => {
 	let expectedWidth = pdfDataUrlDimensions[0].width;
 	let expectedHeight = pdfDataUrlDimensions[0].height;
 
@@ -37,10 +37,10 @@ test("When not given the imgUrl, the component should render a blank viewport wi
 	let container = HelperFunctions.getFixture().firstChild as HTMLElement;
 	let containerComputedStyle = window.getComputedStyle(container);
 	strictEqual(containerComputedStyle.width, expectedWidth, "The container's width should be the specified viewport width");
-	strictEqual(containerComputedStyle.height, expectedHeight, "The container's height should be the specified viewport width");
+	strictEqual(containerComputedStyle.height, expectedHeight, "The container's height should be the specified viewport height + the height of the spinner");
 
 	let images = container.getElementsByTagName("img");
-	strictEqual(images.length, 0, "There should be no images rendered");
+	strictEqual(images.length, 1, "There should be 1 image rendered, the spinner");
 });
 
 test("Given the index, the component should render the container with the index stored in the attribute 'data-pageindex'", () => {
