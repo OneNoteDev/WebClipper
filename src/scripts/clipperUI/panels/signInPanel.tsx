@@ -12,7 +12,6 @@ import {ComponentBase} from "../componentBase";
 import {Status} from "../status";
 
 interface SignInPanelState {
-	signInFailureDetected?: boolean;
 	errorDescriptionShowing?: boolean;
 }
 
@@ -30,7 +29,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 	}
 
 	getInitialState() {
-		return { signInFailureDetected: false, errorDescriptionShowing: false };
+		return { errorDescriptionShowing: false };
 	}
 
 	getSignInDescription(): string {
@@ -41,7 +40,6 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 
 		switch (this.props.clipperState.userResult.data.updateReason) {
 			case UpdateReason.SignInAttempt:
-				this.setState({ signInFailureDetected: true });
 				return Localization.getLocalizedString("WebClipper.Error.SignInUnsuccessful");
 			case UpdateReason.TokenRefreshForPendingClip:
 				return Localization.getLocalizedString("WebClipper.Error.GenericExpiredTokenRefreshError");
@@ -53,12 +51,21 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 		}
 	}
 
+	getSignInFailureDetected(): boolean {
+		return !!this.props.clipperState.userResult && !!this.props.clipperState.userResult.data
+			&& this.props.clipperState.userResult.data.updateReason === UpdateReason.SignInAttempt
+			// Right now we are only showing the error panel for OrgId errors since they tend to
+			// be a little more actionable to the user, or at least a little more helpful.
+			&& this.props.clipperState.userResult.data.errorDescription.search(/^OrgId/) !== -1;
+	}
+
 	errorDescriptionControlHandler() {
 		this.setState({ errorDescriptionShowing: !this.state.errorDescriptionShowing });
 	}
 
 	render() {
 		let signInDescription = this.getSignInDescription();
+		let signInFailureDetected = this.getSignInFailureDetected();
 
 		return (
 			<div id={Constants.Ids.signInContainer}>
@@ -76,9 +83,9 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 							{signInDescription}
 						</span>
 					</div>
-					{this.state.signInFailureDetected
+					{signInFailureDetected
 						? (<div className="signInErrorToggleInformation">
-							<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
+							<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
 								<span class={Constants.Ids.signInToggleErrorInformationText}
 									style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 									{this.state.errorDescriptionShowing
@@ -89,13 +96,11 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 							</a>
 						</div>) : undefined
 					}
-					{(this.state.signInFailureDetected && this.state.errorDescriptionShowing)
+					{(signInFailureDetected && this.state.errorDescriptionShowing)
 						? (<div className="signInErrorDescription">
-							<span className={Constants.Ids.signInErrorDescriptionContainer}
-								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+							<span className={Constants.Ids.signInErrorDescriptionContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 								{this.props.clipperState.userResult.data.errorDescription}
-								AADSTS65005: The application OneNote Web Clipper is currently not supported for your company my.****.**.uk. Your company is currently in an unmanaged state and needs an Administrator to claim ownership of the company by DNS validation of my.****.**.uk before the application OneNote Web Clipper can be provisioned.
-						</span>
+							</span>
 							<div className={Constants.Ids.signInErrorDebugInformationContainer}
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 								<ul className={Constants.Ids.signInErrorDebugInformationList}>
@@ -106,7 +111,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 							</div>
 						</div>) : undefined
 					}
-					<a id={Constants.Ids.signInButtonMsa} {...this.enableInvoke(this.onSignInMsa, 1)}>
+					<a id={Constants.Ids.signInButtonMsa} {...this.enableInvoke(this.onSignInMsa, AuthType.Msa)}>
 						<div className="wideButtonContainer">
 							<span className="wideButtonFont wideActionButton"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
@@ -114,7 +119,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 							</span>
 						</div>
 					</a>
-					<a id={Constants.Ids.signInButtonOrgId} {...this.enableInvoke(this.onSignInOrgId, 2) }>
+					<a id={Constants.Ids.signInButtonOrgId} {...this.enableInvoke(this.onSignInOrgId, AuthType.OrgId) }>
 						<div className="wideButtonContainer">
 							<span className="wideButtonFont wideActionButton"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }>
