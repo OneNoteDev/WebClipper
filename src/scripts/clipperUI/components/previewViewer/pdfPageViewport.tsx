@@ -26,8 +26,8 @@ class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
 	private getSpinner(): any {
 		let spinner = <SpriteAnimation
 			spriteUrl={ExtensionUtils.getImageResourceUrl("spinner_loop_colored.png") }
-			imageHeight={65}
-			imageWidth={45}
+			imageHeight={Math.min(65, this.props.viewportDimensions.height)}
+			imageWidth={Math.min(45, this.props.viewportDimensions.width)}
 			totalFrameCount={21}
 			loop={true} />;
 
