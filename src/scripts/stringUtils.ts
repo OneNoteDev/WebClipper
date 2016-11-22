@@ -25,6 +25,11 @@ export module StringUtils {
 			let valueToAppend: number[] = [], matches;
 			let currentValue = splitText[i].trim();
 
+			if (currentValue === "") {
+				// We relax the restriction by allowing and ignoring whitespace between commas
+				continue;
+			}
+
 			if (/^\d+$/.test(currentValue)) {
 				let digit = parseInt(currentValue, 10 /* radix */);
 				if (digit === 0) {
