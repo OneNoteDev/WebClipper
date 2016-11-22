@@ -56,6 +56,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 			&& this.props.clipperState.userResult.data.updateReason === UpdateReason.SignInAttempt
 			// Right now we are only showing the error panel for OrgId errors since they tend to
 			// be a little more actionable to the user, or at least a little more helpful.
+			&& this.props.clipperState.userResult.data.errorDescription
 			&& this.props.clipperState.userResult.data.errorDescription.search(/^OrgId/) !== -1;
 	}
 
