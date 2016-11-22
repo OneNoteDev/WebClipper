@@ -255,8 +255,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				return <OptionsPanel
 					onPopupToggle={this.onPopupToggle.bind(this)}
 					clipperState={this.props.clipperState}
-					onStartClip={this.props.onStartClip}
-					isPopupOpen={this.popupIsOpen} />;
+					onStartClip={this.props.onStartClip} />;
 			case PanelType.RegionInstructions:
 				return <RegionSelectingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingToApi:
