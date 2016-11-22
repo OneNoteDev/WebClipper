@@ -40,15 +40,20 @@ export class PdfClipOptionsTests extends TestModule {
 	protected tests() {
 		// TODO test rendering based on props, click tests, test that all elements are rendered, text label rendering
 
-		test("All elements that should always be present should be rendered correctly assuming all the props are true", () => {
+		test("All elements that should always be present in the non-expanded state should be rendered correctly assuming all the props are true", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			ok(document.getElementById(Constants.Ids.radioAllPagesLabel), "radioAllPagesLabel should exist");
 			ok(document.getElementById(Constants.Ids.radioPageRangeLabel), "radioPageRangeLabel should exist");
-			ok(document.getElementById(Constants.Ids.onePageForEntirePdfLabel), "onePageForEntirePdfLabel should exist");
-			ok(document.getElementById(Constants.Ids.onePageForEachPdfLabel), "onePageForEachPdfLabel should exist");
-			ok(document.getElementById(Constants.Ids.attachmentCheckboxLabel), "attachmentCheckboxLabel should exist");
+
 		});
+
+		test("After clicking the 'More' button, all elements should be rendered correctly assuming all the props are true", () => {
+			MithrilUtils.mountToFixture(this.defaultComponent);
+
+			ok(document.getElementById(Constants.Ids.checkboxToDistributePages), "checkboxToDistributePages should exist");
+			ok(document.getElementById(Constants.Ids.checkboxToAttachPdf), "checkboxToAttachPdf should exist");
+		});	
 
 		test("All elements that should always be present should be rendered correctly assuming all the props are false", () => {
 			this.defaultPdfClipOptionsProps.clipperState.pdfPreviewInfo.allPages = false;
@@ -58,9 +63,8 @@ export class PdfClipOptionsTests extends TestModule {
 
 			ok(document.getElementById(Constants.Ids.radioAllPagesLabel), "radioAllPagesLabel should exist");
 			ok(document.getElementById(Constants.Ids.radioPageRangeLabel), "radioPageRangeLabel should exist");
-			ok(document.getElementById(Constants.Ids.onePageForEntirePdfLabel), "onePageForEntirePdfLabel should exist");
-			ok(document.getElementById(Constants.Ids.onePageForEachPdfLabel), "onePageForEachPdfLabel should exist");
-			ok(document.getElementById(Constants.Ids.attachmentCheckboxLabel), "attachmentCheckboxLabel should exist");
+			ok(document.getElementById(Constants.Ids.checkboxToDistributePages), "checkboxToDistributePages should exist");
+			ok(document.getElementById(Constants.Ids.checkboxToAttachPdf), "checkboxToAttachPdf should exist");
 		});
 
 		test("The range input box should not be present if allPages is selected", () => {
@@ -77,8 +81,7 @@ export class PdfClipOptionsTests extends TestModule {
 		test("The tab order should flow linearly between pdf options", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 			Assert.tabOrderIsIncremental([
-				Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.onePageForEntirePdfLabel,
-				Constants.Ids.onePageForEachPdfLabel, Constants.Ids.attachmentCheckboxLabel
+				Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf
 			]);
 		});
 
@@ -87,8 +90,7 @@ export class PdfClipOptionsTests extends TestModule {
 			MithrilUtils.mountToFixture(<PdfClipOptions {...this.defaultPdfClipOptionsProps} />);
 
 			Assert.tabOrderIsIncremental([
-				Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.rangeInput,
-				Constants.Ids.onePageForEntirePdfLabel, Constants.Ids.onePageForEachPdfLabel, Constants.Ids.attachmentCheckboxLabel
+				Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.rangeInput, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf
 			]);
 		});
 
@@ -117,35 +119,27 @@ export class PdfClipOptionsTests extends TestModule {
 			strictEqual(pageRangeRadioElems.length, 1, "The page range radio should be filled");
 		});
 
-		test("Given that the shouldDistributePages prop is true, the onePageForEachPdf radio should be selected, and the onePageForEntirePdf radio should not", () => {
+		test("Given that the shouldDistributePages prop is true, the checkboxToDistributePages should be filled", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let onePageForEachPdfElem = document.getElementById(Constants.Ids.onePageForEachPdfLabel);
-			let onePageForEachPdfRadioElems = onePageForEachPdfElem.getElementsByClassName(Constants.Classes.radioIndicatorFill);
-			strictEqual(onePageForEachPdfRadioElems.length, 1, "The onePageForEachPdf radio should be filled");
-
-			let onePageForEntirePdfElem = document.getElementById(Constants.Ids.onePageForEntirePdfLabel);
-			let onePageForEntirePdfRadioElems = onePageForEntirePdfElem.getElementsByClassName(Constants.Classes.radioIndicatorFill);
-			strictEqual(onePageForEntirePdfRadioElems.length, 0, "The onePageForEntirePdf radio should not be filled");
+			let shouldDistributePagesElemn = document.getElementById(Constants.Ids.checkboxToDistributePages);
+			let checkboxCheckElems = shouldDistributePagesElemn.getElementsByClassName(Constants.Classes.checkboxCheck);
+			strictEqual(checkboxCheckElems.length, 1, "The checkbox to attach the pdf should be filled");
 		});
 
-		test("Given that the shouldDistributePages prop is false, the onePageForEntirePdf radio should be selected, and the onePageForEachPdf radio should not", () => {
+		test("Given that the shouldDistributePages prop is false, the checkboxToDistributePages should not be filled", () => {
 			this.defaultPdfClipOptionsProps.clipperState.pdfPreviewInfo.shouldDistributePages = false;
-			MithrilUtils.mountToFixture(<PdfClipOptions {...this.defaultPdfClipOptionsProps} />);
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let onePageForEachPdfElem = document.getElementById(Constants.Ids.onePageForEachPdfLabel);
-			let onePageForEachPdfRadioElems = onePageForEachPdfElem.getElementsByClassName(Constants.Classes.radioIndicatorFill);
-			strictEqual(onePageForEachPdfRadioElems.length, 0, "The onePageForEachPdf radio should not be filled");
-
-			let onePageForEntirePdfElem = document.getElementById(Constants.Ids.onePageForEntirePdfLabel);
-			let onePageForEntirePdfRadioElems = onePageForEntirePdfElem.getElementsByClassName(Constants.Classes.radioIndicatorFill);
-			strictEqual(onePageForEntirePdfRadioElems.length, 1, "The onePageForEntirePdf radio should be filled");
+			let shouldDistributePagesElemn = document.getElementById(Constants.Ids.checkboxToDistributePages);
+			let checkboxCheckElems = shouldDistributePagesElemn.getElementsByClassName(Constants.Classes.checkboxCheck);
+			strictEqual(checkboxCheckElems.length, 0, "The checkbox to attach the pdf should not be filled");
 		});
 
 		test("Given that the shouldAttachPdf prop is true, the attachment checkbox should be selected", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let shouldAttachPdfElem = document.getElementById(Constants.Ids.attachmentCheckboxLabel);
+			let shouldAttachPdfElem = document.getElementById(Constants.Ids.checkboxToAttachPdf);
 			let checkboxCheckElems = shouldAttachPdfElem.getElementsByClassName(Constants.Classes.checkboxCheck);
 			strictEqual(checkboxCheckElems.length, 1, "The checkbox to attach the pdf should be filled");
 		});
@@ -154,9 +148,9 @@ export class PdfClipOptionsTests extends TestModule {
 			this.defaultPdfClipOptionsProps.clipperState.pdfPreviewInfo.shouldAttachPdf = false;
 			MithrilUtils.mountToFixture(<PdfClipOptions {...this.defaultPdfClipOptionsProps} />);
 
-			let shouldAttachPdfElem = document.getElementById(Constants.Ids.attachmentCheckboxLabel);
+			let shouldAttachPdfElem = document.getElementById(Constants.Ids.checkboxToAttachPdf);
 			let checkboxCheckElems = shouldAttachPdfElem.getElementsByClassName(Constants.Classes.checkboxCheck);
-			strictEqual(checkboxCheckElems.length, 0, "The checkbox to attach the pdf should be filled");
+			strictEqual(checkboxCheckElems.length, 0, "The checkbox to attach the pdf should not be filled");
 		});
 
 		test("Clicking on the allPages radio should set allPages in clipperState to true", () => {
@@ -181,33 +175,32 @@ export class PdfClipOptionsTests extends TestModule {
 			ok(!pdfClipOptions.props.clipperState.pdfPreviewInfo.allPages, "allPages in clipperState should be set to false");
 		});
 
-		test("Clicking on the onePageForEntirePdf radio should set shouldDistributePages to false", () => {
+		test("Clicking on shouldDistributesPagesCheckbox should toggle the shouldAttachPdf boolean", () => {
 			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
+			let initialCheckboxValue: boolean = pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
 
-			let onePageForEntirePdfElem = document.getElementById(Constants.Ids.onePageForEntirePdfLabel);
+			let checkboxToDistributePagesElem = document.getElementById(Constants.Ids.checkboxToDistributePages);
+
 			MithrilUtils.simulateAction(() => {
-				onePageForEntirePdfElem.click();
+				checkboxToDistributePagesElem.click();
 			});
 
-			ok(!pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldDistributePages, "shouldDistributePages in clipperState should be set to false");
-		});
+			strictEqual(pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldAttachPdf, !initialCheckboxValue,
+				"shouldDistributePages in clipperState should be toggled (first click)");
 
-		test("Clicking on the onePageForEachPdf radio should set shouldDistributePages to true", () => {
-			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
-
-			let onePageForEachPdfElem = document.getElementById(Constants.Ids.onePageForEachPdfLabel);
 			MithrilUtils.simulateAction(() => {
-				onePageForEachPdfElem.click();
+				checkboxToDistributePagesElem.click();
 			});
 
-			ok(pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldDistributePages, "shouldDistributePages in clipperState should be set to true");
+			strictEqual(pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldAttachPdf, initialCheckboxValue,
+				"shouldAttachPdf in clipperState should be toggled (first click)");
 		});
 
 		test("Clicking on the attachment checkbox should toggle the shouldAttachPdf boolean", () => {
 			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
 			let initialCheckboxValue: boolean = pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
 
-			let attachmentCheckboxElem = document.getElementById(Constants.Ids.attachmentCheckboxLabel);
+			let attachmentCheckboxElem = document.getElementById(Constants.Ids.checkboxToAttachPdf);
 
 			MithrilUtils.simulateAction(() => {
 				attachmentCheckboxElem.click();
@@ -226,14 +219,14 @@ export class PdfClipOptionsTests extends TestModule {
 
 		test("If the pdf is below the MIME size limit, the PdfAttachPdfCheckboxLabel should be shown", () => {
 			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
-			let attachmentCheckboxElem = document.getElementById(Constants.Ids.attachmentCheckboxLabel);
+			let attachmentCheckboxElem = document.getElementById(Constants.Ids.checkboxToAttachPdf);
 			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel"]);
 		});
 
 		test("If the pdf is above the MIME size limit, the PdfAttachPdfTooLargeMessage should be shown instead of PdfAttachPdfCheckboxLabel", () => {
 			this.defaultPdfClipOptionsProps.clipperState.pdfResult.data.get().byteLength = Constants.Settings.maximumMimeSizeLimit + 1;
 			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
-			let attachmentCheckboxElem = document.getElementById(Constants.Ids.attachmentCheckboxLabel);
+			let attachmentCheckboxElem = document.getElementById(Constants.Ids.checkboxToAttachPdfDisabled);
 			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage"]);
 		});
 	}

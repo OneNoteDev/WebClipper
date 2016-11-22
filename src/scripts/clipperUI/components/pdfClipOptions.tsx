@@ -116,47 +116,13 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return !pagesToShow || !validUpperBounds;
 	}
 
-	getOnePageForEntirePdfRadioElement(): any {
+	getDistributePagesCheckbox(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
-			<div id={Constants.Ids.onePageForEntirePdfLabel} class="pdf-control" {...this.enableInvoke(this.onDistributionChange, 63, false) }>
-				<div class="pdf-indicator pdf-radio-indicator">
-					{!pdfPreviewInfo.shouldDistributePages ? <div class="radio-indicator-fill"></div> : ""}
-				</div>
-				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForAllPdfPages")}</span>
-			</div>
-		);
-	}
-
-	getOnePageForEachPdfPageRadioElement(): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-		return (
-			<div id={Constants.Ids.onePageForEachPdfLabel} class="pdf-control" {...this.enableInvoke(this.onDistributionChange, 64, true) }>
-				<div class="pdf-indicator pdf-radio-indicator">
-					{pdfPreviewInfo.shouldDistributePages ? <div class="radio-indicator-fill"></div> : ""}
-				</div>
-				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForEachPdfPage")}</span>
-			</div>
-		);
-	}
-
-	getDisabledAttachmentCheckbox(): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-		return (
-			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 66, !pdfPreviewInfo.shouldAttachPdf) }>
-				<img src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
-				<span class="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage")}</span>
-			</div>
-		);
-	}
-
-	getEnabledAttachmentCheckbox(): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-		return (
-			<div class="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 65, !pdfPreviewInfo.shouldAttachPdf) }>
+			<div className="pdf-control" id={Constants.Ids.checkboxToDistributePages} {...this.enableInvoke(this.onDistributionChange, 65, !pdfPreviewInfo.shouldDistributePages) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
-				{pdfPreviewInfo.shouldAttachPdf ? <div class="checkbox"></div> : ""}
-				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
+				{pdfPreviewInfo.shouldDistributePages ? <div class="checkbox"></div> : ""}
+				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfDistributePagesCheckboxLabel")}</span>
 			</div>
 		);
 	}
@@ -169,13 +135,23 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return disableCheckbox ? this.getDisabledAttachmentCheckbox() : this.getEnabledAttachmentCheckbox();
 	}
 
-	getDistributePagesCheckbox(): any {
+	getDisabledAttachmentCheckbox(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
-			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onDistributionChange, 67, !this.props.shouldDistributePages) }>
+			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdfDisabled} {...this.enableInvoke(this.onCheckboxChange, 67, !pdfPreviewInfo.shouldAttachPdf) }>
+				<img src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
+				<span class="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage")}</span>
+			</div>
+		);
+	}
+
+	getEnabledAttachmentCheckbox(): any {
+		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+		return (
+			<div class="pdf-control" id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(this.onCheckboxChange, 66, !pdfPreviewInfo.shouldAttachPdf) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
-				{pdfPreviewInfo.shouldDistributePages ? <div class="checkbox"></div> : ""}
-				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfDistributePagesCheckboxLabel")}</span>
+				{pdfPreviewInfo.shouldAttachPdf ? <div class="checkbox"></div> : ""}
+				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
 			</div>
 		);
 	}
@@ -185,7 +161,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return (
 			<div class="clipOptionsContainer">
 				<div class="clipOptionsTitleContainer">
-					<span class="clipOptionsTitle">PDF Options</span>
+					<span class="clipOptionsTitle">{Localization.getLocalizedString("WebClipper.Options.PdfOptions")}</span>
 					<span class="moreClipOptions" id="moreClipOptions" {...this.enableInvoke(this.onMoreClicked, 62) }>
 						{Localization.getLocalizedString("WebClipper.Action.More")} <img class="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					</span>

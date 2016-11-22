@@ -160,12 +160,10 @@ export module Constants {
 		export var pdfControl = "pdfControl";
 		export var pdfHeaderTitle = "pdfHeaderTitle";
 		export var pageRangeControl = "pageRangeControl";
-		export var onePageForEntirePdfLabel = "onePageForEntirePdfLabel";
-		export var onePageForEachPdfLabel = "onePageForEachPdfLabel";
 
-		export var attachmentCheckboxControl = "attachmentCheckboxControl";
-		export var attachmentCheckboxDisabledLabel = "attachmentCheckboxDisabledLabel";
-		export var attachmentCheckboxLabel = "attachmentCheckboxLabel";
+		export var checkboxToDistributePages = "checkboxToDistributePages";
+		export var checkboxToAttachPdfDisabled = "checkboxToAttachPdfDisabled";
+		export var checkboxToAttachPdf = "checkboxToAttachPdf";
 
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";
