@@ -1,4 +1,5 @@
 import {ArrayUtils} from "../arrayUtils";
+import {StringUtils} from "../stringUtils";
 
 import {PdfDocument} from "../contentCapture/pdfDocument";
 
@@ -54,7 +55,7 @@ export class OneNoteSaveablePdfBatched implements OneNoteSaveable {
 
 		let batchRequests = [];
 		for (let i = 0; i < pagesIndices.length; i++) {
-			const title = this.titleText + ": Page " + (pagesIndices[i] + 1).toString();
+			const title = StringUtils.getBatchedPageTitle(this.titleText, pagesIndices[i]);
 			const dataUrl = dataUrls[i];
 
 			let page = new OneNoteApi.OneNotePage(title, "", this.contentLocale);
