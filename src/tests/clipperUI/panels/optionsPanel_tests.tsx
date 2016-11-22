@@ -27,8 +27,7 @@ export class OptionsPanelTests extends TestModule {
 		this.mockOptionsPanelProps = {
 			onStartClip: () => { this.onStartClipCalled = true; },
 			onPopupToggle: (shouldNowBeOpen: boolean) => { },
-			clipperState: mockState,
-			isPopupOpen: false
+			clipperState: mockState
 		};
 
 		this.onStartClipCalled = false;

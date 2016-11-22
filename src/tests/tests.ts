@@ -19,7 +19,6 @@ import "./clipperUI/components/previewViewer/pdfPageViewport_tests";
 import "./clipperUI/components/previewViewer/pdfPreview_tests";
 import "./clipperUI/components/previewViewer/pdfPreviewPage_tests";
 import "./clipperUI/components/previewViewer/previewViewerAugmentationHeader_tests";
-import "./clipperUI/components/previewViewer/previewViewerPdfHeader_tests";
 import "./clipperUI/components/previewViewer/previewViewerRegionHeader_tests";
 import "./clipperUI/components/previewViewer/regionPreview_tests";
 import "./clipperUI/components/previewViewer/selectionPreview_tests";
@@ -28,6 +27,7 @@ import "./clipperUI/components/annotationInput_tests";
 import "./clipperUI/components/footer_tests";
 import "./clipperUI/components/modeButton_tests";
 import "./clipperUI/components/modeButtonSelector_tests";
+import "./clipperUI/components/pdfClipOptions_tests";
 import "./clipperUI/components/sectionPicker_tests";
 
 import "./clipperUI/panels/changeLogPanel_tests";

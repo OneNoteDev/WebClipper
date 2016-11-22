@@ -13,6 +13,9 @@ export module Constants {
 		export var changeImage = "change-image";
 		export var changeTitle = "change-title";
 
+		// checkbox
+		export var checkboxCheck = "checkboxCheck";
+
 		// textArea input control
 		export var textAreaInput = "textAreaInput";
 		export var textAreaInputMirror = "textAreaInputMirror";
@@ -37,6 +40,9 @@ export module Constants {
 
 		export var localPdfPanelTitle = "local-pdf-panel-title";
 		export var localPdfPanelSubtitle = "local-pdf-panel-subtitle";
+
+		// radioButton
+		export var radioIndicatorFill = "radio-indicator-fill";
 
 		// spriteAnimation
 		export var spinner = "spinner";
