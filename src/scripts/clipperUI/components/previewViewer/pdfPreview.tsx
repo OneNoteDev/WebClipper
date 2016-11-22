@@ -15,6 +15,7 @@ import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Localization} from "../../../localization/localization";
 
+import {ClipMode} from "../../clipMode";
 import {ClipperStateProp, DataResult} from "../../clipperState";
 import {Status} from "../../status";
 
@@ -191,7 +192,7 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 						showPageNumbers: false
 					});
 					// We piggyback the scroll listener to determine what pages the user is looking at, then render them
-					if (this.props.clipperState.pdfResult.status === Status.Succeeded) {
+					if (this.props.clipperState.currentMode.get() === ClipMode.Pdf && this.props.clipperState.pdfResult.status === Status.Succeeded) {
 						this.setDataUrlsOfImagesInViewportInState();
 					}
 				}, Constants.Settings.timeUntilPdfPageNumbersFadeOutAfterScroll);
