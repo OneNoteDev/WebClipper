@@ -11,25 +11,15 @@ import {Status} from "../status";
 
 import * as _ from "lodash";
 
-interface PdfClipOptionsProps extends ClipperStateProp {
-	onCheckboxChange: (checked: boolean) => void;
-	onDistributionChange: (checked: boolean) => void;
-	allPages: boolean;
-	shouldAttachPdf: boolean;
-	shouldDistributePages: boolean;
-}
-
-interface PdfClipOptionsState {
-	invalidRange?: boolean;
-}
-
-class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOptionsProps> {
+class PdfClipOptionsClass extends ComponentBase<{}, ClipperStateProp> {
 	private static textAreaListenerAttached = false;
 
-	getInitialState(): PdfClipOptionsState {
-		return {
-			invalidRange: false
-		} as PdfClipOptionsState;
+	constructor(props: ClipperStateProp) {
+		super(props);
+		if (!PdfClipOptionsClass.textAreaListenerAttached) {
+			this.addTextAreaListener();
+			PdfClipOptionsClass.textAreaListenerAttached = true;
+		}
 	}
 
 	private addTextAreaListener() {
@@ -73,11 +63,13 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
+	// TODO These radio elements are repeat code
 	getAllPagesRadioElement(): any {
+		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
-			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 60, true) }>
+			<div id={Constants.Ids.radioAllPagesLabel} class="pdf-control" {...this.enableInvoke(this.onSelectionChange, 60, true) }>
 				<div class="pdf-indicator pdf-radio-indicator">
-					{this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+					{pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : ""}
 				</div>
 				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}</span>
 			</div>
@@ -85,27 +77,40 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 	}
 
 	getPageRangeRadioElement(): any {
-		let invalidClassName = this.state.invalidRange ? "invalid" : "";
+		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+
+		let pageRangeIsInvalid = this.invalidPageRange();
+		let invalidClassName = pageRangeIsInvalid ? "invalid" : "";
 		return (
-			<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, false) }>
+			<div id={Constants.Ids.radioPageRangeLabel} class="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, false) }>
 				<div class="pdf-indicator pdf-radio-indicator">
-					{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+					{!pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : ""}
 				</div>
-				{!this.props.allPages ?
-					<input type="text" id={Constants.Ids.rangeInput} className={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 192, false) }></input>
+				{!pdfPreviewInfo.allPages ?
+					<input type="text" id={Constants.Ids.rangeInput} class={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }></input>
 					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
-				{!this.props.allPages && this.state.invalidRange ?
+				{!pdfPreviewInfo.allPages && pageRangeIsInvalid ?
 					<div class="popover">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange")}</div>
 					: ""}
 			</div>
 		);
 	}
 
+	private invalidPageRange(): boolean {
+		let pagesToShow = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
+		let validUpperBounds = this.props.clipperState.pdfResult.status === Status.Succeeded ? _.every(pagesToShow, (ind: number) => {
+			return ind <= this.props.clipperState.pdfResult.data.get().pdf.numPages();
+		}) : true;
+
+		return !pagesToShow || !validUpperBounds;
+	}
+
 	getOnePageForEntirePdfRadioElement(): any {
+		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
-			<div id={Constants.Ids.onePageForEntirePdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 62, false) }>
+			<div id={Constants.Ids.onePageForEntirePdfLabel} class="pdf-control" {...this.enableInvoke(this.onDistributionChange, 63, false) }>
 				<div class="pdf-indicator pdf-radio-indicator">
-					{!this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+					{!pdfPreviewInfo.shouldDistributePages ? <div class="radio-indicator-fill"></div> : ""}
 				</div>
 				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForAllPdfPages")}</span>
 			</div>
@@ -113,58 +118,38 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 	}
 
 	getOnePageForEachPdfPageRadioElement(): any {
+		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
-			<div id={Constants.Ids.onePageForEachPdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 63, true) }>
+			<div id={Constants.Ids.onePageForEachPdfLabel} class="pdf-control" {...this.enableInvoke(this.onDistributionChange, 64, true) }>
 				<div class="pdf-indicator pdf-radio-indicator">
-					{this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+					{pdfPreviewInfo.shouldDistributePages ? <div class="radio-indicator-fill"></div> : ""}
 				</div>
 				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForEachPdfPage")}</span>
 			</div>
 		);
 	}
 
+	// TODO this should not be clickable when disabled
 	getAttachmentCheckbox(): any {
+		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		const pdfHasSucceeded = this.props.clipperState.pdfResult.status === Status.Succeeded;
 		const pdfIsTooLarge = pdfHasSucceeded && this.props.clipperState.pdfResult.data.get().byteLength > Constants.Settings.maximumMimeSizeLimit;
 
 		return (
-			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 64, !this.props.shouldAttachPdf) }>
+			<div class="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 65, !pdfPreviewInfo.shouldAttachPdf) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
-				{this.props.shouldAttachPdf ? <div class="checkbox"></div> : ""}
+				{pdfPreviewInfo.shouldAttachPdf ? <div class={Constants.Classes.checkboxCheck}></div> : ""}
 				<span class={"pdf-label" + (pdfIsTooLarge || !pdfHasSucceeded ? " disabled" : "")}>{pdfIsTooLarge ? Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage") : Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
 			</div>
 		);
 	}
 
-	// getDistributePagesCheckbox(): any {
-	// 	return (
-	// 		<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onDistributionChange, 193, !this.props.shouldDistributePages) }>
-	// 			<div class="pdf-indicator pdf-checkbox-indicator"></div>
-	// 			{this.props.shouldDistributePages ? <div class="checkbox"></div> : ""}
-	// 			<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfDistributePagesCheckboxLabel")}</span>
-	// 		</div>
-	// 	);
-	// }
-
 	render() {
-		if (!PdfClipOptionsClass.textAreaListenerAttached) {
-			this.addTextAreaListener();
-			PdfClipOptionsClass.textAreaListenerAttached = true;
-		}
-
-		let pagesToShow = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
-		let validUpperBounds = this.props.clipperState.pdfResult.status === Status.Succeeded ? _.every(pagesToShow, (ind: number) => {
-			return ind <= this.props.clipperState.pdfResult.data.get().pdf.numPages();
-		}) : true;
-
-		this.setState({
-			invalidRange: !pagesToShow || !validUpperBounds
-		});
-
+		// TODO localize
 		return (
-			<div className={"clipOptionsContainer"}>
+			<div class="clipOptionsContainer">
 				<div class="clipOptionsTitleContainer">
-					<span className="clipOptionsTitle">PDF Options</span>
+					<span class="clipOptionsTitle">PDF Options</span>
 				</div>
 				{this.getAllPagesRadioElement()}
 				{this.getPageRangeRadioElement()}
