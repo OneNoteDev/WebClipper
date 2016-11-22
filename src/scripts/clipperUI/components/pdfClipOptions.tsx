@@ -1,9 +1,10 @@
 import {Localization} from "../../localization/localization";
 
+import {Constants} from "../../constants";
 import {PdfPreviewInfo} from "../../previewInfo";
 import {StringUtils} from "../../stringUtils";
 
-import {Constants} from "../../constants";
+import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {ComponentBase} from "../componentBase";
 import {ClipperStateProp} from "../clipperState";
@@ -129,19 +130,33 @@ class PdfClipOptionsClass extends ComponentBase<{}, ClipperStateProp> {
 		);
 	}
 
-	// TODO this should not be clickable when disabled
-	getAttachmentCheckbox(): any {
+	getDisabledAttachmentCheckbox(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-		const pdfHasSucceeded = this.props.clipperState.pdfResult.status === Status.Succeeded;
-		const pdfIsTooLarge = pdfHasSucceeded && this.props.clipperState.pdfResult.data.get().byteLength > Constants.Settings.maximumMimeSizeLimit;
+		return (
+			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 66, !pdfPreviewInfo.shouldAttachPdf) }>
+				<img src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
+				<span class="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage")}</span>
+			</div>
+		);
+	}
 
+	getEnabledAttachmentCheckbox(): any {
+		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
 			<div class="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 65, !pdfPreviewInfo.shouldAttachPdf) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
-				{pdfPreviewInfo.shouldAttachPdf ? <div class={Constants.Classes.checkboxCheck}></div> : ""}
-				<span class={"pdf-label" + (pdfIsTooLarge || !pdfHasSucceeded ? " disabled" : "")}>{pdfIsTooLarge ? Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage") : Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
+				{pdfPreviewInfo.shouldAttachPdf ? <div class="checkbox"></div> : ""}
+				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
 			</div>
 		);
+	}
+
+	getAttachmentCheckbox(): any {
+		const pdfHasSucceeded = this.props.clipperState.pdfResult.status === Status.Succeeded;
+		const pdfIsTooLarge = pdfHasSucceeded && this.props.clipperState.pdfResult.data.get().byteLength > Constants.Settings.maximumMimeSizeLimit;
+		const disableCheckbox = pdfIsTooLarge || !pdfHasSucceeded;
+
+		return disableCheckbox ? this.getDisabledAttachmentCheckbox() : this.getEnabledAttachmentCheckbox();
 	}
 
 	render() {
