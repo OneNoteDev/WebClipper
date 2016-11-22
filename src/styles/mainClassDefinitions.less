@@ -138,13 +138,26 @@
 	display: flex;
 	flex-direction: column;
 
+	/*.hiddenOptions {
+	}*/
+
 	.clipOptionsTitleContainer {
 		margin-bottom: 3px;
+		display: flex;
+		justify-content: space-between;
 
-		.clipOptionsTitle {
-			font-size: 15px;
-			color: white;
-			font-family: @SegoeUi;
+		font-size: 15px;
+		color: white;
+		font-family: @SegoeUi;
+		
+		.moreClipOptions {
+			cursor: pointer;
+			
+			.arrow {
+				height: 6px;
+				margin-left: 5px;
+				margin-bottom: 1px;	
+			}
 		}
 	}
 

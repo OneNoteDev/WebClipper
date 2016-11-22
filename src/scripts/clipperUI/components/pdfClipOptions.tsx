@@ -24,6 +24,7 @@ interface PdfClipOptionsProps extends ClipperStateProp {
 
 interface PdfClipOptionsState {
 	invalidRange?: boolean;
+	moreOptionsOpened?: boolean;
 }
 
 class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOptionsProps> {
@@ -76,9 +77,15 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
+	onMoreClicked(): void {
+		this.setState({
+			moreOptionsOpened: !this.state.moreOptionsOpened
+		});
+	}
+
 	getAllPagesRadioElement(): any {
 		return (
-			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 62, true) }>
+			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 63, true) }>
 				<div class="pdf-indicator pdf-radio-indicator">
 					{this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 				</div>
@@ -90,7 +97,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 	getPageRangeRadioElement(): any {
 		let invalidClassName = this.state.invalidRange ? "invalid" : "";
 		return (
-			<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 63, false) }>
+			<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 64, false) }>
 				<div class="pdf-indicator pdf-radio-indicator">
 					{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 				</div>
@@ -104,31 +111,31 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		);
 	}
 
-	getOnePageForEntirePdfRadioElement(): any {
-		return (
-			<div id={Constants.Ids.onePageForEntirePdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 64, false) }>
-				<div class="pdf-indicator pdf-radio-indicator">
-					{!this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
-				</div>
-				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForAllPdfPages")}</span>
-			</div>
-		);
-	}
+	// getOnePageForEntirePdfRadioElement(): any {
+	// 	return (
+	// 		<div id={Constants.Ids.onePageForEntirePdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 64, false) }>
+	// 			<div class="pdf-indicator pdf-radio-indicator">
+	// 				{!this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+	// 			</div>
+	// 			<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForAllPdfPages")}</span>
+	// 		</div>
+	// 	);
+	// }
 
-	getOnePageForEachPdfPageRadioElement(): any {
-		return (
-			<div id={Constants.Ids.onePageForEachPdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 65, true) }>
-				<div class="pdf-indicator pdf-radio-indicator">
-					{this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
-				</div>
-				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForEachPdfPage")}</span>
-			</div>
-		);
-	}
+	// getOnePageForEachPdfPageRadioElement(): any {
+	// 	return (
+	// 		<div id={Constants.Ids.onePageForEachPdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 65, true) }>
+	// 			<div class="pdf-indicator pdf-radio-indicator">
+	// 				{this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
+	// 			</div>
+	// 			<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Options.SingleNoteForEachPdfPage")}</span>
+	// 		</div>
+	// 	);
+	// }
 
 	getDisabledAttachmentCheckbox(): any {
 		return (
-			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 66, !this.props.shouldAttachPdf) }>
+			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 65, !this.props.shouldAttachPdf) }>
 				<img src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
 				<span class="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage")}</span>
 			</div>
@@ -153,15 +160,15 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		return disableCheckbox ? this.getDisabledAttachmentCheckbox() : this.getEnabledAttachmentCheckbox();
 	}
 
-	// getDistributePagesCheckbox(): any {
-	// 	return (
-	// 		<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onDistributionChange, 193, !this.props.shouldDistributePages) }>
-	// 			<div class="pdf-indicator pdf-checkbox-indicator"></div>
-	// 			{this.props.shouldDistributePages ? <div class="checkbox"></div> : ""}
-	// 			<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfDistributePagesCheckboxLabel")}</span>
-	// 		</div>
-	// 	);
-	// }
+	getDistributePagesCheckbox(): any {
+		return (
+			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onDistributionChange, 67, !this.props.shouldDistributePages) }>
+				<div class="pdf-indicator pdf-checkbox-indicator"></div>
+				{this.props.shouldDistributePages ? <div class="checkbox"></div> : ""}
+				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfDistributePagesCheckboxLabel")}</span>
+			</div>
+		);
+	}
 
 	render() {
 		if (!PdfClipOptionsClass.textAreaListenerAttached) {
@@ -181,13 +188,18 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		return (
 			<div className={"clipOptionsContainer"} tabIndex={60}>
 				<div class="clipOptionsTitleContainer">
-					<span className="clipOptionsTitle" tabIndex={61}>PDF Options</span>
+					<span tabIndex={61}>PDF Options</span>
+					<span class="moreClipOptions" id="moreClipOptions" {...this.enableInvoke(this.onMoreClicked, 62) }>
+						{Localization.getLocalizedString("WebClipper.Action.More")} <img className="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+					</span>
 				</div>
 				{this.getAllPagesRadioElement()}
 				{this.getPageRangeRadioElement()}
-				{this.getOnePageForEntirePdfRadioElement()}
-				{this.getOnePageForEachPdfPageRadioElement()}
-				{this.getAttachmentCheckbox()}
+				{this.state.moreOptionsOpened ?
+					<div className="hiddenOptions">
+						{this.getDistributePagesCheckbox()}
+						{this.getAttachmentCheckbox()}
+					</div> : undefined}
 			</div>
 		);
 	}

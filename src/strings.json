@@ -10,6 +10,7 @@
 	"WebClipper.Action.SignOut": "Sign Out",
 	"WebClipper.Action.TryAgain": "Try Again",
 	"WebClipper.Action.ViewInOneNote": "View in OneNote",
+	"WebClipper.Action.More": "More",
 	"WebClipper.BetaTag": "beta",
 	"WebClipper.ClipType.Article.Button": "Article",
 	"WebClipper.ClipType.Article.ProgressLabel": "Clipping Article",
