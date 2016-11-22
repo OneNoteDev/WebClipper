@@ -8,79 +8,91 @@ import {ClippingPanel} from "../../../scripts/clipperUI/panels/clippingPanel";
 
 import {AugmentationModel} from "../../../scripts/contentCapture/augmentationHelper";
 
-import {HelperFunctions} from "../../helperFunctions";
+import {MithrilUtils} from "../../mithrilUtils";
+import {MockProps} from "../../mockProps";
+import {TestModule} from "../../testModule";
 
 declare function require(name: string);
-let stringsJson = require("../../../strings.json");
 
-let mockClipperState: ClipperState;
-QUnit.module("clippingPanel", {
-	beforeEach: () => {
-		mockClipperState = HelperFunctions.getMockClipperState();
-		mockClipperState.augmentationResult = {
+export class ClippingPanelTests extends TestModule {
+	private stringsJson = require("../../../strings.json");
+
+	private mockClipperState: ClipperState;
+
+	protected module() {
+		return "clippingPanel";
+	}
+
+	protected beforeEach() {
+		this.mockClipperState = MockProps.getMockClipperState();
+		this.mockClipperState.augmentationResult = {
 			data: {},
 			status: Status.Succeeded
 		};
 	}
-});
 
-test("If the clipmode is full page, the clipping panel should indicate so", () => {
-	mockClipperState.currentMode.set(ClipMode.FullPage);
-	HelperFunctions.mountToFixture(<ClippingPanel clipperState={mockClipperState}/>);
+	protected tests() {
+		test("If the clipmode is full page, the clipping panel should indicate so", () => {
+			this.mockClipperState.currentMode.set(ClipMode.FullPage);
+			MithrilUtils.mountToFixture(<ClippingPanel clipperState={this.mockClipperState}/>);
 
-	strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
-		stringsJson["WebClipper.ClipType.ScreenShot.ProgressLabel"]);
-});
+			strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
+				this.stringsJson["WebClipper.ClipType.ScreenShot.ProgressLabel"]);
+		});
 
-test("If the clipmode is region, the clipping panel should indicate so", () => {
-	mockClipperState.currentMode.set(ClipMode.Region);
-	HelperFunctions.mountToFixture(<ClippingPanel clipperState={mockClipperState}/>);
+		test("If the clipmode is region, the clipping panel should indicate so", () => {
+			this.mockClipperState.currentMode.set(ClipMode.Region);
+			MithrilUtils.mountToFixture(<ClippingPanel clipperState={this.mockClipperState}/>);
 
-	strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
-		stringsJson["WebClipper.ClipType.Region.ProgressLabel"]);
-});
+			strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
+				this.stringsJson["WebClipper.ClipType.Region.ProgressLabel"]);
+		});
 
-test("If the clipmode is article, the clipping panel should indicate so", () => {
-	mockClipperState.currentMode.set(ClipMode.Augmentation);
-	mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.Article;
-	HelperFunctions.mountToFixture(<ClippingPanel clipperState={mockClipperState}/>);
+		test("If the clipmode is article, the clipping panel should indicate so", () => {
+			this.mockClipperState.currentMode.set(ClipMode.Augmentation);
+			this.mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.Article;
+			MithrilUtils.mountToFixture(<ClippingPanel clipperState={this.mockClipperState}/>);
 
-	strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
-		stringsJson["WebClipper.ClipType.Article.ProgressLabel"]);
-});
+			strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
+				this.stringsJson["WebClipper.ClipType.Article.ProgressLabel"]);
+		});
 
-test("If the clipmode is recipe, the clipping panel should indicate so", () => {
-	mockClipperState.currentMode.set(ClipMode.Augmentation);
-	mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.Recipe;
-	HelperFunctions.mountToFixture(<ClippingPanel clipperState={mockClipperState}/>);
+		test("If the clipmode is recipe, the clipping panel should indicate so", () => {
+			this.mockClipperState.currentMode.set(ClipMode.Augmentation);
+			this.mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.Recipe;
+			MithrilUtils.mountToFixture(<ClippingPanel clipperState={this.mockClipperState}/>);
 
-	strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
-		stringsJson["WebClipper.ClipType.Recipe.ProgressLabel"]);
-});
+			strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
+				this.stringsJson["WebClipper.ClipType.Recipe.ProgressLabel"]);
+		});
 
-test("If the clipmode is product, the clipping panel should indicate so", () => {
-	mockClipperState.currentMode.set(ClipMode.Augmentation);
-	mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.Product;
-	HelperFunctions.mountToFixture(<ClippingPanel clipperState={mockClipperState}/>);
+		test("If the clipmode is product, the clipping panel should indicate so", () => {
+			this.mockClipperState.currentMode.set(ClipMode.Augmentation);
+			this.mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.Product;
+			MithrilUtils.mountToFixture(<ClippingPanel clipperState={this.mockClipperState}/>);
 
-	strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
-		stringsJson["WebClipper.ClipType.Product.ProgressLabel"]);
-});
+			strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
+				this.stringsJson["WebClipper.ClipType.Product.ProgressLabel"]);
+		});
 
-test("If the clipmode is full page and there were augmentation results, the clipping panel should indicate full page", () => {
-	mockClipperState.currentMode.set(ClipMode.FullPage);
-	mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.Product;
-	HelperFunctions.mountToFixture(<ClippingPanel clipperState={mockClipperState}/>);
+		test("If the clipmode is full page and there were augmentation results, the clipping panel should indicate full page", () => {
+			this.mockClipperState.currentMode.set(ClipMode.FullPage);
+			this.mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.Product;
+			MithrilUtils.mountToFixture(<ClippingPanel clipperState={this.mockClipperState}/>);
 
-	strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
-		stringsJson["WebClipper.ClipType.ScreenShot.ProgressLabel"]);
-});
+			strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
+				this.stringsJson["WebClipper.ClipType.ScreenShot.ProgressLabel"]);
+		});
 
-test("If the clipmode is some 'new' augmentation mode but we don't have a string to support it, the clipping panel should fall back to full page text", () => {
-	mockClipperState.currentMode.set(ClipMode.Augmentation);
-	mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.BizCard;
-	HelperFunctions.mountToFixture(<ClippingPanel clipperState={mockClipperState}/>);
+		test("If the clipmode is some 'new' augmentation mode but we don't have a string to support it, the clipping panel should fall back to full page text", () => {
+			this.mockClipperState.currentMode.set(ClipMode.Augmentation);
+			this.mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.BizCard;
+			MithrilUtils.mountToFixture(<ClippingPanel clipperState={this.mockClipperState}/>);
 
-	strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
-		stringsJson["WebClipper.ClipType.ScreenShot.ProgressLabel"]);
-});
+			strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
+				this.stringsJson["WebClipper.ClipType.ScreenShot.ProgressLabel"]);
+		});
+	}
+}
+
+(new ClippingPanelTests()).runTests();

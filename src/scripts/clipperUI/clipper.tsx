@@ -482,27 +482,27 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(Clipper.sessionId, Constants.SmartValueKeys.sessionId);
 			Clipper.logger = new CommunicatorLoggerPure(Clipper.getExtensionCommunicator());
 
+			this.initializeInjectCommunicator(pageInfo, clientInfo);
+
+			// When tabbing from outside the iframe, we want to set focus to the lowest tabindex element in our iframe
+			Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.tabToLowestIndexedElement, () => {
+				let tabbables = document.querySelectorAll("[tabindex]");
+				let lowestTabIndexElement: HTMLElement;
+				if (tabbables.length > 0) {
+					for (let i = 0; i < tabbables.length; i++) {
+						let tabbable = tabbables[i] as HTMLElement;
+						if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
+							lowestTabIndexElement = tabbable;
+						}
+					}
+
+					lowestTabIndexElement.focus();
+				}
+			});
+
 			// initialize here since it depends on storage in the extension
 			this.initializeNumSuccessfulClips();
 			RatingsHelper.preCacheNeededValues();
-		});
-
-		this.initializeInjectCommunicator(pageInfo, clientInfo);
-
-		// When tabbing from outside the iframe, we want to set focus to the lowest tabindex element in our iframe
-		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.tabToLowestIndexedElement, () => {
-			let tabbables = document.querySelectorAll("[tabindex]");
-			let lowestTabIndexElement: HTMLElement;
-			if (tabbables.length > 0) {
-				for (let i = 0; i < tabbables.length; i++) {
-					let tabbable = tabbables[i] as HTMLElement;
-					if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
-						lowestTabIndexElement = tabbable;
-					}
-				}
-
-				lowestTabIndexElement.focus();
-			}
 		});
 
 		clientInfo.subscribe((updatedClientInfo) => {

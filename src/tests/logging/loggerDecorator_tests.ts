@@ -3,7 +3,7 @@ import * as sinon from "sinon";
 import * as Log from "../../scripts/logging/log";
 import {LoggerDecorator} from "../../scripts/logging/loggerDecorator";
 
-QUnit.module("loggerDecorator", {});
+import {TestModule} from "../testModule";
 
 class MockLoggerDecorator extends LoggerDecorator {
 	protected outputClickEvent(clickId: string): void {}
@@ -16,93 +16,103 @@ class MockLoggerDecorator extends LoggerDecorator {
 	protected outputSetContext(key: Log.Context.Custom, value: string | number | boolean): void {}
 }
 
-test("handleClickEvent should call the child's implementation while logging the click event on the parent", () => {
-	let inner: LoggerDecorator = new MockLoggerDecorator();
-	let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
+export class LoggerDecoratorTests extends TestModule {
+	protected module() {
+		return "loggerDecorator";
+	}
 
-	let executeClickEventSpy = sinon.spy((<any>inner).executeClickEvent);
-	(<any>inner).executeClickEvent = executeClickEventSpy;
+	protected tests() {
+		test("handleClickEvent should call the child's implementation while logging the click event on the parent", () => {
+			let inner: LoggerDecorator = new MockLoggerDecorator();
+			let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
 
-	outer.logClickEvent("abc");
+			let executeClickEventSpy = sinon.spy((<any>inner).executeClickEvent);
+			(<any>inner).executeClickEvent = executeClickEventSpy;
 
-	ok(executeClickEventSpy.calledOnce, "inner's logClickEvent should be called once");
-	ok(executeClickEventSpy.calledWith("abc"), "inner's logClickEvent should be called with the same parameter(s)");
-});
+			outer.logClickEvent("abc");
 
-test("handleEvent should call the child's implementation while logging the event on the parent", () => {
-	let inner: LoggerDecorator = new MockLoggerDecorator();
-	let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
+			ok(executeClickEventSpy.calledOnce, "inner's logClickEvent should be called once");
+			ok(executeClickEventSpy.calledWith("abc"), "inner's logClickEvent should be called with the same parameter(s)");
+		});
 
-	let logEventSpy = sinon.spy(inner.logEvent);
-	inner.logEvent = logEventSpy;
+		test("handleEvent should call the child's implementation while logging the event on the parent", () => {
+			let inner: LoggerDecorator = new MockLoggerDecorator();
+			let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
 
-	let event = new Log.Event.BaseEvent(0);
-	outer.logEvent(event);
+			let logEventSpy = sinon.spy(inner.logEvent);
+			inner.logEvent = logEventSpy;
 
-	ok(logEventSpy.calledOnce, "inner's logEvent should be called once");
-	ok(logEventSpy.calledWith(event), "inner's logEvent should be called with the same parameter(s)");
-});
+			let event = new Log.Event.BaseEvent(0);
+			outer.logEvent(event);
 
-test("handleSession should call the child's executeSessionStart implementation while logging the session on the parent", () => {
-	let inner: LoggerDecorator = new MockLoggerDecorator();
-	let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
+			ok(logEventSpy.calledOnce, "inner's logEvent should be called once");
+			ok(logEventSpy.calledWith(event), "inner's logEvent should be called with the same parameter(s)");
+		});
 
-	let executeSessionStartSpy = sinon.spy((<any>inner).executeSessionStart);
-	(<any>inner).executeSessionStart = executeSessionStartSpy;
+		test("handleSession should call the child's executeSessionStart implementation while logging the session on the parent", () => {
+			let inner: LoggerDecorator = new MockLoggerDecorator();
+			let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
 
-	outer.logSessionStart();
+			let executeSessionStartSpy = sinon.spy((<any>inner).executeSessionStart);
+			(<any>inner).executeSessionStart = executeSessionStartSpy;
 
-	ok(executeSessionStartSpy.calledOnce, "inner's executeSessionStartSpy should be called once");
-});
+			outer.logSessionStart();
 
-test("handleFailure should call the child's implementation while logging the session on the parent", () => {
-	let inner: LoggerDecorator = new MockLoggerDecorator();
-	let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
+			ok(executeSessionStartSpy.calledOnce, "inner's executeSessionStartSpy should be called once");
+		});
 
-	let logFailureSpy = sinon.spy(inner.logFailure);
-	inner.logFailure = logFailureSpy;
+		test("handleFailure should call the child's implementation while logging the session on the parent", () => {
+			let inner: LoggerDecorator = new MockLoggerDecorator();
+			let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
 
-	outer.logFailure(0, 0);
+			let logFailureSpy = sinon.spy(inner.logFailure);
+			inner.logFailure = logFailureSpy;
 
-	ok(logFailureSpy.calledOnce, "inner's logFailure should be called once");
-	ok(logFailureSpy.calledWith(0, 0), "inner's logFailure should be called with the same parameter(s)");
-});
+			outer.logFailure(0, 0);
 
-test("handleUserFunnel should call the child's implementation while logging the session on the parent", () => {
-	let inner: LoggerDecorator = new MockLoggerDecorator();
-	let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
+			ok(logFailureSpy.calledOnce, "inner's logFailure should be called once");
+			ok(logFailureSpy.calledWith(0, 0), "inner's logFailure should be called with the same parameter(s)");
+		});
 
-	let logUserFunnelSpy = sinon.spy(inner.logUserFunnel);
-	inner.logUserFunnel = logUserFunnelSpy;
+		test("handleUserFunnel should call the child's implementation while logging the session on the parent", () => {
+			let inner: LoggerDecorator = new MockLoggerDecorator();
+			let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
 
-	outer.logUserFunnel(0);
+			let logUserFunnelSpy = sinon.spy(inner.logUserFunnel);
+			inner.logUserFunnel = logUserFunnelSpy;
 
-	ok(logUserFunnelSpy.calledOnce, "inner's logUserFunnel should be called once");
-	ok(logUserFunnelSpy.calledWith(0), "inner's logUserFunnel should be called with the same parameter(s)");
-});
+			outer.logUserFunnel(0);
 
-test("handleTrace should call the child's implementation while logging the session on the parent", () => {
-	let inner: LoggerDecorator = new MockLoggerDecorator();
-	let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
+			ok(logUserFunnelSpy.calledOnce, "inner's logUserFunnel should be called once");
+			ok(logUserFunnelSpy.calledWith(0), "inner's logUserFunnel should be called with the same parameter(s)");
+		});
 
-	let logTraceSpy = sinon.spy(inner.logTrace);
-	inner.logTrace = logTraceSpy;
+		test("handleTrace should call the child's implementation while logging the session on the parent", () => {
+			let inner: LoggerDecorator = new MockLoggerDecorator();
+			let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
 
-	outer.logTrace(0, 0);
+			let logTraceSpy = sinon.spy(inner.logTrace);
+			inner.logTrace = logTraceSpy;
 
-	ok(logTraceSpy.calledOnce, "inner's logTrace should be called once");
-	ok(logTraceSpy.calledWith(0, 0), "inner's logTrace should be called with the same parameter(s)");
-});
+			outer.logTrace(0, 0);
 
-test("handleSetContext should call the child's implementation while logging the session on the parent", () => {
-	let inner: LoggerDecorator = new MockLoggerDecorator();
-	let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
+			ok(logTraceSpy.calledOnce, "inner's logTrace should be called once");
+			ok(logTraceSpy.calledWith(0, 0), "inner's logTrace should be called with the same parameter(s)");
+		});
 
-	let setContextPropertySpy = sinon.spy(inner.setContextProperty);
-	inner.setContextProperty = setContextPropertySpy;
+		test("handleSetContext should call the child's implementation while logging the session on the parent", () => {
+			let inner: LoggerDecorator = new MockLoggerDecorator();
+			let outer: LoggerDecorator = new MockLoggerDecorator({ component: inner });
 
-	outer.setContextProperty(0, "x");
+			let setContextPropertySpy = sinon.spy(inner.setContextProperty);
+			inner.setContextProperty = setContextPropertySpy;
 
-	ok(setContextPropertySpy.calledOnce, "inner's setContextProperty should be called once");
-	ok(setContextPropertySpy.calledWith(0, "x"), "inner's setContextProperty should be called with the same parameter(s)");
-});
+			outer.setContextProperty(0, "x");
+
+			ok(setContextPropertySpy.calledOnce, "inner's setContextProperty should be called once");
+			ok(setContextPropertySpy.calledWith(0, "x"), "inner's setContextProperty should be called with the same parameter(s)");
+		});
+	}
+}
+
+(new LoggerDecoratorTests()).runTests();
