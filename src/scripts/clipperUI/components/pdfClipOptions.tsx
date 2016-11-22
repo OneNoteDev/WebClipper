@@ -121,7 +121,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return (
 			<div className="pdf-control" id={Constants.Ids.checkboxToDistributePages} {...this.enableInvoke(this.onDistributionChange, 65, !pdfPreviewInfo.shouldDistributePages) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
-				{pdfPreviewInfo.shouldDistributePages ? <div class="checkbox"></div> : ""}
+				{pdfPreviewInfo.shouldDistributePages ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
 				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfDistributePagesCheckboxLabel")}</span>
 			</div>
 		);
@@ -140,7 +140,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return (
 			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdfDisabled} {...this.enableInvoke(this.onCheckboxChange, 67, !pdfPreviewInfo.shouldAttachPdf) }>
 				<img src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
-				<span class="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage")}</span>
+				<span class="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfTooLargeToAttach")}</span>
 			</div>
 		);
 	}
@@ -151,7 +151,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			<div class="pdf-control" id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(this.onCheckboxChange, 66, !pdfPreviewInfo.shouldAttachPdf) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
 				{pdfPreviewInfo.shouldAttachPdf ? <div class={Constants.Classes.checkboxCheck}></div> : ""}
-				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
+				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.AttachPdfFile")}</span>
 			</div>
 		);
 	}
@@ -161,7 +161,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			<div class="clipOptionsContainer">
 				<div class="clipOptionsTitleContainer">
 					<span class="clipOptionsTitle">{Localization.getLocalizedString("WebClipper.Options.PdfOptions")}</span>
-					<span class="moreClipOptions" id="moreClipOptions" {...this.enableInvoke(this.onMoreClicked, 62) }>
+					<span class="moreClipOptions" id={Constants.Ids.moreClipOptions} {...this.enableInvoke(this.onMoreClicked, 62) }>
 						{Localization.getLocalizedString("WebClipper.Action.More")} <img class="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					</span>
 				</div>
