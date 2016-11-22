@@ -17,7 +17,6 @@ interface PdfClipOptionsProps extends ClipperStateProp {
 	allPages: boolean;
 	shouldAttachPdf: boolean;
 	shouldDistributePages: boolean;
-	isPopupOpen: boolean;
 }
 
 interface PdfClipOptionsState {
@@ -76,7 +75,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 
 	getAllPagesRadioElement(): any {
 		return (
-			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 62, true) }>
+			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 60, true) }>
 				<div class="pdf-indicator pdf-radio-indicator">
 					{this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 				</div>
@@ -88,7 +87,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 	getPageRangeRadioElement(): any {
 		let invalidClassName = this.state.invalidRange ? "invalid" : "";
 		return (
-			<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 63, false) }>
+			<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, false) }>
 				<div class="pdf-indicator pdf-radio-indicator">
 					{!this.props.allPages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 				</div>
@@ -104,7 +103,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 
 	getOnePageForEntirePdfRadioElement(): any {
 		return (
-			<div id={Constants.Ids.onePageForEntirePdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 64, false) }>
+			<div id={Constants.Ids.onePageForEntirePdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 62, false) }>
 				<div class="pdf-indicator pdf-radio-indicator">
 					{!this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 				</div>
@@ -115,7 +114,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 
 	getOnePageForEachPdfPageRadioElement(): any {
 		return (
-			<div id={Constants.Ids.onePageForEachPdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 65, true) }>
+			<div id={Constants.Ids.onePageForEachPdfLabel} className="pdf-control" {...this.enableInvoke(this.onDistributionChange, 63, true) }>
 				<div class="pdf-indicator pdf-radio-indicator">
 					{this.props.shouldDistributePages ? <div class="pdf-radio-indicator-fill"></div> : ""}
 				</div>
@@ -129,7 +128,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		const pdfIsTooLarge = pdfHasSucceeded && this.props.clipperState.pdfResult.data.get().byteLength > Constants.Settings.maximumMimeSizeLimit;
 
 		return (
-			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 66, !this.props.shouldAttachPdf) }>
+			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 64, !this.props.shouldAttachPdf) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
 				{this.props.shouldAttachPdf ? <div class="checkbox"></div> : ""}
 				<span class={"pdf-label" + (pdfIsTooLarge || !pdfHasSucceeded ? " disabled" : "")}>{pdfIsTooLarge ? Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage") : Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
@@ -163,9 +162,9 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		});
 
 		return (
-			<div className={"clipOptionsContainer"} tabIndex={60}>
+			<div className={"clipOptionsContainer"}>
 				<div class="clipOptionsTitleContainer">
-					<span className="clipOptionsTitle" tabIndex={61}>PDF Options</span>
+					<span className="clipOptionsTitle">PDF Options</span>
 				</div>
 				{this.getAllPagesRadioElement()}
 				{this.getPageRangeRadioElement()}

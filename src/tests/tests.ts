@@ -28,6 +28,7 @@ import "./clipperUI/components/annotationInput_tests";
 import "./clipperUI/components/footer_tests";
 import "./clipperUI/components/modeButton_tests";
 import "./clipperUI/components/modeButtonSelector_tests";
+import "./clipperUI/components/pdfClipOptions_tests";
 import "./clipperUI/components/sectionPicker_tests";
 
 import "./clipperUI/panels/changeLogPanel_tests";

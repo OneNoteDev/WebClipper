@@ -15,6 +15,7 @@ import {Status} from "../status";
 
 import {PdfClipOptions} from "../components/pdfClipOptions";
 
+// TODO: isPopupOpen is not being used? it feels redundant!
 export interface OptionsPanelProp extends ClipperStateProp {
 	onStartClip: () => void;
 	onPopupToggle: (shouldNowBeOpen: boolean) => void;
