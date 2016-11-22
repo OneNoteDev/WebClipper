@@ -1,26 +1,36 @@
 import {IFrameMessageHandler} from "../../scripts/communicator/iframeMessageHandler";
 
-QUnit.module("iframeMessageHandler", {});
-
-test("Test that we can send and receive a message", (assert: QUnitAssert) => {
-	let done = assert.async();
-
-	// Note: this is currently posting and recieving to itself
-	let handler = new IFrameMessageHandler(() => window);
-	let counter = 0;
-	handler.onMessageReceived = (data) => {
-		counter++;
-		if (counter === 1) {
-			strictEqual(data, "hi there");
-		} else if (counter === 2) {
-			strictEqual(data, "hope you are well");
-			done();
-		} else {
-			ok(false, "onMessageReceived was called more times than expected");
-		}
-	};
-	handler.sendMessage("hi there");
-	handler.sendMessage("hope you are well");
-});
+import {TestModule} from "../testModule";
 
 // TODO: figure out a way to test passing between different windows/iframes
+
+export class IFrameMessageHandlerTests extends TestModule {
+	protected module() {
+		return "iframeMessageHandler";
+	}
+
+	protected tests() {
+		test("Test that we can send and receive a message", (assert: QUnitAssert) => {
+		let done = assert.async();
+
+		// Note: this is currently posting and recieving to itself
+		let handler = new IFrameMessageHandler(() => window);
+		let counter = 0;
+		handler.onMessageReceived = (data) => {
+			counter++;
+			if (counter === 1) {
+				strictEqual(data, "hi there");
+			} else if (counter === 2) {
+				strictEqual(data, "hope you are well");
+				done();
+			} else {
+				ok(false, "onMessageReceived was called more times than expected");
+			}
+		};
+		handler.sendMessage("hi there");
+		handler.sendMessage("hope you are well");
+	});
+	}
+}
+
+(new IFrameMessageHandlerTests()).runTests();

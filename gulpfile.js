@@ -36,7 +36,6 @@ var PATHS = {
 	BUILDROOT: "build/",
 	BUNDLEROOT: "build/bundles/",
 	LIBROOT: "lib/",
-	SERVERROOT: "serverRoot/root/",
 	TARGET: {
 		ROOT: "target/",
 		BOOKMARKLET: "target/bookmarklet/",
@@ -45,7 +44,8 @@ var PATHS = {
 		EDGE_EXTENSION: "target/edge/OneNoteWebClipper/edgeextension/manifest/extension/",
 		FIREFOX: "target/firefox/",
 		// Note: The Safari extension folder MUST end in ".safariextension"
-		SAFARI: "target/clipper.safariextension/"
+		SAFARI: "target/clipper.safariextension/",
+		TESTS: "target/tests/"
 	},
 	NODE_MODULES: "node_modules/",
 	INTERNAL: {
@@ -75,8 +75,7 @@ gulp.task("clean", ["cleanInternal"], function(callback) {
 	return del([
 		PATHS.BUILDROOT,
 		PATHS.BUNDLEROOT,
-		PATHS.TARGET.ROOT,
-		PATHS.SERVERROOT
+		PATHS.TARGET.ROOT
 	], callback);
 });
 
@@ -212,37 +211,29 @@ gulp.task("tslint", function() {
 ////////////////////////////////////////
 // BUNDLE
 ////////////////////////////////////////
-gulp.task("bundleAppendIsInstalledMarker", function () {
-	var appendIsInstalledMarkerTask = browserify(PATHS.BUILDROOT + "scripts/extensions/appendIsInstalledMarker.js")
-		.bundle()
-		.pipe(source("appendIsInstalledMarker.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
+function generateBrowserifyTasks(folderPath, files) {
+	var tasks = [];
+	for (var i = 0; i < files.length; i++) {
+		tasks.push(browserify(folderPath + files[i])
+			.bundle()
+			.pipe(source(files[i]))
+			.pipe(gulp.dest(PATHS.BUNDLEROOT)));
+	}
+	return tasks;
+}
 
-	return appendIsInstalledMarkerTask;
+gulp.task("bundleAppendIsInstalledMarker", function () {
+	var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/";
+	var files = ["appendIsInstalledMarker.js"];
+	var tasks = generateBrowserifyTasks(extensionRoot, files);
+	return merge(tasks);
 });
 
-gulp.task("bundleClipperUI", function() {
-	var clipperJsTask = browserify(PATHS.BUILDROOT + "scripts/clipperUI/clipper.js")
-		.bundle()
-		.pipe(source("clipper.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var pageNavJsTask = browserify(PATHS.BUILDROOT + "scripts/clipperUI/pageNav.js")
-		.bundle()
-		.pipe(source("pageNav.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var localeSpecificJsTask = browserify(PATHS.BUILDROOT + "scripts/clipperUI/localeSpecificTasks.js")
-		.bundle()
-		.pipe(source("localeSpecificTasks.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var unsupportedBrowserJsTask = browserify(PATHS.BUILDROOT + "scripts/clipperUI/unsupportedBrowser.js")
-		.bundle()
-		.pipe(source("unsupportedBrowser.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	return merge(clipperJsTask, pageNavJsTask, localeSpecificJsTask, unsupportedBrowserJsTask);
+gulp.task("bundleClipperUI", function () {
+	var extensionRoot = PATHS.BUILDROOT + "scripts/clipperUI/";
+	var files = ["clipper.js", "pageNav.js", "localeSpecificTasks.js", "unsupportedBrowser.js"];
+	var tasks = generateBrowserifyTasks(extensionRoot, files);
+	return merge(tasks);
 });
 
 gulp.task("bundleLogManager", function () {
@@ -264,108 +255,38 @@ gulp.task("bundleLogManager", function () {
 });
 
 gulp.task("bundleBookmarklet", function() {
-	var bookmarkletTask = browserify(PATHS.BUILDROOT + "scripts/extensions/bookmarklet/bookmarkletInject.js")
+	return browserify(PATHS.BUILDROOT + "scripts/extensions/bookmarklet/bookmarkletInject.js")
 		.bundle()
 		.pipe(source("bookmarklet.js"))
 		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	return merge(bookmarkletTask);
 });
 
 gulp.task("bundleChrome", function() {
-	var chromeExtensionTask = browserify(PATHS.BUILDROOT + "scripts/extensions/chrome/chromeExtension.js")
-		.bundle()
-		.pipe(source("chromeExtension.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var chromeDebugLoggingInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/chrome/chromeDebugLoggingInject.js")
-		.bundle()
-		.pipe(source("chromeDebugLoggingInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var chromeInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/chrome/chromeInject.js")
-		.bundle()
-		.pipe(source("chromeInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var chromePageNavInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/chrome/chromePageNavInject.js")
-		.bundle()
-		.pipe(source("chromePageNavInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	return merge(chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
+	var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/chrome/";
+	var files = ["chromeExtension.js", "chromeDebugLoggingInject.js", "chromeInject.js", "chromePageNavInject.js"];
+	var tasks = generateBrowserifyTasks(extensionRoot, files);
+	return merge(tasks);
 });
 
-gulp.task("bundleEdge", function() {
-	var edgeExtensionTask = browserify(PATHS.BUILDROOT + "scripts/extensions/edge/edgeExtension.js")
-		.bundle()
-		.pipe(source("edgeExtension.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var edgeDebugLoggingInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/edge/edgeDebugLoggingInject.js")
-		.bundle()
-		.pipe(source("edgeDebugLoggingInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var edgeInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/edge/edgeInject.js")
-		.bundle()
-		.pipe(source("edgeInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var edgePageNavInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/edge/edgePageNavInject.js")
-		.bundle()
-		.pipe(source("edgePageNavInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	return merge(edgeExtensionTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
+gulp.task("bundleEdge", function () {
+	var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/edge/";
+	var files = ["edgeExtension.js", "edgeDebugLoggingInject.js", "edgeInject.js", "edgePageNavInject.js"];
+	var tasks = generateBrowserifyTasks(extensionRoot, files);
+	return merge(tasks);
 });
 
-gulp.task("bundleFirefox", function() {
-	var firefoxExtensionTask = browserify(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxExtension.js")
-		.bundle()
-		.pipe(source("firefoxExtension.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var firefoxDebugLoggingInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxDebugLoggingInject.js")
-		.bundle()
-		.pipe(source("firefoxDebugLoggingInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var firefoxInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxInject.js")
-		.bundle()
-		.pipe(source("firefoxInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var firefoxPageNavInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/firefox/firefoxPageNavInject.js")
-		.bundle()
-		.pipe(source("firefoxPageNavInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	return merge(firefoxExtensionTask, firefoxDebugLoggingInjectTask, firefoxInjectTask, firefoxPageNavInjectTask);
+gulp.task("bundleFirefox", function () {
+	var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/firefox/";
+	var files = ["firefoxExtension.js", "firefoxDebugLoggingInject.js", "firefoxInject.js", "firefoxPageNavInject.js"];
+	var tasks = generateBrowserifyTasks(extensionRoot, files);
+	return merge(tasks);
 });
 
-gulp.task("bundleSafari", function() {
-	var safariExtensionTask = browserify(PATHS.BUILDROOT + "scripts/extensions/safari/safariExtension.js")
-		.bundle()
-		.pipe(source("safariExtension.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var safariDebugLoggingInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/safari/safariDebugLoggingInject.js")
-		.bundle()
-		.pipe(source("safariDebugLoggingInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var safariInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/safari/safariInject.js")
-		.bundle()
-		.pipe(source("safariInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	var safariPageNavInjectTask = browserify(PATHS.BUILDROOT + "scripts/extensions/safari/safariPageNavInject.js")
-		.bundle()
-		.pipe(source("safariPageNavInject.js"))
-		.pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-	return merge(safariExtensionTask, safariDebugLoggingInjectTask, safariInjectTask, safariPageNavInjectTask);
+gulp.task("bundleSafari", function () {
+	var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/safari/";
+	var files = ["safariExtension.js", "safariDebugLoggingInject.js", "safariInject.js", "safariPageNavInject.js"];
+	var tasks = generateBrowserifyTasks(extensionRoot, files);
+	return merge(tasks);
 });
 
 gulp.task("bundleTests", function () {
@@ -422,7 +343,7 @@ targetDirHasExportedCommonJs[PATHS.TARGET.CHROME] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.EDGE_EXTENSION] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.FIREFOX] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.SAFARI] = false;
-targetDirHasExportedCommonJs[PATHS.SERVERROOT + "clipper/"] = false;
+targetDirHasExportedCommonJs[PATHS.TARGET.TESTS] = false;
 function exportCommonJS(targetDir) {
 	if (!targetDirHasExportedCommonJs[targetDir]) {
 		var defaultExportTask = gulp.src([
@@ -633,7 +554,7 @@ function exportChromeSrcFiles() {
 	var commonWebExtensionFiles = exportCommonWebExtensionFiles(targetDir);
 
 	var chromeTask = gulp.src([
-			PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json"
+		PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json"
 	]).pipe(gulp.dest(targetDir));
 
 	return merge(srcCommonTask, commonWebExtensionFiles, chromeTask);
@@ -856,7 +777,7 @@ function exportSafariLibFiles() {
 }
 
 function exportTestJS() {
-	var targetDir = PATHS.SERVERROOT + "tests/";
+	var targetDir = PATHS.TARGET.TESTS;
 	var defaultExportJSTask = gulp.src(PATHS.BUNDLEROOT + "tests.js")
 		.pipe(gulp.dest(targetDir));
 
@@ -867,7 +788,7 @@ function exportTestJS() {
 }
 
 function exportTestSrcFiles() {
-	var targetDir = PATHS.SERVERROOT + "tests/";
+	var targetDir = PATHS.TARGET.TESTS;
 
 	return gulp.src(PATHS.SRC.ROOT + "tests/tests.html")
 		.pipe(rename("index.html"))
@@ -875,7 +796,7 @@ function exportTestSrcFiles() {
 }
 
 function exportTestLibFiles() {
-	var targetDir = PATHS.SERVERROOT + "tests/";
+	var targetDir = PATHS.TARGET.TESTS;
 
 	var testLibFiles = [
 		PATHS.LIBROOT + "tests/bind_polyfill.js",
@@ -988,10 +909,9 @@ gulp.task("exportJS", function() {
 	var edgeTask = exportEdgeJS();
 	var firefoxTask = exportFirefoxJS();
 	var safariTask = exportSafariJS();
-	var exampleTask = exportBookmarkletJS(PATHS.SERVERROOT + "clipper/");
 	var testTask = exportTestJS();
 
-	return merge(bookmarkletTask, chromeTask, edgeTask, firefoxTask, safariTask, exampleTask, testTask);
+	return merge(bookmarkletTask, chromeTask, edgeTask, firefoxTask, safariTask, testTask);
 });
 
 gulp.task("exportCSS", function() {
@@ -999,9 +919,8 @@ gulp.task("exportCSS", function() {
 	var chromeTask = exportChromeCSS();
 	var edgeTask = exportEdgeCSS();
 	var safariTask = exportSafariCSS();
-	var exampleTask = exportBookmarkletCSS(PATHS.SERVERROOT + "clipper/");
 
-	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, exampleTask);
+	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask);
 });
 
 gulp.task("exportSrcFiles", function() {
@@ -1009,10 +928,9 @@ gulp.task("exportSrcFiles", function() {
 	var chromeTask = exportChromeSrcFiles();
 	var edgeTask = exportEdgeSrcFiles();
 	var safariTask = exportSafariSrcFiles();
-	var exampleTask = exportBookmarkletSrcFiles(PATHS.SERVERROOT + "clipper/");
 	var testTask = exportTestSrcFiles();
 
-	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, exampleTask, testTask);
+	return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, testTask);
 });
 
 gulp.task("export", function(callback) {
@@ -1075,7 +993,7 @@ gulp.task("minify", function(callback) {
 // RUN
 ////////////////////////////////////////
 gulp.task("runTests", function() {
-	return qunit(PATHS.SERVERROOT + "tests/index.html");
+	return qunit(PATHS.TARGET.TESTS + "index.html", {timeout: 10});
 });
 
 ////////////////////////////////////////
