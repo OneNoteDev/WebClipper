@@ -3,6 +3,8 @@ import {Localization} from "../../localization/localization";
 import { PdfPreviewInfo } from "../../previewInfo";
 import {StringUtils} from "../../stringUtils";
 
+import { ExtensionUtils } from "../../extensions/extensionUtils";
+
 import { Constants } from "../../constants";
 
 import { ComponentBase } from "../componentBase";
@@ -124,17 +126,31 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, PdfClipOpti
 		);
 	}
 
-	getAttachmentCheckbox(): any {
-		const pdfHasSucceeded = this.props.clipperState.pdfResult.status === Status.Succeeded;
-		const pdfIsTooLarge = pdfHasSucceeded && this.props.clipperState.pdfResult.data.get().byteLength > Constants.Settings.maximumMimeSizeLimit;
+	getDisabledAttachmentCheckbox(): any {
+		return (
+			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 66, !this.props.shouldAttachPdf) }>
+				<img src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
+				<span class="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage")}</span>
+			</div>
+		);
+	}
 
+	getEnabledAttachmentCheckbox(): any {
 		return (
 			<div className="pdf-control" id={Constants.Ids.attachmentCheckboxLabel} {...this.enableInvoke(this.onCheckboxChange, 66, !this.props.shouldAttachPdf) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
 				{this.props.shouldAttachPdf ? <div class="checkbox"></div> : ""}
-				<span class={"pdf-label" + (pdfIsTooLarge || !pdfHasSucceeded ? " disabled" : "")}>{pdfIsTooLarge ? Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage") : Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
+				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel")}</span>
 			</div>
 		);
+	}
+
+	getAttachmentCheckbox(): any {
+		const pdfHasSucceeded = this.props.clipperState.pdfResult.status === Status.Succeeded;
+		const pdfIsTooLarge = pdfHasSucceeded && this.props.clipperState.pdfResult.data.get().byteLength > Constants.Settings.maximumMimeSizeLimit;
+		const disableCheckbox = pdfIsTooLarge || !pdfHasSucceeded;
+		
+		return disableCheckbox ? this.getDisabledAttachmentCheckbox() : this.getEnabledAttachmentCheckbox();
 	}
 
 	// getDistributePagesCheckbox(): any {
