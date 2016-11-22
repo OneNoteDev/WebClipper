@@ -160,11 +160,10 @@ class PdfClipOptionsClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	render() {
-		// TODO localize
 		return (
 			<div class="clipOptionsContainer">
 				<div class="clipOptionsTitleContainer">
-					<span class="clipOptionsTitle">PDF Options</span>
+					<span class="clipOptionsTitle">{Localization.getLocalizedString("WebClipper.Options.PdfOptions")}</span>
 				</div>
 				{this.getAllPagesRadioElement()}
 				{this.getPageRangeRadioElement()}

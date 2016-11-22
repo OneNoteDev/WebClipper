@@ -104,6 +104,7 @@
 	"WebClipper.Preview.Header.PdfInvalidPageRange": "Invalid page range.",
 	"WebClipper.Preview.Header.SansSerifButtonLabel": "Sans-serif",
 	"WebClipper.Preview.Header.SerifButtonLabel": "Serif",
+	"WebClipper.Options.PdfOptions": "PDF Options",
 	"WebClipper.Options.SingleNoteForAllPdfPages": "Single note for all PDF pages",
 	"WebClipper.Options.SingleNoteForEachPdfPage": "Single note for each PDF page",
 	"WebClipper.Preview.Spinner.ClipAnyTimeInFullPage": "In a hurry? You can clip any time in Full Page mode!",
