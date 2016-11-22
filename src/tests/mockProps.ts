@@ -99,8 +99,10 @@ export module MockProps {
 			},
 			pdfPreviewInfo: {
 				allPages: true,
+				isLocalFileAndNotAllowed: false,
 				selectedPageRange: "1,3,5",
-				shouldAttachPdf: true
+				shouldAttachPdf: true,
+				shouldDistributePages: true
 			},
 			augmentationPreviewInfo: {
 				previewBodyHtml: "Edited body"

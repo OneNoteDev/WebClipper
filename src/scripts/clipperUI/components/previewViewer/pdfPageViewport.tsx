@@ -1,11 +1,11 @@
 import {Constants} from "../../../constants";
 
-import { ComponentBase } from "../../componentBase";
+import {ComponentBase} from "../../componentBase";
 import {SpriteAnimation} from "../../components/spriteAnimation";
 
-import { ViewportDimensions } from "../../../contentCapture/viewportDimensions";
+import {ViewportDimensions} from "../../../contentCapture/viewportDimensions";
 
-import { ExtensionUtils } from "../../../extensions/extensionUtils";
+import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 export interface PdfPageViewportProp {
 	viewportDimensions: ViewportDimensions;
@@ -14,11 +14,7 @@ export interface PdfPageViewportProp {
 }
 
 class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
-	private getContainerStyle(): string {
-		return "max-width: " + this.props.viewportDimensions.width + "px;";
-	}
-
-	private getImageStyle(): string {
+	private getViewportStyle(): string {
 		let styleString = "max-width: " + this.props.viewportDimensions.width + "px;";
 		return styleString + "max-height: " + this.props.viewportDimensions.height + "px;";
 	}
@@ -30,8 +26,8 @@ class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
 	private getSpinner(): any {
 		let spinner = <SpriteAnimation
 			spriteUrl={ExtensionUtils.getImageResourceUrl("spinner_loop_colored.png") }
-			imageHeight={65}
-			imageWidth={45}
+			imageHeight={Math.min(65, this.props.viewportDimensions.height)}
+			imageWidth={Math.min(45, this.props.viewportDimensions.width)}
 			totalFrameCount={21}
 			loop={true} />;
 
@@ -40,9 +36,9 @@ class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
 
 	public render() {
 		return (
-			<div data-pageindex={this.props.index} style={this.getContainerStyle()}>
+			<div data-pageindex={this.props.index} style={this.getViewportStyle()}>
 				{this.props.imgUrl ?
-					<img class={Constants.Classes.pdfPreviewImage} src={this.props.imgUrl} style={this.getImageStyle()}></img> :
+					<img class={Constants.Classes.pdfPreviewImage} src={this.props.imgUrl} style={this.getViewportStyle()}></img> :
 					<div style={this.getPlaceholderStyle()}>{this.getSpinner()}</div>}
 			</div>
 		);

@@ -37,11 +37,6 @@ export class PdfPreviewTests extends TestModule {
 			idsThatShouldNotExist.forEach((id) => {
 				ok(!document.getElementById(id), id + " should not exist in the PdfPreviewHeader, but it does");
 			});
-
-			let idsThatShouldExist = [Constants.Ids.pageRangeControl, Constants.Ids.attachmentCheckboxControl];
-			idsThatShouldExist.forEach((id) => {
-				ok(document.getElementById(id), id + " should exist in the PdfPreviewHeader, but it doesn't");
-			});
 		});
 
 		test("The editable title of the page should be displayed in the preview title in PDF mode", () => {

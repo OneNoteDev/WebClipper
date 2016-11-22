@@ -33,6 +33,21 @@ export class StringUtilsTests extends TestModule {
 			deepEqual(ret, [1, 3, 5, 7], "A page range of '1,3,5,7' should return [1,3,5,7]");
 		});
 
+		test("A range ending in a comma should still be legal", () => {
+			let ret = StringUtils.parsePageRange("1,3,5,7,");
+			deepEqual(ret, [1, 3, 5, 7], "A page range of '1,3,5,7,' should return [1,3,5,7]");
+		});
+
+		test("A range ending in multiple commas should still be legal", () => {
+			let ret = StringUtils.parsePageRange("1,3,5,7,,,");
+			deepEqual(ret, [1, 3, 5, 7], "A page range of '1,3,5,7,,,' should return [1,3,5,7]");
+		});
+
+		test("A range that has whitespace between commas should still be legal", () => {
+			let ret = StringUtils.parsePageRange("1,, , 3");
+			deepEqual(ret, [1, 3], "A page range of '1,, , 3' should return [1, 3]");
+		});
+
 		test("A range with a hyphen in it should return a range including that interval and both endpoints", () => {
 			let ret = StringUtils.parsePageRange("1-5");
 			deepEqual(ret, [1, 2, 3, 4, 5], "A page range of '1-5' should return [1,2,3,4,5]");
