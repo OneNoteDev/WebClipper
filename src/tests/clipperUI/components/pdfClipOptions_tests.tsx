@@ -301,6 +301,24 @@ export class PdfClipOptionsTests extends TestModule {
 			let attachmentCheckboxElem = document.getElementById(Constants.Ids.checkboxToAttachPdfDisabled);
 			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Preview.Header.PdfTooLargeToAttach"]);
 		});
+
+		test("If the PDF result has not started, or has failed, the checkboxToAttachPdf should not be visible, and the checkboxToAttachPdfDisabled should be visible", () => {
+			this.defaultPdfClipOptionsProps.clipperState.pdfResult.status = Status.NotStarted;
+			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.moreClipOptions).click();
+			});
+
+			ok(!document.getElementById(Constants.Ids.checkboxToAttachPdf), "The checkboxToAttachPdf should not be visible");
+			ok(document.getElementById(Constants.Ids.checkboxToAttachPdfDisabled), "The checkboxToAttachPdfDisabled should be visible");
+
+			MithrilUtils.simulateAction(() => {
+				this.defaultPdfClipOptionsProps.clipperState.pdfResult.status = Status.InProgress;
+			});
+
+			ok(!document.getElementById(Constants.Ids.checkboxToAttachPdf), "The checkboxToAttachPdf should not be visible");
+			ok(document.getElementById(Constants.Ids.checkboxToAttachPdfDisabled), "The checkboxToAttachPdfDisabled should be visible");
+		});
 	}
 }
 
