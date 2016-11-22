@@ -1,6 +1,7 @@
 import {Constants} from "../../../scripts/constants";
 
 import {ClipperState, ClipperStateProp} from "../../../scripts/clipperUI/clipperState";
+import {Status} from "../../../scripts/clipperUI/status";
 
 import {PdfClipOptions} from "../../../scripts/clipperUI/components/pdfClipOptions";
 
@@ -9,7 +10,12 @@ import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
+import {MockPdfDocument, MockPdfValues} from "../../contentCapture/MockPdfDocument";
+
+declare function require(name: string);
+
 export class PdfClipOptionsTests extends TestModule {
+	private stringsJson = require("../../../strings.json");
 	private defaultPdfClipOptionsProps: ClipperStateProp;
 	private defaultComponent;
 
@@ -19,6 +25,12 @@ export class PdfClipOptionsTests extends TestModule {
 
 	protected beforeEach() {
 		let defaultClipperState = MockProps.getMockClipperState();
+		defaultClipperState.pdfResult.status = Status.Succeeded;
+		defaultClipperState.pdfResult.data.set({
+			pdf: new MockPdfDocument(),
+			viewportDimensions: MockPdfValues.dimensions,
+			byteLength: MockPdfValues.byteLength
+		});
 		this.defaultPdfClipOptionsProps = {
 			clipperState: defaultClipperState,
 		};
@@ -26,7 +38,7 @@ export class PdfClipOptionsTests extends TestModule {
 	}
 
 	protected tests() {
-		// TODO test rendering based on props, click tests, test that all elements are rendered
+		// TODO test rendering based on props, click tests, test that all elements are rendered, text label rendering
 
 		test("All elements that should always be present should be rendered correctly assuming all the props are true", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
@@ -117,7 +129,7 @@ export class PdfClipOptionsTests extends TestModule {
 			strictEqual(onePageForEntirePdfRadioElems.length, 0, "The onePageForEntirePdf radio should not be filled");
 		});
 
-		test("Given that the shouldDistributePages prop is true, the onePageForEachPdf radio should be selected, and the onePageForEntirePdf radio should not", () => {
+		test("Given that the shouldDistributePages prop is false, the onePageForEntirePdf radio should be selected, and the onePageForEachPdf radio should not", () => {
 			this.defaultPdfClipOptionsProps.clipperState.pdfPreviewInfo.shouldDistributePages = false;
 			MithrilUtils.mountToFixture(<PdfClipOptions {...this.defaultPdfClipOptionsProps} />);
 
@@ -138,7 +150,7 @@ export class PdfClipOptionsTests extends TestModule {
 			strictEqual(checkboxCheckElems.length, 1, "The checkbox to attach the pdf should be filled");
 		});
 
-		test("Given that the shouldAttachPdf prop is true, the attachment checkbox should be selected", () => {
+		test("Given that the shouldAttachPdf prop is false, the attachment checkbox should not be selected", () => {
 			this.defaultPdfClipOptionsProps.clipperState.pdfPreviewInfo.shouldAttachPdf = false;
 			MithrilUtils.mountToFixture(<PdfClipOptions {...this.defaultPdfClipOptionsProps} />);
 
@@ -167,6 +179,62 @@ export class PdfClipOptionsTests extends TestModule {
 			});
 
 			ok(!pdfClipOptions.props.clipperState.pdfPreviewInfo.allPages, "allPages in clipperState should be set to false");
+		});
+
+		test("Clicking on the onePageForEntirePdf radio should set shouldDistributePages to false", () => {
+			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
+
+			let onePageForEntirePdfElem = document.getElementById(Constants.Ids.onePageForEntirePdfLabel);
+			MithrilUtils.simulateAction(() => {
+				onePageForEntirePdfElem.click();
+			});
+
+			ok(!pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldDistributePages, "shouldDistributePages in clipperState should be set to false");
+		});
+
+		test("Clicking on the onePageForEachPdf radio should set shouldDistributePages to true", () => {
+			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
+
+			let onePageForEachPdfElem = document.getElementById(Constants.Ids.onePageForEachPdfLabel);
+			MithrilUtils.simulateAction(() => {
+				onePageForEachPdfElem.click();
+			});
+
+			ok(pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldDistributePages, "shouldDistributePages in clipperState should be set to true");
+		});
+
+		test("Clicking on the attachment checkbox should toggle the shouldAttachPdf boolean", () => {
+			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
+			let initialCheckboxValue: boolean = pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldAttachPdf;
+
+			let attachmentCheckboxElem = document.getElementById(Constants.Ids.attachmentCheckboxLabel);
+
+			MithrilUtils.simulateAction(() => {
+				attachmentCheckboxElem.click();
+			});
+
+			strictEqual(pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldAttachPdf, !initialCheckboxValue,
+				"shouldAttachPdf in clipperState should be toggled (first click)");
+
+			MithrilUtils.simulateAction(() => {
+				attachmentCheckboxElem.click();
+			});
+
+			strictEqual(pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldAttachPdf, initialCheckboxValue,
+				"shouldAttachPdf in clipperState should be toggled (first click)");
+		});
+
+		test("If the pdf is below the MIME size limit, the PdfAttachPdfCheckboxLabel should be shown", () => {
+			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
+			let attachmentCheckboxElem = document.getElementById(Constants.Ids.attachmentCheckboxLabel);
+			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Preview.Header.PdfAttachPdfCheckboxLabel"]);
+		});
+
+		test("If the pdf is above the MIME size limit, the PdfAttachPdfTooLargeMessage should be shown instead of PdfAttachPdfCheckboxLabel", () => {
+			this.defaultPdfClipOptionsProps.clipperState.pdfResult.data.get().byteLength = Constants.Settings.maximumMimeSizeLimit + 1;
+			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
+			let attachmentCheckboxElem = document.getElementById(Constants.Ids.attachmentCheckboxLabel);
+			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Preview.Header.PdfAttachPdfTooLargeMessage"]);
 		});
 	}
 }

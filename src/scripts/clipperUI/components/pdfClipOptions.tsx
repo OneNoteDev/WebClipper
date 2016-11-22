@@ -1,12 +1,12 @@
 import {Localization} from "../../localization/localization";
 
-import { PdfPreviewInfo } from "../../previewInfo";
+import {PdfPreviewInfo} from "../../previewInfo";
 import {StringUtils} from "../../stringUtils";
 
-import { Constants } from "../../constants";
+import {Constants} from "../../constants";
 
-import { ComponentBase } from "../componentBase";
-import { ClipperStateProp } from "../clipperState";
+import {ComponentBase} from "../componentBase";
+import {ClipperStateProp} from "../clipperState";
 import {Status} from "../status";
 
 import * as _ from "lodash";
