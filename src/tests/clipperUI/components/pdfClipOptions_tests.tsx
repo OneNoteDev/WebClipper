@@ -212,6 +212,25 @@ export class PdfClipOptionsTests extends TestModule {
 			ok(!pdfClipOptions.props.clipperState.pdfPreviewInfo.allPages, "allPages in clipperState should be set to false");
 		});
 
+		test("Clicking on the 'More' button should toggle the moreOptionsOpened boolean", () => {
+			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
+			let initialMoreOptionsOpenedValue: boolean = pdfClipOptions.state.moreOptionsOpened;
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.moreClipOptions).click();
+			});
+
+			strictEqual(pdfClipOptions.state.moreOptionsOpened, !initialMoreOptionsOpenedValue,
+				"moreOptionsOpened in pdfClipOptionsState should be toggled (first click)");
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.moreClipOptions).click();
+			});
+
+			strictEqual(pdfClipOptions.state.moreOptionsOpened, initialMoreOptionsOpenedValue,
+				"moreOptionsOpened in pdfClipOptionsState should be toggled (second click)");
+		});
+
 		test("Clicking on shouldDistributesPagesCheckbox should toggle the shouldDistributePages boolean", () => {
 			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
 			let initialCheckboxValue: boolean = pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldDistributePages;
@@ -234,7 +253,7 @@ export class PdfClipOptionsTests extends TestModule {
 			});
 
 			strictEqual(pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldDistributePages, initialCheckboxValue,
-				"shouldAttachPdf in clipperState should be toggled (first click)");
+				"shouldDistributePages in clipperState should be toggled (second click)");
 		});
 
 		test("Clicking on the attachment checkbox should toggle the shouldAttachPdf boolean", () => {
@@ -259,7 +278,7 @@ export class PdfClipOptionsTests extends TestModule {
 			});
 
 			strictEqual(pdfClipOptions.props.clipperState.pdfPreviewInfo.shouldAttachPdf, initialCheckboxValue,
-				"shouldAttachPdf in clipperState should be toggled (first click)");
+				"shouldAttachPdf in clipperState should be toggled (second click)");
 		});
 
 		test("If the pdf is below the MIME size limit, the AttachPdfFile should be shown", () => {

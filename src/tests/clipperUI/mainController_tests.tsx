@@ -98,7 +98,7 @@ export class MainControllerTests extends TestModule {
 
 			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
 				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages,
-				Constants.Ids.checkboxToAttachPdf, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
+				Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
 		test("On the region instructions panel, the tab order is correct", () => {

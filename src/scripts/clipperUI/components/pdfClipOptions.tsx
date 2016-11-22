@@ -19,6 +19,12 @@ interface PdfClipOptionsState {
 class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStateProp> {
 	private static textAreaListenerAttached = false;
 
+	getInitialState(): PdfClipOptionsState {
+		return {
+			moreOptionsOpened: false
+		};
+	}
+
 	constructor(props: ClipperStateProp) {
 		super(props);
 		if (!PdfClipOptionsClass.textAreaListenerAttached) {
