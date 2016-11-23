@@ -556,9 +556,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			} else if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 				return ClipMode.Pdf;
 			}
-		} else {
-			return ClipMode.FullPage;
 		}
+
+		return ClipMode.FullPage;
 	}
 
 	private updateFrameHeight(newContainerHeight: number) {
