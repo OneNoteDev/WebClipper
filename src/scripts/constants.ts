@@ -20,6 +20,9 @@ export module Constants {
 		export var textAreaInput = "textAreaInput";
 		export var textAreaInputMirror = "textAreaInputMirror";
 
+		// optionsPanel
+		export var popover = "popover";
+
 		// previewViewer
 		export var deleteHighlightButton = "delete-highlight";
 		export var highlightable = "highlightable";

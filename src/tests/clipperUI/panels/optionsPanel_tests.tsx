@@ -287,7 +287,7 @@ export class OptionsPanelTests extends TestModule {
 			this.assertClipButtonAvailability(true);
 		});
 
-		test("If the current mode is PDF and the status indicates Succeeded, and an invalid page selection is selected, the clip button should not be active or clickable", () => {
+		test("If the current mode is PDF and the status indicates Succeeded, and an invalid page selection is selected, the clip button should be active and clickable", () => {
 			this.mockOptionsPanelProps.clipperState.currentMode.set(ClipMode.Pdf);
 			this.mockOptionsPanelProps.clipperState.pdfResult.status = Status.Succeeded;
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
@@ -303,7 +303,28 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(true);
+		});
+
+		test("If the current mode is PDF, the status is Succeeded, and invalid page selection is selected, on clicking the clipButton, a popup should appear indicating that the page range was invalid", () => {
+			this.mockOptionsPanelProps.clipperState.currentMode.set(ClipMode.Pdf);
+			this.mockOptionsPanelProps.clipperState.pdfResult.status = Status.Succeeded;
+			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
+				pdf: new MockPdfDocument(),
+				viewportDimensions: MockPdfValues.dimensions,
+				byteLength: MockPdfValues.byteLength,
+			});
+			this.mockOptionsPanelProps.clipperState.pdfPreviewInfo = {
+				allPages: false,
+				isLocalFileAndNotAllowed: true,
+				selectedPageRange: "1-3,5,6-",
+			};
+			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
+				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
+			
+			ok(document.getElementsByClassName(Constants.Classes.popover).length === 0, "The invalidPageRange popover should not exist prior to clipping in PDF mode with an invalid range");			
+			this.assertClipButtonAvailability(true);
+			ok(document.getElementsByClassName(Constants.Classes.popover).length === 1, "The invalidPageRange popover did not exist after clicking the clipButton with an invalid page range");
 		});
 
 		test("If the current mode is PDF and the status indicates Succeeded, and a syntactically correct but out-of-bounds selection is selected, the clip button should not be active or clickable", () => {
@@ -322,7 +343,12 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			// Assert that the popover does not exist yet
+			ok(document.getElementsByClassName(Constants.Classes.popover).length === 0, "The invalidPageRange popover should not exist prior to clipping in PDF mode with an invalid range");
+			
+			// This function clicks the clipButton
+			this.assertClipButtonAvailability(true);
+			ok(document.getElementsByClassName(Constants.Classes.popover).length === 1, "The invalidPageRange popover did not exist after clicking the clipButton with an invalid page range");
 		});
 
 		test("If the current mode is PDF and the status indicates Succeeded, and an empty page selection is selected, the clip button should not be active or clickable", () => {
