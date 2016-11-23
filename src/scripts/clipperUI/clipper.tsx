@@ -754,7 +754,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 						onSignInInvoked={this.handleSignIn.bind(this) }
 						onSignOutInvoked={this.handleSignOut.bind(this) }
 						updateFrameHeight={this.updateFrameHeight.bind(this) }
-						onStartClip={this.handleAttemptClip.bind(this) } />
+						onStartClip={this.handleStartClip.bind(this) } />
 				</div>
 			</div>
 		);

@@ -123,6 +123,11 @@ export class StringUtilsTests extends TestModule {
 			const two = StringUtils.parsePageRange("1,3,5,6,8", 2);
 			strictEqual(two.result, "8", "Given range is outside the max bounds of 2");
 		});
+
+		test("getBatchedPageTitle should return a title of the form [nameOfDocument]: Page [i + 1]", () => {
+			strictEqual(StringUtils.getBatchedPageTitle("", -3), ": Page -2");
+			strictEqual(StringUtils.getBatchedPageTitle("document", 0), "document: Page 1");
+		});
 	}
 }
 
