@@ -29,10 +29,13 @@ export class OneNoteSaveableFactory {
 	}
 
 	private static getInitialPage(clipperState: ClipperState): OneNoteApi.OneNotePage {
-		const previewTitleText = clipperState.previewGlobalInfo.previewTitleText;
-		const firstPageIndex = OneNoteSaveableFactory.getPageIndicesToSendInPdfMode(clipperState)[0];
+		let title = clipperState.previewGlobalInfo.previewTitleText;
 
-		const title = clipperState.pdfPreviewInfo.shouldDistributePages ? StringUtils.getBatchedPageTitle(previewTitleText, firstPageIndex) : previewTitleText;
+		if (clipperState.currentMode.get() === ClipMode.Pdf && clipperState.pdfPreviewInfo.shouldDistributePages) {
+			const firstPageIndex = OneNoteSaveableFactory.getPageIndicesToSendInPdfMode(clipperState)[0];
+			title = StringUtils.getBatchedPageTitle(title, firstPageIndex);
+		}
+
 		return new OneNoteApi.OneNotePage(
 			title,
 			"",
