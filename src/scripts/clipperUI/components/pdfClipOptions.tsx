@@ -70,8 +70,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 	onTextChange(text: string) {
 		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-			selectedPageRange: text,
-			shouldShowPopover: false
+			selectedPageRange: text
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
@@ -79,6 +78,14 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		this.setState({
 			moreOptionsOpened: !this.state.moreOptionsOpened
 		});
+	}
+
+	onTextInputFocus(): void {
+		if (this.props.clipperState.pdfPreviewInfo.shouldShowPopover) {
+			_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
+				shouldShowPopover: false
+			} as PdfPreviewInfo), this.props.clipperState.setState);
+		};
 	}
 
 	// TODO These radio elements are repeat code
@@ -112,7 +119,14 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 					{!pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : ""}
 				</div>
 				{!pdfPreviewInfo.allPages ?
-					<input type="text" id={Constants.Ids.rangeInput} class={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }></input>
+					<input
+						type="text"
+						id={Constants.Ids.rangeInput}
+						class={invalidClassName}
+						placeholder="e.g. 1-5, 7, 9-12"
+						onfocus={this.onTextInputFocus.bind(this)}
+						value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }>
+					</input>
 					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
 				{!pdfPreviewInfo.allPages && pdfPreviewInfo.shouldShowPopover ?
 					<div class="popover">{message}</div>
