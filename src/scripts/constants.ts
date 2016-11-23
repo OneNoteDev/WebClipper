@@ -164,6 +164,7 @@ export module Constants {
 		export var checkboxToDistributePages = "checkboxToDistributePages";
 		export var checkboxToAttachPdfDisabled = "checkboxToAttachPdfDisabled";
 		export var checkboxToAttachPdf = "checkboxToAttachPdf";
+		export var moreClipOptions = "moreClipOptions";
 
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";
