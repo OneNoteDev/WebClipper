@@ -70,7 +70,7 @@ export module MockProps {
 			saveLocation: "",
 
 			fullPageResult: {
-				data: undefined,
+				data: {},
 				status: Status.NotStarted
 			},
 			pdfResult: {
@@ -82,7 +82,7 @@ export module MockProps {
 				status: Status.NotStarted
 			},
 			augmentationResult: {
-				data: undefined,
+				data: {},
 				status: Status.NotStarted
 			},
 			bookmarkResult: {
