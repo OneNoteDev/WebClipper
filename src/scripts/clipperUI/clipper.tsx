@@ -9,6 +9,7 @@ import {Polyfills} from "../polyfills";
 import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
 import {Settings} from "../settings";
 import {TooltipType} from "./tooltipType";
+import {StringUtils} from "../stringUtils";
 import {UrlUtils} from "../urlUtils";
 
 import {Communicator} from "../communicator/communicator";
@@ -98,7 +99,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				isLocalFileAndNotAllowed: true,
 				selectedPageRange: "",
 				shouldAttachPdf: false,
-				shouldDistributePages: false
+				shouldDistributePages: false,
+				shouldShowPopover: false
 			},
 
 			reset: () => {
@@ -604,7 +606,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}});
 	}
 
-	private handleSignOut(authType: string) {
+	private handleSignOut(authType: string): void {
 		this.state.setState(this.getSignOutState());
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signOutUser, { param: AuthType[authType] });
 
@@ -620,7 +622,18 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		return signOutState;
 	}
 
-	private handleStartClip() {
+	private handleStartClip(): void {
+		const pdfPreviewInfo = this.state.pdfPreviewInfo;
+		if (!pdfPreviewInfo.allPages) {
+			const parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.state.pdfResult.data.get().pdf.numPages());
+			if (parsePageRangeOperation.status !== Status.Succeeded) {
+				_.assign(_.extend(this.state.pdfPreviewInfo, {
+					shouldShowPopover: true
+				}), this.state.setState);
+				return;
+			}
+		}
+
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ClipAttempted);
 
 		this.state.setState({ userResult: { status: Status.InProgress, data: this.state.userResult.data } });

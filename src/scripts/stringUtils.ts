@@ -74,10 +74,11 @@ export module StringUtils {
 		}
 
 		let parsedPageRange = _(range).sortBy().sortedUniq().value();
+		const last = _.last(parsedPageRange);
 		if (maxRange && (_.last(parsedPageRange) > maxRange)) {
 			return {
 				status: Status.Failed,
-				result: maxRange
+				result: last.toString()
 			};
 		}
 

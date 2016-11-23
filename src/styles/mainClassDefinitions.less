@@ -245,7 +245,7 @@
 		font-size: 15px;
 		line-height: 20px;
 		right: 0px; 
-		top: 0px;
+		top: -9px;
 		text-align: center;
 		pointer-events: none;
 		max-width: 126px;
@@ -258,7 +258,8 @@
 			content: " ";
 			width: 0; // CSS triangles are built using only borders
 			height: 0;
-			/*top: -9px; // 9px to account for height of the triangle, and to overlap the border*/
+			top: 50%;
+			transform: translateY(-50%);
 			left: -9px;
 			margin-left: -1px; // no idea why this works
 			border-top: solid transparent 10px;

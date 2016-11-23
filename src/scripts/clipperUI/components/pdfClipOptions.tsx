@@ -70,7 +70,8 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 	onTextChange(text: string) {
 		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-			selectedPageRange: text
+			selectedPageRange: text,
+			shouldShowPopover: false
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
@@ -96,8 +97,15 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 	getPageRangeRadioElement(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 
-		let pageRangeIsInvalid = this.invalidPageRange();
-		let invalidClassName = pageRangeIsInvalid ? "invalid" : "";
+		let message;
+		if (pdfPreviewInfo.shouldShowPopover) {
+			let parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.props.clipperState.pdfResult.data.get().pdf.numPages());
+			if (parsePageRangeOperation.status === Status.Succeeded) {
+				throw Error("what");
+			}
+			message = Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange") + " '" + parsePageRangeOperation.result + "'";
+		}
+		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
 		return (
 			<div id={Constants.Ids.radioPageRangeLabel} class="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, false) }>
 				<div class="pdf-indicator pdf-radio-indicator">
@@ -106,26 +114,11 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				{!pdfPreviewInfo.allPages ?
 					<input type="text" id={Constants.Ids.rangeInput} class={invalidClassName} placeholder="e.g. 1-5, 7, 9-12" value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }></input>
 					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
-				{!pdfPreviewInfo.allPages && pageRangeIsInvalid ?
-					<div class="popover">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange")}</div>
+				{!pdfPreviewInfo.allPages && pdfPreviewInfo.shouldShowPopover ?
+					<div class="popover">{message}</div>
 					: ""}
 			</div>
 		);
-	}
-
-	private invalidPageRange(): boolean {
-		let parsePageRangeOperation = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
-		if (parsePageRangeOperation.status !== Status.Succeeded) {
-			return false;
-		}
-
-		const pagesToShow = parsePageRangeOperation.result;
-
-		let validUpperBounds = this.props.clipperState.pdfResult.status === Status.Succeeded ? _.every(pagesToShow, (ind: number) => {
-			return ind <= this.props.clipperState.pdfResult.data.get().pdf.numPages();
-		}) : true;
-
-		return !pagesToShow || !validUpperBounds;
 	}
 
 	getDistributePagesCheckbox(): any {
