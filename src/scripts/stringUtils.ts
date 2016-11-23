@@ -1,4 +1,5 @@
 import {ObjectUtils} from "./objectUtils";
+import {Localization} from "./localization/localization";
 
 import * as _ from "lodash";
 
@@ -63,6 +64,11 @@ export module StringUtils {
 	export function countPageRange(text: string): number {
 		let pages = parsePageRange(text);
 		return pages ? pages.length : 0;
+	}
+
+	export function getBatchedPageTitle(titleOfDocument: string, pageIndex: number): string {
+		const firstPageNumberAsString = (pageIndex + 1).toString();
+		return titleOfDocument + ": " + Localization.getLocalizedString("WebClipper.Label.Page") + " " + firstPageNumberAsString;
 	}
 
 	export function generateGuid(): string {
