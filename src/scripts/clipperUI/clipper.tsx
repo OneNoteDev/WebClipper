@@ -624,7 +624,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private handleStartClip(): void {
 		const pdfPreviewInfo = this.state.pdfPreviewInfo;
-		if (!pdfPreviewInfo.allPages) {
+		if (this.state.currentMode.get() === ClipMode.Pdf && !pdfPreviewInfo.allPages) {
 			const parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.state.pdfResult.data.get().pdf.numPages());
 			if (parsePageRangeOperation.status !== Status.Succeeded) {
 				_.assign(_.extend(this.state.pdfPreviewInfo, {
@@ -754,7 +754,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 						onSignInInvoked={this.handleSignIn.bind(this) }
 						onSignOutInvoked={this.handleSignOut.bind(this) }
 						updateFrameHeight={this.updateFrameHeight.bind(this) }
-						onStartClip={this.handleStartClip.bind(this) } />
+						onStartClip={this.handleAttemptClip.bind(this) } />
 				</div>
 			</div>
 		);

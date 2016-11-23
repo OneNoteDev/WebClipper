@@ -1,4 +1,5 @@
-import {StringUtils} from "../stringUtils";
+import { StringUtils} from "../stringUtils";
+import { ObjectUtils } from "../objectUtils";
 
 import {ClipMode} from "./clipMode";
 import {ClipperState} from "./clipperState";
@@ -19,6 +20,8 @@ export module ClipperStateUtilities {
 					return false;
 				} else if (clipperState.pdfPreviewInfo.allPages) {
 					return true;
+				} else if (!clipperState.pdfPreviewInfo.allPages && ObjectUtils.isNullOrUndefined(clipperState.pdfPreviewInfo.selectedPageRange)) {
+					return false;
 				}
 
 				// If the user has an invalidPageRange, the clipButton is still enabled,

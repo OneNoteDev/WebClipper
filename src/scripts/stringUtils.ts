@@ -17,15 +17,18 @@ export module StringUtils {
 	 */
 	export function parsePageRange(text: string, maxRange?: number): ParsedPageRange {
 		if (ObjectUtils.isNullOrUndefined(text)) {
-			return;
+			return {
+				status: Status.Failed,
+				result: ""
+			};
 		}
 
 		text = text.trim();
 
 		if (text === "") {
 			return {
-				status: Status.Succeeded,
-				result: []
+				status: Status.Failed,
+				result: ""
 			};
 		}
 

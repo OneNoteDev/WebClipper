@@ -12,19 +12,21 @@ export class StringUtilsTests extends TestModule {
 	protected tests() {
 		test("A blank or undefined page range should return undefined", () => {
 			/* tslint:disable */
-			ok(!StringUtils.parsePageRange(undefined), "parsePageRange(undefined) was not undefined");
-			ok(!StringUtils.parsePageRange(null), "parsePageRange(null) was not undefined");
+			strictEqual(StringUtils.parsePageRange(undefined).status, Status.Failed, "parsePageRange(undefined) did not return Status.Failed");
+			strictEqual(StringUtils.parsePageRange(undefined).result, "", "parsePageRange(undefined) was not undefined");
+			strictEqual(StringUtils.parsePageRange(null).status, Status.Failed, "parsePageRange(null) did not return Status.Failed");		
+			strictEqual(StringUtils.parsePageRange(null).result, "", "parsePageRange(null) was not undefined");
 			/* tslint:enable */
 		});
 
 		test("An empty string should return an empty array", () => {
 			let ret = StringUtils.parsePageRange("");
-			ok(ret.status === Status.Succeeded);
-			deepEqual(ret.result, []);
+			ok(ret.status === Status.Failed);
+			deepEqual(ret.result, "");
 
 			let retTwo = StringUtils.parsePageRange("           	 	");
-			ok(retTwo.status === Status.Succeeded);
-			deepEqual(retTwo.result, []);
+			ok(retTwo.status === Status.Failed);
+			deepEqual(retTwo.result, "");
 		});
 
 		test("A single digit should return a single digit array", () => {

@@ -129,7 +129,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 					</input>
 					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
 				{!pdfPreviewInfo.allPages && pdfPreviewInfo.shouldShowPopover ?
-					<div class={Constants.Classes.popover}>{message}</div>
+					<div id={Constants.Ids.popover} class={Constants.Classes.popover}>{message}</div>
 					: ""}
 			</div>
 		);

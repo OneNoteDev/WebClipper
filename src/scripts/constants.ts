@@ -164,10 +164,12 @@ export module Constants {
 		export var pdfHeaderTitle = "pdfHeaderTitle";
 		export var pageRangeControl = "pageRangeControl";
 
+		// pdfClipOptions
 		export var checkboxToDistributePages = "checkboxToDistributePages";
 		export var checkboxToAttachPdfDisabled = "checkboxToAttachPdfDisabled";
 		export var checkboxToAttachPdf = "checkboxToAttachPdf";
 		export var moreClipOptions = "moreClipOptions";
+		export var popover = "popover";
 
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";
