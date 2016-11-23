@@ -32,7 +32,6 @@ type IndexToDataUrlMap = { [index: number]: string; }
 
 interface PdfPreviewState {
 	showPageNumbers?: boolean;
-	invalidRange?: boolean;
 	renderedPageIndexes?: IndexToDataUrlMap;
 }
 
@@ -52,7 +51,6 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		return {
 			showPageNumbers: false,
 			renderedPageIndexes: {},
-			invalidRange: false
 		};
 	}
 
@@ -161,9 +159,12 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		let pdfResult = this.props.clipperState.pdfResult.data.get();
 
 		// Determine which pages should be marked as selected vs unselected
-		let pagesToShow = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
-		if (!pagesToShow) {
+		let pagesToShow;
+		let parsePageRangeOperation = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
+		if (parsePageRangeOperation.status !== Status.Succeeded) {
 			pagesToShow = [];
+		} else {
+			pagesToShow = parsePageRangeOperation.result;
 		}
 		pagesToShow = pagesToShow.map((ind) => { return ind - 1; });
 
@@ -215,40 +216,6 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		}
 
 		return this.convertPdfResultToContentData(state.pdfResult);
-	}
-
-	onSelectionChange(selection: boolean) {
-		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-			allPages: selection
-		} as PdfPreviewInfo), this.props.clipperState.setState);
-	}
-
-	onTextChange(text: string) {
-		console.log("old onTextChange");
-		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-			selectedPageRange: text
-		} as PdfPreviewInfo), this.props.clipperState.setState);
-
-		let pagesToShow = StringUtils.parsePageRange(text);
-		let validUpperBounds = _.every(pagesToShow, (ind: number) => {
-			return ind <= this.props.clipperState.pdfResult.data.get().pdf.numPages();
-		});
-
-		if (!pagesToShow || !validUpperBounds) {
-			this.setState({
-				invalidRange: true
-			});
-		} else {
-			this.setState({
-				invalidRange: false
-			});
-		}
-	}
-
-	onCheckboxChange(checked: boolean) {
-		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-			shouldAttachPdf: checked
-		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
 	protected getHeader(): any {

@@ -114,7 +114,13 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 	}
 
 	private invalidPageRange(): boolean {
-		let pagesToShow = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
+		let parsePageRangeOperation = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
+		if (parsePageRangeOperation.status !== Status.Succeeded) {
+			return false;
+		}
+
+		const pagesToShow = parsePageRangeOperation.result;
+
 		let validUpperBounds = this.props.clipperState.pdfResult.status === Status.Succeeded ? _.every(pagesToShow, (ind: number) => {
 			return ind <= this.props.clipperState.pdfResult.data.get().pdf.numPages();
 		}) : true;

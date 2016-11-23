@@ -1,14 +1,21 @@
 import {ObjectUtils} from "./objectUtils";
-import {Localization} from "./localization/localization";
+import { Localization } from "./localization/localization";
+
+import { Status } from "./clipperUI/status";
 
 import * as _ from "lodash";
 
 export module StringUtils {
+	export interface ParsedPageRange {
+		status: Status;
+		result: any;
+	}
+
 	/**
 	 * Takes a range of the form 1,3-6,7,8,13,1,3,4,a-b, etc. and then returns an array
 	 * corresponding to the numbers in that range. It ignores invalid input, sorts it, and removes duplicates
 	 */
-	export function parsePageRange(text: string, maxRange?: number): number[] {
+	export function parsePageRange(text: string, maxRange?: number): ParsedPageRange {
 		if (ObjectUtils.isNullOrUndefined(text)) {
 			return;
 		}
@@ -16,7 +23,10 @@ export module StringUtils {
 		text = text.trim();
 
 		if (text === "") {
-			return [];
+			return {
+				status: Status.Succeeded,
+				result: []
+			};
 		}
 
 		let splitText = text.split(",");
@@ -34,7 +44,10 @@ export module StringUtils {
 			if (/^\d+$/.test(currentValue)) {
 				let digit = parseInt(currentValue, 10 /* radix */);
 				if (digit === 0) {
-					return undefined;
+					return {
+						status: Status.Failed,
+						result: currentValue
+					};
 				}
 				valueToAppend = [digit];
 				// ... or it could a range of the form [#]-[#]
@@ -42,12 +55,19 @@ export module StringUtils {
 				let lhs = parseInt(matches[1], 10), rhs = parseInt(matches[2], 10) + 1;
 				// Disallow ranges like 5-3, or 10-1
 				if (lhs >= rhs || lhs === 0 || rhs === 0) {
-					return undefined;
+					return {
+						status: Status.Failed,
+						result: currentValue
+					};
 				}
 				valueToAppend = _.range(lhs, rhs);
 			} else {
 				// The currentValue is not a single digit or a valid range
-				return undefined;
+				return {
+					status: Status.Failed,
+					result: currentValue
+				};
+				// return undefined;
 			}
 
 			range = range.concat(valueToAppend);
@@ -55,14 +75,25 @@ export module StringUtils {
 
 		let parsedPageRange = _(range).sortBy().sortedUniq().value();
 		if (maxRange && (_.last(parsedPageRange) > maxRange)) {
-			return undefined;
+			return {
+				status: Status.Failed,
+				result: maxRange
+			};
 		}
 
-		return parsedPageRange;
+		return {
+			status: Status.Succeeded,
+			result: parsedPageRange
+		};
 	}
 
 	export function countPageRange(text: string): number {
-		let pages = parsePageRange(text);
+		let operation = parsePageRange(text);
+		if (operation.status !== Status.Succeeded) {
+			return 0;
+		}
+
+		const pages = operation.result;
 		return pages ? pages.length : 0;
 	}
 
