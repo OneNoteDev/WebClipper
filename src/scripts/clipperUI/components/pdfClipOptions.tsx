@@ -144,12 +144,19 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 		if (pdfPreviewInfo.shouldShowPopover && !pdfPreviewInfo.allPages) {
 			// Create the new one (could potentially be identically to old one)
-			let errorMessage = this.getErrorMessageForInvalidPageRange();
-			PdfClipOptionsClass.popover = new popperJS(document.getElementById(Constants.Ids.rangeInput), {
-				content: errorMessage,
+			let popoverObj: any = {
+				content: this.getErrorMessageForInvalidPageRange(),
 				classNames: [Constants.Classes.popover],
-				arrowClassNames: [Constants.Classes.popoverArrow],
-			}, {
+				arrowClassNames: [Constants.Classes.popoverArrow]
+			};
+
+			let mainControllerElem = document.getElementById(Constants.Ids.mainController);
+			if (mainControllerElem) {
+				// We want to set the parent lower in the HTML hierarchy to avoid z-index issues relating to stacking contexts
+				popoverObj.parent = mainControllerElem;
+			}
+
+			PdfClipOptionsClass.popover = new popperJS(document.getElementById(Constants.Ids.rangeInput), popoverObj, {
 				placement: "right",
 				modifiersIgnored: ["flip"],
 				removeOnDestroy: true
@@ -161,7 +168,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				PdfClipOptionsClass.popover.destroy();
 				PdfClipOptionsClass.popover = undefined;
 			}
-		}
+		};
 	}
 
 	private getErrorMessageForInvalidPageRange(): string {
