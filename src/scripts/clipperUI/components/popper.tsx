@@ -9,7 +9,7 @@ import * as popperJS from "popper.js";
 export interface PopperProps {
 	referenceElementId: string;
 	placement: string; // TODO: use a union type of allowed values
-	
+
 	content?: string;
 	classNames?: string[];
 	arrowClassNames?: string[];
@@ -47,13 +47,13 @@ class PopperClass extends ComponentBase<{}, PopperProps> {
 				removeOnDestroy: this.props.removeOnDestroy
 			});
 		}
-		
+
 		if (isInitialized) {
 			if (this.refToPopper) {
 				this.refToPopper.update();
 			}
 		}
-		
+
 		context.onunload = () => {
 			this.refToPopper.destroy();
 			this.refToPopper = undefined;
