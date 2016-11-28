@@ -22,6 +22,7 @@ export module Constants {
 
 		// optionsPanel
 		export var popover = "popover";
+		export var popoverArrow = "popover-arrow";
 
 		// previewViewer
 		export var deleteHighlightButton = "delete-highlight";

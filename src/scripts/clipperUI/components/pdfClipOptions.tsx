@@ -11,6 +11,7 @@ import {ClipperStateProp} from "../clipperState";
 import {Status} from "../status";
 
 import * as _ from "lodash";
+import * as popperJS from "popper.js";
 
 interface PdfClipOptionsState {
 	moreOptionsOpened?: boolean;
@@ -18,6 +19,7 @@ interface PdfClipOptionsState {
 
 class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStateProp> {
 	private static textAreaListenerAttached = false;
+	private static popover: popperJS;
 
 	getInitialState(): PdfClipOptionsState {
 		return {
@@ -103,15 +105,8 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 	getPageRangeRadioElement(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+		// this.handlePopoverLifeCycle();
 
-		let message;
-		if (pdfPreviewInfo.shouldShowPopover) {
-			let parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.props.clipperState.pdfResult.data.get().pdf.numPages());
-			if (parsePageRangeOperation.status === Status.Succeeded) {
-				throw Error("what");
-			}
-			message = Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange") + " '" + parsePageRangeOperation.result + "'";
-		}
 		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
 		return (
 			<div id={Constants.Ids.radioPageRangeLabel} class="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, false) }>
@@ -123,16 +118,51 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 						type="text"
 						id={Constants.Ids.rangeInput}
 						class={invalidClassName}
+						config={this.handlePopoverLifeCycle.bind(this)}
 						placeholder="e.g. 1-5, 7, 9-12"
 						onfocus={this.onTextInputFocus.bind(this)}
 						value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }>
 					</input>
 					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
-				{!pdfPreviewInfo.allPages && pdfPreviewInfo.shouldShowPopover ?
-					<div id={Constants.Ids.popover} class={Constants.Classes.popover}>{message}</div>
-					: ""}
 			</div>
 		);
+	}
+
+	// We destroy the popover if it is showing, and shouldn't be
+	// Or if it is showing, and we are about to show a new one
+	// TODO: make this into an actual component
+	private handlePopoverLifeCycle() {
+		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+
+		// Always destroy the previous popover if it exists
+		if (PdfClipOptionsClass.popover) {
+			PdfClipOptionsClass.popover.destroy();
+			PdfClipOptionsClass.popover = undefined;
+		}
+
+		if (pdfPreviewInfo.shouldShowPopover && !pdfPreviewInfo.allPages) {
+			// Create the new one (could potentially be identically to old one)
+			let errorMessage = this.getErrorMessageForInvalidPageRange();
+			PdfClipOptionsClass.popover = new popperJS(document.getElementById(Constants.Ids.rangeInput), {
+				content: errorMessage,
+				id: Constants.Ids.popover,
+				classNames: [Constants.Classes.popover],
+				arrowClassNames: [Constants.Classes.popoverArrow],
+			}, {
+				placement: "right",
+				modifiersIgnored: ["flip"],
+				removeOnDestroy: true
+			});
+		}
+	}
+
+	private getErrorMessageForInvalidPageRange(): string {
+		const pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+		let parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.props.clipperState.pdfResult.data.get().pdf.numPages());
+		if (parsePageRangeOperation.status === Status.Succeeded) {
+			throw Error("Given that shouldShowPopover is true, parsing the pageRange should never succeeded: PageRange: " + pdfPreviewInfo.selectedPageRange);
+		}
+		return Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange") + " '" + parsePageRangeOperation.result + "'";
 	}
 
 	getDistributePagesCheckbox(): any {
