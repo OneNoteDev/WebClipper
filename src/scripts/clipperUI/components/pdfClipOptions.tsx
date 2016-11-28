@@ -187,7 +187,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
 			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdfDisabled} {...this.enableInvoke(this.onCheckboxChange, 67, !pdfPreviewInfo.shouldAttachPdf) }>
-				<img src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
+				<img class="warning-image" src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
 				<span class="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfTooLargeToAttach")}</span>
 			</div>
 		);
