@@ -10,6 +10,11 @@ import {ComponentBase} from "../componentBase";
 import {ClipperStateProp} from "../clipperState";
 import {Status} from "../status";
 
+import {AnimationHelper} from "../animations/animationHelper";
+import {AnimationState} from "../animations/animationState";
+import {AnimationStrategy} from "../animations/animationStrategy";
+import {FadeInAnimationStrategy} from "../animations/fadeInAnimationStrategy";
+
 import * as _ from "lodash";
 
 interface PdfClipOptionsState {
@@ -19,11 +24,7 @@ interface PdfClipOptionsState {
 class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStateProp> {
 	private static textAreaListenerAttached = false;
 
-	getInitialState(): PdfClipOptionsState {
-		return {
-			moreOptionsOpened: false
-		};
-	}
+	private hiddenOptionsAnimationStrategy: AnimationStrategy;
 
 	constructor(props: ClipperStateProp) {
 		super(props);
@@ -31,6 +32,16 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			this.addTextAreaListener();
 			PdfClipOptionsClass.textAreaListenerAttached = true;
 		}
+		this.hiddenOptionsAnimationStrategy = new FadeInAnimationStrategy({
+			extShouldAnimateIn: () => { return this.state.moreOptionsOpened; },
+			extShouldAnimateOut: () => { return !this.state.moreOptionsOpened; }
+		});
+	}
+
+	getInitialState(): PdfClipOptionsState {
+		return {
+			moreOptionsOpened: false
+		};
 	}
 
 	private addTextAreaListener() {
@@ -162,6 +173,19 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		);
 	}
 
+	private onHiddenOptionsDraw(hiddenOptionsAnimator: HTMLElement) {
+		this.hiddenOptionsAnimationStrategy.animate(hiddenOptionsAnimator);
+
+		// If the user is rapidly clicking the More button, we want to cancel the current animation to kick off the next one
+		let currentAnimationState = this.hiddenOptionsAnimationStrategy.getAnimationState();
+		if (currentAnimationState === AnimationState.GoingOut && this.state.moreOptionsOpened) {
+			AnimationHelper.stopAnimationsThen(hiddenOptionsAnimator, () => {
+				this.hiddenOptionsAnimationStrategy.setAnimationState(AnimationState.Out);
+				this.setState({ });
+			});
+		}
+	}
+
 	render() {
 		let expandOptionLabel = this.state.moreOptionsOpened ? Localization.getLocalizedString("WebClipper.Action.Less") : Localization.getLocalizedString("WebClipper.Action.More");
 		return (
@@ -174,11 +198,13 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				</div>
 				{this.getAllPagesRadioElement()}
 				{this.getPageRangeRadioElement()}
-				{this.state.moreOptionsOpened ?
-					<div className="hiddenOptions">
-						{this.getDistributePagesCheckbox()}
-						{this.getAttachmentCheckbox()}
-					</div> : undefined}
+				<div class="hiddenOptionsAnimator" {...this.onElementDraw(this.onHiddenOptionsDraw)}>
+					{this.state.moreOptionsOpened ?
+						<div className="hiddenOptions">
+							{this.getDistributePagesCheckbox()}
+							{this.getAttachmentCheckbox()}
+						</div> : undefined}
+				</div>
 			</div>
 		);
 	}

@@ -78,6 +78,7 @@ import "./logging/loggerDecorator_tests";
 import "./logging/logHelpers_tests";
 import "./logging/sessionLogger_tests";
 
+import "./saveToOneNote/oneNoteSaveableFactory_tests";
 import "./saveToOneNote/oneNoteSaveablePage_tests";
 import "./saveToOneNote/oneNoteSaveablePdf_tests";
 import "./saveToOneNote/saveToOneNote_tests";
