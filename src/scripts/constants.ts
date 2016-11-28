@@ -170,7 +170,6 @@ export module Constants {
 		export var checkboxToAttachPdfDisabled = "checkboxToAttachPdfDisabled";
 		export var checkboxToAttachPdf = "checkboxToAttachPdf";
 		export var moreClipOptions = "moreClipOptions";
-		export var invalidPageRangePopover = "invalidPageRangePopover";
 
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";

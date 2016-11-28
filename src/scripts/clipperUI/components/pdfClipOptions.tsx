@@ -6,7 +6,7 @@ import {StringUtils} from "../../stringUtils";
 
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 
-import {ComponentBase } from "../componentBase";
+import {ComponentBase} from "../componentBase";
 import {ClipperStateProp} from "../clipperState";
 import {Status, OperationResult} from "../status";
 
