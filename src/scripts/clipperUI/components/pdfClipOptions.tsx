@@ -6,9 +6,11 @@ import {StringUtils} from "../../stringUtils";
 
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 
-import { ComponentBase } from "../componentBase";
+import {ComponentBase } from "../componentBase";
 import {ClipperStateProp} from "../clipperState";
 import {Status, OperationResult} from "../status";
+
+import {Popover} from "./popper";
 
 import * as _ from "lodash";
 import * as popperJS from "popper.js";
@@ -118,56 +120,22 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 						type="text"
 						id={Constants.Ids.rangeInput}
 						class={invalidClassName}
-						config={this.handlePopoverLifeCycle.bind(this)}
 						placeholder="e.g. 1-5, 7, 9-12"
 						onfocus={this.onTextInputFocus.bind(this)}
 						value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }>
 					</input>
 					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
+				{pdfPreviewInfo.shouldShowPopover ?
+					<Popover
+						referenceElementId={Constants.Ids.rangeInput}
+						placement="right"
+						content={this.getErrorMessageForInvalidPageRange()}
+						classNames={[Constants.Classes.popover]}
+						arrowClassNames={[Constants.Classes.popoverArrow]}
+						modifiersIgnored={["flip"]}
+						removeOnDestroy={true} /> : ""}
 			</div>
 		);
-		// {pdfPreviewInfo.shouldShowPopover ? <Popover popper={PdfClipOptionsClass.popper} /> : ""}
-	}
-
-	// Destroy the currently existing popover
-	// Then create a new one if necessary
-	// TODO: make this into an actual component
-	private handlePopoverLifeCycle(element, isInitialized, context) {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-
-		// Always destroy the previous popover if it exists
-		if (PdfClipOptionsClass.popover) {
-			PdfClipOptionsClass.popover.destroy();
-			PdfClipOptionsClass.popover = undefined;
-		}
-
-		if (pdfPreviewInfo.shouldShowPopover && !pdfPreviewInfo.allPages) {
-			// Create the new one (could potentially be identically to old one)
-			let popoverObj: any = {
-				content: this.getErrorMessageForInvalidPageRange(),
-				classNames: [Constants.Classes.popover],
-				arrowClassNames: [Constants.Classes.popoverArrow]
-			};
-
-			let mainControllerElem = document.getElementById(Constants.Ids.mainController);
-			if (mainControllerElem) {
-				// We want to set the parent lower in the HTML hierarchy to avoid z-index issues relating to stacking contexts
-				popoverObj.parent = mainControllerElem;
-			}
-
-			PdfClipOptionsClass.popover = new popperJS(document.getElementById(Constants.Ids.rangeInput), popoverObj, {
-				placement: "right",
-				modifiersIgnored: ["flip"],
-				removeOnDestroy: true
-			});
-		}
-
-		context.onunload = () => {
-			if (PdfClipOptionsClass.popover) {
-				PdfClipOptionsClass.popover.destroy();
-				PdfClipOptionsClass.popover = undefined;
-			}
-		};
 	}
 
 	private getErrorMessageForInvalidPageRange(): string {

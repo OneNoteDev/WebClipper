@@ -36,7 +36,7 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	public onElementDraw(handleMethod: (element: HTMLElement, isFirstDraw: boolean) => void) {
+	public onElementDraw(handleMethod: (element: HTMLElement, isFirstDraw: boolean, context?: any) => void) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		handleMethod = handleMethod.bind(this);
 		return {
