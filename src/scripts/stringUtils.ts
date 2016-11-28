@@ -1,7 +1,7 @@
 import {ObjectUtils} from "./objectUtils";
-import { Localization } from "./localization/localization";
+import {Localization} from "./localization/localization";
 
-import { Status } from "./clipperUI/status";
+import {Status} from "./clipperUI/status";
 
 import * as _ from "lodash";
 

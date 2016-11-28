@@ -1,5 +1,5 @@
-import { StringUtils} from "../stringUtils";
-import { ObjectUtils } from "../objectUtils";
+import {StringUtils} from "../stringUtils";
+import {ObjectUtils} from "../objectUtils";
 
 import {ClipMode} from "./clipMode";
 import {ClipperState} from "./clipperState";
@@ -25,7 +25,7 @@ export module ClipperStateUtilities {
 				}
 
 				// If the user has an invalidPageRange, the clipButton is still enabled,
-				// but when the user clips, we shortcircuit it and display a message instead
+				// but when the user clips, we short circuit it and display a message instead
 				return true;
 			case ClipMode.FullPage:
 				let fullPageScreenshotResult = clipperState.fullPageResult;

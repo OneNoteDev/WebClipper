@@ -105,7 +105,6 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 	getPageRangeRadioElement(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-		// this.handlePopoverLifeCycle();
 
 		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
 		return (
@@ -128,8 +127,8 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		);
 	}
 
-	// We destroy the popover if it is showing, and shouldn't be
-	// Or if it is showing, and we are about to show a new one
+	// Destroy the currently existing popover
+	// Then create a new one if necessary
 	// TODO: make this into an actual component
 	private handlePopoverLifeCycle() {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;

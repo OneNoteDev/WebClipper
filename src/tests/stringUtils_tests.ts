@@ -1,6 +1,6 @@
-import { StringUtils } from "../scripts/stringUtils";
-import { Status } from "../scripts/clipperUI/status";
-import { Localization } from "../scripts/localization/localization";
+import {StringUtils} from "../scripts/stringUtils";
+import {Status} from "../scripts/clipperUI/status";
+import {Localization} from "../scripts/localization/localization";
 
 import {TestModule} from "./testModule";
 
