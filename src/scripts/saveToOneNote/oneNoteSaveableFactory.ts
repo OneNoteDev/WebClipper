@@ -4,7 +4,7 @@ import {UrlUtils} from "../urlUtils";
 
 import {ClipMode} from "../clipperUI/clipMode";
 import {ClipperState} from "../clipperUI/clipperState";
-import {Status} from "../clipperUI/status";
+import {Status, OperationResult} from "../clipperUI/status";
 
 import {DomUtils} from "../domParsers/domUtils";
 
@@ -173,12 +173,15 @@ export class OneNoteSaveableFactory {
 
 	private static getPageIndicesToSendInPdfMode(clipperState: ClipperState) {
 		let pdf = clipperState.pdfResult.data.get().pdf;
+		if (clipperState.pdfPreviewInfo.allPages) {
+			return _.range(pdf.numPages());
+		}
+
 		const parsePageRangeOperation = StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, pdf.numPages());
-		if (parsePageRangeOperation.status !== Status.Succeeded) {
+		if (parsePageRangeOperation.status !== OperationResult.Succeeded) {
 			throw new Error("User is clipping an invalid page range");
 		}
 		const pageRange = parsePageRangeOperation.result as number[];
-
-		return clipperState.pdfPreviewInfo.allPages ? _.range(pdf.numPages()) : pageRange.map(value => value - 1);
+		return pageRange.map(value => value - 1);
 	}
 }

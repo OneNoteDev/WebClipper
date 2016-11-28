@@ -6,9 +6,10 @@ import {StringUtils} from "../../stringUtils";
 
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 
-import {ComponentBase} from "../componentBase";
+import { ComponentBase } from "../componentBase";
+import { Popover } from "./popper";
 import {ClipperStateProp} from "../clipperState";
-import {Status} from "../status";
+import {Status, OperationResult} from "../status";
 
 import * as _ from "lodash";
 import * as popperJS from "popper.js";
@@ -66,7 +67,8 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 	onSelectionChange(selection: boolean) {
 		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-			allPages: selection
+			allPages: selection,
+			shouldShowPopover: false
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
@@ -125,12 +127,13 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
 			</div>
 		);
+		// {pdfPreviewInfo.shouldShowPopover ? <Popover popper={PdfClipOptionsClass.popper} /> : ""}
 	}
 
 	// Destroy the currently existing popover
 	// Then create a new one if necessary
 	// TODO: make this into an actual component
-	private handlePopoverLifeCycle() {
+	private handlePopoverLifeCycle(element, isInitialized, context) {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 
 		// Always destroy the previous popover if it exists
@@ -144,7 +147,6 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			let errorMessage = this.getErrorMessageForInvalidPageRange();
 			PdfClipOptionsClass.popover = new popperJS(document.getElementById(Constants.Ids.rangeInput), {
 				content: errorMessage,
-				id: Constants.Ids.popover,
 				classNames: [Constants.Classes.popover],
 				arrowClassNames: [Constants.Classes.popoverArrow],
 			}, {
@@ -153,15 +155,23 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				removeOnDestroy: true
 			});
 		}
+
+		context.onunload = () => {
+			if (PdfClipOptionsClass.popover) {
+				PdfClipOptionsClass.popover.destroy();
+				PdfClipOptionsClass.popover = undefined;
+			}
+		}
 	}
 
 	private getErrorMessageForInvalidPageRange(): string {
 		const pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		let parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.props.clipperState.pdfResult.data.get().pdf.numPages());
-		if (parsePageRangeOperation.status === Status.Succeeded) {
-			throw Error("Given that shouldShowPopover is true, parsing the pageRange should never succeeded: PageRange: " + pdfPreviewInfo.selectedPageRange);
+		if (parsePageRangeOperation.status === OperationResult.Succeeded) {
+			throw Error("Given that shouldShowPopover is true, parsing the pageRange should never succeed: PageRange: " + pdfPreviewInfo.selectedPageRange);
 		}
-		return Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange") + " '" + parsePageRangeOperation.result + "'";
+
+		return Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange").replace("{0}", parsePageRangeOperation.result as string);
 	}
 
 	getDistributePagesCheckbox(): any {

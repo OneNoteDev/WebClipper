@@ -1,14 +1,14 @@
 import {ObjectUtils} from "./objectUtils";
 import {Localization} from "./localization/localization";
 
-import {Status} from "./clipperUI/status";
+import {Status, OperationResult} from "./clipperUI/status";
 
 import * as _ from "lodash";
 
 export module StringUtils {
 	export interface ParsedPageRange {
-		status: Status;
-		result: any;
+		status: OperationResult;
+		result: number[] | string;
 	}
 
 	/**
@@ -18,7 +18,7 @@ export module StringUtils {
 	export function parsePageRange(text: string, maxRange?: number): ParsedPageRange {
 		if (ObjectUtils.isNullOrUndefined(text)) {
 			return {
-				status: Status.Failed,
+				status: OperationResult.Failed,
 				result: ""
 			};
 		}
@@ -27,7 +27,7 @@ export module StringUtils {
 
 		if (text === "") {
 			return {
-				status: Status.Failed,
+				status: OperationResult.Failed,
 				result: ""
 			};
 		}
@@ -48,7 +48,7 @@ export module StringUtils {
 				let digit = parseInt(currentValue, 10 /* radix */);
 				if (digit === 0) {
 					return {
-						status: Status.Failed,
+						status: OperationResult.Failed,
 						result: currentValue
 					};
 				}
@@ -59,7 +59,7 @@ export module StringUtils {
 				// Disallow ranges like 5-3, or 10-1
 				if (lhs >= rhs || lhs === 0 || rhs === 0) {
 					return {
-						status: Status.Failed,
+						status: OperationResult.Failed,
 						result: currentValue
 					};
 				}
@@ -67,10 +67,9 @@ export module StringUtils {
 			} else {
 				// The currentValue is not a single digit or a valid range
 				return {
-					status: Status.Failed,
+					status: OperationResult.Failed,
 					result: currentValue
 				};
-				// return undefined;
 			}
 
 			range = range.concat(valueToAppend);
@@ -80,20 +79,20 @@ export module StringUtils {
 		const last = _.last(parsedPageRange);
 		if (maxRange && (_.last(parsedPageRange) > maxRange)) {
 			return {
-				status: Status.Failed,
+				status: OperationResult.Failed,
 				result: last.toString()
 			};
 		}
 
 		return {
-			status: Status.Succeeded,
+			status: OperationResult.Succeeded,
 			result: parsedPageRange
 		};
 	}
 
 	export function countPageRange(text: string): number {
 		let operation = parsePageRange(text);
-		if (operation.status !== Status.Succeeded) {
+		if (operation.status !== OperationResult.Succeeded) {
 			return 0;
 		}
 
