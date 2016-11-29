@@ -94,6 +94,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	private initializeContextProperties() {
 		let clientInfo = this.clientInfo.get();
 		this.logger.setContextProperty(Log.Context.Custom.AppInfoId, Settings.getSetting("App_Id"));
+		this.logger.setContextProperty(Log.Context.Custom.BrowserSessionId, ExtensionBase.getBrowserSessionId());
 		this.logger.setContextProperty(Log.Context.Custom.UserInfoId, undefined);
 		this.logger.setContextProperty(Log.Context.Custom.AuthType, "None");
 		this.logger.setContextProperty(Log.Context.Custom.AppInfoVersion, clientInfo.clipperVersion);

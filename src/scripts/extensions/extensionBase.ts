@@ -36,6 +36,8 @@ import {WorkerPassthroughLogger} from "./workerPassthroughLogger";
 export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TTabIdentifier>, TTab, TTabIdentifier> {
 	private workers: TWorker[];
 	private logger: Logger;
+	private static browserSessionId: string;
+
 	protected clipperData: ClipperData;
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
@@ -47,6 +49,8 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 		this.workers = [];
 		this.logger = new WorkerPassthroughLogger(this.workers);
+		ExtensionBase.browserSessionId = StringUtils.generateGuid();
+
 		this.clipperData = clipperData;
 		this.clipperData.setLogger(this.logger);
 		this.auth = new AuthenticationHelper(this.clipperData, this.logger);
@@ -85,6 +89,10 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected abstract getIdFromTab(tab: TTab): TTabIdentifier;
 	protected abstract createWorker(tab: TTab): TWorker;
 	protected abstract onFirstRun();
+
+	public static getBrowserSessionId(): string {
+		return ExtensionBase.browserSessionId;
+	}
 
 	public static getExtensionVersion(): string {
 		return ExtensionBase.version;
