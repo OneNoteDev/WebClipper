@@ -20,8 +20,9 @@ export module Constants {
 		export var textAreaInput = "textAreaInput";
 		export var textAreaInputMirror = "textAreaInputMirror";
 
-		// optionsPanel
+		// popover
 		export var popover = "popover";
+		export var popoverArrow = "popover-arrow";
 
 		// previewViewer
 		export var deleteHighlightButton = "delete-highlight";
@@ -169,7 +170,6 @@ export module Constants {
 		export var checkboxToAttachPdfDisabled = "checkboxToAttachPdfDisabled";
 		export var checkboxToAttachPdf = "checkboxToAttachPdf";
 		export var moreClipOptions = "moreClipOptions";
-		export var popover = "popover";
 
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";

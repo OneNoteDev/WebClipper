@@ -1,5 +1,6 @@
 import {Constants} from "../../../constants";
 import {ObjectUtils} from "../../../objectUtils";
+import {OperationResult} from "../../../operationResult";
 import {PdfPreviewInfo} from "../../../previewInfo";
 import {StringUtils} from "../../../stringUtils";
 import {UrlUtils} from "../../../urlUtils";
@@ -159,12 +160,13 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 		let pdfResult = this.props.clipperState.pdfResult.data.get();
 
 		// Determine which pages should be marked as selected vs unselected
-		let pagesToShow;
+		let pagesToShow: number[];
 		let parsePageRangeOperation = StringUtils.parsePageRange(this.props.clipperState.pdfPreviewInfo.selectedPageRange);
-		if (parsePageRangeOperation.status !== Status.Succeeded) {
+		if (parsePageRangeOperation.status !== OperationResult.Succeeded) {
 			pagesToShow = [];
 		} else {
-			pagesToShow = parsePageRangeOperation.result;
+			// If the operation Succeeded, the result should always be a number[]
+			pagesToShow = parsePageRangeOperation.result as number[];
 		}
 		pagesToShow = pagesToShow.map((ind) => { return ind - 1; });
 

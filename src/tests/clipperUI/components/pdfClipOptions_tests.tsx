@@ -325,7 +325,7 @@ export class PdfClipOptionsTests extends TestModule {
 			this.defaultPdfClipOptionsProps.clipperState.pdfPreviewInfo.shouldShowPopover = true;
 			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			ok(document.getElementById(Constants.Ids.popover), "The popover should be visible");
+			ok(document.querySelector("." + Constants.Classes.popover), "The popover should be visible");
 		});
 	}
 }

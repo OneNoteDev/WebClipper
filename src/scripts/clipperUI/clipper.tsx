@@ -4,6 +4,7 @@ import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
+import {OperationResult} from "../operationResult";
 import {PageInfo} from "../pageInfo";
 import {Polyfills} from "../polyfills";
 import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
@@ -624,9 +625,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private handleStartClip(): void {
 		const pdfPreviewInfo = this.state.pdfPreviewInfo;
-		if (this.state.currentMode.get() === ClipMode.Pdf && !pdfPreviewInfo.allPages) {
+		if (this.state.currentMode.get() === ClipMode.Pdf && !pdfPreviewInfo.allPages && this.state.pdfResult.status === Status.Succeeded) {
 			const parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.state.pdfResult.data.get().pdf.numPages());
-			if (parsePageRangeOperation.status !== Status.Succeeded) {
+			if (parsePageRangeOperation.status !== OperationResult.Succeeded) {
 				_.assign(_.extend(this.state.pdfPreviewInfo, {
 					shouldShowPopover: true
 				}), this.state.setState);
@@ -670,7 +671,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
-		OneNoteSaveableFactory.getSaveable(this.state).then((saveable) => {
+		(new OneNoteSaveableFactory(this.state)).getSaveable().then((saveable) => {
 			let saveOptions: SaveToOneNoteOptions = {
 				page: saveable,
 				saveLocation: this.state.saveLocation

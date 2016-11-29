@@ -39,9 +39,8 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 		return (
 			<div className="optionsPanel">
 				<ModeButtonSelector clipperState={this.props.clipperState} />
-				<SectionPicker onPopupToggle={this.props.onPopupToggle.bind(this)} clipperState={this.props.clipperState} />
 				{clippingOptionsToRender}
-
+				<SectionPicker onPopupToggle={this.props.onPopupToggle.bind(this)} clipperState={this.props.clipperState} />
 				<div id={Constants.Ids.clipButtonContainer} className={clipButtonContainerClassName}>
 					{clipButtonEnabled
 					?	<a id={Constants.Ids.clipButton} className="wideActionButton" {...this.enableInvoke(this.props.onStartClip, 1) }>

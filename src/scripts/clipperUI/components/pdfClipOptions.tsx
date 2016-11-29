@@ -1,6 +1,7 @@
 import {Localization} from "../../localization/localization";
 
 import {Constants} from "../../constants";
+import {OperationResult} from "../../operationResult";
 import {PdfPreviewInfo} from "../../previewInfo";
 import {StringUtils} from "../../stringUtils";
 
@@ -9,6 +10,13 @@ import {ExtensionUtils} from "../../extensions/extensionUtils";
 import {ComponentBase} from "../componentBase";
 import {ClipperStateProp} from "../clipperState";
 import {Status} from "../status";
+
+import {AnimationHelper} from "../animations/animationHelper";
+import {AnimationState} from "../animations/animationState";
+import {AnimationStrategy} from "../animations/animationStrategy";
+import {FadeInAnimationStrategy} from "../animations/fadeInAnimationStrategy";
+
+import {Popover} from "./popover";
 
 import * as _ from "lodash";
 
@@ -19,11 +27,7 @@ interface PdfClipOptionsState {
 class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStateProp> {
 	private static textAreaListenerAttached = false;
 
-	getInitialState(): PdfClipOptionsState {
-		return {
-			moreOptionsOpened: false
-		};
-	}
+	private hiddenOptionsAnimationStrategy: AnimationStrategy;
 
 	constructor(props: ClipperStateProp) {
 		super(props);
@@ -31,6 +35,16 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			this.addTextAreaListener();
 			PdfClipOptionsClass.textAreaListenerAttached = true;
 		}
+		this.hiddenOptionsAnimationStrategy = new FadeInAnimationStrategy({
+			extShouldAnimateIn: () => { return this.state.moreOptionsOpened; },
+			extShouldAnimateOut: () => { return !this.state.moreOptionsOpened; }
+		});
+	}
+
+	getInitialState(): PdfClipOptionsState {
+		return {
+			moreOptionsOpened: false
+		};
 	}
 
 	private addTextAreaListener() {
@@ -64,7 +78,8 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 	onSelectionChange(selection: boolean) {
 		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-			allPages: selection
+			allPages: selection,
+			shouldShowPopover: false
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
@@ -94,7 +109,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return (
 			<div id={Constants.Ids.radioAllPagesLabel} class="pdf-control" {...this.enableInvoke(this.onSelectionChange, 60, true) }>
 				<div class="pdf-indicator pdf-radio-indicator">
-					{pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : ""}
+					{pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
 				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}</span>
 			</div>
@@ -104,19 +119,11 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 	getPageRangeRadioElement(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 
-		let message;
-		if (pdfPreviewInfo.shouldShowPopover) {
-			let parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.props.clipperState.pdfResult.data.get().pdf.numPages());
-			if (parsePageRangeOperation.status === Status.Succeeded) {
-				throw Error("what");
-			}
-			message = Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange") + " '" + parsePageRangeOperation.result + "'";
-		}
 		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
 		return (
 			<div id={Constants.Ids.radioPageRangeLabel} class="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, false) }>
 				<div class="pdf-indicator pdf-radio-indicator">
-					{!pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : ""}
+					{!pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
 				{!pdfPreviewInfo.allPages ?
 					<input
@@ -128,11 +135,27 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 						value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }>
 					</input>
 					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfPageRangeRadioButtonLabel")}</span>}
-				{!pdfPreviewInfo.allPages && pdfPreviewInfo.shouldShowPopover ?
-					<div id={Constants.Ids.popover} class={Constants.Classes.popover}>{message}</div>
-					: ""}
+				{pdfPreviewInfo.shouldShowPopover ?
+					<Popover
+						referenceElementId={Constants.Ids.rangeInput}
+						placement="right"
+						content={this.getErrorMessageForInvalidPageRange()}
+						classNames={[Constants.Classes.popover]}
+						arrowClassNames={[Constants.Classes.popoverArrow]}
+						modifiersIgnored={["flip"]}
+						removeOnDestroy={true} /> : undefined}
 			</div>
 		);
+	}
+
+	private getErrorMessageForInvalidPageRange(): string {
+		const pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+		let parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.props.clipperState.pdfResult.data.get().pdf.numPages());
+		if (parsePageRangeOperation.status === OperationResult.Succeeded) {
+			throw Error("Given that shouldShowPopover is true, parsing the pageRange should never succeed: PageRange: " + pdfPreviewInfo.selectedPageRange);
+		}
+
+		return Localization.getLocalizedString("WebClipper.Preview.Header.PdfInvalidPageRange").replace("{0}", parsePageRangeOperation.result as string);
 	}
 
 	getDistributePagesCheckbox(): any {
@@ -158,7 +181,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
 			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdfDisabled} {...this.enableInvoke(this.onCheckboxChange, 67, !pdfPreviewInfo.shouldAttachPdf) }>
-				<img src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
+				<img class="warning-image" src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
 				<span class="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfTooLargeToAttach")}</span>
 			</div>
 		);
@@ -175,22 +198,38 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		);
 	}
 
+	private onHiddenOptionsDraw(hiddenOptionsAnimator: HTMLElement) {
+		this.hiddenOptionsAnimationStrategy.animate(hiddenOptionsAnimator);
+
+		// If the user is rapidly clicking the More button, we want to cancel the current animation to kick off the next one
+		let currentAnimationState = this.hiddenOptionsAnimationStrategy.getAnimationState();
+		if (currentAnimationState === AnimationState.GoingOut && this.state.moreOptionsOpened) {
+			AnimationHelper.stopAnimationsThen(hiddenOptionsAnimator, () => {
+				this.hiddenOptionsAnimationStrategy.setAnimationState(AnimationState.Out);
+				this.setState({ });
+			});
+		}
+	}
+
 	render() {
+		let expandOptionLabel = this.state.moreOptionsOpened ? Localization.getLocalizedString("WebClipper.Action.Less") : Localization.getLocalizedString("WebClipper.Action.More");
 		return (
 			<div class="clipOptionsContainer">
 				<div class="clipOptionsTitleContainer">
 					<span class="clipOptionsTitle">{Localization.getLocalizedString("WebClipper.Options.PdfOptions")}</span>
 					<span class="moreClipOptions" id={Constants.Ids.moreClipOptions} {...this.enableInvoke(this.onMoreClicked, 62) }>
-						{Localization.getLocalizedString("WebClipper.Action.More")} <img class="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+						{expandOptionLabel}<img class="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					</span>
 				</div>
 				{this.getAllPagesRadioElement()}
 				{this.getPageRangeRadioElement()}
-				{this.state.moreOptionsOpened ?
-					<div className="hiddenOptions">
-						{this.getDistributePagesCheckbox()}
-						{this.getAttachmentCheckbox()}
-					</div> : undefined}
+				<div class="hiddenOptionsAnimator" {...this.onElementDraw(this.onHiddenOptionsDraw)}>
+					{this.state.moreOptionsOpened ?
+						<div className="hiddenOptions">
+							{this.getDistributePagesCheckbox()}
+							{this.getAttachmentCheckbox()}
+						</div> : undefined}
+				</div>
 			</div>
 		);
 	}
