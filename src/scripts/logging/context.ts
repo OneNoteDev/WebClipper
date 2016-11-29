@@ -17,7 +17,7 @@ export class ProductionRequirements implements Context {
 		Log.Context.toString(Log.Context.Custom.AppInfoId),
 		Log.Context.toString(Log.Context.Custom.AppInfoVersion),
 		Log.Context.toString(Log.Context.Custom.BrowserLanguage),
-		Log.Context.toString(Log.Context.Custom.BrowserSessionId),
+		Log.Context.toString(Log.Context.Custom.ExtensionLifecycleId),
 		Log.Context.toString(Log.Context.Custom.ClipperType),
 		Log.Context.toString(Log.Context.Custom.DeviceInfoId),
 		Log.Context.toString(Log.Context.Custom.FlightInfo),

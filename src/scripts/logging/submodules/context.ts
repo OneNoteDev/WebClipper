@@ -2,8 +2,8 @@ export module Context {
 	let contextKeyToStringMap = {
 		AppInfoId: "AppInfo.Id",
 		AppInfoVersion: "AppInfo.Version",
-		BrowserSessionId: "BrowserSession.Id",
 		DeviceInfoId: "DeviceInfo.Id",
+		ExtensionLifecycleId: "ExtensionLifecycle.Id",
 		SessionId: "Session.Id",
 		UserInfoId: "UserInfo.Id",
 		UserInfoLanguage: "UserInfo.Language",
@@ -20,7 +20,7 @@ export module Context {
 	export enum Custom {
 		AppInfoId,
 		AppInfoVersion,
-		BrowserSessionId,
+		ExtensionLifecycleId,
 		DeviceInfoId,
 		SessionId,
 		UserInfoId,
