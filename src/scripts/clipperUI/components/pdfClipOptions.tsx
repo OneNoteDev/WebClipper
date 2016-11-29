@@ -187,12 +187,13 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 	}
 
 	render() {
+		let expandOptionLabel = this.state.moreOptionsOpened ? Localization.getLocalizedString("WebClipper.Action.Less") : Localization.getLocalizedString("WebClipper.Action.More");
 		return (
 			<div class="clipOptionsContainer">
 				<div class="clipOptionsTitleContainer">
 					<span class="clipOptionsTitle">{Localization.getLocalizedString("WebClipper.Options.PdfOptions")}</span>
 					<span class="moreClipOptions" id={Constants.Ids.moreClipOptions} {...this.enableInvoke(this.onMoreClicked, 62) }>
-						{Localization.getLocalizedString("WebClipper.Action.More")} <img class="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+						{expandOptionLabel}<img class="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					</span>
 				</div>
 				{this.getAllPagesRadioElement()}
