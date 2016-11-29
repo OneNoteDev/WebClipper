@@ -125,16 +125,14 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				<div class="pdf-indicator pdf-radio-indicator">
 					{!pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
-				{!pdfPreviewInfo.allPages ?
-					<input
-						type="text"
-						id={Constants.Ids.rangeInput}
-						class={invalidClassName}
-						placeholder="e.g. 1-5, 7, 9-12"
-						onfocus={this.onTextInputFocus.bind(this)}
-						value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }>
-					</input>
-					: <span class="pdf-label">{Localization.getLocalizedString("WebClipper.Label.PdfPageRangeRadioButton")}</span>}
+				<input
+					type="text"
+					id={Constants.Ids.rangeInput}
+					class={invalidClassName}
+					placeholder="e.g. 1-5, 7, 9-12"
+					onfocus={this.onTextInputFocus.bind(this)}
+					value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }>
+				</input>
 				{pdfPreviewInfo.shouldShowPopover ?
 					<Popover
 						referenceElementId={Constants.Ids.rangeInput}
@@ -193,7 +191,9 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			<div class="pdf-control" id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(this.onCheckboxChange, 66, !pdfPreviewInfo.shouldAttachPdf) }>
 				<div class="pdf-indicator pdf-checkbox-indicator"></div>
 				{pdfPreviewInfo.shouldAttachPdf ? <div class={Constants.Classes.checkboxCheck}></div> : ""}
-				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile")}</span>
+				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
+					<span class="sub-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFileSubText")}</span>
+				</span>
 			</div>
 		);
 	}

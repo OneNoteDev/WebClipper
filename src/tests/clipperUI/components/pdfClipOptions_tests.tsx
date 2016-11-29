@@ -86,15 +86,15 @@ export class PdfClipOptionsTests extends TestModule {
 			ok(document.getElementById(Constants.Ids.checkboxToAttachPdf), "checkboxToAttachPdf should exist");
 		});
 
-		test("The range input box should not be present if allPages is selected", () => {
+		test("The range input box should be present if allPages is selected", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
-			ok(!document.getElementById(Constants.Ids.rangeInput), "The range input box should not be present");
+			ok(document.getElementById(Constants.Ids.rangeInput), "The range input box should be present");
 		});
 
 		test("The range input box should be present if pageRange is selected", () => {
 			this.defaultPdfClipOptionsProps.clipperState.pdfPreviewInfo.allPages = false;
 			MithrilUtils.mountToFixture(<PdfClipOptions {...this.defaultPdfClipOptionsProps} />);
-			ok(document.getElementById(Constants.Ids.rangeInput), "The range input box should not be present");
+			ok(document.getElementById(Constants.Ids.rangeInput), "The range input box should be present");
 		});
 
 		test("The tab order should flow linearly between pdf options", () => {
@@ -288,7 +288,7 @@ export class PdfClipOptionsTests extends TestModule {
 			});
 
 			let attachmentCheckboxElem = document.getElementById(Constants.Ids.checkboxToAttachPdf);
-			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Label.AttachPdfFile"]);
+			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Label.AttachPdfFile"] + " " + this.stringsJson["WebClipper.Label.AttachPdfFileSubText"]);
 		});
 
 		test("If the pdf is above the MIME size limit, the PdfTooLargeToAttach should be shown instead of AttachPdfFile", () => {
