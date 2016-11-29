@@ -10,6 +10,11 @@ import { ComponentBase } from "../componentBase";
 import {ClipperStateProp} from "../clipperState";
 import {Status, OperationResult} from "../status";
 
+import {AnimationHelper} from "../animations/animationHelper";
+import {AnimationState} from "../animations/animationState";
+import {AnimationStrategy} from "../animations/animationStrategy";
+import {FadeInAnimationStrategy} from "../animations/fadeInAnimationStrategy";
+
 import * as _ from "lodash";
 import * as popperJS from "popper.js";
 
@@ -21,11 +26,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 	private static textAreaListenerAttached = false;
 	private static popover: popperJS;
 
-	getInitialState(): PdfClipOptionsState {
-		return {
-			moreOptionsOpened: false
-		};
-	}
+	private hiddenOptionsAnimationStrategy: AnimationStrategy;
 
 	constructor(props: ClipperStateProp) {
 		super(props);
@@ -33,6 +34,16 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			this.addTextAreaListener();
 			PdfClipOptionsClass.textAreaListenerAttached = true;
 		}
+		this.hiddenOptionsAnimationStrategy = new FadeInAnimationStrategy({
+			extShouldAnimateIn: () => { return this.state.moreOptionsOpened; },
+			extShouldAnimateOut: () => { return !this.state.moreOptionsOpened; }
+		});
+	}
+
+	getInitialState(): PdfClipOptionsState {
+		return {
+			moreOptionsOpened: false
+		};
 	}
 
 	private addTextAreaListener() {
@@ -220,22 +231,38 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		);
 	}
 
+	private onHiddenOptionsDraw(hiddenOptionsAnimator: HTMLElement) {
+		this.hiddenOptionsAnimationStrategy.animate(hiddenOptionsAnimator);
+
+		// If the user is rapidly clicking the More button, we want to cancel the current animation to kick off the next one
+		let currentAnimationState = this.hiddenOptionsAnimationStrategy.getAnimationState();
+		if (currentAnimationState === AnimationState.GoingOut && this.state.moreOptionsOpened) {
+			AnimationHelper.stopAnimationsThen(hiddenOptionsAnimator, () => {
+				this.hiddenOptionsAnimationStrategy.setAnimationState(AnimationState.Out);
+				this.setState({ });
+			});
+		}
+	}
+
 	render() {
+		let expandOptionLabel = this.state.moreOptionsOpened ? Localization.getLocalizedString("WebClipper.Action.Less") : Localization.getLocalizedString("WebClipper.Action.More");
 		return (
 			<div class="clipOptionsContainer">
 				<div class="clipOptionsTitleContainer">
 					<span class="clipOptionsTitle">{Localization.getLocalizedString("WebClipper.Options.PdfOptions")}</span>
 					<span class="moreClipOptions" id={Constants.Ids.moreClipOptions} {...this.enableInvoke(this.onMoreClicked, 62) }>
-						{Localization.getLocalizedString("WebClipper.Action.More")} <img class="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+						{expandOptionLabel}<img class="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					</span>
 				</div>
 				{this.getAllPagesRadioElement()}
 				{this.getPageRangeRadioElement()}
-				{this.state.moreOptionsOpened ?
-					<div className="hiddenOptions">
-						{this.getDistributePagesCheckbox()}
-						{this.getAttachmentCheckbox()}
-					</div> : undefined}
+				<div class="hiddenOptionsAnimator" {...this.onElementDraw(this.onHiddenOptionsDraw)}>
+					{this.state.moreOptionsOpened ?
+						<div className="hiddenOptions">
+							{this.getDistributePagesCheckbox()}
+							{this.getAttachmentCheckbox()}
+						</div> : undefined}
+				</div>
 			</div>
 		);
 	}

@@ -670,7 +670,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
-		OneNoteSaveableFactory.getSaveable(this.state).then((saveable) => {
+		(new OneNoteSaveableFactory(this.state)).getSaveable().then((saveable) => {
 			let saveOptions: SaveToOneNoteOptions = {
 				page: saveable,
 				saveLocation: this.state.saveLocation

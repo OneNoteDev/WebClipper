@@ -30,7 +30,7 @@ export class SlideContentInFromTopAnimationStrategy extends TransitioningAnimati
 	private animateOutSlideUpDelta: number;
 	private contentToAnimate: ContentToAnimate[];
 
-	constructor(options?: SlideContentInFromTopAnimationStrategyOptions) {
+	constructor(options: SlideContentInFromTopAnimationStrategyOptions) {
 		super(undefined /* animationDuration */, options, options.currentAnimationState);
 
 		this.animateInDuration = 367;
