@@ -288,7 +288,7 @@ export class PdfClipOptionsTests extends TestModule {
 			});
 
 			let attachmentCheckboxElem = document.getElementById(Constants.Ids.checkboxToAttachPdf);
-			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Preview.Header.AttachPdfFile"]);
+			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Label.AttachPdfFile"]);
 		});
 
 		test("If the pdf is above the MIME size limit, the PdfTooLargeToAttach should be shown instead of AttachPdfFile", () => {
@@ -299,7 +299,7 @@ export class PdfClipOptionsTests extends TestModule {
 				document.getElementById(Constants.Ids.moreClipOptions).click();
 			});
 			let attachmentCheckboxElem = document.getElementById(Constants.Ids.checkboxToAttachPdfDisabled);
-			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Preview.Header.PdfTooLargeToAttach"]);
+			strictEqual(attachmentCheckboxElem.innerText, this.stringsJson["WebClipper.Label.PdfTooLargeToAttach"]);
 		});
 
 		test("If the PDF result has not started, or has failed, the checkboxToAttachPdf should not be visible, and the checkboxToAttachPdfDisabled should be visible", () => {
