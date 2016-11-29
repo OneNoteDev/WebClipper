@@ -1,5 +1,6 @@
+import {OperationResult} from "../scripts/operationResult";
 import {StringUtils} from "../scripts/stringUtils";
-import {OperationResult} from "../scripts/clipperUI/status";
+
 import {Localization} from "../scripts/localization/localization";
 
 import {TestModule} from "./testModule";

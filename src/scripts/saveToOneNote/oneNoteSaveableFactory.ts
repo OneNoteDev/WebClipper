@@ -1,10 +1,11 @@
 import {Constants} from "../constants";
+import {OperationResult} from "../operationResult";
 import {StringUtils} from "../stringUtils";
 import {UrlUtils} from "../urlUtils";
 
 import {ClipMode} from "../clipperUI/clipMode";
 import {ClipperState} from "../clipperUI/clipperState";
-import {Status, OperationResult} from "../clipperUI/status";
+import {Status} from "../clipperUI/status";
 
 import {DomUtils} from "../domParsers/domUtils";
 

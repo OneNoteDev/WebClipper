@@ -6,7 +6,7 @@ import { StringUtils } from "../../stringUtils";
 
 import * as popperJS from "popper.js";
 
-export interface PopperProps {
+export interface PopoverProps {
 	referenceElementId: string;
 	placement: string; // TODO: use a union type of allowed values
 
@@ -15,12 +15,9 @@ export interface PopperProps {
 	arrowClassNames?: string[];
 	modifiersIgnored?: string[]; // TODO: use a union type of allowed values
 	removeOnDestroy?: boolean;
-
-	id?: string;
 }
 
-// ref element
-class PopperClass extends ComponentBase<{}, PopperProps> {
+class PopoverClass extends ComponentBase<{}, PopoverProps> {
 	private refToPopper: popperJS;
 
 	constructor(props: any) {
@@ -55,19 +52,19 @@ class PopperClass extends ComponentBase<{}, PopperProps> {
 		}
 
 		context.onunload = () => {
-			this.refToPopper.destroy();
-			this.refToPopper = undefined;
+			if (this.refToPopper) {
+				this.refToPopper.destroy();
+				this.refToPopper = undefined;
+			}
 		};
 	}
 
 	render() {
 		return (
-			<div
-				config={this.handlePopoverLifecycle.bind(this)}
-				id={this.props.id} />
+			<div config={this.handlePopoverLifecycle.bind(this)} />
 		);
 	}
 }
 
-let component = PopperClass.componentize();
-export { component as Popover };
+let component = PopoverClass.componentize();
+export {component as Popover};

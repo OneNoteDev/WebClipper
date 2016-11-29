@@ -1,6 +1,7 @@
 import {Localization} from "../../localization/localization";
 
 import {Constants} from "../../constants";
+import {OperationResult} from "../../operationResult";
 import {PdfPreviewInfo} from "../../previewInfo";
 import {StringUtils} from "../../stringUtils";
 
@@ -8,7 +9,7 @@ import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {ComponentBase} from "../componentBase";
 import {ClipperStateProp} from "../clipperState";
-import {Status, OperationResult} from "../status";
+import {Status} from "../status";
 
 import {Popover} from "./popper";
 
@@ -99,7 +100,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return (
 			<div id={Constants.Ids.radioAllPagesLabel} class="pdf-control" {...this.enableInvoke(this.onSelectionChange, 60, true) }>
 				<div class="pdf-indicator pdf-radio-indicator">
-					{pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : ""}
+					{pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
 				<span class="pdf-label">{Localization.getLocalizedString("WebClipper.Preview.Header.PdfAllPagesRadioButtonLabel")}</span>
 			</div>
@@ -113,7 +114,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return (
 			<div id={Constants.Ids.radioPageRangeLabel} class="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, false) }>
 				<div class="pdf-indicator pdf-radio-indicator">
-					{!pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : ""}
+					{!pdfPreviewInfo.allPages ? <div class={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
 				{!pdfPreviewInfo.allPages ?
 					<input
@@ -133,7 +134,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 						classNames={[Constants.Classes.popover]}
 						arrowClassNames={[Constants.Classes.popoverArrow]}
 						modifiersIgnored={["flip"]}
-						removeOnDestroy={true} /> : ""}
+						removeOnDestroy={true} /> : undefined}
 			</div>
 		);
 	}

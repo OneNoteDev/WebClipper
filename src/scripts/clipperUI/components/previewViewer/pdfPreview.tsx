@@ -1,5 +1,6 @@
 import {Constants} from "../../../constants";
 import {ObjectUtils} from "../../../objectUtils";
+import {OperationResult} from "../../../operationResult";
 import {PdfPreviewInfo} from "../../../previewInfo";
 import {StringUtils} from "../../../stringUtils";
 import {UrlUtils} from "../../../urlUtils";
@@ -17,7 +18,7 @@ import {Localization} from "../../../localization/localization";
 
 import {ClipMode} from "../../clipMode";
 import {ClipperStateProp, DataResult} from "../../clipperState";
-import {Status, OperationResult} from "../../status";
+import {Status} from "../../status";
 
 import {RotatingMessageSpriteAnimation} from "../../components/rotatingMessageSpriteAnimation";
 

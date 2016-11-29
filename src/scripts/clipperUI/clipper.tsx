@@ -4,6 +4,7 @@ import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
+import {OperationResult} from "../operationResult";
 import {PageInfo} from "../pageInfo";
 import {Polyfills} from "../polyfills";
 import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
@@ -54,7 +55,7 @@ import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {PreviewViewer} from "./previewViewer";
 import {RatingsHelper} from "./ratingsHelper";
 import {RegionSelector} from "./regionSelector";
-import {Status, OperationResult} from "./status";
+import {Status} from "./status";
 
 import * as _ from "lodash";
 
