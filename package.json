@@ -65,7 +65,7 @@
     "sinon-qunit": "2.0.0",
     "ssl-root-cas": "1.2.2",
     "tslint": "3.15.1",
-    "typescript": "2.0.9",
+    "typescript": "2.0.10",
     "urijs": "1.18.3",
     "velocity-animate": "1.2.3",
     "vinyl-source-stream": "1.1.0",
