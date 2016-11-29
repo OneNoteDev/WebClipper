@@ -17,19 +17,13 @@ export module StringUtils {
 	 */
 	export function parsePageRange(text: string, maxRange?: number): ParsedPageRange {
 		if (ObjectUtils.isNullOrUndefined(text)) {
-			return {
-				status: OperationResult.Failed,
-				result: ""
-			};
+			return asFailedOperation("");
 		}
 
 		text = text.trim();
 
 		if (text === "") {
-			return {
-				status: OperationResult.Failed,
-				result: ""
-			};
+			return asFailedOperation("");
 		}
 
 		let splitText = text.split(",");
@@ -46,47 +40,54 @@ export module StringUtils {
 
 			if (/^\d+$/.test(currentValue)) {
 				let digit = parseInt(currentValue, 10 /* radix */);
-				if (digit === 0) {
-					return {
-						status: OperationResult.Failed,
-						result: currentValue
-					};
+				if (digit === 0 || !ObjectUtils.isNullOrUndefined(maxRange) && digit > maxRange) {
+					return asFailedOperation(currentValue);
 				}
 				valueToAppend = [digit];
 				// ... or it could a range of the form [#]-[#]
 			} else if (matches = /^(\d+)\s*-\s*(\d+)$/.exec(currentValue)) {
-				let lhs = parseInt(matches[1], 10), rhs = parseInt(matches[2], 10) + 1;
-				// Disallow ranges like 5-3, or 10-1
-				if (lhs >= rhs || lhs === 0 || rhs === 0) {
-					return {
-						status: OperationResult.Failed,
-						result: currentValue
-					};
+				let lhs = parseInt(matches[1], 10), rhs = parseInt(matches[2], 10);
+				// Try and catch an invalid range as soon as possible, before we compute the range
+				// We also define a maxRangeAllowed as 2^32, which is the max size of an array in JS
+				const maxRangeSizeAllowed = 4294967295;
+				if (lhs >= rhs || lhs === 0 || rhs === 0 || lhs >= maxRangeSizeAllowed || rhs >= maxRangeSizeAllowed ||
+					rhs - lhs + 1 > maxRangeSizeAllowed || (!ObjectUtils.isNullOrUndefined(maxRange) && rhs > maxRange)) {
+					return asFailedOperation(currentValue);
 				}
-				valueToAppend = _.range(lhs, rhs);
+				valueToAppend = _.range(lhs, rhs + 1);
 			} else {
 				// The currentValue is not a single digit or a valid range
-				return {
-					status: OperationResult.Failed,
-					result: currentValue
-				};
+				return asFailedOperation(currentValue);
 			}
 
 			range = range.concat(valueToAppend);
 		}
 
 		let parsedPageRange = _(range).sortBy().sortedUniq().value();
-		const last = _.last(parsedPageRange);
-		if (maxRange && (_.last(parsedPageRange) > maxRange)) {
-			return {
-				status: OperationResult.Failed,
-				result: last.toString()
-			};
+
+		if (parsedPageRange.length === 0) {
+			return asFailedOperation(text);
 		}
 
+		const last = _.last(parsedPageRange);
+		if (!ObjectUtils.isNullOrUndefined(maxRange) && last > maxRange) {
+			return asFailedOperation(last.toString());
+		}
+
+		return asSucceededOperation(parsedPageRange);
+	}
+
+	function asSucceededOperation<T>(obj: T): { status: OperationResult, result: T } {
 		return {
 			status: OperationResult.Succeeded,
-			result: parsedPageRange
+			result: obj
+		};
+	}
+
+	function asFailedOperation<T>(obj: T): { status: OperationResult, result: T } {
+		return {
+			status: OperationResult.Failed,
+			result: obj
 		};
 	}
 
