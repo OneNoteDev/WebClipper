@@ -42,7 +42,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, true);
 		});
 
 		test("If the current mode is full page and its call to the API is in progress, the clip button should not be active or clickable", () => {
@@ -51,7 +51,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is full page and its call to the API failed, the clip button should not be active or clickable", () => {
@@ -60,7 +60,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is region and there are regions selected, the clip button should be active and clickable", () => {
@@ -70,7 +70,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, true);
 		});
 
 		test("If the current mode is region and there are no regions selected, the clip button should not be active or clickable", () => {
@@ -80,7 +80,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is region and the status is NotStarted, the clip button should not be active or clickable", () => {
@@ -90,7 +90,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is region and the status is InProgress, the clip button should not be active or clickable", () => {
@@ -100,7 +100,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is region and the status is InProgress and has images already stored, the clip button should not be active or clickable", () => {
@@ -110,7 +110,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is selection and the status is succeeded and has a text stored in clipperState, the clip button should be active and clickable", () => {
@@ -119,7 +119,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, true);
 		});
 
 		test("If the current mode is augmentation and the status is succeeded and has content stored in clipperState, the clip button should be active and clickable", () => {
@@ -132,7 +132,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, true);
 		});
 
 		test("If the current mode is augmentation and the status is succeeded and has content stored in clipperState as a recipe, the clip button should be active and clickable", () => {
@@ -145,7 +145,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, true);
 		});
 
 		test("If the current mode is augmentation and the status is succeeded but no content was found, the clip button should not be active or clickable", () => {
@@ -158,7 +158,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is augmentation and the status is succeeded but no content was found, and ContentInHtml is undefined, the clip button should not be active or clickable", () => {
@@ -171,7 +171,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is augmentation and the status is in progress, the clip button should not be active or clickable", () => {
@@ -180,7 +180,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is augmentation and the status indicates failure, the clip button should not be active or clickable", () => {
@@ -189,7 +189,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is bookmark and the status indicates success, the clip button should should be active and clickable", () => {
@@ -202,7 +202,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, true);
 		});
 
 		test("If the current mode is bookmark and the status indicates failure, the clip button should not be active or clickable", () => {
@@ -211,7 +211,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is bookmark and the status indicates InProgress, the clip button should not be active or clickable", () => {
@@ -220,7 +220,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is bookmark and the status indicates NotStarted, the clip button should not be active or clickable", () => {
@@ -229,7 +229,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is PDF and the status indicates Succeeded, and AllPages is selected, the clip button should be active and clickable", () => {
@@ -248,7 +248,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, true);
 		});
 
 		test("If the current mode is PDF and the status indicates Succeeded, and AllPages is selected, even though a custom selection was made as well, the clip button should be active and clickable", () => {
@@ -267,7 +267,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, true);
 		});
 
 		test("If the current mode is PDF and the status indicates Succeeded, and a valid page selection is selected, the clip button should be active and clickable", () => {
@@ -286,7 +286,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, true);
 		});
 
 		// Popover tests begin
@@ -306,10 +306,10 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, false);
 		});
 
-		test("If the current mode is PDF and the status indicates Succeeded, and a syntactically correct but out-of-bounds selection is selected, the clip button should be active clickable", () => {
+		test("If the current mode is PDF and the status indicates Succeeded, and a syntactically correct but out-of-bounds selection is selected, the clip button should be active and clickable", () => {
 			this.mockOptionsPanelProps.clipperState.currentMode.set(ClipMode.Pdf);
 			this.mockOptionsPanelProps.clipperState.pdfResult.status = Status.Succeeded;
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
@@ -325,7 +325,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, false);
 		});
 
 		test("If the current mode is PDF and the status indicates Succeeded, and an empty page selection is selected, the clip button should be active and clickable", () => {
@@ -344,7 +344,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(true);
+			this.assertClipButtonAvailability(true, false);
 		});
 
 		test("If the current mode is PDF and the status indicates Succeeded, and an undefined page selection is selected, the clip button should not be active or clickable", () => {
@@ -362,7 +362,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is PDF and the status indicates Succeeded, but the file is local and it was not allowed, the clip button should not be active or clickable", () => {
@@ -381,7 +381,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is PDF and the status indicates InProgress, the clip button should not be active or clickable", () => {
@@ -390,7 +390,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is PDF and the status indicates NotStarted, the clip button should not be active or clickable", () => {
@@ -399,7 +399,7 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 
 		test("If the current mode is PDF and the status indicates failure, the clip button should not be active or clickable", () => {
@@ -408,11 +408,11 @@ export class OptionsPanelTests extends TestModule {
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 
-			this.assertClipButtonAvailability(false);
+			this.assertClipButtonAvailability(false, false);
 		});
 	}
 
-	private assertClipButtonAvailability(isAvailable: boolean) {
+	private assertClipButtonAvailability(isAvailable: boolean, onStartClippedCalled: boolean) {
 		let clipButton = document.getElementById(Constants.Ids.clipButton);
 		ok(clipButton, "The clip button should be present");
 
@@ -425,7 +425,7 @@ export class OptionsPanelTests extends TestModule {
 			clipButton.click();
 		});
 
-		strictEqual(this.onStartClipCalled, isAvailable, "The onStartClip callback should be called only if it's available");
+		strictEqual(this.onStartClipCalled, onStartClippedCalled, "The onStartClip callback should be called only if it's available");
 	}
 }
 

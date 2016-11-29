@@ -4,13 +4,12 @@ import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
-import {OperationResult} from "../operationResult";
+
 import {PageInfo} from "../pageInfo";
 import {Polyfills} from "../polyfills";
 import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
 import {Settings} from "../settings";
 import {TooltipType} from "./tooltipType";
-import {StringUtils} from "../stringUtils";
 import {UrlUtils} from "../urlUtils";
 
 import {Communicator} from "../communicator/communicator";
@@ -624,17 +623,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private handleStartClip(): void {
-		const pdfPreviewInfo = this.state.pdfPreviewInfo;
-		if (this.state.currentMode.get() === ClipMode.Pdf && !pdfPreviewInfo.allPages && this.state.pdfResult.status === Status.Succeeded) {
-			const parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.state.pdfResult.data.get().pdf.numPages());
-			if (parsePageRangeOperation.status !== OperationResult.Succeeded) {
-				_.assign(_.extend(this.state.pdfPreviewInfo, {
-					shouldShowPopover: true
-				}), this.state.setState);
-				return;
-			}
-		}
-
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ClipAttempted);
 
 		this.state.setState({ userResult: { status: Status.InProgress, data: this.state.userResult.data } });
