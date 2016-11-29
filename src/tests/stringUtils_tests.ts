@@ -20,7 +20,7 @@ export class StringUtilsTests extends TestModule {
 			/* tslint:enable */
 		});
 
-		test("An empty string should return an empty array", () => {
+		test("An empty string should return an empty string", () => {
 			let ret = StringUtils.parsePageRange("");
 			ok(ret.status === OperationResult.Failed);
 			deepEqual(ret.result, "");
@@ -28,6 +28,17 @@ export class StringUtilsTests extends TestModule {
 			let retTwo = StringUtils.parsePageRange("           	 	");
 			ok(retTwo.status === OperationResult.Failed);
 			deepEqual(retTwo.result, "");
+		});
+
+		test("A string of commas should return an empty string", () => {
+			let ret = StringUtils.parsePageRange(",,,,,,");
+			ok(ret.status === OperationResult.Failed);
+			deepEqual(ret.result, ",,,,,,");
+
+			let retTwo = StringUtils.parsePageRange(",, , ");
+			ok(retTwo.status === OperationResult.Failed);
+			// The result should be trimmed
+			deepEqual(retTwo.result, ",, ,");
 		});
 
 		test("A single digit should return a single digit array", () => {
@@ -78,22 +89,40 @@ export class StringUtilsTests extends TestModule {
 			deepEqual(ret.result, [1, 2, 3, 4, 5, 8]);
 		});
 
-		test("A range with negative inputs should return undefined", () => {
+		test("A range with negative inputs should return the part with the invalid string", () => {
 			let ret = StringUtils.parsePageRange("-5--2,-1,0,2");
 			ok(ret.status === OperationResult.Failed);
 			strictEqual(ret.result, "-5--2");
 		});
 
-		test("A range with non-numeric inputs should return undefined", () => {
+		test("A range with non-numeric inputs should return the part with the invalid string", () => {
 			let ret = StringUtils.parsePageRange("1,a-b,7,d,e,f");
 			ok(ret.status === OperationResult.Failed);
 			strictEqual(ret.result, "a-b");
 		});
 
-		test("A range that has numbers out of order, such as 1,5-3 should return undefined", () => {
+		test("A range that has numbers out of order, such as 1,5-3 should return the part with the invalid string", () => {
 			let ret = StringUtils.parsePageRange("5-3");
 			ok(ret.status === OperationResult.Failed);
 			strictEqual(ret.result, "5-3");
+		});
+
+		test("A range that exceeds a range of 2^32 should return the part with the invalid string", () => {
+			let ret = StringUtils.parsePageRange("1-4294967295");
+			ok(ret.status === OperationResult.Failed);
+			strictEqual(ret.result, "1-4294967295");
+		});
+
+		test("A number that far exceeds a range of 2^32 should return the number as a string", () => {
+			let ret = StringUtils.parsePageRange("999999999999999999999999999999", 5);
+			ok(ret.status === OperationResult.Failed);
+			strictEqual(ret.result, "999999999999999999999999999999");
+		});
+
+		test("A range that far exceeds a range of 2^32 should return the part with the invalid string", () => {
+			let ret = StringUtils.parsePageRange("1-999999999999999999999999999999");
+			ok(ret.status === OperationResult.Failed);
+			strictEqual(ret.result, "1-999999999999999999999999999999");
 		});
 
 		test("Ranges that have 0 anywhere in them should be invalid", () => {
@@ -114,15 +143,15 @@ export class StringUtilsTests extends TestModule {
 			strictEqual(four.result, "0");
 		});
 
-		test("Validate the range when max range is provide", () => {
+		test("Validate the range when max range is provided", () => {
 			deepEqual(StringUtils.parsePageRange("1-5", 10).result, [1, 2, 3, 4, 5], "Given range is within the max bounds of 10.");
 			deepEqual(StringUtils.parsePageRange("1,3,5,6,8", 9).result, [1, 3, 5, 6, 8], "Given range is within the max range of 9");
 
 			const one = StringUtils.parsePageRange("1-13", 10);
-			strictEqual(one.result, "13", "Given range is outside of the max bounds of 10.");
+			strictEqual(one.result, "1-13", "Given range is outside of the max bounds of 10.");
 
 			const two = StringUtils.parsePageRange("1,3,5,6,8", 2);
-			strictEqual(two.result, "8", "Given range is outside the max bounds of 2");
+			strictEqual(two.result, "3", "Given range is outside the max bounds of 2");
 		});
 
 		test("getBatchedPageTitle should return a title of the form [nameOfDocument]: Page [i + 1]", () => {
