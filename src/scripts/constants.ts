@@ -20,6 +20,10 @@ export module Constants {
 		export var textAreaInput = "textAreaInput";
 		export var textAreaInputMirror = "textAreaInputMirror";
 
+		// popover
+		export var popover = "popover";
+		export var popoverArrow = "popover-arrow";
+
 		// previewViewer
 		export var deleteHighlightButton = "delete-highlight";
 		export var highlightable = "highlightable";
@@ -161,10 +165,12 @@ export module Constants {
 		export var pdfHeaderTitle = "pdfHeaderTitle";
 		export var pageRangeControl = "pageRangeControl";
 
+		// pdfClipOptions
 		export var checkboxToDistributePages = "checkboxToDistributePages";
 		export var checkboxToAttachPdfDisabled = "checkboxToAttachPdfDisabled";
 		export var checkboxToAttachPdf = "checkboxToAttachPdf";
 		export var moreClipOptions = "moreClipOptions";
+		export var invalidPageRangePopover = "invalidPageRangePopover";
 
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";

@@ -12,6 +12,7 @@ export interface PdfPreviewInfo {
 	selectedPageRange?: string;
 	shouldAttachPdf?: boolean;
 	shouldDistributePages?: boolean;
+	shouldShowPopover?: boolean;
 };
 
 export interface PreviewInfo {

@@ -5,3 +5,8 @@ export enum Status {
 	Succeeded,
 	Failed
 }
+
+export enum OperationResult {
+	Succeeded,
+	Failed
+}

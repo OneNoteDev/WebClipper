@@ -319,6 +319,14 @@ export class PdfClipOptionsTests extends TestModule {
 			ok(!document.getElementById(Constants.Ids.checkboxToAttachPdf), "The checkboxToAttachPdf should not be visible");
 			ok(document.getElementById(Constants.Ids.checkboxToAttachPdfDisabled), "The checkboxToAttachPdfDisabled should be visible");
 		});
+
+		test("Given that shouldShowPopover is true, then the popover should be visible", () => {
+			this.defaultPdfClipOptionsProps.clipperState.pdfPreviewInfo.allPages = false;
+			this.defaultPdfClipOptionsProps.clipperState.pdfPreviewInfo.shouldShowPopover = true;
+			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
+
+			ok(document.querySelector("." + Constants.Classes.popover), "The popover should be visible");
+		});
 	}
 }
 
