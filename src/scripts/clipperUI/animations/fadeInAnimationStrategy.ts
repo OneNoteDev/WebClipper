@@ -8,7 +8,6 @@ import {TransitioningAnimationStrategy, TransitioningAnimationStrategyOptions} f
  * When transitioning out, elements fade away.
  */
 export class FadeInAnimationStrategy extends TransitioningAnimationStrategy<TransitioningAnimationStrategyOptions> {
-
 	constructor(options?: TransitioningAnimationStrategyOptions) {
 		super(200 /* animationDuration */, options);
 	}
