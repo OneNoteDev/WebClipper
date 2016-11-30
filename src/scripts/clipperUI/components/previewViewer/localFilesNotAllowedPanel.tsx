@@ -21,15 +21,15 @@ export class LocalFilesNotAllowedPanelClass extends ComponentBase<{}, LocalFiles
 				<div id={Constants.Ids.previewInnerWrapper}>
 					<div id={Constants.Ids.previewInnerContainer} style="height: auto;">
 						<div id={Constants.Ids.previewOptionsContainer}>
-							<div class="control-button-group">
-								<span id={Constants.Ids.localPdfFileTitle} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} class="buttonLabelFont">
+							<div className="control-button-group">
+								<span id={Constants.Ids.localPdfFileTitle} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} className="buttonLabelFont">
 									{this.props.header}
 								</span>
 							</div>
 						</div>
-						<div id={Constants.Ids.previewContentContainer} class="local-pdf-file-content-container">
-							<div class={Constants.Classes.localPdfPanelTitle}>{this.props.title}</div>
-							<div class={Constants.Classes.localPdfPanelSubtitle}>{this.props.subtitle}</div>
+						<div id={Constants.Ids.previewContentContainer} className="local-pdf-file-content-container">
+							<div className={Constants.Classes.localPdfPanelTitle}>{this.props.title}</div>
+							<div className={Constants.Classes.localPdfPanelSubtitle}>{this.props.subtitle}</div>
 						</div>
 					</div>
 				</div>

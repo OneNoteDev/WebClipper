@@ -1,8 +1,7 @@
 import {Constants} from "../../constants";
+import {StringUtils} from "../../stringUtils";
 
 import {ComponentBase} from "../componentBase";
-
-import { StringUtils } from "../../stringUtils";
 
 import * as popperJS from "popper.js";
 
