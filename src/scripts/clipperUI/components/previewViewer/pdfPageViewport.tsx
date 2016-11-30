@@ -38,7 +38,7 @@ class PdfPageViewportClass extends ComponentBase<{}, PdfPageViewportProp> {
 		return (
 			<div data-pageindex={this.props.index} style={this.getViewportStyle()}>
 				{this.props.imgUrl ?
-					<img class={Constants.Classes.pdfPreviewImage} src={this.props.imgUrl} style={this.getViewportStyle()}></img> :
+					<img className={Constants.Classes.pdfPreviewImage} src={this.props.imgUrl} style={this.getViewportStyle()}></img> :
 					<div style={this.getPlaceholderStyle()}>{this.getSpinner()}</div>}
 			</div>
 		);

@@ -1,4 +1,5 @@
 import {StringUtils} from "../stringUtils";
+import {ObjectUtils} from "../objectUtils";
 
 import {ClipMode} from "./clipMode";
 import {ClipperState} from "./clipperState";
@@ -19,11 +20,13 @@ export module ClipperStateUtilities {
 					return false;
 				} else if (clipperState.pdfPreviewInfo.allPages) {
 					return true;
+				} else if (!clipperState.pdfPreviewInfo.allPages && ObjectUtils.isNullOrUndefined(clipperState.pdfPreviewInfo.selectedPageRange)) {
+					return false;
 				}
-				// We know at this point that the status is succeeded and the user has a specific page range, so if
-				// it is unparseable or empty, we disallow the clip
-				let pages = StringUtils.parsePageRange(clipperState.pdfPreviewInfo.selectedPageRange, clipperState.pdfResult.data.get().pdf.numPages());
-				return !!pages && pages.length > 0;
+
+				// If the user has an invalidPageRange, the clipButton is still enabled,
+				// but when the user clips, we short circuit it and display a message instead
+				return true;
 			case ClipMode.FullPage:
 				let fullPageScreenshotResult = clipperState.fullPageResult;
 				return fullPageScreenshotResult.status === Status.Succeeded;

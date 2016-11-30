@@ -1,6 +1,38 @@
 /*---------------------------------------------------------*
 	Main clipper UI class defines
 *---------------------------------------------------------*/
+.popover-arrow {
+	content: " ";
+	width: 0;
+	height: 0;
+	border-style: solid;
+	position: absolute;
+	margin: 5px;
+	border-width: 10px 10px 10px 0;
+	border-color: transparent #e81123 transparent transparent;
+	left: -5px;
+	top: calc(50% - 5px);
+	margin-left: 0;
+	margin-right: 0;
+}
+
+.popover {
+	font-family: @SegoeUi;
+	box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
+	position: absolute;
+	background: #e81123;
+	border-radius: 4px;
+	font-size: 15px;
+	line-height: 20px;
+	pointer-events: none;
+	word-wrap: break-word;
+	color: white;
+	max-width: 135px;
+	border-radius: 3px;
+	padding: 4px;
+	text-align: center;
+	margin-left: 5px;
+}
 
 .actionLabelFont {
 	font-weight: normal;
@@ -172,6 +204,10 @@
 		&.disabled {
 			color: #E1B1FF;
 		}
+
+		.sub-label {
+			color: #CCC;
+		}
 	}
 
 	.radio-indicator-fill {
@@ -190,15 +226,6 @@
 		line-height: 28px;
 		height: 28px;
 		margin-right: auto;
-
-		&.warning-image {
-			height: 15px;
-			width: 15px;
-			position: absolute;
-			top: 6px;
-			left: 0px;
-			border: 1px solid transparent;
-		}
 	}
 
 	.pdf-indicator {
@@ -231,41 +258,12 @@
 		background: transparent;
 		border-width: 0 1px 1px 0;
 	}
-	
-	.popover {
-		background: #e81123;
-		color: #fff;
-		opacity: 1;
-		position: absolute;
-		z-index: 5;
-		transform: translateX(145px);
-		transition: all 0.25s ease-out;
-		box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
-		border-radius: 4px;
-		padding: 4px;
-		font-size: 15px;
-		line-height: 20px;
-		right: 0px; 
-		top: 0px;
-		text-align: center;
-		pointer-events: none;
-		max-width: 126px;
-		float: left;
-		word-wrap: break-word;
 
-		&:before {
-			position: absolute;
-			left: 0;
-			content: " ";
-			width: 0; // CSS triangles are built using only borders
-			height: 0;
-			/*top: -9px; // 9px to account for height of the triangle, and to overlap the border*/
-			left: -9px;
-			margin-left: -1px; // no idea why this works
-			border-top: solid transparent 10px;
-			border-bottom: solid transparent 10px;
-			border-right: solid #e81123 10px;
-		}
+	.warning-image {
+		position: absolute;
+		top: 7px;
+		width: 16px;
+		height: 16px;
 	}
 
 	#rangeInput {

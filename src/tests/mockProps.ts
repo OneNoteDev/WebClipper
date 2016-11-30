@@ -102,7 +102,8 @@ export module MockProps {
 				isLocalFileAndNotAllowed: false,
 				selectedPageRange: "1,3,5",
 				shouldAttachPdf: true,
-				shouldDistributePages: true
+				shouldDistributePages: true,
+				shouldShowPopover: false
 			},
 			augmentationPreviewInfo: {
 				previewBodyHtml: "Edited body"
