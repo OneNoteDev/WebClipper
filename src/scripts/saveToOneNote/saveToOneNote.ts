@@ -18,6 +18,7 @@ import * as _ from "lodash";
 export interface SaveToOneNoteOptions {
 	page: OneNoteSaveable;
 	saveLocation?: string;
+	progressCallback?: (num: number, denom: number) => void;
 }
 
 /**
@@ -26,6 +27,12 @@ export interface SaveToOneNoteOptions {
 export class SaveToOneNote {
 	private static timeBeforeFirstPatch = 1000;
 	private static timeBetweenPatchRequests = 7000;
+
+	private static timeBeforeFirstBatch = 1000;
+	private static timeBetweenBatchRequests;
+
+	private static timeBeforeFirstPost = 1000;
+	private static timeBetweenPostRequests = 3000;
 
 	private accessToken: string;
 
@@ -37,16 +44,62 @@ export class SaveToOneNote {
 	 * Saves a page (and if necessary, appends PATCHES) to OneNote
 	 */
 	public save(options: SaveToOneNoteOptions): Promise<OneNoteApi.ResponsePackage<any>> {
-		if (options.page.getNumPatches() > 0) {
-			return this.rejectIfNoPatchPermissions(options.saveLocation).then(() => {
-				return this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
-					// TODO: unnecessary then
+		if (options.page.getNumPages() > 1) {
+			return this.saveMultiplePagesSynchronously(options);
+		} else {
+			if (options.page.getNumPatches() > 0) {
+				return this.rejectIfNoPatchPermissions(options.saveLocation).then(() => {
+					return this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
+						// TODO: unnecessary then
+						return Promise.resolve(responsePackage);
+					});
+				});
+			} else {
+				return this.saveWithoutCheckingPatchPermissions(options);
+			}
+		}
+	}
+
+	private saveMultiplePagesSynchronously(options: SaveToOneNoteOptions /*, progressCallback: (num: number, denom: number) => void = () => {} */) {
+		return options.page.getPage().then((page) => {
+			return this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
+				return this.synchronouslyCreateMultiplePages(options).then(() => {
 					return Promise.resolve(responsePackage);
 				});
 			});
-		} else {
-			return this.saveWithoutCheckingPatchPermissions(options);
-		}
+		});
+	}
+
+	// The way the progress callback works is that as work is being done, it will call the callback
+	// with an argument such as a fraction or a percentage of how far along it is
+	// The callback will propagate this back to the parent component that passed it in, and it is
+	// the passer's responsibility to use that information
+	private synchronouslyCreateMultiplePages(options: SaveToOneNoteOptions /*, progressCallback: (num: number, denom: number) => void = () => {} */): Promise<any> {
+		const saveable = options.page;
+
+		const end = saveable.getNumPages();
+		let progressCallback = options.progressCallback ? options.progressCallback : () => { };
+		progressCallback(0, end);
+
+		return _.range(end).reduce((chainedPromise, i) => {
+			return chainedPromise = chainedPromise.then(() => {
+				return new Promise((resolve, reject) => {
+					// Parallelize the POST request intervals with the fetching of current dataUrl
+					let getPagePromise = this.getPageWithLogging(saveable, i);
+					let timeoutPromise = PromiseUtils.wait(SaveToOneNote.timeBetweenPostRequests);
+
+					Promise.all([getPagePromise, timeoutPromise]).then((values) => {
+						let page = values[0] as OneNoteApi.OneNotePage;
+						this.getApi().createPage(page).then(() => {
+							progressCallback(i, end);
+							resolve();
+						}).catch((error) => {
+							reject(error);
+						});
+					});
+				});
+			});
+		}, Promise.resolve());
 	}
 
 	private rejectIfNoPatchPermissions(saveLocation: string): Promise<void> {
@@ -90,6 +143,7 @@ export class SaveToOneNote {
 		});
 	}
 
+	// TODO: Temporarily hack the batch to be synchronous requests instead of actual batches
 	private batch(saveable: OneNoteSaveable): Promise<any> {
 		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
 		return _.range(saveable.getNumBatches()).reduce((chainedPromise, i) => {
@@ -162,6 +216,24 @@ export class SaveToOneNote {
 
 			Clipper.logger.logEvent(event);
 			return Promise.resolve(revisions);
+		});
+	}
+
+	private getPageWithLogging(saveable: OneNoteSaveable, index: number) {
+		let event = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
+		return saveable.getPage(index).then((page: OneNoteApi.OneNotePage) => {
+			event.stopTimer();
+
+			const numPages = 1;
+			event.setCustomProperty(Log.PropertyName.Custom.NumPages, numPages);
+
+			let lengthOfDataUrls = page.getEntireOnml().length;
+			event.setCustomProperty(Log.PropertyName.Custom.ByteLength, lengthOfDataUrls);
+			event.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, lengthOfDataUrls / numPages);
+			event.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, event.getDuration() / numPages);
+
+			Clipper.logger.logEvent(event);
+			return Promise.resolve(page);
 		});
 	}
 

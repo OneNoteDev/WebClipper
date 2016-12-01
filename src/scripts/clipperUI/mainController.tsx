@@ -260,6 +260,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				return <RegionSelectingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingToApi:
 				if (this.props.clipperState.currentMode.get() === ClipMode.Pdf) {
+					// return <ClippingPanelWithProgressIndicator clipperState={this.props.clipperState} />;
 					return <ClippingPanelWithDelayedMessage clipperState={this.props.clipperState}
 						delay={Constants.Settings.pdfClippingMessageDelay} message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")} />;
 				}

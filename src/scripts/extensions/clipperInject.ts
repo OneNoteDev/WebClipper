@@ -243,7 +243,8 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 
 		// Notify the background when we're unloading
 		window.onbeforeunload = (event) => {
-			this.extCommunicator.callRemoteFunction(Constants.FunctionKeys.unloadHandler);
+			return "Are you sure you want to navigate away?";
+			// this.extCommunicator.callRemoteFunction(Constants.FunctionKeys.unloadHandler);
 		};
 
 		// On single-page-app 'navigates' we want to be able to toggle off the Clipper. We don't destroy it completely as it causes

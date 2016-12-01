@@ -27,6 +27,7 @@
 	"WebClipper.ClipType.Pdf.InstructionsForClippingLocalFiles": "In Chrome, right-click the OneNote icon in the toolbar and choose \u0022Manage Extension\u0027. Then, for OneNote Web Clipper, check \u0027Allow access to file URLs.\u0027",
 	"WebClipper.ClipType.Pdf.ProgressLabel": "Clipping PDF File",
 	"WebClipper.ClipType.Pdf.ProgressLabelDelay": "PDFs can take a little while to upload. Still clipping.”",
+	"WebClipper.ClipType.Pdf.IncrementalProgressMessage": "Clipping page {0} of {1}",
 	"WebClipper.ClipType.Pdf.Button.Tooltip": "Take a screenshot of the whole PDF file and save a copy of the attachment.",
 	"WebClipper.ClipType.Product.Button": "Product",
 	"WebClipper.ClipType.Product.ProgressLabel": "Clipping Product",

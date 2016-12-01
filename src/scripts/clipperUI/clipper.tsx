@@ -662,8 +662,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		(new OneNoteSaveableFactory(this.state)).getSaveable().then((saveable) => {
 			let saveOptions: SaveToOneNoteOptions = {
 				page: saveable,
-				saveLocation: this.state.saveLocation
+				saveLocation: this.state.saveLocation,
+				progressCallback: this.updateProgress.bind(this)
 			};
+
 			let saveToOneNote = new SaveToOneNote(this.state.userResult.data.user.accessToken);
 			saveToOneNote.save(saveOptions).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
 				let createPageResponse = Array.isArray(responsePackage) ? responsePackage[0] : responsePackage;
@@ -683,6 +685,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				Clipper.logger.logEvent(clipEvent);
 			});
 		});
+	}
+
+	private updateProgress(numPagesCompleted: number, totalPages: number): void {
+		_.assign(_.extend(this.state.pdfSaveStatus, {
+			numPagesCompleted: numPagesCompleted,
+			totalPages: totalPages
+		}), this.state.setState);
 	}
 
 	private storeLastClippedInformation() {

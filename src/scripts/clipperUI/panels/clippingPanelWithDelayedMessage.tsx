@@ -35,10 +35,11 @@ class ClippingPanelWithDelayedMessageClass extends ComponentBase<ClippingPanelWi
 	getMessageElement() {
 		return (
 			<span className="actionLabelFont messageLabel" id={Constants.Ids.clipProgressDelayedMessage}
-				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }>
-				{this.props.message}
+				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+				{"Clipping Page 1 of 7"}
 			</span>
 		);
+		// {this.props.message}
 	}
 
 	render() {
