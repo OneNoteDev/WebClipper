@@ -205,14 +205,14 @@ export module Constants {
 		export var signInButtonMsa = "signInButtonMsa";
 		export var signInButtonOrgId = "signInButtonOrgId";
 		export var signInContainer = "signInContainer";
+		export var signInErrorDebugInformationContainer = "signInErrorDebugInformationContainer";
+		export var signInErrorDebugInformationList = "signInErrorDebugInformationList";
+		export var signInErrorDescriptionContainer = "signInErrorDescriptionContainer";
+		export var signInErrorMoreInformation = "signInErrorMoreInformation";
 		export var signInLogo = "signInLogo";
 		export var signInMessageLabelContainer = "signInMessageLabelContainer";
 		export var signInText = "signInText";
 		export var signInToggleErrorInformationText = "signInToggleErrorInformationText";
-		export var signInErrorDescriptionContainer = "signInErrorDescriptionContainer";
-		export var signInErrorDebugInformationContainer = "signInErrorDebugInformationContainer";
-		export var signInErrorDebugInformationList = "signInErrorDebugInformationList";
-		export var signInErrorMoreInformation = "signInErrorMoreInformation";
 
 		// successPanel
 		export var clipperSuccessContainer = "clipperSuccessContainer";
