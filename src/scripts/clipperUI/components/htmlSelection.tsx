@@ -4,13 +4,14 @@ import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {ComponentBase} from "../componentBase";
 
-export interface RegionSelectionProps {
-	imageSrc: string;
+export interface HtmlSelectionProps {
+	html: string;
 	index: number;
 	onRemove?: (index: number) => void;
 }
 
-class RegionSelectionClass extends ComponentBase<{}, RegionSelectionProps> {
+// TODO repeat code with regionSelection
+class HtmlSelectionClass extends ComponentBase<{}, HtmlSelectionProps> {
 	buttonHandler() {
 		if (this.props.onRemove) {
 			this.props.onRemove(this.props.index);
@@ -31,15 +32,16 @@ class RegionSelectionClass extends ComponentBase<{}, RegionSelectionProps> {
 	public render() {
 		return (
 			<div>
-				<p className="region-selection">
+				<p className="html-selection">
 					{this.getRemoveButton()}
-					<img className="region-selection-image"
-						src={this.props.imageSrc} />
+					<div className="html-selection-content">
+						{m.trust(this.props.html)}
+					</div>
 				</p>
 			</div>
 		);
 	}
 }
 
-let component = RegionSelectionClass.componentize();
-export {component as RegionSelection};
+let component = HtmlSelectionClass.componentize();
+export {component as HtmlSelection};

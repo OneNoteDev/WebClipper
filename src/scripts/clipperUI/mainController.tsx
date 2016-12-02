@@ -30,6 +30,7 @@ import {ClippingPanel} from "./panels/clippingPanel";
 import {ClippingPanelWithDelayedMessage} from "./panels/clippingPanelWithDelayedMessage";
 import {DialogButton, DialogPanel} from "./panels/dialogPanel";
 import {ErrorDialogPanel} from "./panels/errorDialogPanel";
+import {HtmlSelectingPanel} from "./panels/htmlSelectingPanel";
 import {LoadingPanel} from "./panels/loadingPanel";
 import {OptionsPanel} from "./panels/optionsPanel";
 import {RatingsPanel} from "./panels/ratingsPanel";
@@ -49,6 +50,7 @@ export enum PanelType {
 	SignInNeeded,
 	ClipOptions,
 	RegionInstructions,
+	HtmlSelectionInstructions,
 	ClippingToApi,
 	ClippingFailure,
 	ClippingSuccess
@@ -179,6 +181,11 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			}
 		}
 
+		// TODO change status to check selection list length
+		if (this.props.clipperState.currentMode.get() === ClipMode.Selection && this.props.clipperState.selectionStatus !== Status.Succeeded) {
+			return PanelType.HtmlSelectionInstructions;
+		}
+
 		switch (this.props.clipperState.oneNoteApiResult.status) {
 			default:
 			case Status.NotStarted:
@@ -256,6 +263,8 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 					onStartClip={this.props.onStartClip} />;
 			case PanelType.RegionInstructions:
 				return <RegionSelectingPanel clipperState={this.props.clipperState} />;
+			case PanelType.HtmlSelectionInstructions:
+				return <HtmlSelectingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingToApi:
 				if (this.props.clipperState.currentMode.get() === ClipMode.Pdf) {
 					return <ClippingPanelWithDelayedMessage clipperState={this.props.clipperState}

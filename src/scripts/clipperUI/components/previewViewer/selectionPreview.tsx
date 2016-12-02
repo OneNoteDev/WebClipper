@@ -1,32 +1,80 @@
-import {Constants} from "../../../constants";
-
-import {AugmentationModel, AugmentationResult} from "../../../contentCapture/augmentationHelper";
-
-import {Localization} from "../../../localization/localization";
-
-import {ClipperStateProp, DataResult} from "../../clipperState";
+import {ClipperStateProp} from "../../clipperState";
 import {Status} from "../../status";
 
-import {SpriteAnimation} from "../../components/spriteAnimation";
+import {HtmlSelection} from "../HtmlSelection";
 
 import {EditorPreviewComponentBase, EditorPreviewState} from "./editorPreviewComponentBase";
+import {PreviewViewerSelectionHeader} from "./previewViewerSelectionHeader";
 
 class SelectionPreview extends EditorPreviewComponentBase<EditorPreviewState, ClipperStateProp> {
 	protected getHighlightableContentBodyForCurrentStatus(): any {
-		return m.trust(this.props.clipperState.selectionPreviewInfo.previewBodyHtml);
+		return this.convertSelectionResultToContentData();
+	}
+
+	private convertSelectionResultToContentData(): any[] {
+		let contentBody = [];
+
+		// TODO we don't even need status I think
+		let status = this.props.clipperState.selectionStatus;
+		switch (status) {
+			case Status.Succeeded:
+				let selections = this.props.clipperState.selectionPreviewInfo;
+				for (let i = 0; i < selections.length; i++) {
+					contentBody.push(<HtmlSelection html={selections[i]} index={i} onRemove={this.onRemove.bind(this)} />);
+				}
+				break;
+			default:
+			case Status.NotStarted:
+			case Status.InProgress:
+			case Status.Failed:
+				break;
+		}
+
+		return contentBody;
+	}
+
+	private onRemove(index: number) {
+		let newSelections = this.props.clipperState.selectionPreviewInfo;
+		newSelections.splice(index, 1);
+		if (newSelections.length === 0) {
+			this.props.clipperState.setState({ selectionStatus: Status.NotStarted, selectionPreviewInfo: newSelections });
+		} else {
+			this.props.clipperState.setState({ selectionStatus: Status.Succeeded, selectionPreviewInfo: newSelections });
+		}
 	}
 
 	protected getStatus(): Status {
-		return Status.Succeeded;
+		return this.props.clipperState.selectionStatus;
 	}
 
 	protected getTitleTextForCurrentStatus(): string {
 		return this.props.clipperState.previewGlobalInfo.previewTitleText;
 	}
 
+	// Override
+	protected getHeader() {
+		return <PreviewViewerSelectionHeader
+			clipperState={this.props.clipperState}
+			toggleHighlight={this.toggleHighlight.bind(this)}
+			changeFontFamily={this.changeFontFamily.bind(this)}
+			changeFontSize={this.changeFontSize.bind(this)}
+			serif={this.props.clipperState.previewGlobalInfo.serif}
+			textHighlighterEnabled={this.props.clipperState.previewGlobalInfo.highlighterEnabled} />;
+	}
+
 	protected handleBodyChange(newBodyHtml: string) {
+		// Parse out individual selections
+		let container = document.createElement("div") as HTMLDivElement;
+		container.innerHTML = newBodyHtml;
+		let selectionElems = document.getElementsByClassName("html-selection-content");
+
+		let selections: string[] = [];
+		for (let i = 0; i < selectionElems.length; i++) {
+			selections.push(selectionElems[i].innerHTML);
+		}
+
 		this.props.clipperState.setState({
-			selectionPreviewInfo: { previewBodyHtml: newBodyHtml }
+			selectionPreviewInfo: selections
 		});
 	}
 }

@@ -104,20 +104,9 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 							break;
 						}
 
-						// Rangy initializes itself on the page load, so we need to initialize it if the user invoked before this happens
-						if (!rangy.initialized && rangy.init) {
-							rangy.init();
-						}
-
-						// We get the selection here as the WebExtension API only allows us to get text
-						// We assume there is rangeCount of 1: https://developer.mozilla.org/en-US/docs/Web/API/Selection/rangeCount
-						let selection = rangy.getSelection() as RangySelection;
-						let range = selection.getRangeAt(0) as RangyRange;
-
-						let doc = (new DOMParser()).parseFromString(range.toHtml(), "text/html");
-						DomUtils.toOnml(doc).then(() => {
-							// Selections are prone to not having an outer html element, which can lead to anomalies in preview
-							invokeOptions.invokeDataForMode = this.toScrubbedHtml(doc.body.innerHTML);
+						let selectedHtml = this.getCurrentlySelectedHtml();
+						this.toScrubbedOnml(selectedHtml).then((scrubbedHtml: string) => {
+							invokeOptions.invokeDataForMode = scrubbedHtml;
 							this.sendInvokeOptionsToUi(invokeOptions);
 						});
 						break;
@@ -138,6 +127,30 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			this.handleConstructorError(e);
 			throw e;
 		}
+	}
+
+	private getCurrentlySelectedHtml(): string {
+		// Rangy initializes itself on the page load, so we need to initialize it if the user invoked before this happens
+		if (!rangy.initialized && rangy.init) {
+			rangy.init();
+		}
+
+		// We get the selection here as the WebExtension API only allows us to get text
+		// We assume there is rangeCount of 1: https://developer.mozilla.org/en-US/docs/Web/API/Selection/rangeCount
+		let selection = rangy.getSelection() as RangySelection;
+		let range = selection.getRangeAt(0) as RangyRange;
+
+		return range.toHtml();
+	}
+
+	private toScrubbedOnml(html: string): Promise<string> {
+		let doc = (new DOMParser()).parseFromString(html, "text/html");
+		return new Promise<string>((resolve) => {
+			DomUtils.toOnml(doc).then(() => {
+				// Selections are prone to not having an outer html element, which can lead to anomalies in preview
+				resolve(this.toScrubbedHtml(doc.body.innerHTML));
+			});
+		});
 	}
 
 	protected checkForNoOps() {
@@ -304,6 +317,17 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 				this.updatePageInfo();
 			}
 			return Promise.resolve();
+		});
+
+		this.uiCommunicator.registerFunction(Constants.FunctionKeys.getCurrentSelection, () => {
+			let selectedHtml = this.getCurrentlySelectedHtml();
+			return this.toScrubbedOnml(selectedHtml).then((scrubbedHtml: string) => {
+				// Remove current selection
+				if (window.getSelection) {
+					window.getSelection().removeAllRanges();
+				}
+				return Promise.resolve(scrubbedHtml.trim());
+			});
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.hideUi, () => {

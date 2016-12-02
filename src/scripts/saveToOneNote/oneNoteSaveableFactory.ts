@@ -128,7 +128,8 @@ export class OneNoteSaveableFactory {
 				page.addOnml(processedBookmarkContent.outerHTML);
 				break;
 			case ClipMode.Selection:
-				let processedSelectedContent = OneNoteSaveableFactory.createPostProcessessedHtml(clipperState.selectionPreviewInfo.previewBodyHtml, clipperState);
+				let entireSelectionString = clipperState.selectionPreviewInfo.join("");
+				let processedSelectedContent = OneNoteSaveableFactory.createPostProcessessedHtml(entireSelectionString, clipperState);
 				page.addOnml(processedSelectedContent.outerHTML);
 				break;
 		}

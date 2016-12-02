@@ -105,9 +105,7 @@ export module MockProps {
 			augmentationPreviewInfo: {
 				previewBodyHtml: "Edited body"
 			},
-			selectionPreviewInfo: {
-				previewBodyHtml: "Selected body"
-			},
+			selectionPreviewInfo: ["Selected body"],
 
 			oneNoteApiResult: {
 				data: undefined,

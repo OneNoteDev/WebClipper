@@ -11,8 +11,7 @@ import {PreviewViewerRegionTitleOnlyHeader} from "./previewViewerRegionTitleOnly
 
 class RegionPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 	protected getContentBodyForCurrentStatus(): any[] {
-		let state = this.props.clipperState;
-		return this.convertRegionResultToContentData(state.regionResult);
+		return this.convertRegionResultToContentData(this.props.clipperState.regionResult);
 	}
 
 	protected getHeader() {
@@ -28,6 +27,7 @@ class RegionPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		return this.props.clipperState.regionResult.status;
 	}
 
+	// TODO can't we just return the title text?
 	protected getTitleTextForCurrentStatus(): string {
 		let noContentFoundString = Localization.getLocalizedString("WebClipper.Preview.NoContentFound");
 

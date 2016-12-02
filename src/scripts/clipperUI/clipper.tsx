@@ -79,6 +79,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			augmentationResult: { status: Status.NotStarted },
 			oneNoteApiResult: { status: Status.NotStarted },
 			bookmarkResult: { status: Status.NotStarted },
+			selectionStatus: Status.NotStarted,
 
 			setState: (partialState: ClipperState) => {
 				this.setState(partialState);
@@ -92,7 +93,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				serif: false
 			},
 			augmentationPreviewInfo: {},
-			selectionPreviewInfo: {},
+			selectionPreviewInfo: [],
 			pdfPreviewInfo: {
 				allPages: true,
 				isLocalFileAndNotAllowed: true,
@@ -357,9 +358,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			case InvokeMode.ContextTextSelection:
 				// invokeDataForMode is scrubbed selected html as a string
 				this.state.setState({
-					selectionPreviewInfo: {
-						previewBodyHtml: options.invokeDataForMode
-					}
+					selectionStatus: Status.Succeeded,
+					selectionPreviewInfo: [options.invokeDataForMode]
 				});
 				break;
 			default:
@@ -709,15 +709,23 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private static shouldShowPreviewViewer(state: ClipperState): boolean {
-		return (this.shouldShowOptions(state) &&
-			(state.currentMode.get() !== ClipMode.Region ||
-			state.regionResult.status === Status.Succeeded));
+		if (this.shouldShowOptions(state)) {
+			switch (state.currentMode.get()) {
+				case ClipMode.Region:
+					return state.regionResult.status === Status.Succeeded;
+				case ClipMode.Selection:
+					return state.selectionStatus === Status.Succeeded && state.selectionPreviewInfo.length > 0;
+				default:
+					return true;
+			}
+		}
+		return false;
 	}
 
 	private static shouldShowRegionSelector(state: ClipperState): boolean {
-		return (this.shouldShowOptions(state) &&
+		return this.shouldShowOptions(state) &&
 			state.currentMode.get() === ClipMode.Region &&
-			state.regionResult.status !== Status.Succeeded);
+			state.regionResult.status !== Status.Succeeded;
 	}
 
 	private static shouldShowMainController(state: ClipperState): boolean {

@@ -113,7 +113,7 @@ export class OptionsPanelTests extends TestModule {
 
 		test("If the current mode is selection and the status is succeeded and has a text stored in clipperState, the clip button should be active and clickable", () => {
 			this.mockOptionsPanelProps.clipperState.currentMode.set(ClipMode.Selection);
-			this.mockOptionsPanelProps.clipperState.selectionPreviewInfo.previewBodyHtml = "hello world";
+			this.mockOptionsPanelProps.clipperState.selectionPreviewInfo = ["hello world"];
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
 

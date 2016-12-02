@@ -107,6 +107,11 @@ export module Constants {
 		export var userDropdownArrow = "userDropdownArrow";
 		export var userSettingsContainer = "userSettingsContainer";
 
+		// htmlSelectingPanel
+		export var htmlSelectionCancelButton = "htmlSelectionCancelButton";
+		export var htmlSelectionGrabSelectionButton = "htmlSelectionGrabSelectionButton";
+		export var htmlSelectionInstructionsContainer = "htmlSelectionInstructionsContainer";
+
 		// loadingPanel
 		export var clipperLoadingContainer = "clipperLoadingContainer";
 
@@ -265,6 +270,7 @@ export module Constants {
 		export var createHiddenIFrame = "CREATE_HIDDEN_IFRAME";
 		export var ensureFreshUserBeforeClip = "ENSURE_FRESH_USER_BEFORE_CLIP";
 		export var escHandler = "ESC_HANDLER";
+		export var getCurrentSelection = "GET_CURRENT_SELECTION";
 		export var getInitialUser = "GET_INITIAL_USER";
 		export var getPageNavTooltipProps = "GET_PAGE_NAV_TOOLTIP_PROPS";
 		export var getStorageValue = "GET_STORAGE_VALUE";

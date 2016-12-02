@@ -12,6 +12,7 @@ import {Status} from "../../status";
 import {SpriteAnimation} from "../../components/spriteAnimation";
 
 import {EditorPreviewComponentBase, EditorPreviewState} from "./editorPreviewComponentBase";
+import {PreviewViewerAugmentationHeader} from "./previewViewerAugmentationHeader";
 
 class AugmentationPreview extends EditorPreviewComponentBase<EditorPreviewState, ClipperStateProp> {
 	protected getHighlightableContentBodyForCurrentStatus(): any[] {
@@ -43,6 +44,16 @@ class AugmentationPreview extends EditorPreviewComponentBase<EditorPreviewState,
 				failureMessage = this.props.clipperState.augmentationResult.data.failureMessage;
 				return !!failureMessage ? failureMessage : noContentFoundString;
 		}
+	}
+
+	// Override
+	protected getHeader() {
+		return <PreviewViewerAugmentationHeader
+			toggleHighlight={this.toggleHighlight.bind(this)}
+			changeFontFamily={this.changeFontFamily.bind(this)}
+			changeFontSize={this.changeFontSize.bind(this)}
+			serif={this.props.clipperState.previewGlobalInfo.serif}
+			textHighlighterEnabled={this.props.clipperState.previewGlobalInfo.highlighterEnabled} />;
 	}
 
 	protected handleBodyChange(newBodyHtml: string) {

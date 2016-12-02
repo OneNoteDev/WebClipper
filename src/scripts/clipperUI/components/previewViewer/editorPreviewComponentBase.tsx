@@ -10,7 +10,6 @@ import {ClipperStateProp} from "../../clipperState";
 import {Status} from "../../status";
 
 import {PreviewComponentBase} from "./previewComponentBase";
-import {PreviewViewerAugmentationHeader} from "./previewViewerAugmentationHeader";
 
 import * as _ from "lodash";
 
@@ -66,27 +65,18 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 		}
 	}
 
-	protected getHeader() {
-		return <PreviewViewerAugmentationHeader
-			toggleHighlight={this.toggleHighlight.bind(this)}
-			changeFontFamily={this.changeFontFamily.bind(this)}
-			changeFontSize={this.changeFontSize.bind(this)}
-			serif={this.props.clipperState.previewGlobalInfo.serif}
-			textHighlighterEnabled={this.props.clipperState.previewGlobalInfo.highlighterEnabled} />;
-	}
-
 	// Override
 	protected getPreviewBodyClass(): string {
 		return this.state.textHighlighter && this.state.textHighlighter.isEnabled() ? Constants.Classes.highlightable : "";
 	}
 
-	private changeFontFamily(serif: boolean) {
+	protected changeFontFamily(serif: boolean) {
 		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			serif: serif
 		} as PreviewGlobalInfo), this.props.clipperState.setState);
 	}
 
-	private changeFontSize(increase: boolean) {
+	protected changeFontSize(increase: boolean) {
 		let newFontSize: number = this.props.clipperState.previewGlobalInfo.fontSize + (increase ? 2 : -2);
 		if (newFontSize < Constants.Settings.minimumFontSize) {
 			newFontSize = Constants.Settings.minimumFontSize;
@@ -174,7 +164,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 		} as any);
 	}
 
-	private toggleHighlight() {
+	protected toggleHighlight() {
 		if (!this.props.clipperState.previewGlobalInfo.highlighterEnabled && !window.getSelection().isCollapsed && this.selectionIsInPreviewBody()) {
 			// If the user selects something and clicks the highlighter button, we behave traditionally (i.e., perform highlighting, not toggling)
 			this.state.textHighlighter.doHighlight();

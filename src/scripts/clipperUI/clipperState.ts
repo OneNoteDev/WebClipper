@@ -51,13 +51,14 @@ export interface ClipperState {
 	regionResult?: DataResult<string[]>;
 	augmentationResult?: DataResult<AugmentationResult>;
 	bookmarkResult?: DataResult<BookmarkResult>;
+	selectionStatus?: Status;
 
 	// Editable preview content
 	previewGlobalInfo?: PreviewGlobalInfo;
 	augmentationPreviewInfo?: PreviewInfo;
 	bookmarkPreviewInfo?: PreviewInfo;
 	pdfPreviewInfo?: PdfPreviewInfo;
-	selectionPreviewInfo?: PreviewInfo;
+	selectionPreviewInfo?: string[];
 
 	// Save to OneNote status
 	oneNoteApiResult?: DataResult<OneNoteApi.Page | OneNoteApi.RequestError>;
