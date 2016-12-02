@@ -93,13 +93,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				serif: false
 			},
 			augmentationPreviewInfo: {},
-			selectionPreviewInfo: [],
 			pdfPreviewInfo: {
 				allPages: true,
 				isLocalFileAndNotAllowed: true,
 				selectedPageRange: "",
 				shouldAttachPdf: false,
 			},
+			selectionPreviewInfo: [],
 
 			reset: () => {
 				this.state.setState(this.getResetState());

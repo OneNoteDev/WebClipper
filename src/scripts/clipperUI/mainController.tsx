@@ -205,10 +205,11 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		closeEvent.setCustomProperty(Log.PropertyName.Custom.CloseReason, CloseReason[closeReason]);
 		Clipper.logger.logEvent(closeEvent);
 
-		// Clear region selections on clipper exit rather than invoke to avoid conflicting logic with scenarios like context menu image selection
+		// Clear regions and selections on clipper exit rather than invoke to avoid conflicting logic with scenarios like context menu actions
 		this.props.clipperState.setState({
 			uiExpanded: false,
-			regionResult: { status: Status.NotStarted, data: [] }
+			regionResult: { status: Status.NotStarted, data: [] },
+			selectionPreviewInfo: []
 		});
 	}
 
