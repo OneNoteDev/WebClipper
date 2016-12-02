@@ -44,14 +44,14 @@ class HtmlSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 					<div className="messageLabelContainer">
 						<span className="informationLabelFont messageLabel"
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-							{Localization.getLocalizedString("WebClipper.Label.DragAndRelease")}
+							{Localization.getLocalizedString("WebClipper.Label.SelectionInstructions")}
 						</span>
 					</div>
 					<a id={Constants.Ids.htmlSelectionGrabSelectionButton} {...this.enableInvoke(this.handleGrabSelectionButton, 70) }>
 						<div className="wideButtonContainer">
 							<span className="wideButtonFont wideActionButton"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
-								{ "Grab Selection" }
+								{Localization.getLocalizedString("WebClipper.Action.GrabSelection")}
 							</span>
 						</div>
 					</a>

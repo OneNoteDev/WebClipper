@@ -98,7 +98,7 @@ class PreviewViewerSelectionHeaderClass extends PreviewViewerHeaderComponentBase
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }
 					type="button">
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon.png")} />
-					<span>{"TODO"}</span>
+					<span>{Localization.getLocalizedString("WebClipper.Preview.Header.AddAnotherSelectionButtonLabel")}</span>
 				</button>
 			]
 		};
