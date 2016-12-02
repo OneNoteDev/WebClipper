@@ -603,7 +603,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			this.getLocalizedStringsForBrowser((localizedStrings) => {
 				if (localizedStrings) {
 					this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.clipperStringsFrontLoaded, () => {
-						return Promise.resolve(!!localizedStrings);
+						return Promise.resolve(localizedStrings);
 					});
 				}
 				resolve(!!localizedStrings);
