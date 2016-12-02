@@ -2,6 +2,7 @@ import {Constants} from "../../../../scripts/constants";
 
 import {ClipperState} from "../../../../scripts/clipperUI/clipperState";
 import {ClipMode} from "../../../../scripts/clipperUI/clipMode";
+import {Status} from "../../../../scripts/clipperUI/status";
 
 import {SelectionPreview} from "../../../../scripts/clipperUI/components/previewViewer/selectionPreview";
 
@@ -23,14 +24,18 @@ export class SelectionPreviewTests extends TestModule {
 	}
 
 	protected tests() {
-		// test("The selection's highlightable preview body should render the content", () => {
-		// 	MithrilUtils.mountToFixture(this.defaultComponent);
+		test("The selection's highlightable preview body should render the content", () => {
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
-		// 	let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
-		// 	strictEqual(highlightablePreviewBody.innerText.trim(),
-		// 		this.mockClipperState.selectionPreviewInfo.join(""),
-		// 		"The editable selection result content is displayed in the preview body");
-		// });
+			let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
+			strictEqual(highlightablePreviewBody.innerText.trim(),
+				this.mockClipperState.selectionPreviewInfo.join(""),
+				"The editable selection result content is displayed in the preview body");
+		});
+
+		// TODO test render n selections
+
+		// TODO test render n selections in a PDF mode (check no delete buttons)
 
 		// test("The selection preview's highlightable preview body should render the content as HTML, not purely text", () => {
 		// 	this.mockClipperState.selectionPreviewInfo = ["<div>The selection</div>"];
@@ -55,6 +60,7 @@ export class SelectionPreviewTests extends TestModule {
 		let state = MockProps.getMockClipperState() as ClipperState;
 		state.currentMode.set(ClipMode.Selection);
 		state.selectionPreviewInfo = ["The selection"];
+		state.selectionStatus = Status.Succeeded;
 		return state;
 	}
 }
