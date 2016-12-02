@@ -27,33 +27,27 @@ export class SelectionPreviewTests extends TestModule {
 		test("The selection's highlightable preview body should render the content", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
-			strictEqual(highlightablePreviewBody.innerText.trim(),
-				this.mockClipperState.selectionPreviewInfo.join(""),
-				"The editable selection result content is displayed in the preview body");
+			this.assertSelectionsAreRendered();
+			this.assertDeleteButtonExistence(true);
 		});
 
-		// TODO test render n selections
+		test("The selection's highlightable preview body should render the content for more than one selection", () => {
+			this.mockClipperState.selectionPreviewInfo = ["1", "2", "3"];
+			this.defaultComponent = <SelectionPreview clipperState={this.mockClipperState} />;
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
-		// TODO test render n selections in a PDF mode (check no delete buttons)
+			this.assertSelectionsAreRendered();
+			this.assertDeleteButtonExistence(true);
+		});
 
-		// test("The selection preview's highlightable preview body should render the content as HTML, not purely text", () => {
-		// 	this.mockClipperState.selectionPreviewInfo = ["<div>The selection</div>"];
-		// 	this.defaultComponent = <SelectionPreview clipperState={this.mockClipperState} />;
-		// 	MithrilUtils.mountToFixture(this.defaultComponent);
+		test("In PDF mode, delete buttons should not be rendered", () => {
+			this.mockClipperState.pageInfo.contentType = OneNoteApi.ContentType.EnhancedUrl;
+			this.defaultComponent = <SelectionPreview clipperState={this.mockClipperState} />;
+			MithrilUtils.mountToFixture(this.defaultComponent);
 
-		// 	let highlightablePreviewBody = document.getElementById(Constants.Ids.highlightablePreviewBody);
-
-		// 	strictEqual(highlightablePreviewBody.innerHTML, this.mockClipperState.selectionPreviewInfo.join(""),
-		// 		"Only the editable selection result content is displayed in the preview body");
-		// 	strictEqual(highlightablePreviewBody.childElementCount, 1, "There should be one child");
-
-		// 	let child = highlightablePreviewBody.firstElementChild as HTMLElement;
-		// 	strictEqual(child.outerHTML, this.mockClipperState.selectionPreviewInfo.join(""),
-		// 		"The child's outer HTML should be the preview body html");
-		// 	strictEqual(child.innerHTML, "The selection",
-		// 		"The child's outer HTML should be the selection text");
-		// });
+			this.assertSelectionsAreRendered();
+			this.assertDeleteButtonExistence(false);
+		});
 	}
 
 	private getMockSelectionModeState(): ClipperState {
@@ -62,6 +56,20 @@ export class SelectionPreviewTests extends TestModule {
 		state.selectionPreviewInfo = ["The selection"];
 		state.selectionStatus = Status.Succeeded;
 		return state;
+	}
+
+	private assertSelectionsAreRendered() {
+		let selectionElems = document.getElementsByClassName("html-selection-content");
+		strictEqual(selectionElems.length, this.mockClipperState.selectionPreviewInfo.length);
+
+		for (let i = 0; i < selectionElems.length; i++) {
+			strictEqual((selectionElems[i] as HTMLElement).innerText.trim(), this.mockClipperState.selectionPreviewInfo[i]);
+		}
+	}
+
+	private assertDeleteButtonExistence(exists: boolean) {
+		let deleteButtonElems = document.getElementsByClassName("region-selection-remove-button");
+		strictEqual(deleteButtonElems.length, exists ? this.mockClipperState.selectionPreviewInfo.length : 0);
 	}
 }
 
