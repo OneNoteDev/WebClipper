@@ -85,6 +85,7 @@ export module Constants {
 
 		// clippingPanel
 		export var clipProgressDelayedMessage = "clipProgressDelayedMessage";
+		export var clipProgressIndicatorMessage = "clipProgressIndicatorMessage";
 
 		// dialogPanel
 		export var dialogBackButton = "dialogBackButton";

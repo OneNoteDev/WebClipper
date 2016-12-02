@@ -29,6 +29,7 @@ import {PdfClipOptions} from "./components/pdfClipOptions";
 
 import {ClippingPanel} from "./panels/clippingPanel";
 import {ClippingPanelWithDelayedMessage} from "./panels/clippingPanelWithDelayedMessage";
+import {ClippingPanelWithProgressIndicator} from "./panels/clippingPanelWithProgressIndicator";
 import {DialogButton, DialogPanel} from "./panels/dialogPanel";
 import {ErrorDialogPanel} from "./panels/errorDialogPanel";
 import {LoadingPanel} from "./panels/loadingPanel";
@@ -260,9 +261,9 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				return <RegionSelectingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingToApi:
 				if (this.props.clipperState.currentMode.get() === ClipMode.Pdf) {
-					// return <ClippingPanelWithProgressIndicator clipperState={this.props.clipperState} />;
-					return <ClippingPanelWithDelayedMessage clipperState={this.props.clipperState}
-						delay={Constants.Settings.pdfClippingMessageDelay} message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")} />;
+					return <ClippingPanelWithProgressIndicator clipperState={this.props.clipperState} />;
+					// return <ClippingPanelWithDelayedMessage clipperState={this.props.clipperState}
+					// 	delay={Constants.Settings.pdfClippingMessageDelay} message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")} />;
 				}
 				return <ClippingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingFailure:

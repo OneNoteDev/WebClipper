@@ -32,7 +32,7 @@ export class SaveToOneNote {
 	private static timeBetweenBatchRequests;
 
 	private static timeBeforeFirstPost = 1000;
-	private static timeBetweenPostRequests = 3000;
+	private static timeBetweenPostRequests = 0;
 
 	private accessToken: string;
 
@@ -61,9 +61,13 @@ export class SaveToOneNote {
 	}
 
 	private saveMultiplePagesSynchronously(options: SaveToOneNoteOptions /*, progressCallback: (num: number, denom: number) => void = () => {} */) {
+		let progressCallback = options.progressCallback ? options.progressCallback : () => { };
+		// The + 1 is to include the first page of the clip, which is there by default
+		progressCallback(0, options.page.getNumPages() + 1);
+
 		return options.page.getPage().then((page) => {
 			return this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
-				return this.synchronouslyCreateMultiplePages(options).then(() => {
+				return this.synchronouslyCreateMultiplePages(options, progressCallback).then(() => {
 					return Promise.resolve(responsePackage);
 				});
 			});
@@ -74,13 +78,10 @@ export class SaveToOneNote {
 	// with an argument such as a fraction or a percentage of how far along it is
 	// The callback will propagate this back to the parent component that passed it in, and it is
 	// the passer's responsibility to use that information
-	private synchronouslyCreateMultiplePages(options: SaveToOneNoteOptions /*, progressCallback: (num: number, denom: number) => void = () => {} */): Promise<any> {
+	private synchronouslyCreateMultiplePages(options: SaveToOneNoteOptions, progressCallback: (num: number, denom: number) => void = () => {}): Promise<any> {
 		const saveable = options.page;
 
 		const end = saveable.getNumPages();
-		let progressCallback = options.progressCallback ? options.progressCallback : () => { };
-		progressCallback(0, end);
-
 		return _.range(end).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
@@ -91,7 +92,8 @@ export class SaveToOneNote {
 					Promise.all([getPagePromise, timeoutPromise]).then((values) => {
 						let page = values[0] as OneNoteApi.OneNotePage;
 						this.getApi().createPage(page).then(() => {
-							progressCallback(i, end);
+							// The + 1 is to include the first page of the clip, which is there by default
+							progressCallback(i + 1, end + 1);
 							resolve();
 						}).catch((error) => {
 							reject(error);

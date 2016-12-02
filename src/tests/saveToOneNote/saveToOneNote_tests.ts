@@ -10,8 +10,9 @@ import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
 
 import {SaveToOneNote} from "../../scripts/saveToOneNote/saveToOneNote";
 import {OneNoteSaveablePage} from "../../scripts/saveToOneNote/oneNoteSaveablePage";
-import { OneNoteSaveablePdf } from "../../scripts/saveToOneNote/oneNoteSaveablePdf";
+import {OneNoteSaveablePdf} from "../../scripts/saveToOneNote/oneNoteSaveablePdf";
 import {OneNoteSaveablePdfBatched} from "../../scripts/saveToOneNote/oneNoteSaveablePdfBatched";
+import {OneNoteSaveablePdfSynchronousBatched} from "../../scripts/saveToOneNote/oneNoteSaveablePdfSynchronousBatched";
 
 import {ClipperStorageKeys} from "../../scripts/storage/clipperStorageKeys";
 
@@ -247,6 +248,22 @@ export class SaveToOneNoteTests extends TestModule {
 			});
 		});
 
+		test("When saving a pdf that is distibuted over many pages, save() should resolve with the first createPage response and request in a responsePackage, assuming all createPages succeeded", (assert: QUnitAssert) => {
+
+		});
+
+		test("When saving a pdf that is distributed over many pages to the default location, save() should resolve with the first createPage response and request in a responsePackage, assuming all createPages succeeded", (assert: QUnitAssert) => {
+			
+		});
+
+		test("When saving a pdf that is distrubted over many pages, if the first page creation fails, reject should be called with the error object", (assert: QUnitAssert) => {
+
+		});
+
+		test("When saving a pdf that is distrubted over many pages, if any of the createPage calls fail, reject should be called with the error object", (assert: QUnitAssert) => {
+
+		});
+		
 		test("When saving a pdf and a PATCH permission check is needed, but that check returns an unexpected response code, reject should be called with the error object", (assert: QUnitAssert) => {
 			let done = assert.async();
 
@@ -299,7 +316,7 @@ export class SaveToOneNoteTests extends TestModule {
 			});
 		});
 
-		test("When saving a pdf, if the check for page existance fails, reject should be called with the error object", (assert: QUnitAssert) => {
+		test("When saving a pdf, if the check for page existence fails, reject should be called with the error object", (assert: QUnitAssert) => {
 			let done = assert.async();
 
 			Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
@@ -442,6 +459,14 @@ export class SaveToOneNoteTests extends TestModule {
 		let page = new OneNoteApi.OneNotePage();
 		let mockPdf = new MockPdfDocument();
 		return new OneNoteSaveablePdf(page, mockPdf, pageIndexes);
+	}
+
+	private getMockSaveablePdfSynchronousBatch(): OneNoteSaveablePdfBatched {
+
+	}
+
+	private getMockSaveablePdfBatched(): OneNoteSaveablePdfBatched {
+
 	}
 }
 

@@ -19,21 +19,31 @@ export class OneNoteSaveablePdfSynchronousBatched implements OneNoteSaveable {
 		this.titleText = titleText;
 	}
 
-	public getPage(index?: number): Promise<OneNoteApi.OneNotePage> {
-		return this.pdf.getPageAsDataUrl(index).then((dataUrl) => {
-			return this.createPage(dataUrl, index);
+	/**
+	 * @index starts at 0 and refers to the pages already in the saveable, NOT THE PAGE OF THE PDF ITSELF
+	 */
+	public getPage(index: number): Promise<OneNoteApi.OneNotePage> {
+		if (!index || index === 0) {
+			// They are asking for the first page
+			return Promise.resolve(this.page);
+		}
+
+		const pageNumber = this.pageIndexes[index];
+		return this.pdf.getPageAsDataUrl(pageNumber).then((dataUrl) => {
+			return this.createPage(dataUrl, pageNumber);
 		});
 	}
 
-	private createPage(dataUrl: string, index: number): OneNoteApi.OneNotePage {
-		const title = StringUtils.getBatchedPageTitle(this.titleText, index);
+	private createPage(dataUrl: string, pageNumber: number): OneNoteApi.OneNotePage {
+		const title = StringUtils.getBatchedPageTitle(this.titleText, pageNumber);
 		let page = new OneNoteApi.OneNotePage(title, "", this.contentLocale);
 		page.addOnml("<p><img src=\"" + dataUrl + "\" /></p>&nbsp;");
 		return page;
 	}
 
 	public getNumPages(): number {
-		return this.pageIndexes.length;
+		// Add 1 to account for the initial page
+		return this.pageIndexes.length + 1;
 	}
 
 	public getNumPatches(): number {
