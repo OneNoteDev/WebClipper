@@ -94,6 +94,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	private initializeContextProperties() {
 		let clientInfo = this.clientInfo.get();
 		this.logger.setContextProperty(Log.Context.Custom.AppInfoId, Settings.getSetting("App_Id"));
+		this.logger.setContextProperty(Log.Context.Custom.ExtensionLifecycleId, ExtensionBase.getExtensionId());
 		this.logger.setContextProperty(Log.Context.Custom.UserInfoId, undefined);
 		this.logger.setContextProperty(Log.Context.Custom.AuthType, "None");
 		this.logger.setContextProperty(Log.Context.Custom.AppInfoVersion, clientInfo.clipperVersion);
@@ -601,7 +602,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		return new Promise<boolean>((resolve) => {
 			this.getLocalizedStringsForBrowser((localizedStrings) => {
 				if (localizedStrings) {
-					return this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.clipperStringsFrontLoaded, () => {
+					this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.clipperStringsFrontLoaded, () => {
 						return Promise.resolve(!!localizedStrings);
 					});
 				}
