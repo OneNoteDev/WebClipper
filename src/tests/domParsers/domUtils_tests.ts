@@ -411,6 +411,12 @@ export class DomUtilsTests extends TestModule {
 			strictEqual(DomUtils.toAbsoluteUrl(url, base), "http://www.base.url/1/2.aspx");
 		});
 
+		test("toAbsoluteUrl should convert inherited protocol urls to non-inherited ones", () => {
+			let url = "//www.mysite.site/img.jpeg";
+			let base = "www.mysite.site";
+			strictEqual(DomUtils.toAbsoluteUrl(url, base), location.protocol + url);
+		});
+
 		test("toAbsoluteUrl should throw an error if url is empty", () => {
 			let url = "";
 			let base = "http://www.xyz.url/1/2/";
