@@ -138,9 +138,11 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 		// We get the selection here as the WebExtension API only allows us to get text
 		// We assume there is rangeCount of 1: https://developer.mozilla.org/en-US/docs/Web/API/Selection/rangeCount
 		let selection = rangy.getSelection() as RangySelection;
-		let range = selection.getRangeAt(0) as RangyRange;
-
-		return range.toHtml();
+		if (selection.rangeCount > 0) {
+			let range = selection.getRangeAt(0) as RangyRange;
+			return range.toHtml();
+		}
+		return undefined;
 	}
 
 	private toScrubbedOnml(html: string): Promise<string> {
@@ -321,6 +323,9 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.getCurrentSelection, () => {
 			let selectedHtml = this.getCurrentlySelectedHtml();
+			if (!selectedHtml) {
+				return Promise.resolve(undefined);
+			}
 			return this.toScrubbedOnml(selectedHtml).then((scrubbedHtml: string) => {
 				// Remove current selection
 				if (window.getSelection) {

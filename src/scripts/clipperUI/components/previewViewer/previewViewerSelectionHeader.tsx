@@ -83,6 +83,11 @@ class PreviewViewerSelectionHeaderClass extends PreviewViewerHeaderComponentBase
 	}
 
 	private getAddSelectionGroup(): ControlGroup {
+		// Rangy does not work on PDFs
+		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+			return undefined;
+		}
+
 		return {
 			id: Constants.Ids.addRegionControl,
 			innerElements: [

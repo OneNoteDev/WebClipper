@@ -61,10 +61,11 @@ export class ModeButtonSelectorTests extends TestModule {
 			let modeButtonSelector = MithrilUtils.getFixture().firstElementChild;
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
-			strictEqual(buttonElements.length, 3, "There should only be three mode buttons");
+			strictEqual(buttonElements.length, 4, "There should only be four mode buttons");
 			strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
 			strictEqual(buttonElements[1].id, TestConstants.Ids.augmentationButton, "The second button should be the augmentation button");
-			strictEqual(buttonElements[2].id, TestConstants.Ids.bookmarkButton, "The third button should be the bookmark button");
+			strictEqual(buttonElements[2].id, TestConstants.Ids.selectionButton, "The third button should be the selection button");
+			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
 		});
 
 		test("The region clipping button should appear when enableRegionClipping is injected as true", () => {
@@ -73,11 +74,12 @@ export class ModeButtonSelectorTests extends TestModule {
 			let modeButtonSelector = MithrilUtils.getFixture().firstElementChild;
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
-			strictEqual(buttonElements.length, 4, "There should be four mode buttons");
+			strictEqual(buttonElements.length, 5, "There should be five mode buttons");
 			strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
 			strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
 			strictEqual(buttonElements[2].id, TestConstants.Ids.augmentationButton, "The third button should be the augmentation button");
-			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
+			strictEqual(buttonElements[3].id, TestConstants.Ids.selectionButton, "The fourth button should be the selection button");
+			strictEqual(buttonElements[4].id, TestConstants.Ids.bookmarkButton, "The fifth button should be the bookmark button");
 		});
 
 		test("The region clipping button should appear when enableRegionClipping is injected as false, but invokeMode is set to image selection", () => {
@@ -90,11 +92,12 @@ export class ModeButtonSelectorTests extends TestModule {
 			let modeButtonSelector = MithrilUtils.getFixture().firstElementChild;
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
-			strictEqual(buttonElements.length, 4, "There should be four mode buttons");
+			strictEqual(buttonElements.length, 5, "There should be five mode buttons");
 			strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
 			strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
 			strictEqual(buttonElements[2].id, TestConstants.Ids.augmentationButton, "The third button should be the augmentation button");
-			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
+			strictEqual(buttonElements[3].id, TestConstants.Ids.selectionButton, "The fourth button should be the selection button");
+			strictEqual(buttonElements[4].id, TestConstants.Ids.bookmarkButton, "The fifth button should be the bookmark button");
 		});
 
 		test("The region button should be labeled 'Region' in non-Edge browsers", () => {

@@ -209,6 +209,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		this.props.clipperState.setState({
 			uiExpanded: false,
 			regionResult: { status: Status.NotStarted, data: [] },
+			selectionStatus: Status.NotStarted,
 			selectionPreviewInfo: []
 		});
 	}

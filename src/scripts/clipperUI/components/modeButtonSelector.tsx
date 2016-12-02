@@ -88,6 +88,11 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getSelectionModeButton(currentMode: ClipMode) {
+		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl &&
+			this.props.clipperState.invokeOptions.invokeMode !== InvokeMode.ContextTextSelection) {
+			return undefined;
+		}
+
 		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("select.png") }
 			label={Localization.getLocalizedString("WebClipper.ClipType.Selection.Button")}
 			myMode={ClipMode.Selection} tabIndex={43} selected={currentMode === ClipMode.Selection}

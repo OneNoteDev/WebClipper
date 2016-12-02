@@ -38,12 +38,14 @@ export abstract class PreviewViewerHeaderComponentBase<T, P> extends ComponentBa
 		let buttonGroups = this.getControlGroups();
 
 		for (let i = 0; i < buttonGroups.length; i++) {
-			let id = buttonGroups[i].id;
-			let className = buttonGroups[i].className;
-			renderables.push(
-				<div id={id ? id : ""} className={className ? className : controlButtonGroup}>
-					{buttonGroups[i].innerElements}
-				</div >);
+			if (buttonGroups[i]) {
+				let id = buttonGroups[i].id;
+				let className = buttonGroups[i].className;
+				renderables.push(
+					<div id={id ? id : ""} className={className ? className : controlButtonGroup}>
+						{buttonGroups[i].innerElements}
+					</div >);
+			}
 		}
 
 		return (

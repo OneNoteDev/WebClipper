@@ -534,10 +534,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private getDefaultClipMode(): ClipMode {
-		if (this.state && this.state.pageInfo && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-			return ClipMode.Pdf;
-		}
-
 		if (this.state && this.state.invokeOptions) {
 			switch (this.state.invokeOptions.invokeMode) {
 				case InvokeMode.ContextImage:
@@ -547,17 +543,24 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					}
 					break;
 				case InvokeMode.ContextTextSelection:
-					return ClipMode.Selection;
+					// We don't want to be stuck in selection mode if there are 0 selections
+					if (this.state.selectionPreviewInfo.length > 0) {
+						return ClipMode.Selection;
+					}
+					break;
 				default:
 					break;
 			}
 		}
 
-		if (this.state && this.state.pageInfo && UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
-			return ClipMode.Augmentation;
-		} else {
-			return ClipMode.FullPage;
+		if (this.state && this.state.pageInfo) {
+			if (UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
+				return ClipMode.Augmentation;
+			} else if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+				return ClipMode.Pdf;
+			}
 		}
+		return ClipMode.FullPage;
 	}
 
 	private updateFrameHeight(newContainerHeight: number) {

@@ -14,13 +14,14 @@ class SelectionPreview extends EditorPreviewComponentBase<EditorPreviewState, Cl
 	private convertSelectionResultToContentData(): any[] {
 		let contentBody = [];
 
-		// TODO we don't even need status I think
 		let status = this.props.clipperState.selectionStatus;
 		switch (status) {
 			case Status.Succeeded:
 				let selections = this.props.clipperState.selectionPreviewInfo;
 				for (let i = 0; i < selections.length; i++) {
-					contentBody.push(<HtmlSelection html={selections[i]} index={i} onRemove={this.onRemove.bind(this)} />);
+					// Rangy does not work on PDFs, so we disallow removal of selections made through the context menu action
+					let onRemove = this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl ? this.onRemove.bind(this) : undefined;
+					contentBody.push(<HtmlSelection html={selections[i]} index={i} onRemove={onRemove} />);
 				}
 				break;
 			default:

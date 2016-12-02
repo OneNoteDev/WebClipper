@@ -13,17 +13,27 @@ class HtmlSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 	handleGrabSelectionButton() {
 		Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.getCurrentSelection, {
 			callback: (newSelection: string) => {
-				let newSelections = this.props.clipperState.selectionPreviewInfo;
-				newSelections.push(newSelection);
-				this.props.clipperState.setState({
-					selectionStatus: Status.Succeeded,
-					selectionPreviewInfo: newSelections
-				});
+				if (newSelection) {
+					let newSelections = this.props.clipperState.selectionPreviewInfo;
+					newSelections.push(newSelection);
+					this.props.clipperState.setState({
+						selectionStatus: Status.Succeeded,
+						selectionPreviewInfo: newSelections
+					});
+				} else {
+					// The user attempted to grab selection and did not select anything. TODO: we should surface a message and remain
+					// on this panel I think
+					this.handleCancelButton();
+				}
 			}
 		});
 	}
 
 	handleCancelButton() {
+		this.props.clipperState.setState({
+			selectionStatus: this.props.clipperState.selectionPreviewInfo && this.props.clipperState.selectionPreviewInfo.length > 0 ?
+				Status.Succeeded : Status.NotStarted
+		});
 		this.props.clipperState.reset();
 	}
 
