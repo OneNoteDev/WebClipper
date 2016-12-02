@@ -1,3 +1,5 @@
+import {Constants} from "../../../constants";
+
 import {ClipperStateProp} from "../../clipperState";
 import {Status} from "../../status";
 
@@ -67,7 +69,7 @@ class SelectionPreview extends EditorPreviewComponentBase<EditorPreviewState, Cl
 		// Parse out individual selections
 		let container = document.createElement("div") as HTMLDivElement;
 		container.innerHTML = newBodyHtml;
-		let selectionElems = document.getElementsByClassName("html-selection-content");
+		let selectionElems = document.getElementsByClassName(Constants.Classes.htmlSelectionContent);
 
 		let selections: string[] = [];
 		for (let i = 0; i < selectionElems.length; i++) {

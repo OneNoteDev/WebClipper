@@ -12,6 +12,9 @@ export module Constants {
 		export var changeImage = "change-image";
 		export var changeTitle = "change-title";
 
+		// htmlSelection
+		export var htmlSelectionContent = "html-selection-content";
+
 		// textArea input control
 		export var textAreaInput = "textAreaInput";
 		export var textAreaInputMirror = "textAreaInputMirror";

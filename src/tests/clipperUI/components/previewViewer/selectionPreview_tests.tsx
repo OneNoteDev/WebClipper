@@ -59,7 +59,7 @@ export class SelectionPreviewTests extends TestModule {
 	}
 
 	private assertSelectionsAreRendered() {
-		let selectionElems = document.getElementsByClassName("html-selection-content");
+		let selectionElems = document.getElementsByClassName(Constants.Classes.htmlSelectionContent);
 		strictEqual(selectionElems.length, this.mockClipperState.selectionPreviewInfo.length);
 
 		for (let i = 0; i < selectionElems.length; i++) {
@@ -68,7 +68,7 @@ export class SelectionPreviewTests extends TestModule {
 	}
 
 	private assertDeleteButtonExistence(exists: boolean) {
-		let deleteButtonElems = document.getElementsByClassName("region-selection-remove-button");
+		let deleteButtonElems = document.getElementsByClassName(Constants.Classes.regionSelectionRemoveButton);
 		strictEqual(deleteButtonElems.length, exists ? this.mockClipperState.selectionPreviewInfo.length : 0);
 	}
 }

@@ -1,5 +1,7 @@
 import * as Log from "../../logging/log";
 
+import {Constants} from "../../constants";
+
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {ComponentBase} from "../componentBase";
@@ -22,7 +24,7 @@ class HtmlSelectionClass extends ComponentBase<{}, HtmlSelectionProps> {
 		// No remove button is rendered if there's no callback specified
 		return (
 			this.props.onRemove
-				? <a className="region-selection-remove-button"
+				? <a className={Constants.Classes.regionSelectionRemoveButton}
 					{...this.enableInvoke(this.buttonHandler, 300, undefined, Log.Click.Label.regionSelectionRemoveButton) }>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/delete_button.png") } /></a>
 				: undefined
@@ -34,7 +36,7 @@ class HtmlSelectionClass extends ComponentBase<{}, HtmlSelectionProps> {
 			<div>
 				<p className="html-selection">
 					{this.getRemoveButton()}
-					<div className="html-selection-content">
+					<div className={Constants.Classes.htmlSelectionContent}>
 						{m.trust(this.props.html)}
 					</div>
 				</p>
