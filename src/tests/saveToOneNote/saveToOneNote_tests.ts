@@ -249,21 +249,80 @@ export class SaveToOneNoteTests extends TestModule {
 		});
 
 		test("When saving a pdf that is distibuted over many pages, save() should resolve with the first createPage response and request in a responsePackage, assuming all createPages succeeded", (assert: QUnitAssert) => {
+			// Create initialPage
+			let done = assert.async();
 
+			let saveLocation = "mySection";
+
+			let pageId = "abc";
+			let createPageJson = {
+				id: pageId
+			};
+
+			// Create initial page
+			this.server.respondWith(
+				"POST", "https://www.onenote.com/api/v1.0/me/notes/sections/" + saveLocation + "/pages",
+				[200, { "Content-Type": "application/json" },
+				JSON.stringify(createPageJson)
+			]);
+			
+			this.saveToOneNote.save({ page: this.getMockSaveablePdfSynchronousBatch([0]), saveLocation: saveLocation }).then((responsePackage) => {
+				deepEqual(responsePackage.parsedResponse, createPageJson, "The parsedResponse field should be the create page response in json form");
+				ok(responsePackage.request, "The request field should be defined");
+				strictEqual(this.server.requests.length, 1, "A 1-page PDF that is distributing pages should make exactly 1 call to the API");
+			}, (error) => {
+				ok(false, "reject should not be called");
+			}).then(() => {
+				done();
+			});
 		});
 
 		test("When saving a pdf that is distributed over many pages to the default location, save() should resolve with the first createPage response and request in a responsePackage, assuming all createPages succeeded", (assert: QUnitAssert) => {
+			let done = assert.async();
+
+			let saveLocation = "mySection";
+
+			let pageId = "abc";
+			let createPageJsonOne = {
+				id: pageId
+			};
+
+			// Create initial page
+			this.server.respondWith(
+				"POST", "https://www.onenote.com/api/v1.0/me/notes/sections/" + saveLocation + "/pages",
+				[200, { "Content-Type": "application/json" },
+				JSON.stringify(createPageJsonOne)
+			]);
 			
+			let pageIdTwo = "def";
+			let createPageJsonTwo = {
+				id: pageIdTwo
+			};
+
+			// Second createPage
+			this.server.respondWith(
+				"POST", "https://www.onenote.com/api/v1.0/me/notes/sections/" + saveLocation + "/pages",
+				[200, { "Content-Type": "application/json" },
+				JSON.stringify(createPageJsonTwo)
+			]);
+			
+			this.saveToOneNote.save({ page: this.getMockSaveablePdfSynchronousBatch([0, 1]), saveLocation: saveLocation }).then((responsePackage) => {
+				deepEqual(responsePackage.parsedResponse, createPageJsonOne, "The parsedResponse field should be the create page response in json form of the first createPage request");
+				ok(responsePackage.request, "The request field should be defined");
+				strictEqual(this.server.requests.length, 2, "A 2-page PDF that is distributing pages should make exactly 2 calls to the API");
+			}, (error) => {
+				ok(false, "reject should not be called");
+			}).then(() => {
+				done();
+			});
 		});
 
-		test("When saving a pdf that is distrubted over many pages, if the first page creation fails, reject should be called with the error object", (assert: QUnitAssert) => {
+		// test("When saving a pdf that is distrubted over many pages, if the first page creation fails, reject should be called with the error object", (assert: QUnitAssert) => {
+		// });
 
-		});
+		// test("When saving a pdf that is distrubted over many pages, if any of the createPage calls fail, reject should be called with the error object", (assert: QUnitAssert) => {
+		// });
 
-		test("When saving a pdf that is distrubted over many pages, if any of the createPage calls fail, reject should be called with the error object", (assert: QUnitAssert) => {
-
-		});
-		
 		test("When saving a pdf and a PATCH permission check is needed, but that check returns an unexpected response code, reject should be called with the error object", (assert: QUnitAssert) => {
 			let done = assert.async();
 
@@ -461,13 +520,15 @@ export class SaveToOneNoteTests extends TestModule {
 		return new OneNoteSaveablePdf(page, mockPdf, pageIndexes);
 	}
 
-	private getMockSaveablePdfSynchronousBatch(): OneNoteSaveablePdfBatched {
-
+	private getMockSaveablePdfSynchronousBatch(pageIndexes: number[]): OneNoteSaveablePdfSynchronousBatched {
+		let page = new OneNoteApi.OneNotePage();
+		let mockPdf = new MockPdfDocument();
+		return new OneNoteSaveablePdfSynchronousBatched(page, mockPdf, pageIndexes, "en-US", "sample.pdf");
 	}
 
-	private getMockSaveablePdfBatched(): OneNoteSaveablePdfBatched {
+	// private getMockSaveablePdfBatched(): OneNoteSaveablePdfBatched {
 
-	}
+	// }
 }
 
 (new SaveToOneNoteTests()).runTests();

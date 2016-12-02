@@ -7,6 +7,8 @@ import {ClipMode} from "../clipperUI/clipMode";
 import {ClipperState} from "../clipperUI/clipperState";
 import {Status} from "../clipperUI/status";
 
+import {PdfJsDocument} from "../contentCapture/pdfJsDocument";
+
 import {DomUtils} from "../domParsers/domUtils";
 
 import {Localization} from "../localization/localization";
@@ -178,6 +180,14 @@ export class OneNoteSaveableFactory {
 			}
 		}
 		return Promise.resolve(new OneNoteSaveablePage(page));
+	}
+
+	private addFirstPdfPageToInitialPage(page: OneNoteApi.OneNotePage, pdf: PdfJsDocument): Promise<OneNoteApi.OneNotePage> {
+		const pageIndexes = this.getPageIndicesToSendInPdfMode();
+		return pdf.getPageAsDataUrl(pageIndexes[0]).then((dataUrl) => {
+			page.addOnml("<p><img src=\"" + dataUrl + "\" /></p>&nbsp;");
+			return page;
+		});
 	}
 
 	private getPageIndicesToSendInPdfMode() {

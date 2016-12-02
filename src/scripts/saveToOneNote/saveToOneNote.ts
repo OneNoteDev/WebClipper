@@ -63,7 +63,7 @@ export class SaveToOneNote {
 	private saveMultiplePagesSynchronously(options: SaveToOneNoteOptions /*, progressCallback: (num: number, denom: number) => void = () => {} */) {
 		let progressCallback = options.progressCallback ? options.progressCallback : () => { };
 		// The + 1 is to include the first page of the clip, which is there by default
-		progressCallback(0, options.page.getNumPages() + 1);
+		progressCallback(0, options.page.getNumPages());
 
 		return options.page.getPage().then((page) => {
 			return this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
@@ -81,7 +81,7 @@ export class SaveToOneNote {
 	private synchronouslyCreateMultiplePages(options: SaveToOneNoteOptions, progressCallback: (num: number, denom: number) => void = () => {}): Promise<any> {
 		const saveable = options.page;
 
-		const end = saveable.getNumPages();
+		const end = saveable.getNumPages() - 1; // We have already included the first page
 		return _.range(end).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
