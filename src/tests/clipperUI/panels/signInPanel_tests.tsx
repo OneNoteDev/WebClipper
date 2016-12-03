@@ -92,6 +92,16 @@ export class SignInPanelTests extends TestModule {
 
 			strictEqual(type, AuthType.OrgId, "The OrgId auth type should be recorded");
 		});
+
+		test("The 'more' button is enabled when a sign-in failure is detected (OrgID)", () => {
+			let state = MockProps.getMockClipperState();
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, errorDescription: "OrgId: An error has occured." } };
+
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
+
+			strictEqual(document.getElementById(Constants.Ids.signInToggleErrorInformationText).innerText, this.stringsJson["WebClipper.Label.SignInUnsuccessfulMoreInformation"],
+				"The displayed message should be the 'more' message");
+		});
 	}
 }
 
