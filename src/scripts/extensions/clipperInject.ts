@@ -105,6 +105,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 						}
 
 						let selectedHtml = this.getCurrentlySelectedHtml();
+						this.removePageSelections();
 						this.toScrubbedOnml(selectedHtml).then((scrubbedHtml: string) => {
 							invokeOptions.invokeDataForMode = scrubbedHtml;
 							this.sendInvokeOptionsToUi(invokeOptions);
@@ -126,6 +127,12 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 		} catch (e) {
 			this.handleConstructorError(e);
 			throw e;
+		}
+	}
+
+	private removePageSelections() {
+		if (window.getSelection) {
+			window.getSelection().removeAllRanges();
 		}
 	}
 
@@ -327,10 +334,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 				return Promise.resolve(undefined);
 			}
 			return this.toScrubbedOnml(selectedHtml).then((scrubbedHtml: string) => {
-				// Remove current selection
-				if (window.getSelection) {
-					window.getSelection().removeAllRanges();
-				}
+				this.removePageSelections();
 				return Promise.resolve(scrubbedHtml.trim());
 			});
 		});
