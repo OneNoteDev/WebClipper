@@ -57,7 +57,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 			// Right now we are only showing the error panel for OrgId errors since they tend to
 			// be a little more actionable to the user, or at least a little more helpful.
 			&& this.props.clipperState.userResult.data.errorDescription
-			&& this.props.clipperState.userResult.data.errorDescription.search(/^OrgId/) !== -1;
+			&& this.props.clipperState.userResult.data.errorDescription.indexOf("OrgId") === 0;
 	}
 
 	errorDescriptionControlHandler() {
@@ -87,7 +87,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 					{signInFailureDetected
 						? (<div className="signInErrorToggleInformation">
 							<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
-								<span class={Constants.Ids.signInToggleErrorInformationText}
+								<span id={Constants.Ids.signInToggleErrorInformationText}
 									style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 									{this.state.errorDescriptionShowing
 										? Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulLessInformation")
