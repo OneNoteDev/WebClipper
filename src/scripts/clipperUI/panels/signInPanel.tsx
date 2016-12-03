@@ -98,7 +98,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 						</div>) : undefined
 					}
 					{(signInFailureDetected && this.state.errorDescriptionShowing)
-						? (<div className="signInErrorDescription">
+						? (<div id={Constants.Ids.signInErrorDescription}>
 							<span className={Constants.Ids.signInErrorDescriptionContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 								{this.props.clipperState.userResult.data.errorDescription}
 							</span>

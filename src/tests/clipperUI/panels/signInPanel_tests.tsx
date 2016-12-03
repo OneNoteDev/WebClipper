@@ -100,7 +100,41 @@ export class SignInPanelTests extends TestModule {
 			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
 
 			strictEqual(document.getElementById(Constants.Ids.signInToggleErrorInformationText).innerText, this.stringsJson["WebClipper.Label.SignInUnsuccessfulMoreInformation"],
-				"The displayed message should be the 'more' message");
+				"The displayed message should be the 'More' message");
+		});
+
+		test("The 'less' button is enabled when a sign-in failure is detected and the more button was clicked (OrgID)", () => {
+			let state = MockProps.getMockClipperState();
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, errorDescription: "OrgId: An error has occured." } };
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
+
+			// Simulate that the 'More' button was clicked.
+			controllerInstance.setState({ errorDescriptionShowing: true });
+			m.redraw(true);
+
+			strictEqual(document.getElementById(Constants.Ids.signInToggleErrorInformationText).innerText, this.stringsJson["WebClipper.Label.SignInUnsuccessfulLessInformation"],
+				"The displayed message should be the 'Less' message");
+		});
+
+		test("The error description is showing when a sign-in failure is detected and the more button was clicked (OrgID)", () => {
+			let state = MockProps.getMockClipperState();
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, errorDescription: "OrgId: An error has occured." } };
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
+
+			// Simulate that the 'More' button was clicked.
+			controllerInstance.setState({ errorDescriptionShowing: true });
+			m.redraw(true);
+
+			ok(!!document.getElementById(Constants.Ids.signInErrorDescription), "The error description is showing");
+		});
+
+		test("The 'more' button is not there when a sign-in failure is detected (MSA)", () => {
+			let state = MockProps.getMockClipperState();
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, errorDescription: "MSA: An error has occured." } };
+
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
+
+			ok(!document.getElementById(Constants.Ids.signInToggleErrorInformationText), "The error information should be missing.");
 		});
 	}
 }

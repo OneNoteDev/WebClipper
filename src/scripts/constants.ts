@@ -207,6 +207,7 @@ export module Constants {
 		export var signInContainer = "signInContainer";
 		export var signInErrorDebugInformationContainer = "signInErrorDebugInformationContainer";
 		export var signInErrorDebugInformationList = "signInErrorDebugInformationList";
+		export var signInErrorDescription = "signInErrorDescription";
 		export var signInErrorDescriptionContainer = "signInErrorDescriptionContainer";
 		export var signInErrorMoreInformation = "signInErrorMoreInformation";
 		export var signInLogo = "signInLogo";
