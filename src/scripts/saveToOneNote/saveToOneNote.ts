@@ -87,9 +87,10 @@ export class SaveToOneNote {
 		const saveable = options.page;
 
 		console.log("starting to create multiple pages");
-		const end = Math.max(saveable.getNumPages() - 1, 0); // We have already included the first page
+		const end = saveable.getNumPages();
 		console.log("end: " + end, "_.range: " + _.range(end).toString());
-		return _.range(end).reduce((chainedPromise, i) => {
+		// We start the range at 1 since we have already included the first page
+		return _.range(1, end).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
 					// Parallelize the POST request intervals with the fetching of current dataUrl
@@ -100,8 +101,7 @@ export class SaveToOneNote {
 					Promise.all([getPagePromise, timeoutPromise]).then((values) => {
 						let page = values[0] as OneNoteApi.OneNotePage;
 						this.getApi().createPage(page, options.saveLocation).then(() => {
-							// The + 1 is to include the first page of the clip, which is there by default
-							progressCallback(i + 1, end + 1);
+							progressCallback(i, end);
 							resolve();
 						}).catch((error) => {
 							console.log("rejecting");
