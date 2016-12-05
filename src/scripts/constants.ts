@@ -213,6 +213,7 @@ export module Constants {
 		export var signInLogo = "signInLogo";
 		export var signInMessageLabelContainer = "signInMessageLabelContainer";
 		export var signInText = "signInText";
+		export var signInToggleErrorDropdownArrow = "signInToggleErrorDropdownArrow";
 		export var signInToggleErrorInformationText = "signInToggleErrorInformationText";
 
 		// successPanel

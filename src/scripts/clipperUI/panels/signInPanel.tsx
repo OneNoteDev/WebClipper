@@ -87,6 +87,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 					{signInFailureDetected
 						? (<div className="signInErrorToggleInformation">
 							<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
+								<img id={Constants.Ids.signInToggleErrorDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 								<span id={Constants.Ids.signInToggleErrorInformationText}
 									style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 									{this.state.errorDescriptionShowing
