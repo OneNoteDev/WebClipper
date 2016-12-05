@@ -68,9 +68,11 @@ export class SaveToOneNote {
 
 		return options.page.getPage().then((page) => {
 			return this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
+				console.log("first response package: " + JSON.stringify(responsePackage));
 				console.log("initial page create is complete");
 				return this.synchronouslyCreateMultiplePages(options, progressCallback).then(() => {
 					console.log("finisheed creating the rest of the pages");
+					console.log("second response package: " + JSON.stringify(responsePackage));
 					return Promise.resolve(responsePackage);
 				});
 			});
@@ -97,7 +99,7 @@ export class SaveToOneNote {
 
 					Promise.all([getPagePromise, timeoutPromise]).then((values) => {
 						let page = values[0] as OneNoteApi.OneNotePage;
-						this.getApi().createPage(page).then(() => {
+						this.getApi().createPage(page, options.saveLocation).then(() => {
 							// The + 1 is to include the first page of the clip, which is there by default
 							progressCallback(i + 1, end + 1);
 							resolve();

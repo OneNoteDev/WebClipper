@@ -1,4 +1,5 @@
 import {StringUtils} from "../stringUtils";
+import {ObjectUtils} from "../objectUtils";
 
 import {PdfDocument} from "../contentCapture/pdfDocument";
 
@@ -24,12 +25,13 @@ export class OneNoteSaveablePdfSynchronousBatched implements OneNoteSaveable {
 	 * @index starts at 0 and refers to the pages already in the saveable, NOT THE PAGE OF THE PDF ITSELF
 	 */
 	public getPage(index?: number): Promise<OneNoteApi.OneNotePage> {
-		if (!index || index === 0) {
+		if (ObjectUtils.isNullOrUndefined(index) || index === 0) {
 			// They are asking for the first page
+			console.log("request for first page: " + this.page.getEntireOnml());
 			return Promise.resolve(this.page);
 		}
 
-		const pageNumber = this.pageIndexes[index];
+		const pageNumber = this.pageIndexes[index - 1];
 		console.log("requesting page: " + pageNumber);
 		return this.pdf.getPageAsDataUrl(pageNumber).then((dataUrl) => {
 			return this.createPage(dataUrl, pageNumber);
