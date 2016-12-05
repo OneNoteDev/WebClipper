@@ -692,14 +692,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private updateProgress(numPagesCompleted: number, totalPages: number): void {
-		console.log("updateProgress start");
 		this.state.setState({
 			pdfSaveStatus: {
 				numPagesCompleted: numPagesCompleted,
 				totalPages: totalPages
 			}
 		});
-		console.log("updateProgress end");
 	}
 
 	private storeLastClippedInformation() {
@@ -750,7 +748,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			undefined;
 		let regionSelectorItem = ClipperClass.shouldShowRegionSelector(this.state) ? <RegionSelector clipperState={this.state} /> : undefined;
 		let mainControllerStyle = ClipperClass.shouldShowMainController(this.state) ? { } : { display: "none" };
-		console.log("rendar");
 
 		return (
 			<div>

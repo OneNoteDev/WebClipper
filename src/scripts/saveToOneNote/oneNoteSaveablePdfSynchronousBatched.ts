@@ -18,7 +18,6 @@ export class OneNoteSaveablePdfSynchronousBatched implements OneNoteSaveable {
 		this.pageIndexes = pageIndexes;
 		this.contentLocale = contentLocale;
 		this.titleText = titleText;
-		console.log("pageIndexes: " + pageIndexes.toString());
 	}
 
 	/**
@@ -27,12 +26,10 @@ export class OneNoteSaveablePdfSynchronousBatched implements OneNoteSaveable {
 	public getPage(index?: number): Promise<OneNoteApi.OneNotePage> {
 		if (ObjectUtils.isNullOrUndefined(index) || index === 0) {
 			// They are asking for the first page
-			console.log("request for first page: " + this.page.getEntireOnml());
 			return Promise.resolve(this.page);
 		}
 
 		const pageNumber = this.pageIndexes[index - 1];
-		console.log("requesting page: " + pageNumber);
 		return this.pdf.getPageAsDataUrl(pageNumber).then((dataUrl) => {
 			return this.createPage(dataUrl, pageNumber);
 		});

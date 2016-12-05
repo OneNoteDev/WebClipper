@@ -271,7 +271,6 @@ export class SaveToOneNoteTests extends TestModule {
 				ok(responsePackage.request, "The request field should be defined");
 				strictEqual(this.server.requests.length, 1, "A 1-page PDF that is distributing pages should make exactly 1 call to the API");
 			}, (error) => {
-				console.log(error.response);
 				ok(false, "reject should not be called: " + error);
 			}).then(() => {
 				done();
@@ -336,8 +335,6 @@ export class SaveToOneNoteTests extends TestModule {
 			);
 
 			this.saveToOneNote.save({ page: this.getMockSaveablePdfSynchronousBatch([1]), saveLocation: saveLocation }).then((responsePackage) => {
-				console.log("actual: " + JSON.stringify(responsePackage.parsedResponse));
-				console.log("expected: " + JSON.stringify(createPageJsonOne))
 				deepEqual(responsePackage.parsedResponse, createPageJsonOne, "The parsedResponse field should be the create page response in json form of the first createPage request");
 				ok(responsePackage.request, "The request field should be defined");
 				strictEqual(this.server.requests.length, 2, "A 2-page PDF that is distributing pages should make exactly 2 calls to the API");
@@ -378,8 +375,6 @@ export class SaveToOneNoteTests extends TestModule {
 			);
 
 			this.saveToOneNote.save({ page: this.getMockSaveablePdfSynchronousBatch([1]) }).then((responsePackage) => {
-				console.log("actual: " + JSON.stringify(responsePackage.parsedResponse));
-				console.log("expected: " + JSON.stringify(createPageJsonOne))
 				deepEqual(responsePackage.parsedResponse, createPageJsonOne, "The parsedResponse field should be the create page response in json form of the first createPage request");
 				ok(responsePackage.request, "The request field should be defined");
 				strictEqual(this.server.requests.length, 2, "A 2-page PDF that is distributing pages should make exactly 2 calls to the API");
