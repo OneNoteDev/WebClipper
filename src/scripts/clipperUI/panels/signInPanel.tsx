@@ -20,16 +20,16 @@ interface SignInPanelProps extends ClipperStateProp {
 }
 
 class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps> {
+	getInitialState() {
+		return { errorDescriptionShowing: false };
+	}
+
 	onSignInMsa() {
 		this.props.onSignInInvoked(AuthType.Msa);
 	}
 
 	onSignInOrgId() {
 		this.props.onSignInInvoked(AuthType.OrgId);
-	}
-
-	getInitialState() {
-		return { errorDescriptionShowing: false };
 	}
 
 	getSignInDescription(): string {
@@ -64,9 +64,47 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 		this.setState({ errorDescriptionShowing: !this.state.errorDescriptionShowing });
 	}
 
+	errorInformationToggle() {
+		if (this.getSignInFailureDetected()) {
+			return <div className="signInErrorToggleInformation">
+				<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
+					<img id={Constants.Ids.signInToggleErrorDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+					<span id={Constants.Ids.signInToggleErrorInformationText}
+						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+						{this.state.errorDescriptionShowing
+							? Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulLessInformation")
+							: Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulMoreInformation")
+						}
+					</span>
+				</a>
+			</div>;
+		}
+
+		return undefined;
+	}
+
+	errorInformationDescription() {
+		if (this.getSignInFailureDetected() && this.state.errorDescriptionShowing) {
+			return <div id={Constants.Ids.signInErrorDescription}>
+				<span className={Constants.Ids.signInErrorDescriptionContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+					{this.props.clipperState.userResult.data.errorDescription}
+				</span>
+				<div className={Constants.Ids.signInErrorDebugInformationContainer}
+					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+					<ul className={Constants.Ids.signInErrorDebugInformationList}>
+						<li>{ClientType[this.props.clipperState.clientInfo.clipperType]}: {this.props.clipperState.clientInfo.clipperVersion}</li>
+						<li>ID: {this.props.clipperState.clientInfo.clipperId}</li>
+						<li>USID: {Clipper.getUserSessionId()}</li>
+					</ul>
+				</div>
+			</div>;
+		}
+
+		return undefined;
+	}
+
 	render() {
 		let signInDescription = this.getSignInDescription();
-		let signInFailureDetected = this.getSignInFailureDetected();
 
 		return (
 			<div id={Constants.Ids.signInContainer}>
@@ -84,35 +122,8 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 							{signInDescription}
 						</span>
 					</div>
-					{signInFailureDetected
-						? (<div className="signInErrorToggleInformation">
-							<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
-								<img id={Constants.Ids.signInToggleErrorDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
-								<span id={Constants.Ids.signInToggleErrorInformationText}
-									style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-									{this.state.errorDescriptionShowing
-										? Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulLessInformation")
-										: Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulMoreInformation")
-									}
-								</span>
-							</a>
-						</div>) : undefined
-					}
-					{(signInFailureDetected && this.state.errorDescriptionShowing)
-						? (<div id={Constants.Ids.signInErrorDescription}>
-							<span className={Constants.Ids.signInErrorDescriptionContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-								{this.props.clipperState.userResult.data.errorDescription}
-							</span>
-							<div className={Constants.Ids.signInErrorDebugInformationContainer}
-								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-								<ul className={Constants.Ids.signInErrorDebugInformationList}>
-									<li>{ClientType[this.props.clipperState.clientInfo.clipperType]}: {this.props.clipperState.clientInfo.clipperVersion}</li>
-									<li>ID: {this.props.clipperState.clientInfo.clipperId}</li>
-									<li>USID: {Clipper.getUserSessionId()}</li>
-								</ul>
-							</div>
-						</div>) : undefined
-					}
+					{this.errorInformationToggle()}
+					{this.errorInformationDescription()}
 					<a id={Constants.Ids.signInButtonMsa} {...this.enableInvoke(this.onSignInMsa, AuthType.Msa)}>
 						<div className="wideButtonContainer">
 							<span className="wideButtonFont wideActionButton"
