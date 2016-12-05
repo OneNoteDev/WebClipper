@@ -496,11 +496,12 @@ export module DomUtils {
 				};
 				// onload can return a non-200 in some weird cases, so we have to specify this
 				theImg.onerror = () => {
-					resolve(undefined);
+					// Be forgiving, and assume the image is non-blank
+					resolve(node);
 				};
 
 				// The request is kicked off as soon as the src is set, so it needs to happen last
-				theImg.src = img.src;
+				theImg.src = img.src || img.getAttribute("src");
 			});
 		});
 	}
@@ -623,6 +624,12 @@ export module DomUtils {
 	export function toAbsoluteUrl(url: string, base: string): string {
 		if (!url || !base) {
 			throw new Error("parameters must be non-empty, but was: " + url + ", " + base);
+		}
+
+		// Urls starting with "//" inherit the protocol from the rendering page, and the Clipper has a
+		// protocol of chrome-extension, which is incorrect. We should manually add the protocol here
+		if (/^\/\/[^\/]/.test(url)) {
+			url = location.protocol + url;
 		}
 
 		let uri = new URI(url);

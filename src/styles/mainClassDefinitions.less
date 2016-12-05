@@ -192,21 +192,24 @@
 	}
 
 	// PDF
-	.pdf-label {
-		font-size: 15px;
-		font-family: @SegoeUi;
-		color: #fff;
-		cursor: pointer;
-		position: relative;
+	.pdf-label-margin {
 		margin-left: 26px;
-		line-height: 20px;
 
-		&.disabled {
-			color: #E1B1FF;
-		}
+		.pdf-label {
+			font-size: 15px;
+			font-family: @SegoeUi;
+			color: #fff;
+			cursor: pointer;
+			position: relative;
+			line-height: 20px;
 
-		.sub-label {
-			color: #CCC;
+			&.disabled {
+				color: #E1B1FF;
+			}
+
+			.sub-label {
+				color: #CCC;
+			}
 		}
 	}
 
@@ -224,7 +227,6 @@
 		cursor: pointer; 
 		position: relative; 
 		line-height: 28px;
-		height: 28px;
 		margin-right: auto;
 	}
 

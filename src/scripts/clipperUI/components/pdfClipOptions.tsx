@@ -111,7 +111,9 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				<div className="pdf-indicator pdf-radio-indicator">
 					{pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
-				<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
+				<div className="pdf-label-margin">
+					<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
+				</div>
 			</div>
 		);
 	}
@@ -162,7 +164,9 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			<div className="pdf-control" id={Constants.Ids.checkboxToDistributePages} {...this.enableInvoke(this.onDistributionChange, 65, !pdfPreviewInfo.shouldDistributePages) }>
 				<div className="pdf-indicator pdf-checkbox-indicator"></div>
 				{pdfPreviewInfo.shouldDistributePages ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
-				<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.PdfDistributePagesCheckbox")}</span>
+				<div className="pdf-label-margin">
+					<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.PdfDistributePagesCheckbox")}</span>
+				</div>
 			</div>
 		);
 	}
@@ -180,7 +184,9 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return (
 			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdfDisabled} {...this.enableInvoke(this.onCheckboxChange, 67, !pdfPreviewInfo.shouldAttachPdf) }>
 				<img className="warning-image" src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
-				<span className="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Label.PdfTooLargeToAttach")}</span>
+				<div className="pdf-label-margin">
+					<span className="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Label.PdfTooLargeToAttach")}</span>
+				</div>
 			</div>
 		);
 	}
@@ -191,9 +197,11 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(this.onCheckboxChange, 66, !pdfPreviewInfo.shouldAttachPdf) }>
 				<div className="pdf-indicator pdf-checkbox-indicator"></div>
 				{pdfPreviewInfo.shouldAttachPdf ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
-				<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
-					<span className="sub-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFileSubText")}</span>
-				</span>
+				<div className="pdf-label-margin">
+					<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
+						<span className="sub-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFileSubText")}</span>
+					</span>
+				</div>
 			</div>
 		);
 	}
