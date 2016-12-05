@@ -64,10 +64,13 @@ export class SaveToOneNote {
 		let progressCallback = options.progressCallback ? options.progressCallback : () => { };
 		// The + 1 is to include the first page of the clip, which is there by default
 		progressCallback(0, options.page.getNumPages());
+		console.log("starting to save multiple pages");
 
 		return options.page.getPage().then((page) => {
 			return this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
+				console.log("initial page create is complete");
 				return this.synchronouslyCreateMultiplePages(options, progressCallback).then(() => {
+					console.log("finisheed creating the rest of the pages");
 					return Promise.resolve(responsePackage);
 				});
 			});
@@ -81,11 +84,14 @@ export class SaveToOneNote {
 	private synchronouslyCreateMultiplePages(options: SaveToOneNoteOptions, progressCallback: (num: number, denom: number) => void = () => {}): Promise<any> {
 		const saveable = options.page;
 
-		const end = saveable.getNumPages() - 1; // We have already included the first page
+		console.log("starting to create multiple pages");
+		const end = Math.max(saveable.getNumPages() - 1, 0); // We have already included the first page
+		console.log("end: " + end, "_.range: " + _.range(end).toString());
 		return _.range(end).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
 					// Parallelize the POST request intervals with the fetching of current dataUrl
+					console.log("getPageWithLogging: " + i);
 					let getPagePromise = this.getPageWithLogging(saveable, i);
 					let timeoutPromise = PromiseUtils.wait(SaveToOneNote.timeBetweenPostRequests);
 
@@ -96,6 +102,7 @@ export class SaveToOneNote {
 							progressCallback(i + 1, end + 1);
 							resolve();
 						}).catch((error) => {
+							console.log("rejecting");
 							reject(error);
 						});
 					});
@@ -224,6 +231,7 @@ export class SaveToOneNote {
 	private getPageWithLogging(saveable: OneNoteSaveable, index: number) {
 		let event = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
 		return saveable.getPage(index).then((page: OneNoteApi.OneNotePage) => {
+			console.log("after getPage(" + index + ")");
 			event.stopTimer();
 
 			const numPages = 1;
