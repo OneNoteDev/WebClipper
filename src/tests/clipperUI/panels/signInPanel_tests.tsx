@@ -4,6 +4,7 @@ import {AuthType, UpdateReason} from "../../../scripts/userInfo";
 import {Status} from "../../../scripts/clipperUI/status";
 import {SignInPanel} from "../../../scripts/clipperUI/panels/signInPanel";
 
+import {Assert} from "../../assert";
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
@@ -139,6 +140,21 @@ export class SignInPanelTests extends TestModule {
 
 			ok(!document.getElementById(Constants.Ids.signInToggleErrorInformationText), "The error information toggle should not be there in case of an MSA error.");
 			ok(!document.getElementById(Constants.Ids.signInErrorDescription), "The error description should not be showing");
+		});
+
+		test("Test the tab order when the 'more' button is not there", () => {
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
+
+			Assert.tabOrderIsIncremental([Constants.Ids.signInButtonMsa, Constants.Ids.signInButtonOrgId]);
+		});
+
+		test("Test the tab order when the 'more' button is enabled", () => {
+			let state = MockProps.getMockClipperState();
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, errorDescription: "OrgId: An error has occured." } };
+
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
+
+			Assert.tabOrderIsIncremental([Constants.Ids.signInErrorMoreInformation, Constants.Ids.signInButtonMsa, Constants.Ids.signInButtonOrgId]);
 		});
 	}
 }

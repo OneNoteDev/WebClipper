@@ -67,7 +67,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 	errorInformationToggle() {
 		if (this.getSignInFailureDetected()) {
 			return <div className="signInErrorToggleInformation">
-				<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 81) }>
+				<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 10) }>
 					<img id={Constants.Ids.signInToggleErrorDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					<span id={Constants.Ids.signInToggleErrorInformationText}
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
@@ -124,7 +124,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 					</div>
 					{this.errorInformationToggle()}
 					{this.errorInformationDescription()}
-					<a id={Constants.Ids.signInButtonMsa} {...this.enableInvoke(this.onSignInMsa, AuthType.Msa)}>
+					<a id={Constants.Ids.signInButtonMsa} {...this.enableInvoke(this.onSignInMsa, 11, AuthType.Msa)}>
 						<div className="wideButtonContainer">
 							<span className="wideButtonFont wideActionButton"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
@@ -132,7 +132,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 							</span>
 						</div>
 					</a>
-					<a id={Constants.Ids.signInButtonOrgId} {...this.enableInvoke(this.onSignInOrgId, AuthType.OrgId) }>
+					<a id={Constants.Ids.signInButtonOrgId} {...this.enableInvoke(this.onSignInOrgId, 12, AuthType.OrgId) }>
 						<div className="wideButtonContainer">
 							<span className="wideButtonFont wideActionButton"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }>
