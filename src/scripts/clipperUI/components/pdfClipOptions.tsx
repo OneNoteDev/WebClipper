@@ -1,4 +1,5 @@
 import {Localization} from "../../localization/localization";
+import {Rtl} from "../../localization/rtl";
 
 import {Constants} from "../../constants";
 import {OperationResult} from "../../operationResult";
@@ -138,7 +139,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				{pdfPreviewInfo.shouldShowPopover ?
 					<Popover
 						referenceElementId={Constants.Ids.rangeInput}
-						placement="right"
+						placement={Rtl.isRtl(navigator.language || (navigator as any).userLanguage) ? "left" : "right"}
 						content={this.getErrorMessageForInvalidPageRange()}
 						classNames={[Constants.Classes.popover]}
 						arrowClassNames={[Constants.Classes.popoverArrow]}

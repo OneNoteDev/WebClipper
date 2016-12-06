@@ -142,7 +142,6 @@ export class SaveToOneNote {
 		});
 	}
 
-	// TODO: Temporarily hack the batch to be synchronous requests instead of actual batches
 	private batch(saveable: OneNoteSaveable): Promise<any> {
 		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
 		return _.range(saveable.getNumBatches()).reduce((chainedPromise, i) => {

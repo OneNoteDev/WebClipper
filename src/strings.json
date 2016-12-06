@@ -98,7 +98,7 @@
 	"WebClipper.Label.Ratings.Button.Init.Negative": "Not really...",
 	"WebClipper.Label.Ratings.Button.NoThanks": "No thanks",
 	"WebClipper.Label.Ratings.Button.Rate": "Rate us 5 stars",
-	"WebClipper.Popover.PdfInvalidPageRange": "We couldn\u0027t find page '{0}'",
+	"WebClipper.Popover.PdfInvalidPageRange": "We couldn't find page '{0}'",
 	"WebClipper.Preview.AugmentationModeGenericError": "Something went wrong creating the preview. Try again, or choose a different clipping mode.",
 	"WebClipper.Preview.BookmarkModeGenericError": "Something went wrong creating the bookmark. Try again, or choose a different clipping mode.",
 	"WebClipper.Preview.FullPageModeGenericError": "A preview isn't available, but you can still clip your page.",

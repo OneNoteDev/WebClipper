@@ -181,14 +181,6 @@ export class OneNoteSaveableFactory {
 		return Promise.resolve(new OneNoteSaveablePage(page));
 	}
 
-	private addFirstPdfPageToInitialPage(page: OneNoteApi.OneNotePage, pdf: PdfJsDocument): Promise<OneNoteApi.OneNotePage> {
-		const pageIndexes = this.getPageIndicesToSendInPdfMode();
-		return pdf.getPageAsDataUrl(pageIndexes[0]).then((dataUrl) => {
-			page.addOnml("<p><img src=\"" + dataUrl + "\" /></p>&nbsp;");
-			return page;
-		});
-	}
-
 	private getPageIndicesToSendInPdfMode() {
 		let pdf = this.clipperState.pdfResult.data.get().pdf;
 		if (this.clipperState.pdfPreviewInfo.allPages) {

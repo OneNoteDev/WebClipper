@@ -1,5 +1,6 @@
 import {Constants} from "../../constants";
 import {StringUtils} from "../../stringUtils";
+import {Localization} from "../../localization/localization";
 
 import {ComponentBase} from "../componentBase";
 
@@ -25,8 +26,9 @@ class PopoverClass extends ComponentBase<{}, PopoverProps> {
 
 	handlePopoverLifecycle(element, isInitialized, context) {
 		if (!isInitialized) {
+			let fontFamily = Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular);
 			let popoverObj: any = {
-				content: this.props.content,
+				content: "<span style='" + fontFamily + "'>" + this.props.content + "</span>",
 				contentType: "html",
 				classNames: this.props.classNames,
 				arrowClassNames: this.props.arrowClassNames

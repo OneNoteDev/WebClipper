@@ -11,7 +11,6 @@ import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
 import {SaveToOneNote} from "../../scripts/saveToOneNote/saveToOneNote";
 import {OneNoteSaveablePage} from "../../scripts/saveToOneNote/oneNoteSaveablePage";
 import {OneNoteSaveablePdf} from "../../scripts/saveToOneNote/oneNoteSaveablePdf";
-import {OneNoteSaveablePdfBatched} from "../../scripts/saveToOneNote/oneNoteSaveablePdfBatched";
 import {OneNoteSaveablePdfSynchronousBatched} from "../../scripts/saveToOneNote/oneNoteSaveablePdfSynchronousBatched";
 
 import {ClipperStorageKeys} from "../../scripts/storage/clipperStorageKeys";
@@ -407,7 +406,7 @@ export class SaveToOneNoteTests extends TestModule {
 			});
 		});
 
-		test("When saving a pdf that is distributed over many pages, if any of the createPage calls fail, reject should be called with the error object", (assert: QUnitAssert) => {
+		test("When saving a pdf that is distributed over many pages, if any of the createPage calls fail, the call should still resolve", (assert: QUnitAssert) => {
 			let done = assert.async();
 
 			let pageId1 = "abc";
