@@ -590,7 +590,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				handleSignInEvent.setStatus(Log.Status.Failed);
 				handleSignInEvent.setFailureInfo({ error: error });
 
-				data.errorDescription = error;
+				errorObject.errorDescription = error;
 				this.state.setState({ userResult: { status: Status.Failed, data: updatedUser } });
 
 				Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInFailed);
