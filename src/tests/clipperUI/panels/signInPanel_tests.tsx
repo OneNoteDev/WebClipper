@@ -101,6 +101,7 @@ export class SignInPanelTests extends TestModule {
 
 			strictEqual(document.getElementById(Constants.Ids.signInToggleErrorInformationText).innerText, this.stringsJson["WebClipper.Label.SignInUnsuccessfulMoreInformation"],
 				"The displayed message should be the 'More' message");
+			ok(!document.getElementById(Constants.Ids.signInErrorDescription), "The error description should not be showing");
 		});
 
 		test("The 'less' button is enabled when a sign-in failure is detected and the more button was clicked (OrgID)", () => {
@@ -108,9 +109,10 @@ export class SignInPanelTests extends TestModule {
 			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, errorDescription: "OrgId: An error has occured." } };
 			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
 
-			// Simulate that the 'More' button was clicked.
-			controllerInstance.setState({ errorDescriptionShowing: true });
-			m.redraw(true);
+			let moreButton = document.getElementById(Constants.Ids.signInErrorMoreInformation);
+			MithrilUtils.simulateAction(() => {
+				moreButton.click();
+			});
 
 			strictEqual(document.getElementById(Constants.Ids.signInToggleErrorInformationText).innerText, this.stringsJson["WebClipper.Label.SignInUnsuccessfulLessInformation"],
 				"The displayed message should be the 'Less' message");
@@ -121,9 +123,10 @@ export class SignInPanelTests extends TestModule {
 			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, errorDescription: "OrgId: An error has occured." } };
 			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
 
-			// Simulate that the 'More' button was clicked.
-			controllerInstance.setState({ errorDescriptionShowing: true });
-			m.redraw(true);
+			let moreButton = document.getElementById(Constants.Ids.signInErrorMoreInformation);
+			MithrilUtils.simulateAction(() => {
+				moreButton.click();
+			});
 
 			ok(!!document.getElementById(Constants.Ids.signInErrorDescription), "The error description is showing");
 		});
@@ -134,7 +137,8 @@ export class SignInPanelTests extends TestModule {
 
 			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
 
-			ok(!document.getElementById(Constants.Ids.signInToggleErrorInformationText), "The error information should be missing.");
+			ok(!document.getElementById(Constants.Ids.signInToggleErrorInformationText), "The error information toggle should not be there in case of an MSA error.");
+			ok(!document.getElementById(Constants.Ids.signInErrorDescription), "The error description should not be showing");
 		});
 	}
 }
