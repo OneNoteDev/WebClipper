@@ -319,7 +319,7 @@ export class PdfClipOptionsTests extends TestModule {
 
 			ok(document.getElementById(Constants.Ids.checkboxToAttachPdf), "The checkboxToAttachPdf should still be visible");
 			ok(checkbox.classList.contains("disabled"), "The checkboxToAttachPdf should be disabled");
- 		});
+		});
 
 		test("If the PDF result has finished, and the PDF is too large, the checkboxToAttachPdf should not be visible, and the pdfIsTooLargeToAttachIndicator should be visible", () => {
 			let defaultClipperState = MockProps.getMockClipperState();

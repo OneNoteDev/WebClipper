@@ -186,8 +186,10 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 	getAttachmentIsTooLargeCheckbox(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+		const disabledClassName = " disabled";
+
 		return (
-			<div className="pdf-control" id={Constants.Ids.pdfIsTooLargeToAttachIndicator} {...this.enableInvoke(this.onCheckboxChange, 67, !pdfPreviewInfo.shouldAttachPdf) }>
+			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.pdfIsTooLargeToAttachIndicator} tabIndex={67}>
 				<img className="warning-image" src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
 				<div className="pdf-label-margin">
 					<span className="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Label.PdfTooLargeToAttach")}</span>
@@ -231,8 +233,6 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			</div>
 		);
 	}
-
-
 
 	private onHiddenOptionsDraw(hiddenOptionsAnimator: HTMLElement) {
 		this.hiddenOptionsAnimationStrategy.animate(hiddenOptionsAnimator);
