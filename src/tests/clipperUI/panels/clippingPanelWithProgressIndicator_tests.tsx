@@ -58,7 +58,7 @@ export class ClippingPanelWithProgressIndicatorTests extends TestModule {
 				this.mockClipperState.pdfSaveStatus.numPagesCompleted = 2;
 				this.mockClipperState.pdfSaveStatus.totalPages = 6;
 			});
-	
+
 			messageElement = document.getElementById(Constants.Ids.clipProgressIndicatorMessage);
 			ok(messageElement, "The clipping progress indication message should be rendered");
 			strictEqual(messageElement.innerText, "Clipping page 3 of 6...");
