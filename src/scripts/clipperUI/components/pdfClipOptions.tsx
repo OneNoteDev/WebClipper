@@ -177,13 +177,17 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		const pdfIsTooLarge = pdfHasSucceeded && this.props.clipperState.pdfResult.data.get().byteLength > Constants.Settings.maximumMimeSizeLimit;
 		const disableCheckbox = pdfIsTooLarge || !pdfHasSucceeded;
 
-		return disableCheckbox ? this.getDisabledAttachmentCheckbox() : this.getEnabledAttachmentCheckbox();
+		if (pdfIsTooLarge) {
+			return this.getAttachmentIsTooLargeCheckbox();
+		} else {
+			return this.getAttachPdfCheckbox(pdfHasSucceeded);
+		}
 	}
 
-	getDisabledAttachmentCheckbox(): any {
+	getAttachmentIsTooLargeCheckbox(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
-			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdfDisabled} {...this.enableInvoke(this.onCheckboxChange, 67, !pdfPreviewInfo.shouldAttachPdf) }>
+			<div className="pdf-control" id={Constants.Ids.pdfIsTooLargeToAttachIndicator} {...this.enableInvoke(this.onCheckboxChange, 67, !pdfPreviewInfo.shouldAttachPdf) }>
 				<img className="warning-image" src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
 				<div className="pdf-label-margin">
 					<span className="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Label.PdfTooLargeToAttach")}</span>
@@ -192,8 +196,14 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		);
 	}
 
-	getEnabledAttachmentCheckbox(): any {
+	getAttachPdfCheckbox(clickable: boolean): any {
+		return clickable ? this.getEnabledAttachmentCheckbox() : this.getDisabledAttachmentCheckbox();
+	}
+
+	// TODO: Programmaticaly remove the enableInvoke so that we can collapse the attachmentCheckbox functions into one
+	getEnabledAttachmentCheckbox() {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+
 		return (
 			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(this.onCheckboxChange, 66, !pdfPreviewInfo.shouldAttachPdf) }>
 				<div className="pdf-indicator pdf-checkbox-indicator"></div>
@@ -206,6 +216,23 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			</div>
 		);
 	}
+
+	getDisabledAttachmentCheckbox() {
+		const disabledClassName = " disabled";
+
+		return (
+			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.checkboxToAttachPdf} tabIndex={66}>
+				<div className={"pdf-indicator pdf-checkbox-indicator" + disabledClassName}></div>
+				<div className="pdf-label-margin">
+					<span className={"pdf-label" + disabledClassName}>{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
+						<span className={"sub-label" + disabledClassName}>{Localization.getLocalizedString("WebClipper.Label.AttachPdfFileSubText")}</span>
+					</span>
+				</div>
+			</div>
+		);
+	}
+
+
 
 	private onHiddenOptionsDraw(hiddenOptionsAnimator: HTMLElement) {
 		this.hiddenOptionsAnimationStrategy.animate(hiddenOptionsAnimator);

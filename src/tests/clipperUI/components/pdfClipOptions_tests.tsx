@@ -298,26 +298,47 @@ export class PdfClipOptionsTests extends TestModule {
 			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.moreClipOptions).click();
 			});
-			let attachmentCheckboxElem = document.getElementById(Constants.Ids.checkboxToAttachPdfDisabled);
+			let attachmentCheckboxElem = document.getElementById(Constants.Ids.pdfIsTooLargeToAttachIndicator);
 			strictEqual(attachmentCheckboxElem.innerText.trim(), this.stringsJson["WebClipper.Label.PdfTooLargeToAttach"]);
 		});
 
-		test("If the PDF result has not started, or has failed, the checkboxToAttachPdf should not be visible, and the checkboxToAttachPdfDisabled should be visible", () => {
+		test("If the PDF result has not started, or has failed, the checkboxToAttachPdf should be visible but disabled", () => {
 			this.defaultPdfClipOptionsProps.clipperState.pdfResult.status = Status.NotStarted;
 			let pdfClipOptions = MithrilUtils.mountToFixture(this.defaultComponent);
 			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.moreClipOptions).click();
 			});
 
-			ok(!document.getElementById(Constants.Ids.checkboxToAttachPdf), "The checkboxToAttachPdf should not be visible");
-			ok(document.getElementById(Constants.Ids.checkboxToAttachPdfDisabled), "The checkboxToAttachPdfDisabled should be visible");
+			let checkbox: HTMLElement = document.getElementById(Constants.Ids.checkboxToAttachPdf);
+			ok(checkbox, "The checkboxToAttachPdf should be visible");
+			ok(checkbox.classList.contains("disabled"), "The checkboxToAttachPdf should be disabled");
 
 			MithrilUtils.simulateAction(() => {
 				this.defaultPdfClipOptionsProps.clipperState.pdfResult.status = Status.InProgress;
 			});
 
-			ok(!document.getElementById(Constants.Ids.checkboxToAttachPdf), "The checkboxToAttachPdf should not be visible");
-			ok(document.getElementById(Constants.Ids.checkboxToAttachPdfDisabled), "The checkboxToAttachPdfDisabled should be visible");
+			ok(document.getElementById(Constants.Ids.checkboxToAttachPdf), "The checkboxToAttachPdf should still be visible");
+			ok(checkbox.classList.contains("disabled"), "The checkboxToAttachPdf should be disabled");
+ 		});
+
+		test("If the PDF result has finished, and the PDF is too large, the checkboxToAttachPdf should not be visible, and the pdfIsTooLargeToAttachIndicator should be visible", () => {
+			let defaultClipperState = MockProps.getMockClipperState();
+			defaultClipperState.pdfResult.status = Status.Succeeded;
+			defaultClipperState.pdfResult.data.set({
+				pdf: new MockPdfDocument(),
+				viewportDimensions: MockPdfValues.dimensions,
+				byteLength: Constants.Settings.maximumMimeSizeLimit + 5
+			});
+			this.defaultPdfClipOptionsProps = {
+				clipperState: defaultClipperState,
+			};
+			this.defaultComponent = <PdfClipOptions {...this.defaultPdfClipOptionsProps} />;
+			MithrilUtils.mountToFixture(this.defaultComponent);
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.moreClipOptions).click();
+			});
+
+			ok(document.getElementById(Constants.Ids.pdfIsTooLargeToAttachIndicator), "The pdfIsTooLargeToAttachIndicator should be visible");
 		});
 
 		test("Given that shouldShowPopover is true, then the popover should be visible", () => {

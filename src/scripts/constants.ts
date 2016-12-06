@@ -168,7 +168,7 @@ export module Constants {
 
 		// pdfClipOptions
 		export var checkboxToDistributePages = "checkboxToDistributePages";
-		export var checkboxToAttachPdfDisabled = "checkboxToAttachPdfDisabled";
+		export var pdfIsTooLargeToAttachIndicator = "pdfIsTooLargeToAttachIndicator";
 		export var checkboxToAttachPdf = "checkboxToAttachPdf";
 		export var moreClipOptions = "moreClipOptions";
 

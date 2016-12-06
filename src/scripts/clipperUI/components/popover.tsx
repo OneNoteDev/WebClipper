@@ -26,10 +26,8 @@ class PopoverClass extends ComponentBase<{}, PopoverProps> {
 
 	handlePopoverLifecycle(element, isInitialized, context) {
 		if (!isInitialized) {
-			let fontFamily = Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular);
 			let popoverObj: any = {
-				content: "<span style='" + fontFamily + "'>" + this.props.content + "</span>",
-				contentType: "html",
+				content: this.props.content,
 				classNames: this.props.classNames,
 				arrowClassNames: this.props.arrowClassNames
 			};
