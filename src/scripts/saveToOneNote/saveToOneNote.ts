@@ -60,9 +60,9 @@ export class SaveToOneNote {
 		}
 	}
 
-	private saveMultiplePagesSynchronously(options: SaveToOneNoteOptions /*, progressCallback: (num: number, denom: number) => void = () => {} */) {
+	private saveMultiplePagesSynchronously(options: SaveToOneNoteOptions) {
 		let progressCallback = options.progressCallback ? options.progressCallback : () => { };
-		// The + 1 is to include the first page of the clip, which is there by default
+
 		progressCallback(0, options.page.getNumPages());
 
 		return options.page.getPage().then((page) => {
@@ -74,14 +74,11 @@ export class SaveToOneNote {
 		});
 	}
 
-	// The way the progress callback works is that as work is being done, it will call the callback
-	// with an argument such as a fraction or a percentage of how far along it is
-	// The callback will propagate this back to the parent component that passed it in, and it is
-	// the passer's responsibility to use that information
-	private synchronouslyCreateMultiplePages(options: SaveToOneNoteOptions, progressCallback: (num: number, denom: number) => void = () => {}): Promise<any> {
+	private synchronouslyCreateMultiplePages(options: SaveToOneNoteOptions, progressCallback: (completed: number, total: number) => void = () => {}): Promise<any> {
 		const saveable = options.page;
 
 		const end = saveable.getNumPages();
+
 		// We start the range at 1 since we have already included the first page
 		return _.range(1, end).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {

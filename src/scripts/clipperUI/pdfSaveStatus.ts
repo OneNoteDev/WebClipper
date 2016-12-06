@@ -1,4 +1,4 @@
 export interface PdfSaveStatus {
-	totalPages: number;
-	numPagesCompleted: number;
+	numItemsCompleted: number;
+	numItemsTotal: number;
 }

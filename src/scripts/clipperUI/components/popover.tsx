@@ -27,6 +27,7 @@ class PopoverClass extends ComponentBase<{}, PopoverProps> {
 		if (!isInitialized) {
 			let popoverObj: any = {
 				content: this.props.content,
+				contentType: "html",
 				classNames: this.props.classNames,
 				arrowClassNames: this.props.arrowClassNames
 			};

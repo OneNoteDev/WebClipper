@@ -13,16 +13,16 @@ class ClippingPanelWithProgressIndicatorClass extends ComponentBase<{}, ClipperS
 		const pdfProgress = this.props.clipperState.pdfSaveStatus;
 
 		// We would rather show no message at all, than show a broken message like "Clipping page -1 of -5...""
-		if (ObjectUtils.isNullOrUndefined(pdfProgress.numPagesCompleted) || ObjectUtils.isNullOrUndefined(pdfProgress.totalPages)) {
+		if (ObjectUtils.isNullOrUndefined(pdfProgress.numItemsCompleted) || ObjectUtils.isNullOrUndefined(pdfProgress.numItemsTotal)) {
 			return undefined;
-		} else if (pdfProgress.numPagesCompleted > pdfProgress.totalPages) {
+		} else if (pdfProgress.numItemsCompleted > pdfProgress.numItemsTotal) {
 			return undefined;
-		} else if (pdfProgress.numPagesCompleted < 0 || pdfProgress.totalPages < 0) {
+		} else if (pdfProgress.numItemsCompleted < 0 || pdfProgress.numItemsTotal < 0) {
 			return undefined;
 		}
 
-		let message = Localization.getLocalizedString("WebClipper.ClipType.Pdf.IncrementalProgressMessage").replace("{0}", (pdfProgress.numPagesCompleted + 1).toString());
-		message = message.replace("{1}", pdfProgress.totalPages.toString());
+		let message = Localization.getLocalizedString("WebClipper.ClipType.Pdf.IncrementalProgressMessage").replace("{0}", (pdfProgress.numItemsCompleted + 1).toString());
+		message = message.replace("{1}", pdfProgress.numItemsTotal.toString());
 
 		return (
 			<span className="actionLabelFont messageLabel" id={Constants.Ids.clipProgressIndicatorMessage}

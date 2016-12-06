@@ -117,8 +117,8 @@ export module MockProps {
 				status: Status.NotStarted
 			},
 			pdfSaveStatus: {
-				numPagesCompleted: undefined,
-				totalPages: undefined
+				numItemsCompleted: undefined,
+				numItemsTotal: undefined
 			},
 
 			setState: (newPartialState: ClipperState) => {
