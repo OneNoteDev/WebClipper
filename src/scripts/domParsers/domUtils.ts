@@ -929,7 +929,9 @@ export module DomUtils {
 		return removeBlankImages(doc);
 	}
 
-	function removeDisallowedIframes(doc: Document) {
+	export function removeDisallowedIframes(doc: Document) {
+		// We also detect if the iframe is a video, and we ensure that we have
+		// the correct attribute set so that ONApi recognizes it
 		domReplacer(doc, Tags.iframe, (node) => {
 			let src = (node as HTMLIFrameElement).src;
 			let supportedDomain = VideoUtils.videoDomainIfSupported(src);
