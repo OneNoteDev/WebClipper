@@ -65,7 +65,7 @@ export class SaveToOneNote {
 
 		progressCallback(0, options.page.getNumPages());
 
-		return this.getPageWithLogging(options.page, 0).then((page) => {
+		return options.page.getPage().then((page) => {
 			return this.getApi().createPage(page, options.saveLocation).then((responsePackage) => {
 				return this.synchronouslyCreateMultiplePages(options, progressCallback).then(() => {
 					return Promise.resolve(responsePackage);

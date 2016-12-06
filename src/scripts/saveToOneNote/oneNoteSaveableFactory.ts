@@ -17,7 +17,6 @@ import {OneNoteSaveable} from "./oneNoteSaveable";
 import {OneNoteSaveablePage} from "./oneNoteSaveablePage";
 import {OneNoteSaveablePdf} from "./oneNoteSaveablePdf";
 import {OneNoteSaveablePdfSynchronousBatched} from "./oneNoteSaveablePdfSynchronousBatched";
-// import {OneNoteSaveablePdfBatched} from "./OneNoteSaveablePdfBatched";
 
 import * as _ from "lodash";
 
