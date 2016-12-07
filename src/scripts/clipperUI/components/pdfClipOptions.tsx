@@ -179,9 +179,9 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 		if (pdfIsTooLarge) {
 			return this.getAttachmentIsTooLargeCheckbox();
-		} else {
-			return this.getAttachPdfCheckbox(pdfHasSucceeded);
-		}
+		} 
+
+		return this.getAttachmentPdfCheckbox(pdfHasSucceeded);
 	}
 
 	getAttachmentIsTooLargeCheckbox(): any {
@@ -198,33 +198,14 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		);
 	}
 
-	getAttachPdfCheckbox(clickable: boolean): any {
-		return clickable ? this.getEnabledAttachmentCheckbox() : this.getDisabledAttachmentCheckbox();
-	}
-
-	// TODO: Programmaticaly remove the enableInvoke so that we can collapse the attachmentCheckbox functions into one
-	getEnabledAttachmentCheckbox() {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+	getAttachmentPdfCheckbox(enabled: boolean) {
+		const pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+		const disabledClassName = enabled ? "" : " disabled";
 
 		return (
-			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(this.onCheckboxChange, 66, !pdfPreviewInfo.shouldAttachPdf) }>
-				<div className="pdf-indicator pdf-checkbox-indicator"></div>
-				{pdfPreviewInfo.shouldAttachPdf ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
-				<div className="pdf-label-margin">
-					<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
-						<span className="sub-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFileSubText")}</span>
-					</span>
-				</div>
-			</div>
-		);
-	}
-
-	getDisabledAttachmentCheckbox() {
-		const disabledClassName = " disabled";
-
-		return (
-			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.checkboxToAttachPdf} tabIndex={66}>
+			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(enabled ? this.onCheckboxChange : undefined, 66, !pdfPreviewInfo.shouldAttachPdf) }>
 				<div className={"pdf-indicator pdf-checkbox-indicator" + disabledClassName}></div>
+				{pdfPreviewInfo.shouldAttachPdf ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
 				<div className="pdf-label-margin">
 					<span className={"pdf-label" + disabledClassName}>{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
 						<span className={"sub-label" + disabledClassName}>{Localization.getLocalizedString("WebClipper.Label.AttachPdfFileSubText")}</span>

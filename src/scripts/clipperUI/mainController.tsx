@@ -263,12 +263,12 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				if (this.props.clipperState.currentMode.get() === ClipMode.Pdf) {
 					if (this.props.clipperState.pdfPreviewInfo.shouldDistributePages) {
 						return <ClippingPanelWithProgressIndicator clipperState= { this.props.clipperState } />;
-					} else {
-						return <ClippingPanelWithDelayedMessage
-							clipperState={this.props.clipperState}
-							delay={Constants.Settings.pdfClippingMessageDelay}
-							message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")} />;
 					}
+
+					return <ClippingPanelWithDelayedMessage
+						clipperState={this.props.clipperState}
+						delay={Constants.Settings.pdfClippingMessageDelay}
+						message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")} />;
 				}
 				return <ClippingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingFailure:

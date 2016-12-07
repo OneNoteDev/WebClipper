@@ -49,10 +49,7 @@ export class SaveToOneNote {
 		} else {
 			if (options.page.getNumPatches() > 0) {
 				return this.rejectIfNoPatchPermissions(options.saveLocation).then(() => {
-					return this.saveWithoutCheckingPatchPermissions(options).then((responsePackage) => {
-						// TODO: unnecessary then
-						return Promise.resolve(responsePackage);
-					});
+					return this.saveWithoutCheckingPatchPermissions(options);
 				});
 			} else {
 				return this.saveWithoutCheckingPatchPermissions(options);

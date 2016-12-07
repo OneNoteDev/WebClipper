@@ -30,24 +30,24 @@ export class ClippingPanelWithProgressIndicatorTests extends TestModule {
 		});
 
 		test("If numItemsCompleted is greater than numItemsTotal, the progress message should not be rendered", () => {
-			this.mockClipperState.pdfSaveStatus.numItemsCompleted = 5;
-			this.mockClipperState.pdfSaveStatus.numItemsTotal = 1;
+			this.mockClipperState.clipSaveStatus.numItemsCompleted = 5;
+			this.mockClipperState.clipSaveStatus.numItemsTotal = 1;
 			ok(!document.getElementById(Constants.Ids.clipProgressIndicatorMessage), "The clipping progress indication message should not be rendered");
 		});
 
 		test("If numItemsCompleted is negative, the progress message should not be rendered", () => {
-			this.mockClipperState.pdfSaveStatus.numItemsCompleted = -1;
+			this.mockClipperState.clipSaveStatus.numItemsCompleted = -1;
 			ok(!document.getElementById(Constants.Ids.clipProgressIndicatorMessage), "The clipping progress indication message should not be rendered");
 		});
 
 		test("If numItemsTotal is negative, the progress message should not be rendered", () => {
-			this.mockClipperState.pdfSaveStatus.numItemsTotal = -1;
+			this.mockClipperState.clipSaveStatus.numItemsTotal = -1;
 			ok(!document.getElementById(Constants.Ids.clipProgressIndicatorMessage), "The clipping progress indication message should not be rendered");
 		});
 
-		test("Given that state has a valid pdfSaveStatus, the panel should render the progress message with the correct values subsittuted", () => {
-			this.mockClipperState.pdfSaveStatus.numItemsCompleted = 1;
-			this.mockClipperState.pdfSaveStatus.numItemsTotal = 5;
+		test("Given that state has a valid clipSaveStatus, the panel should render the progress message with the correct values subsittuted", () => {
+			this.mockClipperState.clipSaveStatus.numItemsCompleted = 1;
+			this.mockClipperState.clipSaveStatus.numItemsTotal = 5;
 			MithrilUtils.mountToFixture(<ClippingPanelWithProgressIndicator clipperState={this.mockClipperState} />);
 
 			let messageElement = document.getElementById(Constants.Ids.clipProgressIndicatorMessage);
@@ -55,8 +55,8 @@ export class ClippingPanelWithProgressIndicatorTests extends TestModule {
 			strictEqual(messageElement.innerText, "Clipping page 2 of 5...");
 
 			MithrilUtils.simulateAction(() => {
-				this.mockClipperState.pdfSaveStatus.numItemsCompleted = 2;
-				this.mockClipperState.pdfSaveStatus.numItemsTotal = 6;
+				this.mockClipperState.clipSaveStatus.numItemsCompleted = 2;
+				this.mockClipperState.clipSaveStatus.numItemsTotal = 6;
 			});
 
 			messageElement = document.getElementById(Constants.Ids.clipProgressIndicatorMessage);

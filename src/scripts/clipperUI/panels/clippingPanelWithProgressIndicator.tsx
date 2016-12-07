@@ -10,7 +10,7 @@ import {ClippingPanel} from "./clippingPanel";
 
 class ClippingPanelWithProgressIndicatorClass extends ComponentBase<{}, ClipperStateProp> {
 	getMessageElement() {
-		const pdfProgress = this.props.clipperState.pdfSaveStatus;
+		const pdfProgress = this.props.clipperState.clipSaveStatus;
 
 		// We would rather show no message at all, than show a broken message like "Clipping page -1 of -5...""
 		if (ObjectUtils.isNullOrUndefined(pdfProgress.numItemsCompleted) || ObjectUtils.isNullOrUndefined(pdfProgress.numItemsTotal)) {
