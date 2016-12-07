@@ -102,7 +102,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				shouldDistributePages: false,
 				shouldShowPopover: false
 			},
-			pdfSaveStatus: {
+			clipSaveStatus: {
 				numItemsTotal: undefined,
 				numItemsCompleted: undefined
 			},
@@ -693,7 +693,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private updateProgress(numItemsCompleted: number, numItemsTotal: number): void {
 		this.state.setState({
-			pdfSaveStatus: {
+			clipSaveStatus: {
 				numItemsCompleted: numItemsCompleted,
 				numItemsTotal: numItemsTotal
 			}

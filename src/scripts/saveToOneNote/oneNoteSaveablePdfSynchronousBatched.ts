@@ -29,6 +29,13 @@ export class OneNoteSaveablePdfSynchronousBatched implements OneNoteSaveable {
 			return Promise.resolve(this.page);
 		}
 
+		// Let's say a user wants to clip page range "2-4,7-9""
+		// This gets converted to 2,3,4,7,8,9 and is then 0-indexed to 1,2,3,6,7,8
+		// When a SynchronousBatchedPdf object is constructed, the array [1,2,3,6,7,8] gets converted
+		// to: this.page: [1], this.pageIndexes: [2,3,6,7,8].
+		// Therefore, getPage(0) must return this.page (INDEX 1), as done above
+		// Then, getPage(1) must return [2], which corresponds to pageIndexes[1 - 1]  == pageIndexes[0]
+		// We have to subtract 1 to account for the first page being removed from the pageIndexes array
 		const pageNumber = this.pageIndexes[index - 1];
 		return this.pdf.getPageAsDataUrl(pageNumber).then((dataUrl) => {
 			return this.createPage(dataUrl, pageNumber);

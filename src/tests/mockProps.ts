@@ -116,7 +116,7 @@ export module MockProps {
 				data: undefined,
 				status: Status.NotStarted
 			},
-			pdfSaveStatus: {
+			clipSaveStatus: {
 				numItemsCompleted: undefined,
 				numItemsTotal: undefined
 			},
