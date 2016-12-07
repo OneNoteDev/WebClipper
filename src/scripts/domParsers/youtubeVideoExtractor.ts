@@ -37,7 +37,8 @@ export class YoutubeVideoExtractor implements VideoExtractor {
 			return;
 		}
 
-		return [youTubeId];
+		// Ensure we remove query parameters
+		return [youTubeId.split("?")[0]];
 	}
 
 	/**
