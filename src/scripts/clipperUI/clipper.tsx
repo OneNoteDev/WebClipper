@@ -667,7 +667,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			let saveOptions: SaveToOneNoteOptions = {
 				page: saveable,
 				saveLocation: this.state.saveLocation,
-				progressCallback: this.updateProgress.bind(this)
+				progressCallback: this.updateClipSaveProgress.bind(this)
 			};
 
 			let saveToOneNote = new SaveToOneNote(this.state.userResult.data.user.accessToken);
@@ -691,7 +691,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		});
 	}
 
-	private updateProgress(numItemsCompleted: number, numItemsTotal: number): void {
+	private updateClipSaveProgress(numItemsCompleted: number, numItemsTotal: number): void {
 		this.state.setState({
 			clipSaveStatus: {
 				numItemsCompleted: numItemsCompleted,

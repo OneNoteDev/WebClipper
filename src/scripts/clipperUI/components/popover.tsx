@@ -1,6 +1,5 @@
 import {Constants} from "../../constants";
 import {StringUtils} from "../../stringUtils";
-import {Localization} from "../../localization/localization";
 
 import {ComponentBase} from "../componentBase";
 
