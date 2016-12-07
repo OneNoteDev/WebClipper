@@ -66,18 +66,20 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 
 	errorInformationToggle() {
 		if (this.getSignInFailureDetected()) {
-			return <div className="signInErrorToggleInformation">
-				<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 10) }>
-					<img id={Constants.Ids.signInToggleErrorDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
-					<span id={Constants.Ids.signInToggleErrorInformationText}
-						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-						{this.state.errorDescriptionShowing
-							? Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulLessInformation")
-							: Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulMoreInformation")
-						}
-					</span>
-				</a>
-			</div>;
+			return (
+				<div className="signInErrorToggleInformation">
+					<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 10) }>
+						<img id={Constants.Ids.signInToggleErrorDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+						<span id={Constants.Ids.signInToggleErrorInformationText}
+							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+							{this.state.errorDescriptionShowing
+								? Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulLessInformation")
+								: Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulMoreInformation")
+							}
+						</span>
+					</a>
+				</div>
+			);
 		}
 
 		return undefined;
@@ -85,19 +87,21 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 
 	errorInformationDescription() {
 		if (this.getSignInFailureDetected() && this.state.errorDescriptionShowing) {
-			return <div id={Constants.Ids.signInErrorDescription}>
-				<span className={Constants.Ids.signInErrorDescriptionContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-					{this.props.clipperState.userResult.data.errorDescription}
-				</span>
-				<div className={Constants.Ids.signInErrorDebugInformationContainer}
-					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-					<ul className={Constants.Ids.signInErrorDebugInformationList}>
-						<li>{ClientType[this.props.clipperState.clientInfo.clipperType]}: {this.props.clipperState.clientInfo.clipperVersion}</li>
-						<li>ID: {this.props.clipperState.clientInfo.clipperId}</li>
-						<li>USID: {Clipper.getUserSessionId()}</li>
-					</ul>
+			return (
+				<div id={Constants.Ids.signInErrorDescription}>
+					<span className={Constants.Ids.signInErrorDescriptionContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+						{this.props.clipperState.userResult.data.errorDescription}
+					</span>
+					<div className={Constants.Ids.signInErrorDebugInformationContainer}
+						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+						<ul className={Constants.Ids.signInErrorDebugInformationList}>
+							<li>{ClientType[this.props.clipperState.clientInfo.clipperType]}: {this.props.clipperState.clientInfo.clipperVersion}</li>
+							<li>ID: {this.props.clipperState.clientInfo.clipperId}</li>
+							<li>USID: {Clipper.getUserSessionId()}</li>
+						</ul>
+					</div>
 				</div>
-			</div>;
+			);
 		}
 
 		return undefined;
