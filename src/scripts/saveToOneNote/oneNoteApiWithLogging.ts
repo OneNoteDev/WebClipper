@@ -25,10 +25,10 @@ export class OneNoteApiWithLogging implements OneNoteApi.IOneNoteApi {
 		}, Log.Event.Label.CreatePage);
 	}
 
-	public batchRequests(batchRequests: OneNoteApi.BatchRequest[]): Promise<OneNoteApi.ResponsePackage<any>> {
+	public sendBatchRequest(batchRequest: OneNoteApi.BatchRequest): Promise<OneNoteApi.ResponsePackage<any>> {
 		return this.executeWithLogging(() => {
-			return this.api.batchRequests(batchRequests);
-		}, Log.Event.Label.BatchRequests);
+			return this.api.sendBatchRequest(batchRequest);
+		}, Log.Event.Label.SendBatchRequest);
 	}
 
 	public getPage(pageId: string): Promise<OneNoteApi.ResponsePackage<any>> {

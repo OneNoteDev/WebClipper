@@ -11,7 +11,6 @@ export module Event {
 	export enum Label {
 		AddEmbeddedVideo,
 		AugmentationApiCall,
-		BatchRequests,
 		BookmarkPage,
 		CompressRegionSelection,
 		ClearNoOpTracker,
@@ -56,6 +55,7 @@ export module Event {
 		RegionSelectionLoading,
 		RegionSelectionProcessing,
 		RetrieveUserInformation,
+		SendBatchRequest,
 		SetContextProperty,
 		SetDoNotPromptRatings,
 		ShouldShowRatingsPrompt,
