@@ -44,20 +44,20 @@ export class OneNoteSaveablePdfBatched implements OneNoteSaveable {
 		return this.buckets.length;
 	}
 
-	public getBatch(index: number): Promise<OneNoteApi.BatchRequest[]> {
+	public getBatch(index: number): Promise<OneNoteApi.BatchRequest> {
 		const bucket = this.buckets[index];
 		return this.pdf.getPageListAsDataUrls(bucket).then((dataUrls) => {
-			return this.createBatchRequestBody(bucket, dataUrls);
+			return this.createBatchRequest(bucket, dataUrls);
 		});
 	}
 
-	private createBatchRequestBody(pagesIndices: number[], dataUrls: string[]): OneNoteApi.BatchRequest[] {
+	private createBatchRequest(pagesIndices: number[], dataUrls: string[]): OneNoteApi.BatchRequest {
 		const sectionId = this.saveLocation;
 		const apiRoot = "/api/v1.0/me/notes";
 		const sectionPath = sectionId ? "/sections/" + sectionId : "";
 		const url = apiRoot + sectionPath + "/pages";
 
-		let batchRequests = [];
+		let batchRequest = new OneNoteApi.BatchRequest();
 		for (let i = 0; i < pagesIndices.length; i++) {
 			const title = StringUtils.getBatchedPageTitle(this.titleText, pagesIndices[i]);
 			const dataUrl = dataUrls[i];
@@ -65,16 +65,16 @@ export class OneNoteSaveablePdfBatched implements OneNoteSaveable {
 			let page = new OneNoteApi.OneNotePage(title, "", this.contentLocale);
 			page.addOnml("<p><img src=\"" + dataUrl + "\" /></p>&nbsp;");
 
-			const batchRequest = {
+			const batchRequestOperation = {
 				httpMethod: "POST",
 				uri: url,
 				contentType: "text/html",
 				content: page.getEntireOnml()
-			} as OneNoteApi.BatchRequest;
+			} as OneNoteApi.BatchRequestOperation;
 
-			batchRequests.push(batchRequest);
+			batchRequest.addOperation(batchRequestOperation);
 		}
 
-		return batchRequests;
+		return batchRequest;
 	}
 }

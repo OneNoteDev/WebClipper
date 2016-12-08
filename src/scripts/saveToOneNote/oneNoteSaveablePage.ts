@@ -23,7 +23,7 @@ export class OneNoteSaveablePage implements OneNoteSaveable {
 		return 0;
 	}
 
-	public getBatch(index: number): Promise<OneNoteApi.BatchRequest[]> {
+	public getBatch(index: number): Promise<OneNoteApi.BatchRequest> {
 		return Promise.resolve(undefined);
 	}
 
