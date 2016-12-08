@@ -179,7 +179,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 
 		if (pdfIsTooLarge) {
 			return this.getAttachmentIsTooLargeCheckbox();
-		} 
+		}
 
 		return this.getAttachmentPdfCheckbox(pdfHasSucceeded);
 	}
