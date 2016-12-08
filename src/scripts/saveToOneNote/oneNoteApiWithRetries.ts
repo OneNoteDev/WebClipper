@@ -22,9 +22,9 @@ export class OneNoteApiWithRetries implements OneNoteApi.IOneNoteApi {
 	}
 
 	// TODO: call this sendBatch or somethin to differentiate it
-	public batchRequests(batchRequests: OneNoteApi.BatchRequest[]): Promise<OneNoteApi.ResponsePackage<any>> {
+	public sendBatchRequest(batchRequest: OneNoteApi.BatchRequest): Promise<OneNoteApi.ResponsePackage<any>> {
 		return PromiseUtils.execWithRetry(() => {
-			return this.api.batchRequests(batchRequests);
+			return this.api.sendBatchRequest(batchRequest);
 		});
 	}
 

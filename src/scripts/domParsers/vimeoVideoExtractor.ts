@@ -20,8 +20,12 @@ export class VimeoVideoExtractor implements VideoExtractor {
 		// 		- ignore casing
 		// 		- ignore possible whitespacing variations between characters
 		// 		- accept the use of either double- or single-quotes around clip_###
-		let regex = /id\s*=\s*("\s*clip_(\d+)\s*"|'\s*clip_(\d+)\s*')/gi;
-		return VideoUtils.matchRegexFromPageContent(pageContent, [regex]);
+		let regex1 = /id\s*=\s*("\s*clip_(\d+)\s*"|'\s*clip_(\d+)\s*')/gi;
+
+		// also account for embedded Vimeo videos
+		let regex2 = /player\.vimeo\.com\/video\/((\d+))\d{0}/gi;
+
+		return VideoUtils.matchRegexFromPageContent(pageContent, [regex1, regex2]);
 	}
 
 	/**

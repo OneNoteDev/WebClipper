@@ -46,19 +46,16 @@ export module VideoUtils {
 			return;
 		}
 
-		// looking for all matches in pageContent of the general format: id="clip_###"
-		// 		- where ### could be any number of digits
-		// 		- ignore casing
-		// 		- ignore possible whitespacing variations between characters
-		// 		- accept the use of either double- or single-quotes around clip_###
-		let m;
+		let match: RegExpExecArray;
 		let matches = [];
 		regexes.forEach((regex) => {
-			while (m = regex.exec(pageContent)) {
-				if (m[2]) {
-					matches.push(m[2]);
-				} else {
-					matches.push(m[3]);
+			// Calling exec multiple times with the same parameter will continue finding matches until
+			// there are no more
+			while (match = regex.exec(pageContent)) {
+				if (match[2]) {
+					matches.push(match[2]);
+				} else if (match[3]) {
+					matches.push(match[3]);
 				}
 			}
 		});

@@ -7,6 +7,7 @@ export interface UserInfo {
 	user?: UserInfoData;
 	lastUpdated?: number;
 	updateReason: UpdateReason;
+	errorDescription?: string;
 }
 
 export interface UserInfoData {

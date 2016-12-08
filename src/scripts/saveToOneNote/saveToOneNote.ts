@@ -29,7 +29,7 @@ export class SaveToOneNote {
 	private static timeBetweenPatchRequests = 7000;
 
 	private static timeBeforeFirstBatch = 1000;
-	private static timeBetweenBatchRequests;
+	private static timeBetweenBatchRequests = 7000;
 
 	private static timeBeforeFirstPost = 1000;
 	private static timeBetweenPostRequests = 0;
@@ -140,17 +140,17 @@ export class SaveToOneNote {
 	}
 
 	private batch(saveable: OneNoteSaveable): Promise<any> {
-		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
+		let timeBetweenBatchRequests = SaveToOneNote.timeBeforeFirstBatch;
 		return _.range(saveable.getNumBatches()).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
 					// Parallelize the BATCH request intervals with the fetching of the next set of dataUrls
 					let getRevisionsPromise = this.getBatchWithLogging(saveable, i);
-					let timeoutPromise = PromiseUtils.wait(timeBetweenPatchRequests);
+					let timeoutPromise = PromiseUtils.wait(timeBetweenBatchRequests);
 
 					Promise.all([getRevisionsPromise, timeoutPromise]).then((values) => {
-						let batchRequests = values[0] as OneNoteApi.BatchRequest[];
-						this.getApi().batchRequests(batchRequests).then(() => {
+						let batchRequest = values[0] as OneNoteApi.BatchRequest;
+						this.getApi().sendBatchRequest(batchRequest).then(() => {
 							resolve();
 						}).catch((error) => {
 							reject(error);
@@ -232,24 +232,26 @@ export class SaveToOneNote {
 		});
 	}
 
-	private getBatchWithLogging(saveable: OneNoteSaveable, index: number): Promise<OneNoteApi.BatchRequest[]> {
+	private getBatchWithLogging(saveable: OneNoteSaveable, index: number): Promise<OneNoteApi.BatchRequest> {
 		let event = new Log.Event.PromiseEvent(Log.Event.Label.ProcessPdfIntoDataUrls);
-		return saveable.getBatch(index).then((batchRequests: OneNoteApi.BatchRequest[]) => {
+		return saveable.getBatch(index).then((batchRequest: OneNoteApi.BatchRequest) => {
 			event.stopTimer();
 
-			let numPages = batchRequests.length;
+			let numPages = batchRequest.getNumOperations();
 			event.setCustomProperty(Log.PropertyName.Custom.NumPages, numPages);
 
-			if (batchRequests.length > 0) {
+			if (numPages > 0) {
 				// There's some html in the content itself, but it's negligible compared to the length of the actual dataUrls
-				let lengthOfDataUrls = _.sumBy(batchRequests, (batchRequest) => { return batchRequest.content.length; });
+				const batchRequestOperations = _.range(numPages).map((pageNumber) => { return batchRequest.getOperation(pageNumber); });
+				const lengthOfDataUrls = _.sumBy(batchRequestOperations, (op) => { return op.content.length; });
+
 				event.setCustomProperty(Log.PropertyName.Custom.ByteLength, lengthOfDataUrls);
 				event.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, lengthOfDataUrls / numPages);
 				event.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, event.getDuration() / numPages);
 			}
 
 			Clipper.logger.logEvent(event);
-			return Promise.resolve(batchRequests);
+			return Promise.resolve(batchRequest);
 		});
 	}
 
