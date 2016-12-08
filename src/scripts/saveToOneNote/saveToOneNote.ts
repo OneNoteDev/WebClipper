@@ -242,7 +242,8 @@ export class SaveToOneNote {
 
 			if (numPages > 0) {
 				// There's some html in the content itself, but it's negligible compared to the length of the actual dataUrls
-				let lengthOfDataUrls = _.sumBy(batchRequest.getOperations(), (batchRequestOperation) => { return batchRequestOperation.content.length; });
+				const batchRequestOperations = _.range(numPages).map((pageNumber) => { return batchRequest.getOperation(pageNumber); });
+				const lengthOfDataUrls = _.sumBy(batchRequestOperations, (op) => { return op.content.length; });
 
 				event.setCustomProperty(Log.PropertyName.Custom.ByteLength, lengthOfDataUrls);
 				event.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, lengthOfDataUrls / numPages);
