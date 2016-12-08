@@ -265,9 +265,13 @@ export class DomUtilsTests extends TestModule {
 			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithMultipleClipIds, "https://vimeo.com/album/3637653/").then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
 				let expectedVideoIds = ["45196609", "45196610", "45196611"];
 				for (let i = 0; i < expectedVideoIds.length; i++) {
-					let expectedUrl = "https://player.vimeo.com/video/" + expectedVideoIds[i];
-					strictEqual(videoSrcUrls[i].dataOriginalSrcAttribute, expectedUrl, "expected dataOriginalSrcAttribute: " + expectedUrl);
-					strictEqual(videoSrcUrls[i].srcAttribute, expectedUrl, "expected srcAttribute: " + expectedUrl);
+					if (!videoSrcUrls[i]) {
+						ok(false, "The video id " + expectedVideoIds[i] + " is missing in the return videoSrcUrls");
+					} else {
+						let expectedUrl = "https://player.vimeo.com/video/" + expectedVideoIds[i];
+						strictEqual(videoSrcUrls[i].dataOriginalSrcAttribute, expectedUrl, "expected dataOriginalSrcAttribute: " + expectedUrl);
+						strictEqual(videoSrcUrls[i].srcAttribute, expectedUrl, "expected srcAttribute: " + expectedUrl);
+					}
 				}
 			}, (error: OneNoteApi.GenericError) => {
 				ok(false, "reject should not be called");

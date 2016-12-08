@@ -921,12 +921,32 @@ export module DomUtils {
 	 */
 	export function toOnml(doc: Document): Promise<void> {
 		removeElementsNotSupportedInOnml(doc);
-		domReplacer(doc, [Tags.iframe].join());
+		removeDisallowedIframes(doc);
 		removeUnwantedItems(doc);
 		convertRelativeUrlsToAbsolute(doc);
 		removeAllStylesAndClasses(doc);
 		removeEventListenerAttributes(doc);
 		return removeBlankImages(doc);
+	}
+
+	export function removeDisallowedIframes(doc: Document) {
+		// We also detect if the iframe is a video, and we ensure that we have
+		// the correct attribute set so that ONApi recognizes it
+		domReplacer(doc, Tags.iframe, (node) => {
+			let src = (node as HTMLIFrameElement).src;
+			let supportedDomain = VideoUtils.videoDomainIfSupported(src);
+			if (!supportedDomain) {
+				return undefined;
+			}
+
+			let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
+			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
+			let embeddedVideos = extractor.createEmbeddedVideos(src, doc.body.innerHTML);
+			if (embeddedVideos && embeddedVideos.length > 0) {
+				return embeddedVideos[0];
+			}
+			return undefined;
+		});
 	}
 
 	function removeAllStylesAndClasses(doc: Document): void {

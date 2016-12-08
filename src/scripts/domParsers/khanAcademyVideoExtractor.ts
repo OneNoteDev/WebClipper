@@ -14,13 +14,13 @@ export class KhanAcademyVideoExtractor implements VideoExtractor {
 	public getVideoIds(pageUrl: string, pageContent: string): string[] {
 		// Matches strings of the form id="video_\S+" OR id='video_\S+'
 		// with any amount of whitespace padding in between strings of interest
-		let regex = /id\s*=\s*("\s*video_(\S+)\s*"|'\s*video_(\S+)\s*')/gi;
+		let regex1 = /id\s*=\s*("\s*video_(\S+)\s*"|'\s*video_(\S+)\s*')/gi;
 
 		// Matches strings of the form data-youtubeid="\S+" OR data-youtubeid='\S+'
 		// with any amount of whitespace padding in between strings of interest
-		let regexTwo = /data-youtubeid\s*=\s*("\s*(\S+)\s*"|'\s*(\S+)\s*')/gi;
-		let regexes = [regex, regexTwo];
-		return VideoUtils.matchRegexFromPageContent(pageContent, regexes);
+		let regex2 = /data-youtubeid\s*=\s*("\s*(\S+)\s*"|'\s*(\S+)\s*')/gi;
+
+		return VideoUtils.matchRegexFromPageContent(pageContent, [regex1, regex2]);
 	}
 
 	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
