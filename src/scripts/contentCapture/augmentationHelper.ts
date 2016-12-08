@@ -60,6 +60,7 @@ export class AugmentationHelper {
 					let previewElement = AugmentationHelper.getArticlePreviewElement(doc);
 
 					DomUtils.removeElementsNotSupportedInOnml(doc);
+					DomUtils.removeDisallowedIframes(doc);
 					DomUtils.removeBlankImages(doc).then(() => {
 						DomUtils.addPreviewContainerStyling(previewElement);
 						AugmentationHelper.addSupportedVideosToElement(previewElement, pageContent, url);
