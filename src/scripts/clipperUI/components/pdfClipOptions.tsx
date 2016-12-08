@@ -82,6 +82,10 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			allPages: selection,
 			shouldShowPopover: false
 		} as PdfPreviewInfo), this.props.clipperState.setState);
+
+		if (!selection) {
+			document.getElementById(Constants.Ids.rangeInput).focus();
+		}
 	}
 
 	onTextChange(text: string) {
