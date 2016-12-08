@@ -33,6 +33,7 @@ import "./clipperUI/components/sectionPicker_tests";
 import "./clipperUI/panels/changeLogPanel_tests";
 import "./clipperUI/panels/clippingPanel_tests";
 import "./clipperUI/panels/clippingPanelWithDelayedMessage_tests";
+import "./clipperUI/panels/clippingPanelWithProgressIndicator_tests";
 import "./clipperUI/panels/dialogPanel_tests";
 import "./clipperUI/panels/optionsPanel_tests";
 import "./clipperUI/panels/ratingsPanel_tests";
@@ -81,6 +82,7 @@ import "./logging/sessionLogger_tests";
 import "./saveToOneNote/oneNoteSaveableFactory_tests";
 import "./saveToOneNote/oneNoteSaveablePage_tests";
 import "./saveToOneNote/oneNoteSaveablePdf_tests";
+import "./saveToOneNote/oneNoteSaveablePdfSynchronousBatched_tests";
 import "./saveToOneNote/saveToOneNote_tests";
 
 import "./storage/clipperData_tests";

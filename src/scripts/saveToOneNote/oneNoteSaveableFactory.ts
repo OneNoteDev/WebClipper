@@ -7,6 +7,8 @@ import {ClipMode} from "../clipperUI/clipMode";
 import {ClipperState} from "../clipperUI/clipperState";
 import {Status} from "../clipperUI/status";
 
+import {PdfJsDocument} from "../contentCapture/pdfJsDocument";
+
 import {DomUtils} from "../domParsers/domUtils";
 
 import {Localization} from "../localization/localization";
@@ -14,7 +16,7 @@ import {Localization} from "../localization/localization";
 import {OneNoteSaveable} from "./oneNoteSaveable";
 import {OneNoteSaveablePage} from "./oneNoteSaveablePage";
 import {OneNoteSaveablePdf} from "./oneNoteSaveablePdf";
-import {OneNoteSaveablePdfBatched} from "./OneNoteSaveablePdfBatched";
+import {OneNoteSaveablePdfSynchronousBatched} from "./oneNoteSaveablePdfSynchronousBatched";
 
 import * as _ from "lodash";
 
@@ -168,9 +170,8 @@ export class OneNoteSaveableFactory {
 				return pdf.getPageAsDataUrl(pageIndexes[0]).then((dataUrl) => {
 					page.addOnml("<p><img src=\"" + dataUrl + "\" /></p>&nbsp;");
 					// We have added the first image to the createPage call, so we remove the first page from the indices we send in the BATCH
-					return new OneNoteSaveablePdfBatched(page, pdf, pageIndexes.slice(1),
+					return new OneNoteSaveablePdfSynchronousBatched(page, pdf, pageIndexes.slice(1),
 						this.clipperState.pageInfo.contentLocale,
-						this.clipperState.saveLocation,
 						this.clipperState.previewGlobalInfo.previewTitleText);
 				});
 			} else {

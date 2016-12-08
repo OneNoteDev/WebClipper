@@ -3,7 +3,7 @@ import {StringUtils} from "../stringUtils";
 
 import {PdfDocument} from "../contentCapture/pdfDocument";
 
-import { OneNoteSaveable } from "./oneNoteSaveable";
+import {OneNoteSaveable} from "./oneNoteSaveable";
 
 export class OneNoteSaveablePdfBatched implements OneNoteSaveable {
 	private static maxImagesPerPatchRequest = 15;
@@ -26,6 +26,10 @@ export class OneNoteSaveablePdfBatched implements OneNoteSaveable {
 
 	public getPage(): Promise<OneNoteApi.OneNotePage> {
 		return Promise.resolve(this.page);
+	}
+
+	public getNumPages(): number {
+		return 1;
 	}
 
 	public getNumPatches(): number {

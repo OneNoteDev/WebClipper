@@ -116,6 +116,10 @@ export module MockProps {
 				data: undefined,
 				status: Status.NotStarted
 			},
+			clipSaveStatus: {
+				numItemsCompleted: undefined,
+				numItemsTotal: undefined
+			},
 
 			setState: (newPartialState: ClipperState) => {
 				for (let key in newPartialState) {

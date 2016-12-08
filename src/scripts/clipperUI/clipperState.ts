@@ -16,6 +16,7 @@ import {InvokeOptions} from "../extensions/invokeOptions";
 
 import {ClipMode} from "./clipMode";
 import {Status} from "./status";
+import {ClipSaveStatus} from "./clipSaveStatus";
 
 export interface DataResult<T> {
 	data?: T;
@@ -61,6 +62,7 @@ export interface ClipperState {
 
 	// Save to OneNote status
 	oneNoteApiResult?: DataResult<OneNoteApi.Page | OneNoteApi.RequestError>;
+	clipSaveStatus?: ClipSaveStatus;
 
 	// Should be set when the Web Clipper enters a state that can not be recovered this session
 	badState?: boolean;

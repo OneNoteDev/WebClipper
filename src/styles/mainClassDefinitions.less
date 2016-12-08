@@ -205,9 +205,11 @@
 
 			&.disabled {
 				color: #E1B1FF;
+				cursor: default;
 			}
 
 			.sub-label {
+				color: #E1B1FF;
 				color: #CCC;
 			}
 		}
@@ -228,6 +230,10 @@
 		position: relative; 
 		line-height: 28px;
 		margin-right: auto;
+
+		&.disabled {
+			cursor: default;
+		}
 	}
 
 	.pdf-indicator {
@@ -241,6 +247,10 @@
 			border: 1px solid white;
 			border-radius: 2px;
 			background-color: @OneNotePurpleTransparent;
+
+			&.disabled {
+				border: 1px solid #E1B1FF;  
+			}
 		}
 
 		&.pdf-radio-indicator {
@@ -333,7 +343,7 @@
 	padding-bottom: 25px + @FooterOffset;
 }
 
-#clipProgressDelayedMessage {
+#clipProgressDelayedMessage, #clipProgressIndicatorMessage {
 	font-size: 16px;
 	color: @ClipperLightFontColor;
 }

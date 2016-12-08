@@ -5,7 +5,8 @@
  * operations.
  */
 export interface OneNoteSaveable {
-	getPage(): Promise<OneNoteApi.OneNotePage>;
+	getPage(index?: number): Promise<OneNoteApi.OneNotePage>;
+	getNumPages(): number;
 	getPatch(index: number): Promise<OneNoteApi.Revision[]>;
 	getNumPatches(): number;
 	getBatch(index: number): Promise<OneNoteApi.BatchRequest[]>;

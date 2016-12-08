@@ -1,4 +1,5 @@
 import {Localization} from "../../localization/localization";
+import {Rtl} from "../../localization/rtl";
 
 import {Constants} from "../../constants";
 import {OperationResult} from "../../operationResult";
@@ -138,7 +139,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				{pdfPreviewInfo.shouldShowPopover ?
 					<Popover
 						referenceElementId={Constants.Ids.rangeInput}
-						placement="right"
+						placement={Rtl.isRtl(navigator.language || (navigator as any).userLanguage) ? "left" : "right"}
 						content={this.getErrorMessageForInvalidPageRange()}
 						classNames={[Constants.Classes.popover]}
 						arrowClassNames={[Constants.Classes.popoverArrow]}
@@ -176,13 +177,19 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		const pdfIsTooLarge = pdfHasSucceeded && this.props.clipperState.pdfResult.data.get().byteLength > Constants.Settings.maximumMimeSizeLimit;
 		const disableCheckbox = pdfIsTooLarge || !pdfHasSucceeded;
 
-		return disableCheckbox ? this.getDisabledAttachmentCheckbox() : this.getEnabledAttachmentCheckbox();
+		if (pdfIsTooLarge) {
+			return this.getAttachmentIsTooLargeCheckbox();
+		} 
+
+		return this.getAttachmentPdfCheckbox(pdfHasSucceeded);
 	}
 
-	getDisabledAttachmentCheckbox(): any {
+	getAttachmentIsTooLargeCheckbox(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+		const disabledClassName = " disabled";
+
 		return (
-			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdfDisabled} {...this.enableInvoke(this.onCheckboxChange, 67, !pdfPreviewInfo.shouldAttachPdf) }>
+			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.pdfIsTooLargeToAttachIndicator} tabIndex={67}>
 				<img className="warning-image" src={ExtensionUtils.getImageResourceUrl("warning.png")}></img>
 				<div className="pdf-label-margin">
 					<span className="pdf-label disabled">{Localization.getLocalizedString("WebClipper.Label.PdfTooLargeToAttach")}</span>
@@ -191,15 +198,17 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		);
 	}
 
-	getEnabledAttachmentCheckbox(): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+	getAttachmentPdfCheckbox(enabled: boolean) {
+		const pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+		const disabledClassName = enabled ? "" : " disabled";
+
 		return (
-			<div className="pdf-control" id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(this.onCheckboxChange, 66, !pdfPreviewInfo.shouldAttachPdf) }>
-				<div className="pdf-indicator pdf-checkbox-indicator"></div>
+			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(enabled ? this.onCheckboxChange : undefined, 66, !pdfPreviewInfo.shouldAttachPdf) }>
+				<div className={"pdf-indicator pdf-checkbox-indicator" + disabledClassName}></div>
 				{pdfPreviewInfo.shouldAttachPdf ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
 				<div className="pdf-label-margin">
-					<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
-						<span className="sub-label">{Localization.getLocalizedString("WebClipper.Label.AttachPdfFileSubText")}</span>
+					<span className={"pdf-label" + disabledClassName}>{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
+						<span className={"sub-label" + disabledClassName}>{Localization.getLocalizedString("WebClipper.Label.AttachPdfFileSubText")}</span>
 					</span>
 				</div>
 			</div>

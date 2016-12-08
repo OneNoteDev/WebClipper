@@ -85,6 +85,7 @@ export module Constants {
 
 		// clippingPanel
 		export var clipProgressDelayedMessage = "clipProgressDelayedMessage";
+		export var clipProgressIndicatorMessage = "clipProgressIndicatorMessage";
 
 		// dialogPanel
 		export var dialogBackButton = "dialogBackButton";
@@ -167,7 +168,7 @@ export module Constants {
 
 		// pdfClipOptions
 		export var checkboxToDistributePages = "checkboxToDistributePages";
-		export var checkboxToAttachPdfDisabled = "checkboxToAttachPdfDisabled";
+		export var pdfIsTooLargeToAttachIndicator = "pdfIsTooLargeToAttachIndicator";
 		export var checkboxToAttachPdf = "checkboxToAttachPdf";
 		export var moreClipOptions = "moreClipOptions";
 
