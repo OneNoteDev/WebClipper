@@ -348,7 +348,7 @@ export module DomUtils {
 	 */
 	export function addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<EmbeddedVideoIFrameSrcs[]> {
 		let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
-		if (!supportedDomain) {
+		if (!supportedDomain || !addVideosToElement) {
 			return Promise.resolve();
 		}
 
@@ -361,7 +361,7 @@ export module DomUtils {
 			// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
 			// to render them later
 			if (extractor) {
-				iframes = iframes.concat(extractor.createEmbeddedVideos(pageUrl, pageContent));
+				iframes = iframes.concat(extractor.createEmbeddedVideosFromPage(pageUrl, pageContent));
 			}
 		} catch (e) {
 			// if we end up here, we're unexpectedly broken
@@ -941,11 +941,7 @@ export module DomUtils {
 
 			let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
 			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
-			let embeddedVideos = extractor.createEmbeddedVideos(src, doc.body.innerHTML);
-			if (embeddedVideos && embeddedVideos.length > 0) {
-				return embeddedVideos[0];
-			}
-			return undefined;
+			return extractor.createEmbeddedVideoFromUrl(src);
 		});
 	}
 
@@ -971,8 +967,6 @@ export module DomUtils {
 		}
 
 		let scrollValue: number = (elem.scrollTop * 1.0) / (elem.scrollHeight - elem.clientHeight);
-
-		// console.warn(elem.scrollTop, elem.scrollHeight, elem.clientHeight, scrollValue);
 
 		if (asDecimalValue) {
 			return scrollValue;

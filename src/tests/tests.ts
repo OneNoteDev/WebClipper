@@ -53,9 +53,10 @@ import "./contentCapture/bookmarkHelper_tests";
 
 import "./domParsers/domUtils_tests";
 import "./domParsers/videoUtils_tests";
-import "./domParsers/khanAcademyVideo_tests";
-import "./domParsers/vimeoVideo_tests";
-import "./domParsers/youtubeVideo_tests";
+import "./domParsers/khanAcademyVideoExtractor_tests";
+import "./domParsers/videoExtractor_tests";
+import "./domParsers/vimeoVideoExtractor_tests";
+import "./domParsers/youtubeVideoExtractor_tests";
 
 import "./extensions/authenticationHelper_tests";
 import "./extensions/extensionBase_tests";
