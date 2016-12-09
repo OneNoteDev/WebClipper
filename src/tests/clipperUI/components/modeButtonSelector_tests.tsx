@@ -377,9 +377,9 @@ export class ModeButtonSelectorTests extends TestModule {
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
 			strictEqual(buttonElements.length, 3, "There should be three mode buttons");
-			strictEqual(buttonElements[0].id, TestConstants.Ids.pdfButton, "The first button should be the pdf button");
-			strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
-			strictEqual(buttonElements[2].id, TestConstants.Ids.bookmarkButton, "The third button should be the bookmark button");
+			strictEqual(buttonElements[0].id, TestConstants.Ids.regionButton, "The first button should be the region button");
+			strictEqual(buttonElements[1].id, TestConstants.Ids.bookmarkButton, "The second button should be the bookmark button");
+			strictEqual(buttonElements[2].id, TestConstants.Ids.pdfButton, "The third button should be the pdf button");
 		});
 
 		test("The bookmark clipping button should not appear when a PDF was detected but was on a local file", () => {
@@ -395,8 +395,8 @@ export class ModeButtonSelectorTests extends TestModule {
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
 			strictEqual(buttonElements.length, 2, "There should be two mode buttons");
-			strictEqual(buttonElements[0].id, TestConstants.Ids.pdfButton, "The first button should be the pdf button");
-			strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
+			strictEqual(buttonElements[0].id, TestConstants.Ids.regionButton, "The first button should be the region button");
+			strictEqual(buttonElements[1].id, TestConstants.Ids.pdfButton, "The second button should be the pdf button");
 		});
 	}
 }

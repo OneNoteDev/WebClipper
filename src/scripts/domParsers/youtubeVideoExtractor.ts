@@ -4,74 +4,63 @@ import {VideoExtractor} from "./videoExtractor";
 import {ObjectUtils} from "../objectUtils";
 import {UrlUtils} from "../urlUtils";
 
-export class YoutubeVideoExtractor implements VideoExtractor {
+export class YoutubeVideoExtractor extends VideoExtractor {
 	private youTubeWatchVideoBaseUrl = "https://www.youtube.com/watch";
 	private youTubeVideoIdQueryKey = "v";
 	private dataOriginalSrcAttribute = "data-original-src";
 
-	/**
-	 * Return the ID of the video in the YouTube URL as an array
-	 */
-	public getVideoIds(youTubeUrl: string, pageContent: string): string[] {
-		if (ObjectUtils.isNullOrUndefined(youTubeUrl)) {
-			return;
+	public createEmbeddedVideosFromHtml(html: string): HTMLIFrameElement[] {
+		if (!html) {
+			return [];
 		}
 
-		let youTubeId: string;
-		if (UrlUtils.getPathname(youTubeUrl).indexOf("/watch") === 0) {
-			youTubeId = UrlUtils.getQueryValue(youTubeUrl, this.youTubeVideoIdQueryKey);
-			if (ObjectUtils.isNullOrUndefined(youTubeId)) {
-				return;
+		let divContainer = document.createElement("div") as HTMLDivElement;
+		divContainer.innerHTML = html;
+		let allIframes = divContainer.getElementsByTagName("iframe") as HTMLCollectionOf<HTMLIFrameElement>;
+
+		let videoEmbeds: HTMLIFrameElement[] = [];
+		for (let i = 0; i < allIframes.length; i++) {
+			if (this.isYoutubeUrl(allIframes[i].src)) {
+				let videoEmbed = this.createEmbeddedVideoFromUrl(allIframes[i].src);
+				if (videoEmbed) {
+					videoEmbeds.push(videoEmbed);
+				}
 			}
 		}
-
-		if (UrlUtils.getPathname(youTubeUrl).indexOf("/embed") === 0) {
-			let youTubeIdMatch = youTubeUrl.match(/youtube\.com\/embed\/(\S+)/);
-			if (ObjectUtils.isNullOrUndefined(youTubeIdMatch) || ObjectUtils.isNullOrUndefined(youTubeIdMatch[1])) {
-				return;
-			}
-			youTubeId = youTubeIdMatch[1];
-		}
-
-		if (ObjectUtils.isNullOrUndefined(youTubeId)) {
-			return;
-		}
-
-		// Ensure we remove query parameters
-		return [youTubeId.split("?")[0]];
+		return videoEmbeds;
 	}
 
-	/**
-	 * Return valid iframe src attribute value for the supported YouTube domain
-	 */
-	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
-		if (ObjectUtils.isNullOrUndefined(pageUrl)) {
-			return;
-		}
-
-		let youTubeVideoId = this.getVideoIds(pageUrl, pageContent);
-		if (ObjectUtils.isNullOrUndefined(youTubeVideoId)) {
-			return;
-		}
-
-		return ["https://www.youtube.com/embed/" + youTubeVideoId];
+	private isYoutubeUrl(url: string): boolean {
+		return /[^\w]youtube\.com\/watch(\?v=(\w+)|.*\&v=(\w+))/.test(url) || /[^\w]youtube\.com\/embed\/(\w+)/.test(url);
 	}
 
-	/**
-	 * Create iframe in correct format for YouTube video embed in OneNote.
-	 * Supports a single video.
-	 */
-	public createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
-		let iframe = DomUtils.createEmbedVideoIframe();
-		let srcValue = this.getVideoSrcValues(pageUrl, pageContent);
-		let videoId = this.getVideoIds(pageUrl, pageContent)[0];
-		if (ObjectUtils.isNullOrUndefined(srcValue) || ObjectUtils.isNullOrUndefined(videoId)) {
-			// fast fail: we expect all page urls passed into this function in prod to contain a video id
-			throw new Error("YouTube page url does not contain video id");
+	public createEmbeddedVideoFromUrl(url: string): HTMLIFrameElement {
+		if (!url) {
+			return undefined;
 		}
-		iframe.src = srcValue[0];
-		iframe.setAttribute(this.dataOriginalSrcAttribute, UrlUtils.addUrlQueryValue(this.youTubeWatchVideoBaseUrl, this.youTubeVideoIdQueryKey, videoId));
 
-		return [iframe];
+		if (UrlUtils.getPathname(url).indexOf("/watch") === 0) {
+			return this.createEmbeddedVideoFromId(UrlUtils.getQueryValue(url, this.youTubeVideoIdQueryKey));
+		}
+
+		if (UrlUtils.getPathname(url).indexOf("/embed") === 0) {
+			let youTubeIdMatch = url.match(/youtube\.com\/embed\/(\S+)/);
+			return this.createEmbeddedVideoFromId(youTubeIdMatch[1]);
+		}
+
+		return undefined;
+	}
+
+	public createEmbeddedVideoFromId(id: string): HTMLIFrameElement {
+		if (!id) {
+			return undefined;
+		}
+
+		let videoEmbed = DomUtils.createEmbedVideoIframe();
+		let src = "https://www.youtube.com/embed/" + id;
+		videoEmbed.src = src;
+		let dataOriginalSrc = UrlUtils.addUrlQueryValue(this.youTubeWatchVideoBaseUrl, this.youTubeVideoIdQueryKey, id);
+		videoEmbed.setAttribute(this.dataOriginalSrcAttribute, dataOriginalSrc);
+		return videoEmbed;
 	}
 }

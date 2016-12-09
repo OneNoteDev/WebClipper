@@ -3,6 +3,7 @@ export module Constants {
 		// animators
 		export var heightAnimator = "height-animator";
 		export var panelAnimator = "panel-animator";
+		export var clearfix = "clearfix";
 
 		// changeLogPanel
 		export var change = "change";
@@ -12,12 +13,19 @@ export module Constants {
 		export var changeImage = "change-image";
 		export var changeTitle = "change-title";
 
+		// checkbox
+		export var checkboxCheck = "checkboxCheck";
+
 		// htmlSelection
 		export var htmlSelectionContent = "html-selection-content";
 
 		// textArea input control
 		export var textAreaInput = "textAreaInput";
 		export var textAreaInputMirror = "textAreaInputMirror";
+
+		// popover
+		export var popover = "popover";
+		export var popoverArrow = "popover-arrow";
 
 		// previewViewer
 		export var deleteHighlightButton = "delete-highlight";
@@ -29,6 +37,7 @@ export module Constants {
 
 		// pdfPreviewViewer
 		export var attachmentOverlay = "attachment-overlay";
+		export var centeredInCanvas = "centered-in-canvas";
 		export var overlay = "overlay";
 		export var overlayHidden = "overlay-hidden";
 		export var overlayNumber = "overlay-number";
@@ -38,6 +47,9 @@ export module Constants {
 
 		export var localPdfPanelTitle = "local-pdf-panel-title";
 		export var localPdfPanelSubtitle = "local-pdf-panel-subtitle";
+
+		// radioButton
+		export var radioIndicatorFill = "radio-indicator-fill";
 
 		// spriteAnimation
 		export var spinner = "spinner";
@@ -76,6 +88,7 @@ export module Constants {
 
 		// clippingPanel
 		export var clipProgressDelayedMessage = "clipProgressDelayedMessage";
+		export var clipProgressIndicatorMessage = "clipProgressIndicatorMessage";
 
 		// dialogPanel
 		export var dialogBackButton = "dialogBackButton";
@@ -157,11 +170,15 @@ export module Constants {
 
 		// previewViewerPdfHeader
 		export var localPdfFileTitle = "localPdfFileTitle";
-		export var pageRangeControl = "pageRangeControl";
 		export var pdfControl = "pdfControl";
+		export var pdfHeaderTitle = "pdfHeaderTitle";
+		export var pageRangeControl = "pageRangeControl";
 
-		export var attachmentCheckboxControl = "attachmentCheckboxControl";
-		export var attachmentCheckboxLabel = "attachmentCheckboxLabel";
+		// pdfClipOptions
+		export var checkboxToDistributePages = "checkboxToDistributePages";
+		export var pdfIsTooLargeToAttachIndicator = "pdfIsTooLargeToAttachIndicator";
+		export var checkboxToAttachPdf = "checkboxToAttachPdf";
+		export var moreClipOptions = "moreClipOptions";
 
 		// previewViewerRegionHeader
 		export var addAnotherRegionButton = "addAnotherRegionButton";

@@ -33,6 +33,21 @@ export class ArrayUtilsTests extends TestModule {
 			deepEqual(ArrayUtils.createEvenBuckets(1, 1), [1]);
 		});
 
+		test("createEvenBuckets should return a single bucket of items if numItems = maxPerBucket", () => {
+			deepEqual(ArrayUtils.partition(["x", "y", "z"], 3), [["x", "y", "z"]]);
+			deepEqual(ArrayUtils.partition(["x"], 1), [["x"]]);
+		});
+
+		test("createEvenBuckets should return an empty list when numItems is 0", () => {
+			deepEqual(ArrayUtils.createEvenBuckets(0, 5), []);
+		});
+
+		test("createEvenBuckets should throw an exception when maxBuckets is 0", () => {
+			throws(() => {
+				deepEqual(ArrayUtils.createEvenBuckets(5, 0), []);
+			}, "maxPerBucket cannot be less than 1 but was: 0");
+		});
+
 		test("partition should bucket items evenly and in order when numItems % maxBucket = 0", () => {
 			deepEqual(ArrayUtils.partition(["Apples", "Oranges", "Bananas", "Kiwifruit"], 2), [["Apples", "Oranges"], ["Bananas", "Kiwifruit"]]);
 		});
@@ -53,9 +68,8 @@ export class ArrayUtilsTests extends TestModule {
 			deepEqual(ArrayUtils.partition(["x"], 5), [["x"]]);
 		});
 
-		test("createEvenBuckets should return a single bucket of items if numItems = maxPerBucket", () => {
-			deepEqual(ArrayUtils.partition(["x", "y", "z"], 3), [["x", "y", "z"]]);
-			deepEqual(ArrayUtils.partition(["x"], 1), [["x"]]);
+		test("partition should return an empty list when items is 0", () => {
+			deepEqual(ArrayUtils.partition([], 2), []);
 		});
 	}
 }

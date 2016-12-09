@@ -16,12 +16,12 @@ export interface PdfPreviewPageProp extends PdfPageViewportProp {
 class PdfPreviewPageClass extends ComponentBase<{}, PdfPreviewPageProp> {
 	public render() {
 		return (
-			<div class="pdf-preview-image-container">
+			<div className="pdf-preview-image-container">
 				<div className={Constants.Classes.pdfPreviewImageCanvas + (this.props.isSelected ? "" : " " + Constants.Classes.unselected)}>
 					<PdfPageViewport viewportDimensions={this.props.viewportDimensions} imgUrl={this.props.imgUrl} index={this.props.index} />
 				</div>
 				<div className={Constants.Classes.overlay + (this.props.showPageNumber ? "" : (" " + Constants.Classes.overlayHidden))}>
-					<span class={Constants.Classes.overlayNumber}>{this.props.index + 1}</span>
+					<span className={Constants.Classes.overlayNumber}>{this.props.index + 1}</span>
 				</div>
 			</div>
 		);

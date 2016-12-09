@@ -70,7 +70,7 @@ export module MockProps {
 			saveLocation: "",
 
 			fullPageResult: {
-				data: undefined,
+				data: {},
 				status: Status.NotStarted
 			},
 			pdfResult: {
@@ -82,7 +82,7 @@ export module MockProps {
 				status: Status.NotStarted
 			},
 			augmentationResult: {
-				data: undefined,
+				data: {},
 				status: Status.NotStarted
 			},
 			bookmarkResult: {
@@ -99,8 +99,11 @@ export module MockProps {
 			},
 			pdfPreviewInfo: {
 				allPages: true,
+				isLocalFileAndNotAllowed: false,
 				selectedPageRange: "1,3,5",
-				shouldAttachPdf: true
+				shouldAttachPdf: true,
+				shouldDistributePages: true,
+				shouldShowPopover: false
 			},
 			augmentationPreviewInfo: {
 				previewBodyHtml: "Edited body"
@@ -110,6 +113,10 @@ export module MockProps {
 			oneNoteApiResult: {
 				data: undefined,
 				status: Status.NotStarted
+			},
+			clipSaveStatus: {
+				numItemsCompleted: undefined,
+				numItemsTotal: undefined
 			},
 
 			setState: (newPartialState: ClipperState) => {

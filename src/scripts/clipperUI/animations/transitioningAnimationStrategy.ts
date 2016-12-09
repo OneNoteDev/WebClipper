@@ -53,17 +53,11 @@ export abstract class TransitioningAnimationStrategy<TOptions extends Transition
 	}
 
 	protected doAnimate(el: HTMLElement): Promise<void> {
-		return new Promise<void>((resolve) => {
-			if (this.options.extShouldAnimateIn() && this.intShouldAnimateIn(el)) {
-				this.animateIn(el).then(() => {
-					resolve();
-				});
-			} else if (this.options.extShouldAnimateOut() && this.intShouldAnimateOut(el)) {
-				this.animateOut(el).then(() => {
-					resolve();
-				});
-			}
-		});
+		if (this.options.extShouldAnimateIn() && this.intShouldAnimateIn(el)) {
+			return this.animateIn(el);
+		} else if (this.options.extShouldAnimateOut() && this.intShouldAnimateOut(el)) {
+			return this.animateOut(el);
+		}
 	}
 
 	private animateIn(el: HTMLElement): Promise<void> {

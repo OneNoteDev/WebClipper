@@ -11,11 +11,23 @@ export class OneNoteSaveablePage implements OneNoteSaveable {
 		return Promise.resolve(this.page);
 	}
 
+	public getNumPages(): number {
+		return 1;
+	}
+
 	public getPatch(index: number): Promise<OneNoteApi.Revision[]> {
 		return Promise.resolve(undefined);
 	}
 
 	public getNumPatches(): number {
+		return 0;
+	}
+
+	public getBatch(index: number): Promise<OneNoteApi.BatchRequest> {
+		return Promise.resolve(undefined);
+	}
+
+	public getNumBatches(): number {
 		return 0;
 	}
 }

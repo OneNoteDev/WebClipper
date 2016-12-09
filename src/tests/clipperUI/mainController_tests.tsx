@@ -1,5 +1,5 @@
 import {ClipMode} from "../../scripts/clipperUI/clipMode";
-import {MainController, MainControllerClass, PanelType} from "../../scripts/clipperUI/mainController";
+import {MainController, MainControllerClass, MainControllerProps, PanelType} from "../../scripts/clipperUI/mainController";
 import {Status} from "../../scripts/clipperUI/status";
 
 import {SmartValue} from "../../scripts/communicator/smartValue";
@@ -32,7 +32,7 @@ MainControllerClass.prototype.getInitialState = function() {
 };
 
 export class MainControllerTests extends TestModule {
-	private mockMainControllerProps = MockProps.getMockMainControllerProps();
+	private mockMainControllerProps: MainControllerProps;
 	private defaultComponent;
 
 	protected module() {
@@ -40,6 +40,7 @@ export class MainControllerTests extends TestModule {
 	}
 
 	protected beforeEach() {
+		this.mockMainControllerProps = MockProps.getMockMainControllerProps();
 		this.defaultComponent = <MainController
 			clipperState={this.mockMainControllerProps.clipperState}
 			onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
@@ -68,6 +69,36 @@ export class MainControllerTests extends TestModule {
 
 			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
 				TestConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
+		});
+
+		test("On the pdf clip options panel, the tab order is correct", () => {
+			this.mockMainControllerProps.clipperState.currentMode.set(ClipMode.Pdf);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
+
+			MithrilUtils.simulateAction(() => {
+				controllerInstance.state.currentPanel = PanelType.ClipOptions;
+			});
+
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
+				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.feedbackButton,
+				Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
+		});
+
+		test("On the pdf clip options panel, after clicking 'More' the tab order is correct", () => {
+			this.mockMainControllerProps.clipperState.currentMode.set(ClipMode.Pdf);
+			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
+
+			MithrilUtils.simulateAction(() => {
+				controllerInstance.state.currentPanel = PanelType.ClipOptions;
+			});
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.moreClipOptions).click();
+			});
+
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
+				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
+				Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
 		test("On the region instructions panel, the tab order is correct", () => {

@@ -25,9 +25,11 @@ import {SlidingHeightAnimationStrategy} from "./animations/slidingHeightAnimatio
 
 import {CloseButton} from "./components/closeButton";
 import {Footer} from "./components/footer";
+import {PdfClipOptions} from "./components/pdfClipOptions";
 
 import {ClippingPanel} from "./panels/clippingPanel";
 import {ClippingPanelWithDelayedMessage} from "./panels/clippingPanelWithDelayedMessage";
+import {ClippingPanelWithProgressIndicator} from "./panels/clippingPanelWithProgressIndicator";
 import {DialogButton, DialogPanel} from "./panels/dialogPanel";
 import {ErrorDialogPanel} from "./panels/errorDialogPanel";
 import {HtmlSelectingPanel} from "./panels/htmlSelectingPanel";
@@ -260,7 +262,8 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				return <SignInPanel clipperState={this.props.clipperState}
 					onSignInInvoked={this.props.onSignInInvoked}/>;
 			case PanelType.ClipOptions:
-				return <OptionsPanel onPopupToggle={this.onPopupToggle.bind(this) }
+				return <OptionsPanel
+					onPopupToggle={this.onPopupToggle.bind(this)}
 					clipperState={this.props.clipperState}
 					onStartClip={this.props.onStartClip} />;
 			case PanelType.RegionInstructions:
@@ -269,8 +272,14 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				return <HtmlSelectingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingToApi:
 				if (this.props.clipperState.currentMode.get() === ClipMode.Pdf) {
-					return <ClippingPanelWithDelayedMessage clipperState={this.props.clipperState}
-						delay={Constants.Settings.pdfClippingMessageDelay} message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")} />;
+					if (this.props.clipperState.pdfPreviewInfo.shouldDistributePages) {
+						return <ClippingPanelWithProgressIndicator clipperState= { this.props.clipperState } />;
+					}
+
+					return <ClippingPanelWithDelayedMessage
+						clipperState={this.props.clipperState}
+						delay={Constants.Settings.pdfClippingMessageDelay}
+						message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")} />;
 				}
 				return <ClippingPanel clipperState={this.props.clipperState} />;
 			case PanelType.ClippingFailure:
