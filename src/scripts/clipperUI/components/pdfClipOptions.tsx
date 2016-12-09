@@ -113,11 +113,11 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
 			<div id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 60, true) }>
-				<div className="pdf-indicator pdf-radio-indicator">
+				<div className={"pdf-indicator pdf-radio-indicator"}>
 					{pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
 				<div className="pdf-label-margin">
-					<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
+					<span className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
 				</div>
 			</div>
 		);
@@ -129,13 +129,13 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
 		return (
 			<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, false) }>
-				<div className="pdf-indicator pdf-radio-indicator">
+				<div className={"pdf-indicator pdf-radio-indicator"}>
 					{!pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
 				<input
 					type="text"
 					id={Constants.Ids.rangeInput}
-					className={invalidClassName}
+					className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
 					placeholder="e.g. 1-5, 7, 9-12"
 					onfocus={this.onTextInputFocus.bind(this)}
 					value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 62, false) }>
@@ -143,7 +143,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				{pdfPreviewInfo.shouldShowPopover ?
 					<Popover
 						referenceElementId={Constants.Ids.rangeInput}
-						placement={Rtl.isRtl(navigator.language || (navigator as any).userLanguage) ? "left" : "right"}
+						placement={Rtl.isRtl(navigator.language || (navigator as any).userLanguage) ? "bottom" : "bottom"}
 						content={this.getErrorMessageForInvalidPageRange()}
 						classNames={[Constants.Classes.popover]}
 						arrowClassNames={[Constants.Classes.popoverArrow]}
@@ -170,7 +170,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				<div className="pdf-indicator pdf-checkbox-indicator"></div>
 				{pdfPreviewInfo.shouldDistributePages ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
 				<div className="pdf-label-margin">
-					<span className="pdf-label">{Localization.getLocalizedString("WebClipper.Label.PdfDistributePagesCheckbox")}</span>
+					<span className="pdf-label focused">{Localization.getLocalizedString("WebClipper.Label.PdfDistributePagesCheckbox")}</span>
 				</div>
 			</div>
 		);
@@ -211,7 +211,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				<div className={"pdf-indicator pdf-checkbox-indicator" + disabledClassName}></div>
 				{pdfPreviewInfo.shouldAttachPdf ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
 				<div className="pdf-label-margin">
-					<span className={"pdf-label" + disabledClassName}>{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
+					<span className={"pdf-label focused" + disabledClassName}>{Localization.getLocalizedString("WebClipper.Label.AttachPdfFile") + " "}
 						<span className={"sub-label" + disabledClassName}>{Localization.getLocalizedString("WebClipper.Label.AttachPdfFileSubText")}</span>
 					</span>
 				</div>
