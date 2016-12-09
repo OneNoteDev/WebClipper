@@ -204,6 +204,7 @@ export class DomUtilsTests extends TestModule {
 		let vimeoPageContentWithNoClipId = "";
 		let vimeoPageContentWithOneClipId = "<div id='clip_45196609'> </div>";
 		let vimeoPageContentWithMultipleClipIds = "<div id='clip_45196609'></div> <DIV ID='clip_45196610'></DIV> <div id='clip_45196611'> </div>";
+
 		test("addEmbeddedVideosWhereSupported should resolve with a video url on supported YouTube subdomains even if MainArticleContainer is undefined", (assert: QUnitAssert) => {
 			let done = assert.async();
 
@@ -225,7 +226,7 @@ export class DomUtilsTests extends TestModule {
 			let done = assert.async();
 
 			this.fixture.appendChild(this.createMainArticleContainer());
-			let previewElement = AugmentationHelper.getArticlePreviewElement(document);
+			let previewElement = this.createMainArticleContainer();
 
 			let pageUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 			let embedUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
@@ -304,22 +305,6 @@ export class DomUtilsTests extends TestModule {
 						done();
 					});
 				});
-			});
-		});
-
-		test("addEmbeddedVideosWhereSupported should reject on 'supported' Vimeo subdomains that we don't actually support", (assert: QUnitAssert) => {
-			let done = assert.async();
-
-			this.fixture.appendChild(this.createMainArticleContainer());
-			let previewElement = AugmentationHelper.getArticlePreviewElement(document);
-
-			let pageUrl = "https://vimeo.com/45196609";
-			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithNoClipId, pageUrl).then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
-				ok(false, "resolve should not be called");
-			}, (error: OneNoteApi.GenericError) => {
-				strictEqual(JSON.parse(error.error).message, "Vimeo page content does not contain clip ids", "correct error message should be provided");
-			}).then(() => {
-				done();
 			});
 		});
 

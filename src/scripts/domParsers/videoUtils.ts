@@ -1,9 +1,5 @@
 import {ObjectUtils} from "../objectUtils";
-
 import {UrlUtils} from "../urlUtils";
-
-import {VideoExtractor} from "./VideoExtractor";
-import {KhanAcademyVideoExtractor} from "./khanAcademyVideoExtractor";
 
 export module VideoUtils {
 	export const youTubeWatchVideoBaseUrl = "https://www.youtube.com/watch";
@@ -63,6 +59,9 @@ export module VideoUtils {
 		if (matches.length === 0) {
 			return;
 		}
-		return matches.filter((element, index, array) => { return array.indexOf(element) === index; }); // unique values only
+
+		// We used to return unique values, but since we now support videos in selections, we moved the
+		// uniqueness logic to VideoExtractor::createEmbeddedVideosFromPage
+		return matches;
 	}
 }

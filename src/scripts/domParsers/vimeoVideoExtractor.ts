@@ -4,73 +4,59 @@ import {VideoUtils} from "./videoUtils";
 
 import {ObjectUtils} from "../objectUtils";
 
-export class VimeoVideoExtractor implements VideoExtractor {
+export class VimeoVideoExtractor extends VideoExtractor {
 	private dataOriginalSrcAttribute = "data-original-src";
 
-	/**
-	 * Return id for a video on Vimeo.com
-	 */
-	public getVideoIds(pageUrl: string, pageContent: string): string[] {
-		if (ObjectUtils.isNullOrUndefined(pageContent)) {
-			return;
+	public createEmbeddedVideosFromHtml(html: string): HTMLIFrameElement[] {
+		if (!html) {
+			return [];
 		}
 
-		// looking for all matches in pageContent of the general format: id="clip_###"
-		// 		- where ### could be any number of digits
-		// 		- ignore casing
-		// 		- ignore possible whitespacing variations between characters
-		// 		- accept the use of either double- or single-quotes around clip_###
+		// Looking for all matches in pageContent of the general format: id="clip_###"
+		// - where ### could be any number of digits
+		// - ignore casing
+		// - ignore possible whitespacing variations between characters
+		// - accept the use of either double- or single-quotes around clip_###
 		let regex1 = /id\s*=\s*("\s*clip_(\d+)\s*"|'\s*clip_(\d+)\s*')/gi;
 
-		// also account for embedded Vimeo videos
+		// Also account for embedded Vimeo videos
 		let regex2 = /player\.vimeo\.com\/video\/((\d+))\d{0}/gi;
 
-		return VideoUtils.matchRegexFromPageContent(pageContent, [regex1, regex2]);
+		let ids = VideoUtils.matchRegexFromPageContent(html, [regex1, regex2]);
+		if (!ids) {
+			return [];
+		}
+
+		return ids.map((id) => this.createEmbeddedVideoFromId(id));
 	}
 
-	/**
-	 * Return valid iframe src attribute value for the supported Vimeo domain
-	 */
-	public getVideoSrcValues(pageUrl: string, pageContent: string): string[] {
-		if (ObjectUtils.isNullOrUndefined(pageContent)) {
-			return;
+	public createEmbeddedVideoFromUrl(url: string): HTMLIFrameElement {
+		if (!url) {
+			return undefined;
 		}
 
-		let vimeoIds = this.getVideoIds(pageUrl, pageContent);
-		if (ObjectUtils.isNullOrUndefined(vimeoIds)) {
-			return;
+		let match = url.match(/^https?:\/\/vimeo\.com\/(\d+)\d{0}/);
+		if (match) {
+			return this.createEmbeddedVideoFromId(match[1]);
 		}
 
-		let values = [];
-		for (let id of vimeoIds) {
-			values.push("https://player.vimeo.com/video/" + id);
+		match = url.match(/^https?:\/\/player.vimeo.com\/video\/(\d+)\d{0}/);
+		if (match) {
+			return this.createEmbeddedVideoFromId(match[1]);
 		}
 
-		return values;
+		return undefined;
 	}
 
-	/**
-	 * Create iframes in correct format for Vimeo video embed in OneNote.
-	 * Supports multiple videos.
-	 */
-	public createEmbeddedVideos(pageUrl: string, pageContent: string): HTMLIFrameElement[] {
-		let vimeoSrcs = this.getVideoSrcValues(pageUrl, pageContent);
-
-		if (ObjectUtils.isNullOrUndefined(vimeoSrcs)) {
-			// fast fail: we expect all pages passed into this function in prod to contain clip ids
-			throw new Error("Vimeo page content does not contain clip ids");
+	public createEmbeddedVideoFromId(id: string): HTMLIFrameElement {
+		if (!id) {
+			return undefined;
 		}
 
-		let iframes: HTMLIFrameElement[] = [];
-
-		for (let vimeoSrc of vimeoSrcs) {
-			let iframe = DomUtils.createEmbedVideoIframe();
-			iframe.src = vimeoSrc;
-			iframe.setAttribute(this.dataOriginalSrcAttribute, vimeoSrc);
-
-			iframes.push(iframe);
-		}
-
-		return iframes;
+		let videoEmbed = DomUtils.createEmbedVideoIframe();
+		let src = "https://player.vimeo.com/video/" + id;
+		videoEmbed.src = src;
+		videoEmbed.setAttribute(this.dataOriginalSrcAttribute, src);
+		return videoEmbed;
 	}
 }
