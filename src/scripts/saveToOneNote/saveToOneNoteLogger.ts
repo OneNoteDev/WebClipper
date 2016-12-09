@@ -65,6 +65,7 @@ export class SaveToOneNoteLogger {
 		event.setCustomProperty(Log.PropertyName.Custom.PdfAllPagesClipped, pdfInfo.allPages);
 		event.setCustomProperty(Log.PropertyName.Custom.PdfAttachmentClipped, pdfInfo.shouldAttachPdf);
 		event.setCustomProperty(Log.PropertyName.Custom.PdfIsLocalFile, clipperState.pageInfo.rawUrl.indexOf("file:///") === 0);
+		event.setCustomProperty(Log.PropertyName.Custom.PdfIsBatched, pdfInfo.shouldDistributePages);
 
 		let totalPageCount = clipperState.pdfResult.data.get().viewportDimensions.length;
 		let selectedPageCount = pdfInfo.allPages ? totalPageCount : Math.min(totalPageCount, StringUtils.countPageRange(pdfInfo.selectedPageRange));

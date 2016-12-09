@@ -43,6 +43,7 @@ export module PropertyName {
 		PdfAttachmentClipped,
 		PdfFileSelectedPageCount,
 		PdfFileTotalPageCount,
+		PdfIsBatched,
 		PdfIsLocalFile,
 		RatingsInfo,
 		ShouldShowRatingsPrompt,

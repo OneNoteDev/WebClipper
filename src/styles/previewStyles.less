@@ -97,21 +97,25 @@
 				}
 
 				// TODO: Remove when this is replaced with full page features
-				#fullPageControl, #bookmarkControl, #regionControl {
+				#fullPageControl, #bookmarkControl, #regionControl, #pdfControl {
 					height: 32px;
 
-					#fullPageHeaderTitle, #bookmarkHeaderTitle, #regionHeaderTitle {
+					#fullPageHeaderTitle, #bookmarkHeaderTitle, #regionHeaderTitle, #pdfHeaderTitle {
 						font-size: @OneNoteH3Size;
 						cursor: default;
 						line-height: 32px;
 					}
 				}
 
-				#pageRangeControl {
+				#radioPageRangeControl {
+					margin-left: 6px;
+				}
+
+				/*#pageRangeControl {
 					// Temporary workaround that fixes styling issues with the PDF Preview Header
 					// in Safari as of 10/21/2016
 					width: 300px;
-				}
+				}*/
 
 				#addRegionControl {
 					#addAnotherRegionButton {
@@ -173,111 +177,6 @@
 						letter-spacing: 1px;
 						font-size: 14px;
 						min-width: @ControlButtonMinWidth;
-					}
-				}
-
-				// PDF
-				.pdf-label {
-					margin-right: 3px;
-					padding-left: 24px;
-					padding-right: 6px;
-					font-size: 14px;
-					font-family: @SegoeUi;
-					color: #fff;
-					vertical-align: middle;
-					cursor: pointer;
-					position: relative;
-					line-height: 28px;
-
-					&:last-child {
-						margin-left: 6px;
-					}
-				}
-
-				.pdf-radio-indicator-fill {
-					position: absolute;
-					top: 3px;
-					left: 3px;
-					width: 9px;
-					height: 9px;
-					background-color: white;
-					border-radius: 100%;
-				}
-
-				.pdf-indicator {
-					position: absolute;
-					top: 0px;
-					left: 0px;
-					width: 15px;
-					height: 15px;
-
-					&.pdf-checkbox-indicator {
-						border: 1px solid white;
-						border-radius: 2px;
-						background-color: @OneNotePurpleTransparent;
-					}
-
-					&.pdf-radio-indicator {
-						border: 1px solid white;
-						border-radius: 100%;
-					}
-				}
-
-				.checkbox {
-					position: absolute;
-					top: 1px;
-					left: 6px;
-					width: 4px;
-					height: 11px;
-					transform: rotate(45deg);
-					border: 1px solid white;
-					background: transparent;
-					border-width: 0 1px 1px 0;
-				}
-
-				#attachmentCheckboxControl {
-					float: right;
-					margin-right: 24px;
-				}
-
-				#rangeInput {
-					border-radius: 2px;
-					background-color:  @DarkBackgroundColor;
-					height: 26px;
-					line-height: 20px;
-					padding-left: 6px;
-					width: 128px;
-					border: none;
-					font-family: @SegoeUi;
-					font-size: 14px;
-					color: rgba(255,255,255,0.70);
-					line-height: 20px;
-					outline: none;
-					user-select: auto;
-					
-					&.invalid {
-						border: #b94a48 1px solid;
-						height: 24px;
-					}
-
-					&::-webkit-input-placeholder {
-						font-style: italic;
-						color: @ClipperLightFontColor;
-					}
-
-					&:-moz-placeholder {
-						font-style: italic;
-						color: @ClipperLightFontColor;
-					}
-
-					&::-moz-placeholder {
-						font-style: italic;
-						color: @ClipperLightFontColor;
-					}
-
-					&:-ms-input-placeholder {
-						font-style: italic;
-						color: @ClipperLightFontColor;
 					}
 				}
 
@@ -573,6 +472,13 @@
 							&.unselected {
 								opacity: 0.3;
 							}
+
+							.centered-in-canvas {
+								top: 50%;
+								left: 50%;
+								position: absolute;
+								transform: translate(-50%, -50%);
+							}
 						}
 
 						&:last-child {
@@ -580,14 +486,14 @@
 						}
 
 						.overlay {
-							min-width: 104px;
-							height: 104px;
-							background-color: rgba(0,0,0,.65);
+							min-width: 36px;
+							height: 36px;
+							background-color: rgba(0,0,0,.60);
 							position: absolute;
-							border-radius: 8px;
-							left: 50%;
-							top: 50%;
-							transform: translate(-50%, -50%);
+							left: 0;
+							top: 0;
+							margin-top: 24px;
+							transition: opacity 0.167s ease-in-out;
 							
 							display: flex;
 							align-items: center;
@@ -596,20 +502,18 @@
 
 							&.overlay-hidden {
 								// We declare these here to only trigger the transitions on fade-out
-								-webkit-transition: opacity 0.5s ease-in-out;
-								-moz-transition: opacity 0.5s ease-in-out;
-								-o-transition: opacity 0.5s ease-in-out;
-								transition: opacity 0.5s ease-in-out;
+								-webkit-transition: opacity 0.267s ease-in-out;
+								-moz-transition: opacity 0.267s ease-in-out;
+								-o-transition: opacity 0.267s ease-in-out;
+								transition: opacity 0.267s ease-in-out;
 								opacity: 0;
 							}
 
 							.overlay-number {
-								padding-left: 10px;
-								padding-right: 10px;
-								font-size: 64px;
+								font-size: 15px;
 								font-family: @SegoeUi;
 								color: white;
-								margin-bottom: 4px;
+								margin-bottom: 2px;
 							}
 						}
 					}

@@ -5,10 +5,7 @@ export module ObjectUtils {
 
 	export function isNullOrUndefined(varToCheck: any) {
 		/* tslint:disable:no-null-keyword */
-		if (varToCheck === null || varToCheck === undefined) {
-			return true;
-		}
-		return false;
+		return varToCheck === null || varToCheck === undefined;
 		/* tslint:enable:no-null-keyword */
 	}
 }

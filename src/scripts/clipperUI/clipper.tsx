@@ -4,6 +4,7 @@ import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
+
 import {PageInfo} from "../pageInfo";
 import {Polyfills} from "../polyfills";
 import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
@@ -98,6 +99,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				isLocalFileAndNotAllowed: true,
 				selectedPageRange: "",
 				shouldAttachPdf: false,
+				shouldDistributePages: false,
+				shouldShowPopover: false
+			},
+			clipSaveStatus: {
+				numItemsTotal: undefined,
+				numItemsCompleted: undefined
 			},
 
 			reset: () => {
@@ -534,10 +541,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private getDefaultClipMode(): ClipMode {
-		if (this.state && this.state.pageInfo && this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-			return ClipMode.Pdf;
-		}
-
 		if (this.state && this.state.invokeOptions) {
 			switch (this.state.invokeOptions.invokeMode) {
 				case InvokeMode.ContextImage:
@@ -553,11 +556,15 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		}
 
-		if (this.state && this.state.pageInfo && UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
-			return ClipMode.Augmentation;
-		} else {
-			return ClipMode.FullPage;
+		if (this.state && this.state.pageInfo) {
+			if (UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
+				return ClipMode.Augmentation;
+			} else if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+				return ClipMode.Pdf;
+			}
 		}
+
+		return ClipMode.FullPage;
 	}
 
 	private updateFrameHeight(newContainerHeight: number) {
@@ -608,7 +615,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}});
 	}
 
-	private handleSignOut(authType: string) {
+	private handleSignOut(authType: string): void {
 		this.state.setState(this.getSignOutState());
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signOutUser, { param: AuthType[authType] });
 
@@ -624,7 +631,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		return signOutState;
 	}
 
-	private handleStartClip() {
+	private handleStartClip(): void {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ClipAttempted);
 
 		this.state.setState({ userResult: { status: Status.InProgress, data: this.state.userResult.data } });
@@ -661,11 +668,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		let clipEvent = new Log.Event.PromiseEvent(Log.Event.Label.ClipToOneNoteAction);
 
-		OneNoteSaveableFactory.getSaveable(this.state).then((saveable) => {
+		(new OneNoteSaveableFactory(this.state)).getSaveable().then((saveable) => {
 			let saveOptions: SaveToOneNoteOptions = {
 				page: saveable,
-				saveLocation: this.state.saveLocation
+				saveLocation: this.state.saveLocation,
+				progressCallback: this.updateClipSaveProgress.bind(this)
 			};
+
 			let saveToOneNote = new SaveToOneNote(this.state.userResult.data.user.accessToken);
 			saveToOneNote.save(saveOptions).then((responsePackage: OneNoteApi.ResponsePackage<any>) => {
 				let createPageResponse = Array.isArray(responsePackage) ? responsePackage[0] : responsePackage;
@@ -684,6 +693,15 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}).then(() => {
 				Clipper.logger.logEvent(clipEvent);
 			});
+		});
+	}
+
+	private updateClipSaveProgress(numItemsCompleted: number, numItemsTotal: number): void {
+		this.state.setState({
+			clipSaveStatus: {
+				numItemsCompleted: numItemsCompleted,
+				numItemsTotal: numItemsTotal
+			}
 		});
 	}
 

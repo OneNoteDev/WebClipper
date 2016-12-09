@@ -19,7 +19,7 @@ export class ExpandFromRightAnimationStrategy extends TransitioningAnimationStra
 	private animationTimeoutId: number;
 	private reverseChildAnimations: boolean;
 
-	constructor(options?: ExpandFromRightAnimationStrategyOptions) {
+	constructor(options: ExpandFromRightAnimationStrategyOptions) {
 		super(500 /* animationDuration */, options);
 		this.animationTimeout = 100;
 		this.reverseChildAnimations = true;

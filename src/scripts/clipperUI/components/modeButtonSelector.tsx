@@ -115,12 +115,12 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 
 		return (
 			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight) }>
-				{ this.getPdfModeButton(currentMode) }
 				{ this.getFullPageModeButton(currentMode) }
 				{ this.getRegionModeButton(currentMode) }
 				{ this.getAugmentationModeButton(currentMode) }
 				{ this.getSelectionModeButton(currentMode) }
 				{ this.getBookmarkModeButton(currentMode) }
+				{ this.getPdfModeButton(currentMode) }
 			</div>
 		);
 	}

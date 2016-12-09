@@ -5,6 +5,14 @@ export module ArrayUtils {
 	 * items.
 	 */
 	export function createEvenBuckets(numItems: number, maxPerBucket: number): number[] {
+		if (numItems < 1) {
+			return [];
+		}
+
+		if (maxPerBucket < 1) {
+			throw new Error("maxPerBucket cannot be less than 1 but was: " + maxPerBucket);
+		}
+
 		if (numItems <= maxPerBucket) {
 			return [numItems];
 		}
@@ -28,6 +36,10 @@ export module ArrayUtils {
 	 * Also retains the ordering of the items when partitions are flattened.
 	 */
 	export function partition(items: any[], maxPerBucket: number): any[][] {
+		if (items.length === 0) {
+			return [];
+		}
+
 		let bucketCounts = ArrayUtils.createEvenBuckets(items.length, maxPerBucket);
 		let partitions: any[][] = [];
 		let sliceStart = 0;

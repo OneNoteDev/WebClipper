@@ -10,15 +10,21 @@ export class OneNoteSaveablePdf implements OneNoteSaveable {
 	private page: OneNoteApi.OneNotePage;
 	private pdf: PdfDocument;
 	private buckets: number[][];
+	private pageData: any;
 
-	constructor(page: OneNoteApi.OneNotePage, pdf: PdfDocument, pageIndexes?: number[]) {
+	constructor(page: OneNoteApi.OneNotePage, pdf: PdfDocument, pageIndexes?: number[], necessaryPdfOptions?: any) {
 		this.page = page;
 		this.pdf = pdf;
 		this.buckets = ArrayUtils.partition(pageIndexes, OneNoteSaveablePdf.maxImagesPerPatchRequest);
+		this.pageData = necessaryPdfOptions;
 	}
 
 	public getPage(): Promise<OneNoteApi.OneNotePage> {
 		return Promise.resolve(this.page);
+	}
+
+	public getNumPages(): number {
+		return 1;
 	}
 
 	public getPatch(index: number): Promise<OneNoteApi.Revision[]> {
@@ -40,5 +46,13 @@ export class OneNoteSaveablePdf implements OneNoteSaveable {
 
 	public getNumPatches(): number {
 		return this.buckets.length;
+	}
+
+	public getNumBatches(): number {
+		return 0;
+	}
+
+	public getBatch(index: number): Promise<OneNoteApi.BatchRequest> {
+		return Promise.resolve(undefined);
 	}
 }

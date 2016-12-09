@@ -25,6 +25,12 @@ export class OneNoteApiWithLogging implements OneNoteApi.IOneNoteApi {
 		}, Log.Event.Label.CreatePage);
 	}
 
+	public sendBatchRequest(batchRequest: OneNoteApi.BatchRequest): Promise<OneNoteApi.ResponsePackage<any>> {
+		return this.executeWithLogging(() => {
+			return this.api.sendBatchRequest(batchRequest);
+		}, Log.Event.Label.SendBatchRequest);
+	}
+
 	public getPage(pageId: string): Promise<OneNoteApi.ResponsePackage<any>> {
 		return this.executeWithLogging(() => {
 			return this.api.getPage(pageId);

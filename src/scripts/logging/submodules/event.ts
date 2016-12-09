@@ -55,6 +55,7 @@ export module Event {
 		RegionSelectionLoading,
 		RegionSelectionProcessing,
 		RetrieveUserInformation,
+		SendBatchRequest,
 		SetContextProperty,
 		SetDoNotPromptRatings,
 		ShouldShowRatingsPrompt,
