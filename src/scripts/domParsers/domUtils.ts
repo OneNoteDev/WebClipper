@@ -348,7 +348,7 @@ export module DomUtils {
 	 */
 	export function addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<EmbeddedVideoIFrameSrcs[]> {
 		let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
-		if (!supportedDomain || !addVideosToElement) {
+		if (!supportedDomain) {
 			return Promise.resolve();
 		}
 
