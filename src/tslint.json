@@ -1,5 +1,8 @@
 {
+	"extends": "tslint:latest",
 	"rules": {
+		"adjacent-overload-signatures": true,
+		"arrow-parens": true,
 		"comment-format": [
 			true,
 			"check-space"
@@ -8,16 +11,18 @@
 		"eofline": true,
 		"indent": [ true, "tabs" ],
 		"jsdoc-format": true,
+		"max-classes-per-file": [true, 1],
+		"max-line-length": [false],
 		"no-any": false,
-		"no-consecutive-blank-lines": true,
-		"no-console": [ true ],
-		"no-inferrable-types": true,
+		"no-consecutive-blank-lines": [true, 1],
+		"no-console": [true],
+		"no-empty": false,
+		"no-inferrable-types": [true],
 		"no-null-keyword": true,
 		"no-shadowed-variable": true,
 		"no-string-literal": true,
 		"no-switch-case-fall-through": true,
 		"no-trailing-whitespace": true,
-		"no-unreachable": true,
 		"no-unused-expression": true,
 		"no-var-keyword": true,
 		"object-literal-sort-keys": false,
@@ -36,6 +41,7 @@
 		"radix": true,
 		"semicolon": [ true ],
 		"switch-default": true,
+		"trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
 		"triple-equals": [
 			true
 		],
@@ -48,11 +54,6 @@
 				"property-declaration": "nospace",
 				"variable-declaration": "nospace"
 			}
-		],
-		"use-strict": [
-			false,
-			"check-module",
-			"check-function"
 		],
 		"variable-name": [
 			true,
