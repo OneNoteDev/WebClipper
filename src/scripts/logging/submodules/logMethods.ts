@@ -8,5 +8,5 @@ export enum LogMethods {
 	LogSessionEnd,
 	LogTrace,
 	LogClickEvent,
-	SetContextProperty,
+	SetContextProperty
 }

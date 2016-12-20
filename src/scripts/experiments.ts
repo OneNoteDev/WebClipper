@@ -6,7 +6,7 @@
 	export var updateIntervalForFlights = 60 * 60 * 5 * 1000; // 5 hours
 
 	export enum Feature {
-		DummyExperiment,
+		DummyExperiment
 	};
 
 	/**

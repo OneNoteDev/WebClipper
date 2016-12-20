@@ -214,7 +214,7 @@ export class PdfPreviewTests extends TestModule {
 			clipperState.pdfPreviewInfo = {
 				allPages: true,
 				selectedPageRange: "",
-				shouldAttachPdf: true,
+				shouldAttachPdf: true
 			};
 			MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
@@ -226,7 +226,7 @@ export class PdfPreviewTests extends TestModule {
 			clipperState.pdfPreviewInfo = {
 				allPages: true,
 				selectedPageRange: "",
-				shouldAttachPdf: false,
+				shouldAttachPdf: false
 			};
 			MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
 
@@ -315,7 +315,7 @@ export class PdfPreviewTests extends TestModule {
 		state.pdfPreviewInfo = {
 			allPages: true,
 			selectedPageRange: "",
-			shouldAttachPdf: false,
+			shouldAttachPdf: false
 		};
 		return state;
 	}

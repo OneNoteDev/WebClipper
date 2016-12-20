@@ -5,7 +5,7 @@ export module Event {
 	export enum Category {
 		BaseEvent,
 		PromiseEvent,
-		StreamEvent,
+		StreamEvent
 	}
 
 	export enum Label {

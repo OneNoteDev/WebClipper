@@ -155,7 +155,7 @@ export class OneNoteSaveableFactoryTests extends TestModule {
 				description: "desc",
 				thumbnailSrc: "data:image/png;base64,iVBORw0KGgo",
 				title: "title",
-				url: "url",
+				url: "url"
 			};
 			clipperState.bookmarkPreviewInfo = { previewBodyHtml: "<p>stuff</p>" };
 			clipperState.bookmarkResult.status = Status.Succeeded;

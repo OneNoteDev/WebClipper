@@ -32,7 +32,7 @@ export class PdfClipOptionsTests extends TestModule {
 			byteLength: MockPdfValues.byteLength
 		});
 		this.defaultPdfClipOptionsProps = {
-			clipperState: defaultClipperState,
+			clipperState: defaultClipperState
 		};
 		this.defaultComponent = <PdfClipOptions {...this.defaultPdfClipOptionsProps} />;
 	}
@@ -330,7 +330,7 @@ export class PdfClipOptionsTests extends TestModule {
 				byteLength: Constants.Settings.maximumMimeSizeLimit + 5
 			});
 			this.defaultPdfClipOptionsProps = {
-				clipperState: defaultClipperState,
+				clipperState: defaultClipperState
 			};
 			this.defaultComponent = <PdfClipOptions {...this.defaultPdfClipOptionsProps} />;
 			MithrilUtils.mountToFixture(this.defaultComponent);

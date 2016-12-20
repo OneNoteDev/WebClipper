@@ -51,7 +51,7 @@ class PdfPreviewClass extends PreviewComponentBase<PdfPreviewState, ClipperState
 	getInitialState(): PdfPreviewState {
 		return {
 			showPageNumbers: false,
-			renderedPageIndexes: {},
+			renderedPageIndexes: {}
 		};
 	}
 

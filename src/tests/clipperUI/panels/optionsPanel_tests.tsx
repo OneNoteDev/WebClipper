@@ -197,7 +197,7 @@ export class OptionsPanelTests extends TestModule {
 			this.mockOptionsPanelProps.clipperState.bookmarkResult.status = Status.Succeeded;
 			this.mockOptionsPanelProps.clipperState.bookmarkResult.data = {
 				title: "title",
-				url: "mywebsite.website.com.website",
+				url: "mywebsite.website.com.website"
 			};
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
@@ -238,7 +238,7 @@ export class OptionsPanelTests extends TestModule {
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
 				pdf: new MockPdfDocument(),
 				viewportDimensions: MockPdfValues.dimensions,
-				byteLength: MockPdfValues.byteLength,
+				byteLength: MockPdfValues.byteLength
 			});
 			this.mockOptionsPanelProps.clipperState.pdfPreviewInfo = {
 				allPages: true,
@@ -257,12 +257,12 @@ export class OptionsPanelTests extends TestModule {
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
 				pdf: new MockPdfDocument(),
 				viewportDimensions: MockPdfValues.dimensions,
-				byteLength: MockPdfValues.byteLength,
+				byteLength: MockPdfValues.byteLength
 			});
 			this.mockOptionsPanelProps.clipperState.pdfPreviewInfo = {
 				allPages: true,
 				isLocalFileAndNotAllowed: true,
-				selectedPageRange: "1--3invalid",
+				selectedPageRange: "1--3invalid"
 			};
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
@@ -276,12 +276,12 @@ export class OptionsPanelTests extends TestModule {
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
 				pdf: new MockPdfDocument(),
 				viewportDimensions: MockPdfValues.dimensions,
-				byteLength: MockPdfValues.byteLength,
+				byteLength: MockPdfValues.byteLength
 			});
 			_.assign(this.mockOptionsPanelProps.clipperState.pdfPreviewInfo, {
 				allPages: false,
 				isLocalFileAndNotAllowed: true,
-				selectedPageRange: "1-3",
+				selectedPageRange: "1-3"
 			});
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
@@ -296,12 +296,12 @@ export class OptionsPanelTests extends TestModule {
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
 				pdf: new MockPdfDocument(),
 				viewportDimensions: MockPdfValues.dimensions,
-				byteLength: MockPdfValues.byteLength,
+				byteLength: MockPdfValues.byteLength
 			});
 			_.assign(this.mockOptionsPanelProps.clipperState.pdfPreviewInfo, {
 				allPages: false,
 				isLocalFileAndNotAllowed: true,
-				selectedPageRange: "1-3,5,6-",
+				selectedPageRange: "1-3,5,6-"
 			});
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
@@ -315,12 +315,12 @@ export class OptionsPanelTests extends TestModule {
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
 				pdf: new MockPdfDocument(),
 				viewportDimensions: MockPdfValues.dimensions,
-				byteLength: MockPdfValues.byteLength,
+				byteLength: MockPdfValues.byteLength
 			});
 			this.mockOptionsPanelProps.clipperState.pdfPreviewInfo = {
 				allPages: false,
 				isLocalFileAndNotAllowed: true,
-				selectedPageRange: "4", // There are only 3 pages in the mock pdf
+				selectedPageRange: "4" // There are only 3 pages in the mock pdf
 			};
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
@@ -334,12 +334,12 @@ export class OptionsPanelTests extends TestModule {
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
 				pdf: new MockPdfDocument(),
 				viewportDimensions: MockPdfValues.dimensions,
-				byteLength: MockPdfValues.byteLength,
+				byteLength: MockPdfValues.byteLength
 			});
 			this.mockOptionsPanelProps.clipperState.pdfPreviewInfo = {
 				allPages: false,
 				isLocalFileAndNotAllowed: true,
-				selectedPageRange: "",
+				selectedPageRange: ""
 			};
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
@@ -353,11 +353,11 @@ export class OptionsPanelTests extends TestModule {
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
 				pdf: new MockPdfDocument(),
 				viewportDimensions: MockPdfValues.dimensions,
-				byteLength: MockPdfValues.byteLength,
+				byteLength: MockPdfValues.byteLength
 			});
 			this.mockOptionsPanelProps.clipperState.pdfPreviewInfo = {
 				allPages: false,
-				isLocalFileAndNotAllowed: true,
+				isLocalFileAndNotAllowed: true
 			};
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
@@ -371,12 +371,12 @@ export class OptionsPanelTests extends TestModule {
 			this.mockOptionsPanelProps.clipperState.pdfResult.data.set({
 				pdf: new MockPdfDocument(),
 				viewportDimensions: MockPdfValues.dimensions,
-				byteLength: MockPdfValues.byteLength,
+				byteLength: MockPdfValues.byteLength
 			});
 			this.mockOptionsPanelProps.clipperState.pdfPreviewInfo = {
 				allPages: true,
 				isLocalFileAndNotAllowed: false,
-				selectedPageRange: "",
+				selectedPageRange: ""
 			};
 			MithrilUtils.mountToFixture(<OptionsPanel onStartClip={this.mockOptionsPanelProps.onStartClip}
 				onPopupToggle={this.mockOptionsPanelProps.onPopupToggle} clipperState={this.mockOptionsPanelProps.clipperState} />);
