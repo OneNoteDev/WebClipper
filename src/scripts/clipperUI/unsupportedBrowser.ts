@@ -89,18 +89,18 @@ class UnsupportedBrowserClass {
 
 		// In IE8 and below, 'class' is a reserved keyword and cannot be used as a key in a JSON object
 		return ({tag: "div", attrs: {id: Constants.Ids.unsupportedBrowserContainer}, children: [
-				{tag: "div", attrs: {id: Constants.Ids.unsupportedBrowserPanel, "class": "panelContent"}, children: [
+				{tag: "div", attrs: {id: Constants.Ids.unsupportedBrowserPanel, class: "panelContent"}, children: [
 					{tag: "div", attrs: {className: Constants.Classes.heightAnimator, style: "min-height: 276px; max-height: 276px;"}, children: [
 						{tag: "div", attrs: {className: Constants.Classes.panelAnimator, style: "left: 0px; opacity: 1;"}, children: [
 							{tag: "div", attrs: {id: Constants.Ids.signInContainer}, children: [
 								{tag: "div", attrs: {className: "signInPadding"}, children: [
 									{tag: "img", attrs: {id: Constants.Ids.signInLogo, src: ExtensionUtils.getImageResourceUrl("onenote_logo_clipper.png")}},
-									{tag: "div", attrs: {id: Constants.Ids.signInMessageLabelContainer, "class": "messageLabelContainer"}, children: [
-										{tag: "span", attrs: {"class": "messageLabel", style: Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}, children: [
+									{tag: "div", attrs: {id: Constants.Ids.signInMessageLabelContainer, class: "messageLabelContainer"}, children: [
+										{tag: "span", attrs: {class: "messageLabel", style: Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}, children: [
 											this.attemptingFetchLocalizedStrings() ? "" : Localization.getLocalizedString("WebClipper.Label.OneNoteClipper")
 										]}
 									]},
-									{tag: "div", attrs: {"class": "signInDescription"}, children: [
+									{tag: "div", attrs: {class: "signInDescription"}, children: [
 										{tag: "span", attrs: {id: Constants.Ids.signInText, style: Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}, children: [
 											this.attemptingFetchLocalizedStrings() ? "" : Localization.getLocalizedString("WebClipper.Label.UnsupportedBrowser")
 										]}

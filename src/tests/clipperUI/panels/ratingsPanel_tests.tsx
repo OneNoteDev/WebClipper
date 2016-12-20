@@ -42,8 +42,8 @@ export class RatingsPanelTests extends TestModule {
 			let done = assert.async();
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingUrl": {
-					"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
+				ChromeExtension_RatingUrl: {
+					Value: "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
 				}
 			});
 
@@ -94,8 +94,8 @@ export class RatingsPanelTests extends TestModule {
 			let done = assert.async();
 
 			Settings.setSettingsJsonForTesting({
-				"LogCategory_RatingsPrompt": {
-					"Value": TestConstants.LogCategories.oneNoteClipperUsage
+				LogCategory_RatingsPrompt: {
+					Value: TestConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 
@@ -150,8 +150,8 @@ export class RatingsPanelTests extends TestModule {
 			let done = assert.async();
 
 			Settings.setSettingsJsonForTesting({
-				"LogCategory_RatingsPrompt": {
-					"Value": TestConstants.LogCategories.oneNoteClipperUsage
+				LogCategory_RatingsPrompt: {
+					Value: TestConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 
@@ -206,8 +206,8 @@ export class RatingsPanelTests extends TestModule {
 
 		test("'Rate' click at RatingsPromptStage.Rate goes to RatingsPromptStage.End when rate url exists", () => {
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingUrl": {
-					"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
+				ChromeExtension_RatingUrl: {
+					Value: "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
 				}
 			});
 
@@ -250,8 +250,8 @@ export class RatingsPanelTests extends TestModule {
 
 		test("'No Thanks' click at RatingsPromptStage.Rate goes to RatingsPromptStage.None when rate url exists", () => {
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingUrl": {
-					"Value": "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
+				ChromeExtension_RatingUrl: {
+					Value: "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews"
 				}
 			});
 
@@ -294,8 +294,8 @@ export class RatingsPanelTests extends TestModule {
 
 		test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage.End when feedback url exists", () => {
 			Settings.setSettingsJsonForTesting({
-				"LogCategory_RatingsPrompt": {
-					"Value": TestConstants.LogCategories.oneNoteClipperUsage
+				LogCategory_RatingsPrompt: {
+					Value: TestConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 
@@ -342,8 +342,8 @@ export class RatingsPanelTests extends TestModule {
 
 		test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStage.None when feedback url exists", () => {
 			Settings.setSettingsJsonForTesting({
-				"LogCategory_RatingsPrompt": {
-					"Value": TestConstants.LogCategories.oneNoteClipperUsage
+				LogCategory_RatingsPrompt: {
+					gValue: TestConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 

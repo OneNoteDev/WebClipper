@@ -24,8 +24,8 @@ export class OneNoteApiUtilsTests extends TestModule {
 				statusCode: 404,
 				response: JSON.stringify({
 					error: {
-						code: expectedCode,
-						message: "Unable to create a page in this section because the hamster in the server room died.",
+						"code": expectedCode,
+						"message": "Unable to create a page in this section because the hamster in the server room died.",
 						"@api.url": "http://aka.ms/onenote-errors#C12345"
 					}}),
 				responseHeaders: {}
@@ -79,8 +79,8 @@ export class OneNoteApiUtilsTests extends TestModule {
 				statusCode: 404,
 				response: JSON.stringify({
 					error: {
-						code: "",
-						message: "Unable to create a page in this section because the hamster in the server room died.",
+						"code": "",
+						"message": "Unable to create a page in this section because the hamster in the server room died.",
 						"@api.url": "http://aka.ms/onenote-errors#C12345"
 					}}),
 				responseHeaders: {}
@@ -97,8 +97,8 @@ export class OneNoteApiUtilsTests extends TestModule {
 				statusCode: 404,
 				response: JSON.stringify({
 					error: {
-						code: null,
-						message: "Unable to create a page in this section because the hamster in the server room died.",
+						"code": null,
+						"message": "Unable to create a page in this section because the hamster in the server room died.",
 						"@api.url": "http://aka.ms/onenote-errors#C12345"
 					}}),
 				responseHeaders: {}
@@ -115,8 +115,8 @@ export class OneNoteApiUtilsTests extends TestModule {
 				statusCode: 404,
 				response: JSON.stringify({
 					error: {
-						code: undefined,
-						message: "Unable to create a page in this section because the hamster in the server room died.",
+						"code": undefined,
+						"message": "Unable to create a page in this section because the hamster in the server room died.",
 						"@api.url": "http://aka.ms/onenote-errors#C12345"
 					}}),
 				responseHeaders: {}

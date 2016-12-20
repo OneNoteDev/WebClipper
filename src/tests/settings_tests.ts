@@ -14,25 +14,25 @@ export class SettingsTests extends TestModule {
 
 		test("helper method checkValueAndDescriptionOnObject should assert when given an object that lacks a value or description", () => {
 			let nothing = {
-				"Dummy": "blah"
+				Dummy: "blah"
 			};
 
 			let noValue = {
-				"Dummy": {
-					"Description": "blah"
+				Dummy: {
+					Description: "blah"
 				}
 			};
 
 			let noDescription = {
-				"Dummy": {
-					"Value": "test"
+				Dummy: {
+					Value: "test"
 				}
 			};
 
 			let valid = {
-				"Dummy": {
-					"Description": "valid",
-					"Value": "test"
+				Dummy: {
+					Description: "valid",
+					Value: "test"
 				}
 			};
 

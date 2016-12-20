@@ -6,9 +6,9 @@ import {pdfDataUrls} from "../clipperUI/components/previewViewer/pdfDataUrls";
 export module MockPdfValues {
 	export let pageDataUrls = pdfDataUrls;
 	export let pageDataUrlsMap = {
-		"0": pdfDataUrls[0],
-		"1": pdfDataUrls[1],
-		"2": pdfDataUrls[2]
+		0: pdfDataUrls[0],
+		1: pdfDataUrls[1],
+		2: pdfDataUrls[2]
 	};
 	export let dimensions = [{
 		width: 1, height: 1

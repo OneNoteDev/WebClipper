@@ -110,19 +110,19 @@ export module OneNoteApiUtils {
 	 */
 	function getResponseCodeInformation(apiResponseCode: string): { message: string, isRetryable: boolean, isExpected: boolean, requiresSignout?: boolean } {
 		let handledExtendedResponseCodes = {
-			"10001": { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // UnexpectedServerError
-			"10002": { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // ServiceUnavailable
-			"10004": { message: Localization.getLocalizedString("WebClipper.Error.PasswordProtected"), isRetryable: false, isExpected: true }, // PasswordProtectedSection
-			"10006": { message: Localization.getLocalizedString("WebClipper.Error.CorruptedSection"), isRetryable: false, isExpected: true }, // CorruptedSection
-			"10007": { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // ServerTooBusy
-			"19999": { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: false }, // GenericError
-			"20102": { message: Localization.getLocalizedString("WebClipper.Error.ResourceDoesNotExist"), isRetryable: false, isExpected: true }, // ResourceDoesNotExist
-			"30101": { message: Localization.getLocalizedString("WebClipper.Error.QuotaExceeded"), isRetryable: false, isExpected: true }, // OneDriveQuotaExceeded
-			"30102": { message: Localization.getLocalizedString("WebClipper.Error.SectionTooLarge"), isRetryable: false, isExpected: true }, // SectionTooLarge
-			"30103": { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // CoherencyFailure
-			"30104": { message: Localization.getLocalizedString("WebClipper.Error.UserAccountSuspended"), isRetryable: false, isExpected: true }, // UserAccountSuspended
-			"30105": { message: Localization.getLocalizedString("WebClipper.Error.NotProvisioned"), isRetryable: false, isExpected: true }, // OneDriveForBusinessNotProvisioned
-			"40004": { message: Localization.getLocalizedString("WebClipper.Error.UserDoesNotHaveUpdatePermission"), isRetryable: false, isExpected: true, requiresSignout: true } // UserOnlyHasCreatePermissions
+			10001: { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // UnexpectedServerError
+			10002: { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // ServiceUnavailable
+			10004: { message: Localization.getLocalizedString("WebClipper.Error.PasswordProtected"), isRetryable: false, isExpected: true }, // PasswordProtectedSection
+			10006: { message: Localization.getLocalizedString("WebClipper.Error.CorruptedSection"), isRetryable: false, isExpected: true }, // CorruptedSection
+			10007: { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // ServerTooBusy
+			19999: { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: false }, // GenericError
+			20102: { message: Localization.getLocalizedString("WebClipper.Error.ResourceDoesNotExist"), isRetryable: false, isExpected: true }, // ResourceDoesNotExist
+			30101: { message: Localization.getLocalizedString("WebClipper.Error.QuotaExceeded"), isRetryable: false, isExpected: true }, // OneDriveQuotaExceeded
+			30102: { message: Localization.getLocalizedString("WebClipper.Error.SectionTooLarge"), isRetryable: false, isExpected: true }, // SectionTooLarge
+			30103: { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // CoherencyFailure
+			30104: { message: Localization.getLocalizedString("WebClipper.Error.UserAccountSuspended"), isRetryable: false, isExpected: true }, // UserAccountSuspended
+			30105: { message: Localization.getLocalizedString("WebClipper.Error.NotProvisioned"), isRetryable: false, isExpected: true }, // OneDriveForBusinessNotProvisioned
+			40004: { message: Localization.getLocalizedString("WebClipper.Error.UserDoesNotHaveUpdatePermission"), isRetryable: false, isExpected: true, requiresSignout: true } // UserOnlyHasCreatePermissions
 		};
 
 		if (!apiResponseCode) {

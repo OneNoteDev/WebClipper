@@ -123,7 +123,7 @@ export class PdfPreviewTests extends TestModule {
 			let clipperState = this.getMockPdfModeState();
 			let pdfPreview = MithrilUtils.mountToFixture(<PdfPreview clipperState={clipperState} />);
 			MithrilUtils.simulateAction(() => {
-				pdfPreview.state.renderedPageIndexes = { "0": MockPdfValues.pageDataUrls[0] };
+				pdfPreview.state.renderedPageIndexes = { 0: MockPdfValues.pageDataUrls[0] };
 			});
 
 			let imagesCanvases = document.getElementsByClassName(Constants.Classes.pdfPreviewImageCanvas);

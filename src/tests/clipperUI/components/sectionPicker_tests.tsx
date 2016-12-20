@@ -319,7 +319,7 @@ export class SectionPickerSinonTests extends TestModule {
 			let freshNotebooks = MockProps.getMockNotebooks();
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
-				value: freshNotebooks
+				"value": freshNotebooks
 			};
 			this.server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
@@ -379,7 +379,7 @@ export class SectionPickerSinonTests extends TestModule {
 			freshNotebooks.push(createNotebook("id", false, [], []));
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
-				value: freshNotebooks
+				"value": freshNotebooks
 			};
 			this.server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
@@ -429,7 +429,7 @@ export class SectionPickerSinonTests extends TestModule {
 			freshNotebooks.push(createNotebook("id", false, [], []));
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
-				value: freshNotebooks
+				"value": freshNotebooks
 			};
 			this.server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
@@ -515,7 +515,7 @@ export class SectionPickerSinonTests extends TestModule {
 				freshNotebooks.push(createNotebook("id", false, [], []));
 				let responseJson = {
 					"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
-					value: freshNotebooks
+					"value": freshNotebooks
 				};
 				this.server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
@@ -570,7 +570,7 @@ export class SectionPickerSinonTests extends TestModule {
 			freshNotebooks[0].sections = [];
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
-				value: freshNotebooks
+				"value": freshNotebooks
 			};
 			this.server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
@@ -621,7 +621,7 @@ export class SectionPickerSinonTests extends TestModule {
 			// After retrieving fresh undefined notebooks, the storage should not be updated with the undefined value, but should still keep the old cached information
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
-				value: undefined
+				"value": undefined
 			};
 			this.server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
@@ -750,7 +750,7 @@ export class SectionPickerSinonTests extends TestModule {
 			let notebooks = MockProps.getMockNotebooks();
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
-				value: notebooks
+				"value": notebooks
 			};
 			this.server.respondWith([200, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
@@ -774,7 +774,7 @@ export class SectionPickerSinonTests extends TestModule {
 			let notebooks = MockProps.getMockNotebooks();
 			let responseJson = {
 				"@odata.context": "https://www.onenote.com/api/v1.0/$metadata#me/notes/notebooks",
-				value: notebooks
+				"value": notebooks
 			};
 			this.server.respondWith([201, { "Content-Type": "application/json" }, JSON.stringify(responseJson)]);
 
@@ -828,8 +828,8 @@ export class SectionPickerSinonTests extends TestModule {
 
 			let responseJson = {
 				error: {
-					code: "10008",
-					message: "The user's OneDrive, Group or Document Library contains more than 5000 items and cannot be queried using the API.",
+					"code": "10008",
+					"message": "The user's OneDrive, Group or Document Library contains more than 5000 items and cannot be queried using the API.",
 					"@api.url": "http://aka.ms/onenote-errors#C10008"
 				}
 			};

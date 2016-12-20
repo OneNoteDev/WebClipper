@@ -101,7 +101,7 @@ export class AuthenticationHelper {
 			}, 3000);
 
 			if (navigator.userAgent.search(/edge/i) !== -1) {
-				browser.cookies.get({ "url": Constants.Urls.serviceDomain, "name": Constants.Cookies.clipperInfo }, (cookie) => {
+				browser.cookies.get({ url: Constants.Urls.serviceDomain, name: Constants.Cookies.clipperInfo }, (cookie) => {
 					clearTimeout(getCookieTimeout);
 					resolve(cookie ? cookie.value : "");
 				});
@@ -117,7 +117,7 @@ export class AuthenticationHelper {
 	 * do it manually.  This method essentially forces the delete of the cookies we rely on for authentication.
 	 */
 	public deleteUserAuthenticationCookies(authType: AuthType): void {
-		browser.cookies.remove({ "url": Constants.Urls.serviceDomain, "name": Constants.Cookies.clipperInfo });
+		browser.cookies.remove({ url: Constants.Urls.serviceDomain, name: Constants.Cookies.clipperInfo });
 
 		let authenticationDomain = Constants.Urls.msaDomain;
 		if (authType === AuthType.OrgId) {
@@ -127,9 +127,9 @@ export class AuthenticationHelper {
 		// This part is a little ugly. Because the call to sign out the user is also done in the background, it hits the same issue
 		// where the needed cookies are not being passed along with the request. So, the user never really signs out. To work around
 		// it we are basically manually deleting all of the cookies on the authentication domain. Yeah, it's ugly.
-		browser.cookies.getAll({ "url": authenticationDomain }, (cookies) => {
+		browser.cookies.getAll({ url: authenticationDomain }, (cookies) => {
 			for (let i = 0; i < cookies.length; i++) {
-				browser.cookies.remove({ "url": authenticationDomain + cookies[i].path, name: cookies[i].name });
+				browser.cookies.remove({ url: authenticationDomain + cookies[i].path, name: cookies[i].name });
 			}
 		});
 	}

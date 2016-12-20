@@ -240,8 +240,8 @@ export class RatingsHelperTests extends TestModule {
 			strictEqual(url, undefined, "setting for log category for ratings prompt does not exist");
 
 			Settings.setSettingsJsonForTesting({
-				"LogCategory_RatingsPrompt": {
-					"Value": undefined
+				LogCategory_RatingsPrompt: {
+					Value: undefined
 				}
 			});
 
@@ -249,8 +249,8 @@ export class RatingsHelperTests extends TestModule {
 			strictEqual(url, undefined, "value for log category for ratings prompt is undefined");
 
 			Settings.setSettingsJsonForTesting({
-				"LogCategory_RatingsPrompt": {
-					"Value": ""
+				LogCategory_RatingsPrompt: {
+					Value: ""
 				}
 			});
 
@@ -260,8 +260,8 @@ export class RatingsHelperTests extends TestModule {
 
 		test("getFeedbackUrlIfExists returns a feedback url if log category for ratings prompt exists", () => {
 			Settings.setSettingsJsonForTesting({
-				"LogCategory_RatingsPrompt": {
-					"Value": TestConstants.LogCategories.oneNoteClipperUsage
+				LogCategory_RatingsPrompt: {
+					Value: TestConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 
@@ -298,8 +298,8 @@ export class RatingsHelperTests extends TestModule {
 			strictEqual(url, undefined, "Ratings url should be undefined if " + settingName + " is not in settings");
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingUrl": {
-					"Value": undefined
+				ChromeExtension_RatingUrl: {
+					Value: undefined
 				}
 			});
 
@@ -307,8 +307,8 @@ export class RatingsHelperTests extends TestModule {
 			strictEqual(url, undefined, "Ratings url should be undefined if the value of " + settingName + " is undefined");
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingUrl": {
-					"Value": ""
+				ChromeExtension_RatingUrl: {
+					Value: ""
 				}
 			});
 
@@ -322,8 +322,8 @@ export class RatingsHelperTests extends TestModule {
 			let expectedRatingUrl = "https://chrome.google.com/webstore/detail/onenote-web-clipper/reviews";
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingUrl": {
-					"Value": expectedRatingUrl
+				ChromeExtension_RatingUrl: {
+					Value: expectedRatingUrl
 				}
 			});
 
@@ -348,8 +348,8 @@ export class RatingsHelperTests extends TestModule {
 			strictEqual(isEnabled, false, "Ratings should be disabled if " + settingName + " is not in settings");
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": undefined
+				ChromeExtension_RatingsEnabled: {
+					Value: undefined
 				}
 			});
 
@@ -357,8 +357,8 @@ export class RatingsHelperTests extends TestModule {
 			strictEqual(isEnabled, false, "Ratings should be disabled if the value of " + settingName + " is undefined");
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": ""
+				ChromeExtension_RatingsEnabled: {
+					Value: ""
 				}
 			});
 
@@ -370,8 +370,8 @@ export class RatingsHelperTests extends TestModule {
 			let clientType: ClientType = ClientType.ChromeExtension;
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "false"
+				ChromeExtension_RatingsEnabled: {
+					Value: "false"
 				}
 			});
 
@@ -379,8 +379,8 @@ export class RatingsHelperTests extends TestModule {
 			strictEqual(isEnabled, false);
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "garbage"
+				ChromeExtension_RatingsEnabled: {
+					Value: "garbage"
 				}
 			});
 
@@ -392,8 +392,8 @@ export class RatingsHelperTests extends TestModule {
 			let clientType: ClientType = ClientType.ChromeExtension;
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "true"
+				ChromeExtension_RatingsEnabled: {
+					Value: "true"
 				}
 			});
 
@@ -401,8 +401,8 @@ export class RatingsHelperTests extends TestModule {
 			strictEqual(isEnabled, true);
 
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "TrUe"
+				ChromeExtension_RatingsEnabled: {
+					Value: "TrUe"
 				}
 			});
 
@@ -459,8 +459,8 @@ export class RatingsHelperTests extends TestModule {
 
 		test("shouldShowRatingsPrompt returns false when ratings prompt is disabled for the client", () => {
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "false"
+				ChromeExtension_RatingsEnabled: {
+					Value: "false"
 				}
 			});
 
@@ -472,8 +472,8 @@ export class RatingsHelperTests extends TestModule {
 
 		test("shouldShowRatingsPrompt returns false when do not prompt ratings is set in storage to 'true' (case-insensitive)", () => {
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "true"
+				ChromeExtension_RatingsEnabled: {
+					Value: "true"
 				}
 			});
 
@@ -487,8 +487,8 @@ export class RatingsHelperTests extends TestModule {
 
 		test("shouldShowRatingsPrompt returns true when do not prompt ratings is set in storage but to an invalid value", () => {
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "true"
+				ChromeExtension_RatingsEnabled: {
+					Value: "true"
 				}
 			});
 
@@ -504,8 +504,8 @@ export class RatingsHelperTests extends TestModule {
 
 		test("shouldShowRatingsPrompt returns true when a valid configuration is provided", () => {
 			Settings.setSettingsJsonForTesting({
-				"FirefoxExtension_RatingsEnabled": {
-					"Value": "true"
+				FirefoxExtension_RatingsEnabled: {
+					Value: "true"
 				}
 			});
 
@@ -526,8 +526,8 @@ export class RatingsHelperTests extends TestModule {
 
 		test("shouldShowRatingsPrompt returns false when number of successful clips is below the min", () => {
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "true"
+				ChromeExtension_RatingsEnabled: {
+					Value: "true"
 				}
 			});
 
@@ -545,8 +545,8 @@ export class RatingsHelperTests extends TestModule {
 
 		test("shouldShowRatingsPrompt returns false when last bad rating date is too recent", () => {
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "true"
+				ChromeExtension_RatingsEnabled: {
+					Value: "true"
 				}
 			});
 
@@ -566,8 +566,8 @@ export class RatingsHelperTests extends TestModule {
 
 		test("shouldShowRatingsPrompt returns false when there has not been a significant version update since the last bad rating", () => {
 			Settings.setSettingsJsonForTesting({
-				"ChromeExtension_RatingsEnabled": {
-					"Value": "true"
+				ChromeExtension_RatingsEnabled: {
+					Value: "true"
 				}
 			});
 
@@ -585,8 +585,8 @@ export class RatingsHelperTests extends TestModule {
 
 		test("shouldShowRatingsPrompt returns false when (numSuccessfulClips - numSuccessfulClipsRatingsEnablement) is out of range", () => {
 			Settings.setSettingsJsonForTesting({
-				"FirefoxExtension_RatingsEnabled": {
-					"Value": "true"
+				FirefoxExtension_RatingsEnabled: {
+					Value: "true"
 				}
 			});
 
