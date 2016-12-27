@@ -102,7 +102,7 @@ export class SignInPanelTests extends TestModule {
 
 			strictEqual(document.getElementById(Constants.Ids.signInToggleErrorInformationText).innerText, this.stringsJson["WebClipper.Label.SignInUnsuccessfulMoreInformation"],
 				"The displayed message should be the 'More' message");
-			ok(!document.getElementById(Constants.Ids.signInErrorDescription), "The error description should not be showing");
+			ok(document.getElementById(Constants.Ids.signInErrorDescriptionContainer), "The error description should be showing");
 		});
 
 		test("The 'less' button is enabled when a sign-in failure is detected and the more button was clicked (OrgID)", () => {
@@ -129,17 +129,27 @@ export class SignInPanelTests extends TestModule {
 				moreButton.click();
 			});
 
-			ok(!!document.getElementById(Constants.Ids.signInErrorDescription), "The error description is showing");
+			ok(!!document.getElementById(Constants.Ids.signInErrorDescriptionContainer), "The error description is showing");
 		});
 
 		test("The 'more' button is not there when a sign-in failure is detected (MSA)", () => {
 			let state = MockProps.getMockClipperState();
-			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, errorDescription: "MSA: An error has occured." } };
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, writeableCookies: true, errorDescription: "MSA: An error has occured." } };
 
 			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
 
 			ok(!document.getElementById(Constants.Ids.signInToggleErrorInformationText), "The error information toggle should not be there in case of an MSA error.");
-			ok(!document.getElementById(Constants.Ids.signInErrorDescription), "The error description should not be showing");
+			ok(!document.getElementById(Constants.Ids.signInErrorDescriptionContainer), "The error description should not be showing");
+		});
+
+		test("The 'more' button is there when a sign-in failure is detected (MSA) because of unwriteable cookies", () => {
+			let state = MockProps.getMockClipperState();
+			state.userResult = { status: Status.Failed, data: { lastUpdated: 10000000, updateReason: UpdateReason.SignInAttempt, writeableCookies: false } };
+
+			let controllerInstance = MithrilUtils.mountToFixture(<SignInPanel clipperState={state} onSignInInvoked={this.mockSignInPanelProps.onSignInInvoked} />);
+
+			ok(document.getElementById(Constants.Ids.signInToggleErrorInformationText), "The error information toggle should be there in case of an MSA error with no writeable cookies.");
+			ok(document.getElementById(Constants.Ids.signInErrorDescriptionContainer), "The error description should be showing");
 		});
 
 		test("Test the tab order when the 'more' button is not there", () => {

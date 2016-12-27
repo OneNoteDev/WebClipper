@@ -115,7 +115,10 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 		if (this.signInFailureContainsErrorDescription()) {
 			return this.props.clipperState.userResult.data.errorDescription;
 		} else if (this.signInFailureThirdPartyCookiesBlocked()) {
-			return Localization.getLocalizedString("WebClipper.Error.ThirdPartyCookiesDisabled");
+			return <div>
+				<div class={Constants.Ids.signInErrorCookieInformation}>{Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Line1")}</div>
+				<div class={Constants.Ids.signInErrorCookieInformation}>{Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Line2")}</div>
+			</div>;
 		}
 
 		return undefined;

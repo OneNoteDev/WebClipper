@@ -222,6 +222,7 @@ export module Constants {
 		export var signInButtonMsa = "signInButtonMsa";
 		export var signInButtonOrgId = "signInButtonOrgId";
 		export var signInContainer = "signInContainer";
+		export var signInErrorCookieInformation = "signInErrorCookieInformation";
 		export var signInErrorDebugInformation = "signInErrorDebugInformation";
 		export var signInErrorDebugInformationDescription = "signInErrorDebugInformationDescription";
 		export var signInErrorDebugInformationContainer = "signInErrorDebugInformationContainer";

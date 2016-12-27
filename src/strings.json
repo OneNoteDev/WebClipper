@@ -44,6 +44,8 @@
 	"WebClipper.ClipType.Selection.ProgressLabel": "Clipping Selection",
 	"WebClipper.Error.ConflictingExtension": "Your PDF viewer or another extension might be blocking the OneNote Web Clipper. You could temporarily disable the following extension and try clipping again.",
 	"WebClipper.Error.CannotClipPage": "Sorry, this type of page can\u0027t be clipped.",
+	"WebClipper.Error.CookiesDisabled.Line1": "Cookies must be enabled in order for OneNote Web Clipper to work correctly.",
+	"WebClipper.Error.CookiesDisabled.Line2": "Please allow third-party cookies in your browser or add the onenote.com domain as an exception.",
 	"WebClipper.Error.CorruptedSection": "Your clip can\u0027t be saved here because the section is corrupt.",
 	"WebClipper.Error.GenericError": "Something went wrong. Please try clipping the page again.",
 	"WebClipper.Error.GenericExpiredTokenRefreshError": "Your login session has ended and we were unable to clip the page. Please sign in again.",

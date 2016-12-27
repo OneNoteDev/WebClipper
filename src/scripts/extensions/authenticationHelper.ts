@@ -67,7 +67,7 @@ export class AuthenticationHelper {
 			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
 			getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
 			this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
-				let isValidUser = this.isValidUserInformationJsonString(response.data);
+				let isValidUser = this.isValidUserInformation(response.data);
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, isValidUser);
 
 				let writeableCookies = this.isThirdPartyCookiesEnabled(response.data);
@@ -83,6 +83,7 @@ export class AuthenticationHelper {
 			}, (error: OneNoteApi.GenericError) => {
 				getInfoEvent.setStatus(Log.Status.Failed);
 				getInfoEvent.setFailureInfo(error);
+
 				this.user.set({ updateReason: updateReason });
 				resolve(this.user.get());
 			}).then(() => {
@@ -176,7 +177,7 @@ export class AuthenticationHelper {
 	/**
 	 * Determines whether or not the given string is valid JSON and has the required elements.
 	 */
-	public isValidUserInformationJsonString(userInfo: UserInfoData): boolean {
+	protected isValidUserInformation(userInfo: UserInfoData): boolean {
 		if (userInfo && userInfo.accessToken && userInfo.accessTokenExpiration > 0 && userInfo.authType) {
 			return true;
 		}
@@ -187,7 +188,7 @@ export class AuthenticationHelper {
 	/**
 	 * Determins whether or not the given string is valid JSON and has the flag which lets us know if cookies are enabled.
 	 */
-	public isThirdPartyCookiesEnabled(userInfo: UserInfoData): boolean {
+	protected isThirdPartyCookiesEnabled(userInfo: UserInfoData): boolean {
 		return userInfo.cookieInRequest;
 	}
 }
