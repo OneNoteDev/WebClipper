@@ -67,12 +67,16 @@ export class AuthenticationHelper {
 			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
 			getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
 			this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
-				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, !!response);
+				let isValidUser = this.isValidUserInformationJsonString(response.data);
+				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, isValidUser);
 
-				if (response) {
-					this.user.set({ user: response.data, lastUpdated: response.lastUpdated, updateReason: updateReason });
+				let writeableCookies = this.isThirdPartyCookiesEnabled(response.data);
+				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.WriteableCookies, writeableCookies);
+
+				if (isValidUser) {
+					this.user.set({ user: response.data, lastUpdated: response.lastUpdated, updateReason: updateReason, writeableCookies: writeableCookies });
 				} else {
-					this.user.set({ updateReason: updateReason });
+					this.user.set({ updateReason: updateReason, writeableCookies: writeableCookies });
 				}
 
 				resolve(this.user.get());
@@ -157,8 +161,8 @@ export class AuthenticationHelper {
 
 			HttpWithRetries.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
 				let response = request.response;
-				// The false case is expected behavior if the user has not signed in or credentials have expired
-				resolve({ parsedResponse: this.isValidUserInformationJsonString(response) ? response : undefined, request: request });
+
+				resolve({ parsedResponse: response, request: request });
 			}, (error: OneNoteApi.RequestError) => {
 				retrieveUserInformationEvent.setStatus(Log.Status.Failed);
 				retrieveUserInformationEvent.setFailureInfo(error);
@@ -172,19 +176,18 @@ export class AuthenticationHelper {
 	/**
 	 * Determines whether or not the given string is valid JSON and has the required elements.
 	 */
-	public isValidUserInformationJsonString(userInfo: string): boolean {
-		let userInfoJson: UserInfoData;
-		try {
-			userInfoJson = JSON.parse(userInfo);
-		} catch (e) {
-			// intentionally not logging this as a JsonParse failure
-			return false;
-		}
-
-		if (userInfoJson && userInfoJson.accessToken && userInfoJson.accessTokenExpiration > 0 && userInfoJson.authType) {
+	public isValidUserInformationJsonString(userInfo: UserInfoData): boolean {
+		if (userInfo && userInfo.accessToken && userInfo.accessTokenExpiration > 0 && userInfo.authType) {
 			return true;
 		}
 
 		return false;
+	}
+
+	/**
+	 * Determins whether or not the given string is valid JSON and has the flag which lets us know if cookies are enabled.
+	 */
+	public isThirdPartyCookiesEnabled(userInfo: UserInfoData): boolean {
+		return userInfo.cookieInRequest;
 	}
 }

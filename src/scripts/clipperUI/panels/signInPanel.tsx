@@ -51,7 +51,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 		}
 	}
 
-	getSignInFailureDetected(): boolean {
+	signInFailureDetected(): boolean {
 		return !!this.props.clipperState.userResult && !!this.props.clipperState.userResult.data
 			&& this.props.clipperState.userResult.data.updateReason === UpdateReason.SignInAttempt
 			// Right now we are only showing the error panel for OrgId errors since they tend to
@@ -60,12 +60,16 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 			&& this.props.clipperState.userResult.data.errorDescription.indexOf("OrgId") === 0;
 	}
 
+	signInFailureThirdPartyCookiesBlocked(): boolean {
+		return true;
+	}
+
 	errorDescriptionControlHandler() {
 		this.setState({ errorDescriptionShowing: !this.state.errorDescriptionShowing });
 	}
 
 	errorInformationToggle() {
-		if (this.getSignInFailureDetected()) {
+		if (this.signInFailureDetected()) {
 			return <div className="signInErrorToggleInformation">
 				<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 10) }>
 					<img id={Constants.Ids.signInToggleErrorDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
@@ -84,7 +88,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 	}
 
 	errorInformationDescription() {
-		if (this.getSignInFailureDetected() && this.state.errorDescriptionShowing) {
+		if (this.signInFailureDetected() && this.state.errorDescriptionShowing) {
 			return <div id={Constants.Ids.signInErrorDescription}>
 				<span className={Constants.Ids.signInErrorDescriptionContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 					{this.props.clipperState.userResult.data.errorDescription}
