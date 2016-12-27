@@ -76,7 +76,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 
 	errorMoreInformationTogggle() {
 		if (this.signInErrorDetected()) {
-			return <div className="signInErrorToggleInformation">
+			return <div id="signInErrorToggleInformation">
 				<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.debugInformationControlHandler, 10) }>
 					<img id={Constants.Ids.signInToggleErrorDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					<span id={Constants.Ids.signInToggleErrorInformationText}
