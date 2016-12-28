@@ -184,6 +184,6 @@ export class AuthenticationHelper {
 	 */
 	protected isThirdPartyCookiesEnabled(userInfo: UserInfoData): boolean {
 		// Note that we are returning true by default to ensure the N-1 scenario.
-		return userInfo.cookieInRequest ? userInfo.cookieInRequest : true;
+		return userInfo.cookieInRequest !== undefined ? userInfo.cookieInRequest : true;
 	}
 }
