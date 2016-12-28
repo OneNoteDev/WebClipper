@@ -53,14 +53,8 @@ export class AuthenticationHelper {
 			}
 
 			let getUserInformationFunction = () => {
-				return new Promise<ResponsePackage<string>>((resolve2, reject2) => {
-					this.getClipperInfoCookie(clipperId).then((cookie) => {
-						this.retrieveUserInformation(clipperId, cookie).then((result) => {
-							resolve2(result);
-						}, (errorObject) => {
-							reject2(errorObject);
-						});
-					});
+				return this.getClipperInfoCookie(clipperId).then((cookie) => {
+					return this.retrieveUserInformation(clipperId, cookie);
 				});
 			};
 
@@ -79,15 +73,15 @@ export class AuthenticationHelper {
 					this.user.set({ updateReason: updateReason, writeableCookies: writeableCookies });
 				}
 
-				resolve(this.user.get());
 			}, (error: OneNoteApi.GenericError) => {
 				getInfoEvent.setStatus(Log.Status.Failed);
 				getInfoEvent.setFailureInfo(error);
 
 				this.user.set({ updateReason: updateReason });
-				resolve(this.user.get());
 			}).then(() => {
 				this.logger.logEvent(getInfoEvent);
+
+				resolve(this.user.get());
 			});
 		});
 	}
@@ -186,9 +180,10 @@ export class AuthenticationHelper {
 	}
 
 	/**
-	 * Determins whether or not the given string is valid JSON and has the flag which lets us know if cookies are enabled.
+	 * Determines whether or not the given string is valid JSON and has the flag which lets us know if cookies are enabled.
 	 */
 	protected isThirdPartyCookiesEnabled(userInfo: UserInfoData): boolean {
-		return userInfo.cookieInRequest;
+		// Note that we are returning true by default to ensure the N-1 scenario.
+		return userInfo.cookieInRequest ? userInfo.cookieInRequest : true;
 	}
 }
