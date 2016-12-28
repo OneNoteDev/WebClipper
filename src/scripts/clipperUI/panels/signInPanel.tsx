@@ -51,18 +51,21 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 		}
 	}
 
-	signInFailureContainsErrorDescription(): boolean {
+	signInAttempted(): boolean {
 		return !!this.props.clipperState.userResult && !!this.props.clipperState.userResult.data
-			&& this.props.clipperState.userResult.data.updateReason === UpdateReason.SignInAttempt
+			&& this.props.clipperState.userResult.data.updateReason === UpdateReason.SignInAttempt;
+	}
+
+	signInFailureContainsErrorDescription(): boolean {
+		return this.signInAttempted()
+			&& this.props.clipperState.userResult.data.errorDescription
 			// Right now we are only showing the error panel for OrgId errors since they tend to
 			// be a little more actionable to the user, or at least a little more helpful.
-			&& this.props.clipperState.userResult.data.errorDescription
 			&& this.props.clipperState.userResult.data.errorDescription.indexOf("OrgId") === 0;
 	}
 
 	signInFailureThirdPartyCookiesBlocked(): boolean {
-		return !!this.props.clipperState.userResult && !!this.props.clipperState.userResult.data
-			&& this.props.clipperState.userResult.data.updateReason === UpdateReason.SignInAttempt
+		return this.signInAttempted()
 			&& !this.props.clipperState.userResult.data.writeableCookies;
 	}
 
