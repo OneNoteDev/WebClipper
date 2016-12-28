@@ -1,3 +1,4 @@
+import { ResponsePackage } from "./../../scripts/responsePackage";
 import * as sinon from "sinon";
 
 import {AuthenticationHelper} from "../../scripts/extensions/authenticationHelper";
@@ -187,71 +188,7 @@ export class AuthenticationHelperSinonTests extends TestModule {
 			]);
 
 			this.authentationHelper.retrieveUserInformation(this.clipperId).then((responsePackage) => {
-				strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
-			}, (error) => {
-				ok(false, "reject should not be called");
-			}).then(() => {
-				done();
-			});
-		});
-
-		test("retrieveUserInformation resolves the response with no parameter if it returns an empty string", (assert: QUnitAssert) => {
-			let done = assert.async();
-
-			this.server.respondWith(
-				"POST", this.authUrl,
-				[200, { "Content-Type": "application/json" },
-				JSON.stringify("")
-			]);
-
-			this.authentationHelper.retrieveUserInformation(this.clipperId).then((responsePackage) => {
-				strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
-			}, (error) => {
-				ok(false, "reject should not be called");
-			}).then(() => {
-				done();
-			});
-		});
-
-		test("retrieveUserInformation resolves the response with no parameter if it represents incomplete user information", (assert: QUnitAssert) => {
-			let done = assert.async();
-
-			let invalidUserInformation = getValidUserInformationJson();
-			invalidUserInformation.accessToken = undefined;
-			this.server.respondWith(
-				"POST", this.authUrl,
-				[200, { "Content-Type": "application/json" },
-				JSON.stringify(invalidUserInformation)
-			]);
-
-			this.authentationHelper.retrieveUserInformation(this.clipperId).then((responsePackage) => {
-				strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
-			}, (error) => {
-				ok(false, "reject should not be called");
-			}).then(() => {
-				done();
-			});
-		});
-
-		test("retrieveUserInformation resolves the response with no parameter if it represents empty user information", (assert: QUnitAssert) => {
-			let done = assert.async();
-
-			let invalidUserInformation: UserInfoData = {
-				accessToken: undefined,
-				accessTokenExpiration: 0,
-				authType: undefined,
-				cid: undefined,
-				emailAddress: undefined,
-				fullName: undefined
-			};
-			this.server.respondWith(
-				"POST", this.authUrl,
-				[200, { "Content-Type": "application/json" },
-				JSON.stringify(invalidUserInformation)
-			]);
-
-			this.authentationHelper.retrieveUserInformation(this.clipperId).then((responsePackage) => {
-				strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
+				strictEqual(responsePackage.parsedResponse, JSON.stringify({}), "The response should be an empty JSON Response.");
 			}, (error) => {
 				ok(false, "reject should not be called");
 			}).then(() => {
