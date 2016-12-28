@@ -19,13 +19,14 @@ import * as Log from "../logging/log";
 import {CaptureFailureInfo} from "./captureFailureInfo";
 
 export enum AugmentationModel {
-	None = 0,
-	Article = 1,
-	BizCard = 2,
-	Recipe = 3,
-	Product = 4,
-	Screenshot = 5,
-	Wrapstar = 6
+	None,
+	Article,
+	BizCard,
+	EntityKnowledge,
+	Recipe,
+	Product,
+	Screenshot,
+	Wrapstar
 }
 
 export interface AugmentationResult extends CaptureFailureInfo {
@@ -89,9 +90,11 @@ export class AugmentationHelper {
 			return augmentationType;
 		}
 
+		// TODO: There is a work-item to change the AugmentationApi to return ContentModel as a StringUtils
+		// instead of an integer
 		let contentModel: AugmentationModel = state.augmentationResult.data.ContentModel;
 
-		if (AugmentationHelper.isSupportedAugmentatationType(contentModel)) {
+		if (AugmentationHelper.isSupportedAugmentationType(contentModel)) {
 			augmentationType = AugmentationModel[contentModel].toString();
 		}
 
@@ -137,7 +140,7 @@ export class AugmentationHelper {
 		return mainContainers[0] as HTMLElement;
 	}
 
-	private static isSupportedAugmentatationType(contentModel: number): boolean {
+	private static isSupportedAugmentationType(contentModel: number): boolean {
 		return contentModel === AugmentationModel.Article ||
 			contentModel === AugmentationModel.Recipe ||
 			contentModel === AugmentationModel.Product;
