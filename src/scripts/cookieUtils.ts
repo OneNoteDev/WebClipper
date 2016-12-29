@@ -1,7 +1,7 @@
 import {ObjectUtils} from "./objectUtils";
 
-export module CookieUtils {
-	export function readCookie(cookieName: string, doc?: Document) {
+export class CookieUtils {
+	public static readCookie(cookieName: string, doc?: Document) {
 		if (ObjectUtils.isNullOrUndefined(doc)) {
 			doc = document;
 		}
