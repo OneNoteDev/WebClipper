@@ -19,7 +19,7 @@ import {Status} from "../status";
 
 import {AnimationState} from "../animations/animationState";
 import {AnimationStrategy} from "../animations/animationStrategy";
-import {SlideContentInFromTopAnimationStrategy, ContentToAnimate} from "../animations/slideContentInFromTopAnimationStrategy";
+import {ContentToAnimate, SlideContentInFromTopAnimationStrategy} from "../animations/slideContentInFromTopAnimationStrategy";
 
 import {SpriteAnimation} from "../components/spriteAnimation";
 

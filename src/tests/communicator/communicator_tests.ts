@@ -1,4 +1,4 @@
-import {Communicator, CommDataPackage} from "../../scripts/communicator/communicator";
+import {CommDataPackage, Communicator} from "../../scripts/communicator/communicator";
 import {SmartValue} from "../../scripts/communicator/smartValue";
 
 import {TestModule} from "../testModule";

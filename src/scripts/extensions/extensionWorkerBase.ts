@@ -5,7 +5,7 @@ import {ClipperUrls} from "../clipperUrls";
 import {CookieUtils} from "../cookieUtils";
 import {Constants} from "../constants";
 import {Polyfills} from "../polyfills";
-import {AuthType, UserInfo, UpdateReason} from "../userInfo";
+import {AuthType, UpdateReason, UserInfo} from "../userInfo";
 import {Settings} from "../settings";
 
 import {TooltipProps} from "../clipperUI/tooltipProps";
@@ -133,8 +133,8 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * Launches the sign in window, rejecting with an error object if something went wrong on the server during
 	 * authentication. Otherwise, it resolves with true if the redirect endpoint was hit as a result of a successful
 	 * sign in attempt, and false if it was not hit (e.g., user manually closed the popup)
-	 */
 	protected abstract doSignInAction(authType: AuthType): Promise<boolean>;
+	 */
 
 	/**
 	 * Signs the user out

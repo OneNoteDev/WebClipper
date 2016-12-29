@@ -6,7 +6,7 @@ import {Tooltip, TooltipProps} from "./tooltip";
 import {AnimationState} from "./animations/animationState";
 import {AnimationStrategy} from "./animations/animationStrategy";
 import {ExpandFromRightAnimationStrategy} from "./animations/expandFromRightAnimationStrategy";
-import {SlidingHeightAnimationStrategy, NewHeightInfo} from "./animations/slidingHeightAnimationStrategy";
+import {NewHeightInfo, SlidingHeightAnimationStrategy} from "./animations/slidingHeightAnimationStrategy";
 
 export interface AnimatedTooltipState {
 	uiExpanded: boolean;

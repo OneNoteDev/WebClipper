@@ -1,4 +1,4 @@
-import {Communicator, CommDataPackage} from "./communicator";
+import {CommDataPackage, Communicator} from "./communicator";
 import {MessageHandler} from "./messageHandler";
 
 /**

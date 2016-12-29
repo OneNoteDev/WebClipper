@@ -5,7 +5,7 @@ import {PdfPageViewport} from "../../../../scripts/clipperUI/components/previewV
 import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 
-import {pdfDataUrls, pdfDataUrlDimensions} from "./pdfDataUrls";
+import {pdfDataUrlDimensions, pdfDataUrls} from "./pdfDataUrls";
 
 export class PdfPageViewportTests extends TestModule {
 	protected module() {

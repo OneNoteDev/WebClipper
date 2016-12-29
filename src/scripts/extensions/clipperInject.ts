@@ -2,7 +2,7 @@ import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {PageInfo} from "../pageInfo";
-import {UserInfo, AuthType} from "../userInfo";
+import {AuthType, UserInfo} from "../userInfo";
 import {ObjectUtils} from "../objectUtils";
 
 import {Communicator} from "../communicator/communicator";
@@ -26,7 +26,7 @@ import {InitializableRangyStatic} from "../typingsExtends/initializableRangyStat
 import {Frame, StyledFrameFactory} from "./styledFrameFactory";
 import {FrameInjectBase} from "./frameInjectBase";
 import {FrameInjectOptions} from "./injectOptions";
-import {InvokeOptions, InvokeMode} from "./invokeOptions";
+import {InvokeMode, InvokeOptions} from "./invokeOptions";
 
 export interface ClipperInjectOptions extends FrameInjectOptions {
 	enableAddANote: boolean;

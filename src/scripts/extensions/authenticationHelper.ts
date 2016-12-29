@@ -9,7 +9,7 @@ import {HttpWithRetries} from "../http/HttpWithRetries";
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
-import {AuthType, UserInfo, UpdateReason} from "../userInfo";
+import {AuthType, UpdateReason, UserInfo} from "../userInfo";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
 import {ResponsePackage} from "../responsePackage";

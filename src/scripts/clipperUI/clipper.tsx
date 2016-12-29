@@ -26,7 +26,7 @@ import {DomUtils} from "../domParsers/domUtils";
 import {VideoUtils} from "../domParsers/videoUtils";
 
 import {ClipperInjectOptions} from "../extensions/clipperInject";
-import {InvokeOptions, InvokeMode} from "../extensions/invokeOptions";
+import {InvokeMode, InvokeOptions} from "../extensions/invokeOptions";
 
 import {InlineExtension} from "../extensions/bookmarklet/inlineExtension";
 

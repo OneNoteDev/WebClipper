@@ -33,6 +33,9 @@
 			"check-else",
 			"check-whitespace"
 		],
+		"ordered-imports": [
+			true, {"import-sources-order": "any", "named-imports-order": "case-insensitive"}
+		],
 		"quotemark": [
 			true,
 			"double",
