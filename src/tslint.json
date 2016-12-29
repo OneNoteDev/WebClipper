@@ -13,6 +13,7 @@
 		"jsdoc-format": true,
 		"max-classes-per-file": [true, 1],
 		"max-line-length": [false],
+		"member-ordering": [false], // I'd really like to make this one true. :-)
 		"no-any": false,
 		"no-consecutive-blank-lines": [true, 1],
 		"no-console": [true],
