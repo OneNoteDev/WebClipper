@@ -43,7 +43,8 @@
 	"PageNav_BlacklistedDomains": {
 		"Description": "The set of domains where we do not want to show any PageNav tooltip experience",
 		"Value": [
-			"^(http(s)?)://(login\\.live\\.com)"
+			"^(http(s)?)://(login\\.live\\.com)",
+			"^(http(s)?)://(login\\.microsoftonline\\.com)"
 		]
 	},
 	"PdfDomains": {
