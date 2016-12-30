@@ -121,18 +121,25 @@ export module UrlUtils {
 		}
 	}
 
+	export function onBlacklistedDomain(url: string): boolean {
+		return urlMatchesRegexInSettings(url, ["PageNav_BlacklistedDomains"]);
+	}
+
 	export function onWhitelistedDomain(url: string): boolean {
+		return urlMatchesRegexInSettings(url, ["AugmentationDefault_WhitelistedDomains", "ProductDomains", "RecipeDomains"]);
+	}
+
+	function urlMatchesRegexInSettings(url: string, settingNames: string[]): boolean {
 		if (!url) {
 			return false;
 		}
 
-		let validDomains = ["AugmentationDefault_WhitelistedDomains", "ProductDomains", "RecipeDomains"];
-		let whitelistedDomains = [];
-		validDomains.forEach((domain) => {
-			whitelistedDomains = whitelistedDomains.concat(Settings.getSetting(domain));
+		let domains = [];
+		settingNames.forEach((settingName) => {
+			domains = domains.concat(Settings.getSetting(settingName));
 		});
 
-		for (let identifier of whitelistedDomains) {
+		for (let identifier of domains) {
 			if (new RegExp(identifier).test(url)) {
 				return true;
 			}

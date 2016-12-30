@@ -67,7 +67,7 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 	}
 
 	protected checkIfTabIsOnWhitelistedUrl(tab: SafariBrowserTab): boolean {
-		return UrlUtils.onWhitelistedDomain(tab.url);
+		return !UrlUtils.onBlacklistedDomain(tab.url) && UrlUtils.onWhitelistedDomain(tab.url);
 	}
 
 	protected createWorker(tab: SafariBrowserTab): SafariWorker {
@@ -85,6 +85,9 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 	}
 
 	protected checkIfTabMatchesATooltipType(tab: SafariBrowserTab, tooltipTypes: TooltipType[]): TooltipType {
+		if (UrlUtils.onBlacklistedDomain(tab.url)) {
+			return undefined;
+		}
 		return UrlUtils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
 	}
 
