@@ -12,7 +12,7 @@ import {ComponentBase} from "../componentBase";
 import {Status} from "../status";
 
 interface SignInPanelState {
-	errorDescriptionShowing?: boolean;
+	debugInformationShowing?: boolean;
 }
 
 interface SignInPanelProps extends ClipperStateProp {
@@ -21,7 +21,7 @@ interface SignInPanelProps extends ClipperStateProp {
 
 class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps> {
 	getInitialState() {
-		return { errorDescriptionShowing: false };
+		return { debugInformationShowing: false };
 	}
 
 	onSignInMsa() {
@@ -51,47 +51,60 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 		}
 	}
 
-	getSignInFailureDetected(): boolean {
+	signInAttempted(): boolean {
 		return !!this.props.clipperState.userResult && !!this.props.clipperState.userResult.data
-			&& this.props.clipperState.userResult.data.updateReason === UpdateReason.SignInAttempt
+			&& this.props.clipperState.userResult.data.updateReason === UpdateReason.SignInAttempt;
+	}
+
+	signInFailureContainsErrorDescription(): boolean {
+		return this.signInAttempted()
+			&& this.props.clipperState.userResult.data.errorDescription
 			// Right now we are only showing the error panel for OrgId errors since they tend to
 			// be a little more actionable to the user, or at least a little more helpful.
-			&& this.props.clipperState.userResult.data.errorDescription
 			&& this.props.clipperState.userResult.data.errorDescription.indexOf("OrgId") === 0;
 	}
 
-	errorDescriptionControlHandler() {
-		this.setState({ errorDescriptionShowing: !this.state.errorDescriptionShowing });
+	signInFailureThirdPartyCookiesBlocked(): boolean {
+		return this.signInAttempted()
+			&& !this.props.clipperState.userResult.data.writeableCookies;
 	}
 
-	errorInformationToggle() {
-		if (this.getSignInFailureDetected()) {
-			return <div className="signInErrorToggleInformation">
-				<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.errorDescriptionControlHandler, 10) }>
+	debugInformationControlHandler() {
+		this.setState({ debugInformationShowing: !this.state.debugInformationShowing });
+	}
+
+	signInErrorDetected() {
+		return this.signInFailureContainsErrorDescription() || this.signInFailureThirdPartyCookiesBlocked();
+	}
+
+	errorMoreInformationTogggle() {
+		if (this.signInErrorDetected()) {
+			return <div id="signInErrorToggleInformation">
+				<a id={Constants.Ids.signInErrorMoreInformation} {...this.enableInvoke(this.debugInformationControlHandler, 10) }>
 					<img id={Constants.Ids.signInToggleErrorDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					<span id={Constants.Ids.signInToggleErrorInformationText}
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-						{this.state.errorDescriptionShowing
+						{this.state.debugInformationShowing
 							? Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulLessInformation")
 							: Localization.getLocalizedString("WebClipper.Label.SignInUnsuccessfulMoreInformation")
 						}
 					</span>
 				</a>
+				{this.debugInformation()}
 			</div>;
 		}
 
 		return undefined;
 	}
 
-	errorInformationDescription() {
-		if (this.getSignInFailureDetected() && this.state.errorDescriptionShowing) {
-			return <div id={Constants.Ids.signInErrorDescription}>
-				<span className={Constants.Ids.signInErrorDescriptionContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+	debugInformation() {
+		if (this.signInErrorDetected() && this.state.debugInformationShowing) {
+			return <div id={Constants.Ids.signInErrorDebugInformation}>
+				<span id={Constants.Ids.signInErrorDebugInformationDescription} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 					{this.props.clipperState.userResult.data.errorDescription}
 				</span>
-				<div className={Constants.Ids.signInErrorDebugInformationContainer}
-					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-					<ul className={Constants.Ids.signInErrorDebugInformationList}>
+				<div id={Constants.Ids.signInErrorDebugInformationContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+					<ul id={Constants.Ids.signInErrorDebugInformationList}>
 						<li>{ClientType[this.props.clipperState.clientInfo.clipperType]}: {this.props.clipperState.clientInfo.clipperVersion}</li>
 						<li>ID: {this.props.clipperState.clientInfo.clipperId}</li>
 						<li>USID: {Clipper.getUserSessionId()}</li>
@@ -99,13 +112,35 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 				</div>
 			</div>;
 		}
+	}
+
+	getErrorDescription() {
+		if (this.signInFailureContainsErrorDescription()) {
+			return this.props.clipperState.userResult.data.errorDescription;
+		} else if (this.signInFailureThirdPartyCookiesBlocked()) {
+			return <div>
+				<div class={Constants.Ids.signInErrorCookieInformation}>{Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Line1")}</div>
+				<div class={Constants.Ids.signInErrorCookieInformation}>{Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Line2")}</div>
+			</div>;
+		}
+
+		return undefined;
+	}
+
+	errorInformationDescription() {
+		if (this.signInErrorDetected()) {
+			return <div id={Constants.Ids.signInErrorDescription}>
+				<span id={Constants.Ids.signInErrorDescriptionContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
+					{this.getErrorDescription()}
+				</span>
+				{this.errorMoreInformationTogggle()}
+			</div>;
+		}
 
 		return undefined;
 	}
 
 	render() {
-		let signInDescription = this.getSignInDescription();
-
 		return (
 			<div id={Constants.Ids.signInContainer}>
 				<div className="signInPadding">
@@ -119,10 +154,9 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 					<div className="signInDescription">
 						<span id={Constants.Ids.signInText}
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-							{signInDescription}
+							{this.getSignInDescription()}
 						</span>
 					</div>
-					{this.errorInformationToggle()}
 					{this.errorInformationDescription()}
 					<a id={Constants.Ids.signInButtonMsa} {...this.enableInvoke(this.onSignInMsa, 11, AuthType.Msa)}>
 						<div className="wideButtonContainer">

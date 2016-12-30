@@ -1,3 +1,4 @@
+import { ResponsePackage } from "./../../scripts/responsePackage";
 import * as sinon from "sinon";
 
 import {AuthenticationHelper} from "../../scripts/extensions/authenticationHelper";
@@ -28,99 +29,99 @@ export class AuthenticationHelperTests extends TestModule {
 	protected tests() {
 		/* tslint:disable:no-null-keyword */
 
-		test("A valid userInfo should be validated by isValidUserInformationJsonString", () => {
+		test("A valid userInfo should be validated by isValidUserInformation", () => {
 			let userInfo = getValidUserInformationJson();
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Valid userInfo should be validated");
 		});
 
-		test("A null userInfo should be invalidated by isValidUserInformationJsonString", () => {
-			ok(!this.authentationHelper.isValidUserInformationJsonString(null),
+		test("A null userInfo should be invalidated by isValidUserInformation", () => {
+			ok(!this.authentationHelper.isValidUserInformation(null),
 				"Null userInfo should be invalidated");
 		});
 
-		test("An undefined userInfo should be invalidated by isValidUserInformationJsonString", () => {
-			ok(!this.authentationHelper.isValidUserInformationJsonString(undefined),
+		test("An undefined userInfo should be invalidated by isValidUserInformation", () => {
+			ok(!this.authentationHelper.isValidUserInformation(undefined),
 				"Undefined userInfo should be invalidated");
 		});
 
-		test("A non-json-string userInfo should be invalidated by isValidUserInformationJsonString", () => {
-			ok(!this.authentationHelper.isValidUserInformationJsonString("{}}"),
+		test("A non-json-string userInfo should be invalidated by isValidUserInformation", () => {
+			ok(!this.authentationHelper.isValidUserInformation("{}}"),
 				"Non-json-string userInfo should be invalidated");
 		});
 
-		test("Invalid accessToken should be detected by isValidUserInformationJsonString", () => {
+		test("Invalid accessToken should be detected by isValidUserInformation", () => {
 			let userInfo = getValidUserInformationJson();
 			userInfo.accessToken = null;
-			ok(!this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(!this.authentationHelper.isValidUserInformation(userInfo),
 				"Null accessToken should be seen as invalid");
 			userInfo.accessToken = undefined;
-			ok(!this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(!this.authentationHelper.isValidUserInformation(userInfo),
 				"Undefined accessToken should be seen as invalid");
 			userInfo.accessToken = "";
-			ok(!this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(!this.authentationHelper.isValidUserInformation(userInfo),
 				"Empty accessToken should be seen as invalid");
 		});
 
-		test("Invalid accessTokenExpiration should be detected by isValidUserInformationJsonString", () => {
+		test("Invalid accessTokenExpiration should be detected by isValidUserInformation", () => {
 			let userInfo = getValidUserInformationJson();
 			userInfo.accessTokenExpiration = 0;
-			ok(!this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(!this.authentationHelper.isValidUserInformation(userInfo),
 				"0 accessTokenExpiration should be seen as invalid");
 			userInfo.accessTokenExpiration = -1;
-			ok(!this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(!this.authentationHelper.isValidUserInformation(userInfo),
 				"<0 accessTokenExpiration should be seen as invalid");
 		});
 
-		test("Invalid authType should be detected by isValidUserInformationJsonString", () => {
+		test("Invalid authType should be detected by isValidUserInformation", () => {
 			let userInfo = getValidUserInformationJson();
 			userInfo.authType = null;
-			ok(!this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(!this.authentationHelper.isValidUserInformation(userInfo),
 				"Null authType should be seen as invalid");
 			userInfo.authType = undefined;
-			ok(!this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(!this.authentationHelper.isValidUserInformation(userInfo),
 				"Undefined authType should be seen as invalid");
 			userInfo.authType = "";
-			ok(!this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(!this.authentationHelper.isValidUserInformation(userInfo),
 				"Empty authType should be seen as invalid");
 		});
 
-		test("Valid cid should be detected by isValidUserInformationJsonString", () => {
+		test("Valid cid should be detected by isValidUserInformation", () => {
 			let userInfo = getValidUserInformationJson();
 			userInfo.cid = null;
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Null cid should be seen as valid");
 			userInfo.cid = undefined;
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Undefined cid should be seen as valid");
 			userInfo.cid = "";
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Empty cid should be seen as valid");
 		});
 
-		test("Valid emailAddress should be detected by isValidUserInformationJsonString", () => {
+		test("Valid emailAddress should be detected by isValidUserInformation", () => {
 			let userInfo = getValidUserInformationJson();
 			userInfo.emailAddress = null;
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Null emailAddress should be seen as valid");
 			userInfo.emailAddress = undefined;
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Undefined emailAddress should be seen as valid");
 			userInfo.emailAddress = "";
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Empty emailAddress should be seen as valid");
 		});
 
-		test("Valid fullName should be detected by isValidUserInformationJsonString", () => {
+		test("Valid fullName should be detected by isValidUserInformation", () => {
 			let userInfo = getValidUserInformationJson();
 			userInfo.fullName = null;
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Null fullName should be seen as valid");
 			userInfo.fullName = undefined;
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Undefined fullName should be seen as valid");
 			userInfo.fullName = "";
-			ok(this.authentationHelper.isValidUserInformationJsonString(JSON.stringify(userInfo)),
+			ok(this.authentationHelper.isValidUserInformation(userInfo),
 				"Empty fullName should be seen as valid");
 		});
 
@@ -187,71 +188,7 @@ export class AuthenticationHelperSinonTests extends TestModule {
 			]);
 
 			this.authentationHelper.retrieveUserInformation(this.clipperId).then((responsePackage) => {
-				strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
-			}, (error) => {
-				ok(false, "reject should not be called");
-			}).then(() => {
-				done();
-			});
-		});
-
-		test("retrieveUserInformation resolves the response with no parameter if it returns an empty string", (assert: QUnitAssert) => {
-			let done = assert.async();
-
-			this.server.respondWith(
-				"POST", this.authUrl,
-				[200, { "Content-Type": "application/json" },
-				JSON.stringify("")
-			]);
-
-			this.authentationHelper.retrieveUserInformation(this.clipperId).then((responsePackage) => {
-				strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
-			}, (error) => {
-				ok(false, "reject should not be called");
-			}).then(() => {
-				done();
-			});
-		});
-
-		test("retrieveUserInformation resolves the response with no parameter if it represents incomplete user information", (assert: QUnitAssert) => {
-			let done = assert.async();
-
-			let invalidUserInformation = getValidUserInformationJson();
-			invalidUserInformation.accessToken = undefined;
-			this.server.respondWith(
-				"POST", this.authUrl,
-				[200, { "Content-Type": "application/json" },
-				JSON.stringify(invalidUserInformation)
-			]);
-
-			this.authentationHelper.retrieveUserInformation(this.clipperId).then((responsePackage) => {
-				strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
-			}, (error) => {
-				ok(false, "reject should not be called");
-			}).then(() => {
-				done();
-			});
-		});
-
-		test("retrieveUserInformation resolves the response with no parameter if it represents empty user information", (assert: QUnitAssert) => {
-			let done = assert.async();
-
-			let invalidUserInformation: UserInfoData = {
-				accessToken: undefined,
-				accessTokenExpiration: 0,
-				authType: undefined,
-				cid: undefined,
-				emailAddress: undefined,
-				fullName: undefined
-			};
-			this.server.respondWith(
-				"POST", this.authUrl,
-				[200, { "Content-Type": "application/json" },
-				JSON.stringify(invalidUserInformation)
-			]);
-
-			this.authentationHelper.retrieveUserInformation(this.clipperId).then((responsePackage) => {
-				strictEqual(responsePackage.parsedResponse, undefined, "The response should be undefined");
+				strictEqual(responsePackage.parsedResponse, JSON.stringify({}), "The response should be an empty JSON Response.");
 			}, (error) => {
 				ok(false, "reject should not be called");
 			}).then(() => {
@@ -320,6 +257,7 @@ function getValidUserInformationJson(): UserInfoData {
 		accessTokenExpiration: 2000,
 		authType: "MSA",
 		cid: "cid",
+		cookieInRequest: true,
 		emailAddress: "me@myemail.xyz",
 		fullName: "George"
 	};
