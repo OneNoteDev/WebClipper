@@ -6,7 +6,7 @@
 	"AugmentationDefault_WhitelistedDomains": {
 		"Description": "The set of domains on which we are changing the default clip mode to Augmentation.",
 		"Value": [
-			"[^\\w]onenote",
+			"^https?:\\/\\/www\\.onenote\\.com",
 			"[^\\w]wikipedia",
 			"[^\\w]nytimes",
 			"[^\\w]lifehacker",
