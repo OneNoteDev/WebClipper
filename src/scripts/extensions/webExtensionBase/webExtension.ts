@@ -63,7 +63,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	protected checkIfTabIsOnWhitelistedUrl(tab: W3CTab): boolean {
-		return UrlUtils.onWhitelistedDomain(tab.url);
+		return !UrlUtils.onBlacklistedDomain(tab.url) && UrlUtils.onWhitelistedDomain(tab.url);
 	}
 
 	protected createWorker(tab: W3CTab): WebExtensionWorker {
@@ -83,6 +83,9 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	protected checkIfTabMatchesATooltipType(tab: W3CTab, tooltipTypes: TooltipType[]): TooltipType {
+		if (UrlUtils.onBlacklistedDomain(tab.url)) {
+			return undefined;
+		}
 		return UrlUtils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
 	}
 

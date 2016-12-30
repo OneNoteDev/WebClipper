@@ -40,6 +40,12 @@
 			"\\/(\\d{2}|\\d{4})-\\d{1,2}-\\d{1,2}\\/"
 		]
 	},
+	"PageNav_BlacklistedDomains": {
+		"Description": "The set of domains where we do not want to show any PageNav tooltip experience",
+		"Value": [
+			"^(http(s)?)://(login\\.live\\.com)"
+		]
+	},
 	"PdfDomains": {
 		"Description": "PDF regexes",
 		"Value": [
