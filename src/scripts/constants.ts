@@ -143,6 +143,10 @@ export module Constants {
 		export var clipButton = "clipButton";
 		export var clipButtonContainer = "clipButtonContainer";
 
+		// pickSelectionTypePanel
+		export var pickRegionSelectionButton = "pickRegionSelectionButton";
+		export var pickHtmlSelectionButton = "pickHtmlSelectionButton";
+
 		// previewViewerPdfHeader
 		export var radioAllPagesLabel = "radioAllPagesLabel";
 		export var radioPageRangeLabel = "radioPageRangeLabel";

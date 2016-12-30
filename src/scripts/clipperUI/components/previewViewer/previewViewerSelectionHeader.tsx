@@ -1,5 +1,7 @@
 import {Constants} from "../../../constants";
 
+import {SelectionMode} from "../../../contentCapture/selectionHelper";
+
 import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Localization} from "../../../localization/localization";
@@ -17,9 +19,7 @@ export interface PreviewViewerSelectionHeaderProp extends ClipperStateProp {
 	textHighlighterEnabled: boolean;
 }
 
-/**
- * TODO copied from previewViewerAugmentationHeader for now as this is a prototype
- */
+// TODO: Ensure that we enable/disable stuff correctly on pdf/different browsers
 class PreviewViewerSelectionHeaderClass extends PreviewViewerHeaderComponentBase<{}, PreviewViewerSelectionHeaderProp> {
 	getControlGroups(): ControlGroup[] {
 		return [this.getHighlightGroup(), this.getSerifGroup(), this.getFontSizeGroup(), this.getAddSelectionGroup()];
@@ -105,8 +105,15 @@ class PreviewViewerSelectionHeaderClass extends PreviewViewerHeaderComponentBase
 	}
 
 	addAnotherSelection() {
+		// TODO use lodash
 		this.props.clipperState.setState({
-			selectionStatus: Status.InProgress
+			selectionResult: {
+				status: Status.NotStarted,
+				data: {
+					mode: undefined, // TODO the user needs to select the mode
+					htmlSelections: this.props.clipperState.selectionResult.data.htmlSelections
+				}
+			}
 		});
 	}
 }

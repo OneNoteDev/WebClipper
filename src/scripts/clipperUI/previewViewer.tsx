@@ -10,7 +10,6 @@ import {AugmentationPreview} from "./components/previewViewer/augmentationPrevie
 import {BookmarkPreview} from "./components/previewViewer/bookmarkPreview";
 import {FullPagePreview} from "./components/previewViewer/fullPagePreview";
 import {PdfPreview} from "./components/previewViewer/pdfPreview";
-import {RegionPreview} from "./components/previewViewer/regionPreview";
 import {SelectionPreview} from "./components/previewViewer/selectionPreview";
 import {LocalFilesNotAllowedPanel} from "./components/previewViewer/localFilesNotAllowedPanel";
 
@@ -34,14 +33,12 @@ class PreviewViewerClass<TState, TProp extends ClipperStateProp> extends Compone
 				return <PdfPreview clipperState={state} />;
 			case ClipMode.FullPage:
 				return <FullPagePreview	clipperState={state} />;
-			case ClipMode.Region:
-				return <RegionPreview clipperState={state} />;
+			case ClipMode.Selection:
+				return <SelectionPreview clipperState={state} />;
 			case ClipMode.Augmentation:
 				return <AugmentationPreview clipperState={state} />;
 			case ClipMode.Bookmark:
 				return <BookmarkPreview clipperState={state} />;
-			case ClipMode.Selection:
-				return <SelectionPreview clipperState={state} />;
 			default:
 				return <div />;
 		}

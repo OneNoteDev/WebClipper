@@ -77,8 +77,10 @@ export module MockProps {
 				data: new SmartValue<PdfScreenshotResult>({}),
 				status: Status.NotStarted
 			},
-			regionResult: {
-				data: undefined,
+			selectionResult: {
+				data: {
+					htmlSelections: []
+				},
 				status: Status.NotStarted
 			},
 			augmentationResult: {
@@ -108,7 +110,6 @@ export module MockProps {
 			augmentationPreviewInfo: {
 				previewBodyHtml: "Edited body"
 			},
-			selectionPreviewInfo: ["Selected body"],
 
 			oneNoteApiResult: {
 				data: undefined,

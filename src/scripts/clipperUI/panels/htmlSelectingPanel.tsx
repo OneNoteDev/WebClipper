@@ -14,11 +14,17 @@ class HtmlSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 		Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.getCurrentSelection, {
 			callback: (newSelection: string) => {
 				if (newSelection) {
-					let newSelections = this.props.clipperState.selectionPreviewInfo;
+					let newSelections = this.props.clipperState.selectionResult.data.htmlSelections;
 					newSelections.push(newSelection);
+					// TODO use lodash
 					this.props.clipperState.setState({
-						selectionStatus: Status.Succeeded,
-						selectionPreviewInfo: newSelections
+						selectionResult: {
+							status: Status.Succeeded,
+							data: {
+								mode: this.props.clipperState.selectionResult.data.mode,
+								htmlSelections: newSelections
+							}
+						}
 					});
 				} else {
 					// The user attempted to grab selection and did not select anything. TODO: we should surface a message and remain
@@ -30,9 +36,13 @@ class HtmlSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	handleCancelButton() {
+		// TODO use lodash
 		this.props.clipperState.setState({
-			selectionStatus: this.props.clipperState.selectionPreviewInfo && this.props.clipperState.selectionPreviewInfo.length > 0 ?
-				Status.Succeeded : Status.NotStarted
+			selectionResult: {
+				status: this.props.clipperState.selectionResult.data.htmlSelections && this.props.clipperState.selectionResult.data.htmlSelections.length > 0 ?
+					Status.Succeeded : Status.NotStarted,
+				data: this.props.clipperState.selectionResult.data
+			}
 		});
 		this.props.clipperState.reset();
 	}

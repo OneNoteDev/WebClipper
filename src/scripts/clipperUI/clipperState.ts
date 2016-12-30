@@ -7,9 +7,10 @@ import {UserInfo} from "../userInfo";
 import {SmartValue} from "../communicator/smartValue";
 
 import {AugmentationResult} from "../contentCapture/augmentationHelper";
+import {BookmarkResult} from "../contentCapture/bookmarkHelper";
 import {FullPageScreenshotResult} from "../contentCapture/fullPageScreenshotHelper";
 import {PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
-import {BookmarkResult} from "../contentCapture/bookmarkHelper";
+import {SelectionResult} from "../contentCapture/selectionHelper";
 
 import {ClipperInjectOptions} from "../extensions/clipperInject";
 import {InvokeOptions} from "../extensions/invokeOptions";
@@ -49,17 +50,15 @@ export interface ClipperState {
 	// Content preview data + retrieval status
 	fullPageResult?: DataResult<FullPageScreenshotResult>;
 	pdfResult?: DataResult<SmartValue<PdfScreenshotResult>>;
-	regionResult?: DataResult<string[]>;
+	selectionResult?: DataResult<SelectionResult>;
 	augmentationResult?: DataResult<AugmentationResult>;
 	bookmarkResult?: DataResult<BookmarkResult>;
-	selectionStatus?: Status;
 
 	// Editable preview content
 	previewGlobalInfo?: PreviewGlobalInfo;
 	augmentationPreviewInfo?: PreviewInfo;
 	bookmarkPreviewInfo?: PreviewInfo;
 	pdfPreviewInfo?: PdfPreviewInfo;
-	selectionPreviewInfo?: string[];
 
 	// Save to OneNote status
 	oneNoteApiResult?: DataResult<OneNoteApi.Page | OneNoteApi.RequestError>;

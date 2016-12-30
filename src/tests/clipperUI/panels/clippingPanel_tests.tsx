@@ -40,14 +40,6 @@ export class ClippingPanelTests extends TestModule {
 				this.stringsJson["WebClipper.ClipType.ScreenShot.ProgressLabel"]);
 		});
 
-		test("If the clipmode is region, the clipping panel should indicate so", () => {
-			this.mockClipperState.currentMode.set(ClipMode.Region);
-			MithrilUtils.mountToFixture(<ClippingPanel clipperState={this.mockClipperState}/>);
-
-			strictEqual(document.getElementById(Constants.Ids.clipperApiProgressContainer).innerText,
-				this.stringsJson["WebClipper.ClipType.Region.ProgressLabel"]);
-		});
-
 		test("If the clipmode is article, the clipping panel should indicate so", () => {
 			this.mockClipperState.currentMode.set(ClipMode.Augmentation);
 			this.mockClipperState.augmentationResult.data.ContentModel = AugmentationModel.Article;

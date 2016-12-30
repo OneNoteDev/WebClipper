@@ -4,6 +4,8 @@ import {Constants} from "../constants";
 
 import {SmartValue} from "../communicator/smartValue";
 
+import {SelectionMode} from "../contentCapture/selectionHelper";
+
 import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
@@ -35,6 +37,7 @@ import {ErrorDialogPanel} from "./panels/errorDialogPanel";
 import {HtmlSelectingPanel} from "./panels/htmlSelectingPanel";
 import {LoadingPanel} from "./panels/loadingPanel";
 import {OptionsPanel} from "./panels/optionsPanel";
+import {PickSelectionTypePanel} from "./panels/pickSelectionTypePanel";
 import {RatingsPanel} from "./panels/ratingsPanel";
 import {RegionSelectingPanel} from "./panels/regionSelectingPanel";
 import {SignInPanel} from "./panels/signInPanel";
@@ -51,6 +54,7 @@ export enum PanelType {
 	Loading,
 	SignInNeeded,
 	ClipOptions,
+	PickSelectionType,
 	RegionInstructions,
 	HtmlSelectionInstructions,
 	ClippingToApi,
@@ -174,18 +178,19 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			return PanelType.SignInNeeded;
 		}
 
-		if (this.props.clipperState.currentMode.get() === ClipMode.Region && this.props.clipperState.regionResult.status !== Status.Succeeded) {
-			switch (this.props.clipperState.regionResult.status) {
+		if (this.props.clipperState.currentMode.get() === ClipMode.Selection && this.props.clipperState.selectionResult.status !== Status.Succeeded) {
+			switch (this.props.clipperState.selectionResult.status) {
 				case Status.InProgress:
 					return PanelType.Loading;
 				default:
-					return PanelType.RegionInstructions;
+					let mode = this.props.clipperState.selectionResult.data.mode;
+					if (mode === SelectionMode.Html) {
+						return PanelType.HtmlSelectionInstructions;
+					} else if (mode === SelectionMode.Region) {
+						return PanelType.RegionInstructions;
+					}
+					return PanelType.PickSelectionType;
 			}
-		}
-
-		// TODO change status to check selection list length
-		if (this.props.clipperState.currentMode.get() === ClipMode.Selection && this.props.clipperState.selectionStatus !== Status.Succeeded) {
-			return PanelType.HtmlSelectionInstructions;
 		}
 
 		switch (this.props.clipperState.oneNoteApiResult.status) {
@@ -210,9 +215,13 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		// Clear regions and selections on clipper exit rather than invoke to avoid conflicting logic with scenarios like context menu actions
 		this.props.clipperState.setState({
 			uiExpanded: false,
-			regionResult: { status: Status.NotStarted, data: [] },
-			selectionStatus: Status.NotStarted,
-			selectionPreviewInfo: []
+			selectionResult: {
+				status: Status.NotStarted,
+				data: {
+					mode: undefined,
+					htmlSelections: []
+				}
+			}
 		});
 	}
 
@@ -266,6 +275,9 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 					onPopupToggle={this.onPopupToggle.bind(this)}
 					clipperState={this.props.clipperState}
 					onStartClip={this.props.onStartClip} />;
+			case PanelType.PickSelectionType:
+				return <PickSelectionTypePanel
+					clipperState={this.props.clipperState} />;
 			case PanelType.RegionInstructions:
 				return <RegionSelectingPanel clipperState={this.props.clipperState} />;
 			case PanelType.HtmlSelectionInstructions:

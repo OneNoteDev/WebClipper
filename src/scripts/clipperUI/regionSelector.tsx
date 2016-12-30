@@ -1,3 +1,5 @@
+import {SelectionHelper, SelectionMode} from "../contentCapture/selectionHelper";
+
 import {DomUtils} from "../domParsers/domUtils";
 
 import * as Log from "../logging/log";
@@ -51,16 +53,31 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	 */
 	private resetState() {
 		this.setState({ firstPoint: undefined, secondPoint: undefined, selectionInProgress: false });
-		this.props.clipperState.setState({ regionResult: { status: Status.NotStarted, data: this.props.clipperState.regionResult.data } });
+		// TODO use lodash
+		this.props.clipperState.setState({
+			selectionResult: {
+				status: Status.NotStarted,
+				data: {
+					mode: SelectionMode.Region,
+					htmlSelections: this.props.clipperState.selectionResult.data.htmlSelections
+				}
+			}
+		});
 	}
 
 	/**
 	 * Define the starting point for the selection
 	 */
 	private startSelection(point: Point) {
-		if (this.props.clipperState.regionResult.status !== Status.InProgress) {
+		if (this.props.clipperState.selectionResult.status !== Status.InProgress) {
 			this.setState({ firstPoint: point, secondPoint: undefined, selectionInProgress: true });
-			this.props.clipperState.setState({ regionResult: { status: Status.InProgress, data: this.props.clipperState.regionResult.data } });
+			// TODO use lodash
+			this.props.clipperState.setState({
+				selectionResult: {
+					status: Status.InProgress,
+					data: this.props.clipperState.selectionResult.data
+				}
+			});
 		}
 	}
 
@@ -68,12 +85,21 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	 * The selection is complete
 	 */
 	private completeSelection(dataUrl: string) {
-		let regionList = this.props.clipperState.regionResult.data;
-		if (!regionList) {
-			regionList = [];
+		let newSelections = this.props.clipperState.selectionResult.data.htmlSelections;
+		if (!newSelections) {
+			newSelections = [];
 		}
-		regionList.push(dataUrl);
-		this.props.clipperState.setState({ regionResult: { status: Status.Succeeded, data: regionList } });
+		newSelections.push(SelectionHelper.createHtmlForImgSrc(dataUrl));
+		// TODO use lodash
+		this.props.clipperState.setState({
+			selectionResult: {
+				status: Status.Succeeded,
+				data: {
+					mode: SelectionMode.Region,
+					htmlSelections: newSelections
+				}
+			}
+		});
 	}
 
 	/**

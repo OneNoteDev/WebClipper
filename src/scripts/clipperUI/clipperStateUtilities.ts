@@ -23,25 +23,21 @@ export module ClipperStateUtilities {
 				} else if (!clipperState.pdfPreviewInfo.allPages && ObjectUtils.isNullOrUndefined(clipperState.pdfPreviewInfo.selectedPageRange)) {
 					return false;
 				}
-
 				// If the user has an invalidPageRange, the clipButton is still enabled,
 				// but when the user clips, we short circuit it and display a message instead
 				return true;
 			case ClipMode.FullPage:
 				let fullPageScreenshotResult = clipperState.fullPageResult;
 				return fullPageScreenshotResult.status === Status.Succeeded;
-			case ClipMode.Region:
-				let regionResult = clipperState.regionResult;
-				return regionResult.status === Status.Succeeded && regionResult.data && regionResult.data.length > 0;
+			case ClipMode.Selection:
+				let selectionResult = clipperState.selectionResult;
+				return selectionResult.status === Status.Succeeded && selectionResult.data && selectionResult.data.htmlSelections.length > 0;
 			case ClipMode.Augmentation:
 				let augmentationResult = clipperState.augmentationResult;
 				return augmentationResult.status === Status.Succeeded && augmentationResult.data && !!augmentationResult.data.ContentInHtml;
 			case ClipMode.Bookmark:
 				let bookmarkResult = clipperState.bookmarkResult;
 				return bookmarkResult.status === Status.Succeeded;
-			case ClipMode.Selection:
-				// The availability of this mode is passed together with the selected text, so it's always available
-				return true;
 			default:
 				return undefined;
 		}

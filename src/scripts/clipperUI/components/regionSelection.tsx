@@ -12,6 +12,7 @@ export interface RegionSelectionProps {
 	onRemove?: (index: number) => void;
 }
 
+// TODO deprecate this and consolidate into htmlselectionclass
 class RegionSelectionClass extends ComponentBase<{}, RegionSelectionProps> {
 	buttonHandler() {
 		if (this.props.onRemove) {

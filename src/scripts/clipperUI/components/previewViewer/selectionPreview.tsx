@@ -16,14 +16,14 @@ class SelectionPreview extends EditorPreviewComponentBase<EditorPreviewState, Cl
 	private convertSelectionResultToContentData(): any[] {
 		let contentBody = [];
 
-		let status = this.props.clipperState.selectionStatus;
+		let status = this.props.clipperState.selectionResult.status;
 		switch (status) {
 			case Status.Succeeded:
-				let selections = this.props.clipperState.selectionPreviewInfo;
+				let selections = this.props.clipperState.selectionResult.data.htmlSelections;
 				for (let i = 0; i < selections.length; i++) {
-					// Rangy does not work on PDFs, so we disallow removal of selections made through the context menu action
-					let onRemove = this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl ? this.onRemove.bind(this) : undefined;
-					contentBody.push(<HtmlSelection html={selections[i]} index={i} onRemove={onRemove} />);
+					// TODO are there any situations where we don't want the user to delete?
+					// let onRemove = this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl ? this.onRemove.bind(this) : undefined;
+					contentBody.push(<HtmlSelection html={selections[i]} index={i} onRemove={this.onRemove.bind(this)} />);
 				}
 				break;
 			default:
@@ -37,17 +37,22 @@ class SelectionPreview extends EditorPreviewComponentBase<EditorPreviewState, Cl
 	}
 
 	private onRemove(index: number) {
-		let newSelections = this.props.clipperState.selectionPreviewInfo;
+		let newSelections = this.props.clipperState.selectionResult.data.htmlSelections;
 		newSelections.splice(index, 1);
-		if (newSelections.length === 0) {
-			this.props.clipperState.setState({ selectionStatus: Status.NotStarted, selectionPreviewInfo: newSelections });
-		} else {
-			this.props.clipperState.setState({ selectionStatus: Status.Succeeded, selectionPreviewInfo: newSelections });
-		}
+		// TODO use lodash
+		this.props.clipperState.setState({
+			selectionResult: {
+				status: newSelections.length === 0 ? Status.NotStarted : Status.Succeeded,
+				data: {
+					htmlSelections: newSelections,
+					mode: undefined
+				}
+			}
+		});
 	}
 
 	protected getStatus(): Status {
-		return this.props.clipperState.selectionStatus;
+		return this.props.clipperState.selectionResult.status;
 	}
 
 	protected getTitleTextForCurrentStatus(): string {
@@ -76,8 +81,15 @@ class SelectionPreview extends EditorPreviewComponentBase<EditorPreviewState, Cl
 			selections.push(selectionElems[i].innerHTML);
 		}
 
+		// TODO use lodash
 		this.props.clipperState.setState({
-			selectionPreviewInfo: selections
+			selectionResult: {
+				status: this.props.clipperState.selectionResult.status,
+				data: {
+					mode: this.props.clipperState.selectionResult.data.mode,
+					htmlSelections: selections
+				}
+			}
 		});
 	}
 }

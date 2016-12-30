@@ -53,14 +53,8 @@ export class AuthenticationHelper {
 			}
 
 			let getUserInformationFunction = () => {
-				return new Promise<ResponsePackage<string>>((resolve2, reject2) => {
-					this.getClipperInfoCookie(clipperId).then((cookie) => {
-						this.retrieveUserInformation(clipperId, cookie).then((result) => {
-							resolve2(result);
-						}, (errorObject) => {
-							reject2(errorObject);
-						});
-					});
+				return this.getClipperInfoCookie(clipperId).then((cookie) => {
+					return this.retrieveUserInformation(clipperId, cookie);
 				});
 			};
 

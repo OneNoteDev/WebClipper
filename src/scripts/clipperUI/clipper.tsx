@@ -21,6 +21,7 @@ import {AugmentationHelper, AugmentationModel} from "../contentCapture/augmentat
 import {BookmarkError, BookmarkHelper, BookmarkResult} from "../contentCapture/bookmarkHelper";
 import {FullPageScreenshotHelper} from "../contentCapture/fullPageScreenshotHelper";
 import {PdfScreenshotHelper, PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
+import {SelectionHelper, SelectionMode} from "../contentCapture/selectionHelper";
 
 import {DomUtils} from "../domParsers/domUtils";
 import {VideoUtils} from "../domParsers/videoUtils";
@@ -76,11 +77,15 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			userResult: { status: Status.NotStarted } ,
 			fullPageResult: { status: Status.NotStarted },
 			pdfResult: { data: new SmartValue<PdfScreenshotResult>(), status: Status.NotStarted },
-			regionResult: { status: Status.NotStarted, data: [] },
+			selectionResult: {
+				status: Status.NotStarted,
+				data: {
+					htmlSelections: []
+				}
+			},
 			augmentationResult: { status: Status.NotStarted },
 			oneNoteApiResult: { status: Status.NotStarted },
 			bookmarkResult: { status: Status.NotStarted },
-			selectionStatus: Status.NotStarted,
 
 			setState: (partialState: ClipperState) => {
 				this.setState(partialState);
@@ -106,7 +111,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				numItemsTotal: undefined,
 				numItemsCompleted: undefined
 			},
-			selectionPreviewInfo: [],
 
 			reset: () => {
 				this.state.setState(this.getResetState());
@@ -115,8 +119,16 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private getResetState(): ClipperState {
+		let atLeastOneSelection = this.state.selectionResult.data.htmlSelections && this.state.selectionResult.data.htmlSelections.length > 1;
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
+			selectionResult: {
+				data: {
+					mode: undefined,
+					htmlSelections: this.state.selectionResult.data.htmlSelections
+				},
+				status: atLeastOneSelection ? Status.Succeeded : Status.NotStarted
+			},
 			oneNoteApiResult: { status: Status.NotStarted }
 		};
 	}
@@ -356,8 +368,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			case InvokeMode.ContextImage:
 				// invokeDataForMode is the src url
 				this.setState({
-					regionResult: {
-						data: [options.invokeDataForMode],
+					selectionResult: {
+						data: {
+							htmlSelections: [SelectionHelper.createHtmlForImgSrc(options.invokeDataForMode)]
+						},
 						status: Status.Succeeded
 					}
 				});
@@ -365,8 +379,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			case InvokeMode.ContextTextSelection:
 				// invokeDataForMode is scrubbed selected html as a string
 				this.state.setState({
-					selectionStatus: Status.Succeeded,
-					selectionPreviewInfo: [options.invokeDataForMode]
+					selectionResult: {
+						data: {
+							htmlSelections: [options.invokeDataForMode]
+						},
+						status: Status.Succeeded
+					}
 				});
 				break;
 			default:
@@ -544,14 +562,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		if (this.state && this.state.invokeOptions) {
 			switch (this.state.invokeOptions.invokeMode) {
 				case InvokeMode.ContextImage:
-					// We don't want to be stuck in region mode if there are 0 images
-					if (this.state.regionResult.data.length > 0) {
-						return ClipMode.Region;
-					}
-					break;
 				case InvokeMode.ContextTextSelection:
 					// We don't want to be stuck in selection mode if there are 0 selections
-					if (this.state.selectionPreviewInfo.length > 0) {
+					if (this.state.selectionResult.data.htmlSelections.length > 0) {
 						return ClipMode.Selection;
 					}
 					break;
@@ -738,10 +751,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private static shouldShowPreviewViewer(state: ClipperState): boolean {
 		if (this.shouldShowOptions(state)) {
 			switch (state.currentMode.get()) {
-				case ClipMode.Region:
-					return state.regionResult.status === Status.Succeeded;
 				case ClipMode.Selection:
-					return state.selectionStatus === Status.Succeeded && state.selectionPreviewInfo.length > 0;
+					return state.selectionResult.status === Status.Succeeded &&
+						state.selectionResult.data.htmlSelections &&
+						state.selectionResult.data.htmlSelections.length > 0;
 				default:
 					return true;
 			}
@@ -751,12 +764,21 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private static shouldShowRegionSelector(state: ClipperState): boolean {
 		return this.shouldShowOptions(state) &&
-			state.currentMode.get() === ClipMode.Region &&
-			state.regionResult.status !== Status.Succeeded;
+			state.currentMode.get() === ClipMode.Selection &&
+			state.selectionResult.data.mode === SelectionMode.Region &&
+			state.selectionResult.status !== Status.Succeeded;
 	}
 
 	private static shouldShowMainController(state: ClipperState): boolean {
-		return state.regionResult.status !== Status.InProgress || state.badState;
+		if (state.badState) {
+			return true;
+		}
+
+		if (state.currentMode.get() === ClipMode.Selection) {
+			return !(state.selectionResult.data.mode === SelectionMode.Region && state.selectionResult.status === Status.InProgress);
+		}
+
+		return true;
 	}
 
 	render() {
@@ -764,7 +786,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			<PreviewViewer clipperState={this.state} /> :
 			undefined;
 		let regionSelectorItem = ClipperClass.shouldShowRegionSelector(this.state) ? <RegionSelector clipperState={this.state} /> : undefined;
-		let mainControllerStyle = ClipperClass.shouldShowMainController(this.state) ? { } : { display: "none" };
+		let mainControllerStyle = ClipperClass.shouldShowMainController(this.state) ? {} : { display: "none" };
 
 		return (
 			<div>

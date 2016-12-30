@@ -18,15 +18,15 @@ import "./clipperUI/components/previewViewer/fullPagePreview_tests";
 import "./clipperUI/components/previewViewer/pdfPageViewport_tests";
 import "./clipperUI/components/previewViewer/pdfPreview_tests";
 import "./clipperUI/components/previewViewer/pdfPreviewPage_tests";
-import "./clipperUI/components/previewViewer/previewViewerAugmentationHeader_tests";
-import "./clipperUI/components/previewViewer/previewViewerRegionHeader_tests";
-import "./clipperUI/components/previewViewer/regionPreview_tests";
-import "./clipperUI/components/previewViewer/selectionPreview_tests";
+// import "./clipperUI/components/previewViewer/previewViewerAugmentationHeader_tests";
+// import "./clipperUI/components/previewViewer/previewViewerRegionHeader_tests";
+// import "./clipperUI/components/previewViewer/regionPreview_tests";
+// import "./clipperUI/components/previewViewer/selectionPreview_tests";
 
 import "./clipperUI/components/annotationInput_tests";
 import "./clipperUI/components/footer_tests";
 import "./clipperUI/components/modeButton_tests";
-import "./clipperUI/components/modeButtonSelector_tests";
+// import "./clipperUI/components/modeButtonSelector_tests";
 import "./clipperUI/components/pdfClipOptions_tests";
 import "./clipperUI/components/sectionPicker_tests";
 
@@ -35,11 +35,11 @@ import "./clipperUI/panels/clippingPanel_tests";
 import "./clipperUI/panels/clippingPanelWithDelayedMessage_tests";
 import "./clipperUI/panels/clippingPanelWithProgressIndicator_tests";
 import "./clipperUI/panels/dialogPanel_tests";
-import "./clipperUI/panels/optionsPanel_tests";
+// import "./clipperUI/panels/optionsPanel_tests";
 import "./clipperUI/panels/ratingsPanel_tests";
 import "./clipperUI/panels/signInPanel_tests";
 
-import "./clipperUI/mainController_tests";
+// import "./clipperUI/mainController_tests";
 import "./clipperUI/oneNoteApiUtils_tests";
 import "./clipperUI/ratingsHelper_tests";
 import "./clipperUI/regionSelector_tests";
@@ -80,7 +80,7 @@ import "./logging/loggerDecorator_tests";
 import "./logging/logHelpers_tests";
 import "./logging/sessionLogger_tests";
 
-import "./saveToOneNote/oneNoteSaveableFactory_tests";
+// import "./saveToOneNote/oneNoteSaveableFactory_tests";
 import "./saveToOneNote/oneNoteSaveablePage_tests";
 import "./saveToOneNote/oneNoteSaveablePdf_tests";
 import "./saveToOneNote/oneNoteSaveablePdfSynchronousBatched_tests";

@@ -674,10 +674,10 @@ export class RegionSelectorTests extends TestModule {
 			});
 
 			controllerInstance.saveCompressedSelectionToState(DataUrls.twoByTwoUpperCornerBlackOnTransparentUrl).then((canvas: HTMLCanvasElement) => {
-				strictEqual(controllerInstance.props.clipperState.regionResult.status, Status.Succeeded, "The regionResult state should indicate it succeeded");
-				ok(controllerInstance.props.clipperState.regionResult.data, "The regionResult array should not be undefined");
-				strictEqual(controllerInstance.props.clipperState.regionResult.data.length, 1, "The regionResult array should contain one element");
-				ok(controllerInstance.props.clipperState.regionResult.data[0], "The regionResult's new element should be a non-empty string");
+				strictEqual(controllerInstance.props.clipperState.selectionResult.status, Status.Succeeded, "The regionResult state should indicate it succeeded");
+				ok(controllerInstance.props.clipperState.selectionResult.data.htmlSelections, "The regionResult array should not be undefined");
+				strictEqual(controllerInstance.props.clipperState.selectionResult.data.htmlSelections.length, 1, "The regionResult array should contain one element");
+				ok(controllerInstance.props.clipperState.selectionResult.data.htmlSelections[0], "The regionResult's new element should be a non-empty string");
 				done();
 			});
 		});
@@ -695,12 +695,12 @@ export class RegionSelectorTests extends TestModule {
 			});
 
 			controllerInstance.saveCompressedSelectionToState(DataUrls.twoByTwoUpperCornerBlackOnTransparentUrl).then((canvas: HTMLCanvasElement) => {
-				strictEqual(controllerInstance.props.clipperState.regionResult.status, Status.Succeeded, "The regionResult state should indicate it succeeded");
-				ok(controllerInstance.props.clipperState.regionResult.data, "The regionResult array should not be undefined");
-				strictEqual(controllerInstance.props.clipperState.regionResult.data.length, 1, "The regionResult array should contain one element");
-				ok(controllerInstance.props.clipperState.regionResult.data[0], "The regionResult's new element should be a non-empty string");
+				strictEqual(controllerInstance.props.clipperState.selectionResult.status, Status.Succeeded, "The regionResult state should indicate it succeeded");
+				ok(controllerInstance.props.clipperState.selectionResult.data.htmlSelections, "The regionResult array should not be undefined");
+				strictEqual(controllerInstance.props.clipperState.selectionResult.data.htmlSelections.length, 1, "The regionResult array should contain one element");
+				ok(controllerInstance.props.clipperState.selectionResult.data.htmlSelections[0], "The regionResult's new element should be a non-empty string");
 
-				let firstData = controllerInstance.props.clipperState.regionResult.data[0];
+				let firstData = controllerInstance.props.clipperState.selectionResult.data.htmlSelections[0];
 
 				point1 = { x: 1, y: 1 };
 				point2 = { x: 2, y: 2 };
@@ -711,12 +711,12 @@ export class RegionSelectorTests extends TestModule {
 				});
 
 				controllerInstance.saveCompressedSelectionToState(DataUrls.twoByTwoUpperCornerBlackOnTransparentUrl).then((canvas2: HTMLCanvasElement) => {
-					strictEqual(controllerInstance.props.clipperState.regionResult.status, Status.Succeeded, "The regionResult state should indicate it succeeded");
-					ok(controllerInstance.props.clipperState.regionResult.data, "The regionResult array should not be undefined");
-					strictEqual(controllerInstance.props.clipperState.regionResult.data.length, 2, "The regionResult array should contain one element");
-					ok(controllerInstance.props.clipperState.regionResult.data[1], "The regionResult's new element should be a non-empty string");
-					strictEqual(controllerInstance.props.clipperState.regionResult.data[0], firstData, "The first result should not be modified");
-					notStrictEqual(controllerInstance.props.clipperState.regionResult.data[1], firstData, "Since new points were selected, the second result should not equal the first");
+					strictEqual(controllerInstance.props.clipperState.selectionResult.status, Status.Succeeded, "The regionResult state should indicate it succeeded");
+					ok(controllerInstance.props.clipperState.selectionResult.data.htmlSelections, "The regionResult array should not be undefined");
+					strictEqual(controllerInstance.props.clipperState.selectionResult.data.htmlSelections.length, 2, "The regionResult array should contain one element");
+					ok(controllerInstance.props.clipperState.selectionResult.data.htmlSelections[1], "The regionResult's new element should be a non-empty string");
+					strictEqual(controllerInstance.props.clipperState.selectionResult.data.htmlSelections[0], firstData, "The first result should not be modified");
+					notStrictEqual(controllerInstance.props.clipperState.selectionResult.data.htmlSelections[1], firstData, "Since new points were selected, the second result should not equal the first");
 					done();
 				});
 			});
@@ -733,8 +733,8 @@ export class RegionSelectorTests extends TestModule {
 				strictEqual(controllerInstance.state.secondPoint, undefined, "The first point should be undefined");
 				ok(!controllerInstance.state.selectionInProgress, "The selection should not be indicated as in progress");
 
-				strictEqual(controllerInstance.props.clipperState.regionResult.status, Status.NotStarted, "The regionResult state should indicate it has not started");
-				ok(!controllerInstance.props.clipperState.regionResult.data, "There shouldn't be any regionResult data");
+				strictEqual(controllerInstance.props.clipperState.selectionResult.status, Status.NotStarted, "The regionResult state should indicate it has not started");
+				strictEqual(controllerInstance.props.clipperState.selectionResult.data.htmlSelections.length, 0, "There shouldn't be any regionResult data");
 			}).then(() => {
 				done();
 			});

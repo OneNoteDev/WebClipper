@@ -21,8 +21,8 @@ class ClippingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 		switch (this.props.clipperState.currentMode.get()) {
 			case ClipMode.Pdf:
 				return Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabel");
-			case ClipMode.Region:
-				return Localization.getLocalizedString("WebClipper.ClipType.Region.ProgressLabel");
+			case ClipMode.Selection:
+				return Localization.getLocalizedString("WebClipper.ClipType.Selection.ProgressLabel");
 			case ClipMode.Augmentation:
 				let retVal: string;
 				try {
@@ -37,8 +37,6 @@ class ClippingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 				return retVal;
 			case ClipMode.Bookmark:
 				return Localization.getLocalizedString("WebClipper.ClipType.Bookmark.ProgressLabel");
-			case ClipMode.Selection:
-				return Localization.getLocalizedString("WebClipper.ClipType.Selection.ProgressLabel");
 			default:
 			case ClipMode.FullPage:
 				return Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.ProgressLabel");

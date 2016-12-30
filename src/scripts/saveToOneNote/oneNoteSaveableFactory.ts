@@ -128,11 +128,10 @@ export class OneNoteSaveableFactory {
 			case ClipMode.FullPage:
 				page.addHtml(this.clipperState.pageInfo.contentData);
 				break;
-			case ClipMode.Region:
-				for (let regionDataUrl of this.clipperState.regionResult.data) {
-					// TODO: The API currently does not correctly space paragraphs. We need to remove "&nbsp;" when its fixed.
-					page.addOnml("<p><img src=\"" + regionDataUrl + "\" /></p>&nbsp;");
-				}
+			case ClipMode.Selection:
+				let entireSelectionString = this.clipperState.selectionResult.data.htmlSelections.join("");
+				let processedSelectedContent = this.createPostProcessessedHtml(entireSelectionString);
+				page.addOnml(processedSelectedContent.outerHTML);
 				break;
 			case ClipMode.Augmentation:
 				let processedAugmentedContent = this.createPostProcessessedHtml(this.clipperState.augmentationPreviewInfo.previewBodyHtml);
@@ -141,11 +140,6 @@ export class OneNoteSaveableFactory {
 			case ClipMode.Bookmark:
 				let processedBookmarkContent = this.createPostProcessessedHtml(this.clipperState.bookmarkPreviewInfo.previewBodyHtml);
 				page.addOnml(processedBookmarkContent.outerHTML);
-				break;
-			case ClipMode.Selection:
-				let entireSelectionString = this.clipperState.selectionPreviewInfo.join("");
-				let processedSelectedContent = this.createPostProcessessedHtml(entireSelectionString);
-				page.addOnml(processedSelectedContent.outerHTML);
 				break;
 		}
 		return Promise.resolve();

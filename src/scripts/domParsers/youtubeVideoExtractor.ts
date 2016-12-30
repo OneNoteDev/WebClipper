@@ -44,7 +44,7 @@ export class YoutubeVideoExtractor extends VideoExtractor {
 		}
 
 		if (UrlUtils.getPathname(url).indexOf("/embed") === 0) {
-			let youTubeIdMatch = url.match(/youtube\.com\/embed\/(\S+)/);
+			let youTubeIdMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]+)/);
 			return this.createEmbeddedVideoFromId(youTubeIdMatch[1]);
 		}
 

@@ -38,17 +38,14 @@ export class SaveToOneNoteLogger {
 				case ClipMode.FullPage:
 					// Nothing to log
 					break;
-				case ClipMode.Region:
-					SaveToOneNoteLogger.logRegionClip(clipperState);
+				case ClipMode.Selection:
+					SaveToOneNoteLogger.logSelectionClip(clipperState);
 					break;
 				case ClipMode.Augmentation:
 					SaveToOneNoteLogger.logAugmentationClip(clipperState);
 					break;
 				case ClipMode.Bookmark:
 					// Nothing to log
-					break;
-				case ClipMode.Selection:
-					SaveToOneNoteLogger.logSelectionClip(clipperState);
 					break;
 		}
 	}
@@ -85,12 +82,6 @@ export class SaveToOneNoteLogger {
 		Clipper.logger.logEvent(event);
 	}
 
-	private static logRegionClip(clipperState: ClipperState) {
-		let event = new Log.Event.BaseEvent(Log.Event.Label.ClipRegionOptions);
-		event.setCustomProperty(Log.PropertyName.Custom.NumRegions, clipperState.regionResult.data.length);
-		Clipper.logger.logEvent(event);
-	}
-
 	private static logAugmentationClip(clipperState: ClipperState) {
 		let event = new Log.Event.BaseEvent(Log.Event.Label.ClipAugmentationOptions);
 		SaveToOneNoteLogger.setEditOptions(event, clipperState.previewGlobalInfo, clipperState.augmentationPreviewInfo);
@@ -100,7 +91,9 @@ export class SaveToOneNoteLogger {
 
 	private static logSelectionClip(clipperState: ClipperState) {
 		let event = new Log.Event.BaseEvent(Log.Event.Label.ClipSelectionOptions);
-		SaveToOneNoteLogger.setEditOptions(event, clipperState.previewGlobalInfo, clipperState.selectionPreviewInfo);
+		SaveToOneNoteLogger.setEditOptions(event, clipperState.previewGlobalInfo, {
+			previewBodyHtml: clipperState.selectionResult.data.htmlSelections.join("")
+		});
 		Clipper.logger.logEvent(event);
 	}
 

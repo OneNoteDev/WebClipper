@@ -3,6 +3,5 @@
 	Bookmark,
 	FullPage,
 	Pdf,
-	Region,
 	Selection
 }
