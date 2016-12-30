@@ -274,6 +274,10 @@ export class UrlUtilsTests extends TestModule {
 			ok(!UrlUtils.onWhitelistedDomain("http://www.sdfdsfsdasdsa.com/2014/garden/when-blogging-becomes-a-slog.html?_r=1"));
 		});
 
+		test("onWhiteListedDomain should return false for live sign-in URL", () => {
+			ok(!UrlUtils.onWhitelistedDomain("https://login.live.com/oauth20_authorize.srf?client_id=123456-789a-bcde-1234-123456789abc&scope=wl.signin%20wl.basic%20wl.emails%20wl.offline_access%20office.onenote_update&redirect_uri=https://www.onenote.com/webclipper/auth&response_type=code"));
+		});
+
 		test("onWhiteListedDomain should return false given undefined or empty string", () => {
 			ok(!UrlUtils.onWhitelistedDomain(""));
 			ok(!UrlUtils.onWhitelistedDomain(undefined));
