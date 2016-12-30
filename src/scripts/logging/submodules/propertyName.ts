@@ -59,7 +59,8 @@ export module PropertyName {
 		Value,
 		VideoDataOriginalSrcUrl,
 		VideoSrcUrl,
-		Width
+		Width,
+		WriteableCookies
 	}
 
 	/* tslint:disable:variable-name */

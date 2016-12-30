@@ -8,6 +8,7 @@ export interface UserInfo {
 	lastUpdated?: number;
 	updateReason: UpdateReason;
 	errorDescription?: string;
+	writeableCookies?: boolean;
 }
 
 export interface UserInfoData {
@@ -15,6 +16,7 @@ export interface UserInfoData {
 	accessTokenExpiration?: number;
 	authType?: string;
 	cid?: string;
+	cookieInRequest?: boolean;
 	emailAddress?: string;
 	fullName?: string;
 }
