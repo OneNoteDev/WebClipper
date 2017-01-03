@@ -2,6 +2,7 @@ import {Constants} from "../constants";
 import {PromiseUtils} from "../promiseUtils";
 import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
+import {UserInfo} from "../userInfo";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
 
@@ -179,17 +180,43 @@ export class SaveToOneNote {
 
 						Promise.all([getRevisionsPromise, timeoutPromise]).then((values) => {
 							let revisions = values[0] as OneNoteApi.Revision[];
-							this.getApi().updatePage(pageId, revisions).then(() => {
+
+							let thenCb = () => {
 								timeBetweenPatchRequests = SaveToOneNote.timeBetweenPatchRequests;
 								resolve();
-							}).catch((error) => {
-								reject(error);
-							});
+							};
+
+							let catchCb = (error: OneNoteApi.RequestError) => {
+								if (error.statusCode === 401) {
+									// The clip has taken a really long time and the user token has expired
+									Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, {
+										callback: (updatedUser: UserInfo) => {
+											if (updatedUser.user.accessToken) {
+												// Try again with the new token
+												this.accessToken = updatedUser.user.accessToken;
+												this.updatePage(pageId, revisions, thenCb, catchCb);
+											} else {
+												reject(error);
+											}
+										}
+									});
+								} else {
+									reject(error);
+								}
+							};
+
+							this.updatePage(pageId, revisions, thenCb, catchCb);
 						});
 					});
 				});
 			}, this.getApi().getPageContent(pageId)) // Check if page exists with retries
 		]);
+	}
+
+	private updatePage(pageId: string, revisions: OneNoteApi.Revision[], thenCb: () => void, catchCb: (error: OneNoteApi.RequestError) => void) {
+		this.getApi().updatePage(pageId, revisions)
+			.then(thenCb)
+			.catch(catchCb);
 	}
 
 	// We try not and put logging logic in this class, but since we lazy-load images, this has to be an exception
