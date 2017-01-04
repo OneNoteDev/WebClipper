@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.4.1 (January 4, 2017)
+* Bug: Some pages were not clipping the embedded YouTube videos (issue #291)
+
 ## 3.4.0 (January 4, 2017)
 * Improvement: Added logic to detect when cookies cannot be written to be able to show a better message to the user.
 * Improvement: Updated the logic for determining when we show the tooltip/what's new dialog.
