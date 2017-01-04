@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.4.0 (January 4, 2017)
+* Improvement: Added logic to detect when cookies cannot be written to be able to show a better message to the user.
+* Improvement: Updated the logic for determining when we show the tooltip/what's new dialog.
+* Bug: Fixed incorrect classification of product/recipe/article.
+* Bug: On large PDF clips ensure that the token does not expire mid-clip.
+
 ## 3.3.0 (December 9, 2016)
 * Improvements to PDF mode, including UI tweaks, as well as the ability to save off each page in the PDF as a seperate page in OneNote
 * Added the ability for users to grab Vimeo/Youtube videos with Selection mode
