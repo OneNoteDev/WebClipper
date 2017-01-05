@@ -3,10 +3,9 @@ import {Settings} from "./settings";
 
 import {TooltipType} from "./clipperUI/tooltipType";
 
-export module UrlUtils {
-	export function checkIfUrlMatchesAContentType(url: string, tooltipTypes: TooltipType[]): TooltipType {
-		for (let i = 0; i < tooltipTypes.length; ++i) {
-			let tooltipType = tooltipTypes[i];
+export class UrlUtils {
+	public static checkIfUrlMatchesAContentType(url: string, tooltipTypes: TooltipType[]): TooltipType {
+		for (let tooltipType of tooltipTypes) {
 			let contentTypeAsString = TooltipType[tooltipType];
 			let contentTypeRegexes = Settings.getSetting(contentTypeAsString + "Domains");
 			let concatenatedRegExes = new RegExp(contentTypeRegexes.join("|"), "i");
@@ -18,7 +17,7 @@ export module UrlUtils {
 		return;
 	}
 
-	export function getFileNameFromUrl(url: string, fallbackResult?: string): string {
+	public static getFileNameFromUrl(url: string, fallbackResult?: string): string {
 		if (!url) {
 			return fallbackResult;
 		}
@@ -26,25 +25,20 @@ export module UrlUtils {
 		return regexResult && regexResult[0] ? regexResult[0].slice(1) : fallbackResult;
 	}
 
-	export function getHostname(url: string): string {
+	public static getHostname(url: string): string {
 		let l = document.createElement("a");
 		l.href = url;
 		return l.protocol + "//" + l.host + "/";
 	}
 
-	export function getPathname(url: string): string {
+	public static getPathname(url: string): string {
 		let l = document.createElement("a");
 		l.href = url;
 
 		let urlPathName = l.pathname;
 
 		// We need to ensure the leading forward slash to make it consistant across all browsers.
-		return ensureLeadingForwardSlash(urlPathName);
-	}
-
-	function ensureLeadingForwardSlash(url: string): string {
-		url = ObjectUtils.isNullOrUndefined(url) ? "/" : url;
-		return (url.length > 0 && url.charAt(0) === "/") ? url : "/" + url;
+		return this.ensureLeadingForwardSlash(urlPathName);
 	}
 
 	/**
@@ -55,7 +49,7 @@ export module UrlUtils {
 	 * @return Undefined if the key does not exist; "" if the key exists but has no matching
 	 * value; otherwise the query value
 	 */
-	export function getQueryValue(url: string, key: string): string {
+	public static getQueryValue(url: string, key: string): string {
 		if (!url || !key) {
 			return undefined;
 		}
@@ -84,7 +78,7 @@ export module UrlUtils {
 	 * @param value New value
 	 * @return Resulting URL
 	 */
-	export function addUrlQueryValue(originalUrl: string, key: string, value: string, keyToCamelCase = false): string {
+	public static addUrlQueryValue(originalUrl: string, key: string, value: string, keyToCamelCase = false): string {
 		if (!originalUrl || !key || !value) {
 			return originalUrl;
 		}
@@ -121,15 +115,20 @@ export module UrlUtils {
 		}
 	}
 
-	export function onBlacklistedDomain(url: string): boolean {
-		return urlMatchesRegexInSettings(url, ["PageNav_BlacklistedDomains"]);
+	public static onBlacklistedDomain(url: string): boolean {
+		return this.urlMatchesRegexInSettings(url, ["PageNav_BlacklistedDomains"]);
 	}
 
-	export function onWhitelistedDomain(url: string): boolean {
-		return urlMatchesRegexInSettings(url, ["AugmentationDefault_WhitelistedDomains", "ProductDomains", "RecipeDomains"]);
+	public static onWhitelistedDomain(url: string): boolean {
+		return this.urlMatchesRegexInSettings(url, ["AugmentationDefault_WhitelistedDomains", "ProductDomains", "RecipeDomains"]);
 	}
 
-	function urlMatchesRegexInSettings(url: string, settingNames: string[]): boolean {
+	private static ensureLeadingForwardSlash(url: string): string {
+		url = ObjectUtils.isNullOrUndefined(url) ? "/" : url;
+		return (url.length > 0 && url.charAt(0) === "/") ? url : "/" + url;
+	}
+
+	private static urlMatchesRegexInSettings(url: string, settingNames: string[]): boolean {
 		if (!url) {
 			return false;
 		}

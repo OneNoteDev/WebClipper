@@ -1,17 +1,17 @@
 /**
  * A collection of commonly used QUnit assertions
  */
-export module Assert {
-	export function tabOrderIsIncremental(elementIds: string[]) {
+export class Assert {
+	public static tabOrderIsIncremental(elementIds: string[]) {
 		let elementsInExpectedTabOrder = elementIds.map(id => { return { name: id, elem: document.getElementById(id) }; });
 		Assert.tabOrderIsIncrementalForElements(elementsInExpectedTabOrder);
 	}
 
-	export function tabOrderIsIncrementalForElements(elements: { name: string, elem: HTMLElement }[]) {
+	public static tabOrderIsIncrementalForElements(elements: { name: string, elem: HTMLElement }[]) {
 		// Assert positive tabIndexes
-		for (let i = 0; i < elements.length; i++) {
-			let tabIndex = elements[i].elem.tabIndex;
-			ok(tabIndex >= 0, "Element " + elements[i].name + " should have a positive tabIndex, but was: " + tabIndex);
+		for (let element of elements) {
+			let tabIndex = element.elem.tabIndex;
+			ok(tabIndex >= 0, "Element " + element.name + " should have a positive tabIndex, but was: " + tabIndex);
 		}
 
 		if (elements.length < 2) {
@@ -25,7 +25,7 @@ export module Assert {
 		}
 	}
 
-	export function equalTabIndexes(elements: HTMLElement[] | HTMLCollectionOf<Element> | NodeListOf<HTMLElement>) {
+	public static equalTabIndexes(elements: HTMLElement[] | HTMLCollectionOf<Element> | NodeListOf<HTMLElement>) {
 		// Buttons should have equal tab indexes
 		let expectedTabIndex: number = undefined;
 		for (let i = 0; i < elements.length; i++) {

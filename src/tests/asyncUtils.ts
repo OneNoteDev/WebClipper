@@ -1,15 +1,15 @@
 let theRealSetTimeout;
 declare let setTimeout;
 
-export module AsyncUtils {
-	export function mockSetTimeout() {
+export class AsyncUtils {
+	public static mockSetTimeout() {
 		theRealSetTimeout = setTimeout;
 		setTimeout = (func: (...args: any[]) => void, timeout: number) => {
 			return theRealSetTimeout(func, 0);
 		};
 	}
 
-	export function restoreSetTimeout() {
+	public static restoreSetTimeout() {
 		setTimeout = theRealSetTimeout;
 	}
 }

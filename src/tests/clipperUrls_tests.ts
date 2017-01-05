@@ -4,18 +4,18 @@ import {Constants} from "../scripts/constants";
 import {StringUtils} from "../scripts/stringUtils";
 
 import {MockProps} from "./mockProps";
-import {TestModule} from "./testModule";
-
-module TestConstants {
-	export module LogCategories {
-		export var oneNoteClipperUsage = "OneNoteClipperUsage";
-	}
-	export module Urls {
-		export var clipperFeedbackUrl = "https://www.onenote.com/feedback";
-	}
-}
+import {TestModule} from	 "./testModule";
 
 export class ClipperUrlsTests extends TestModule {
+	private testConstants = {
+		LogCategories: {
+			oneNoteClipperUsage: "OneNoteClipperUsage"
+		},
+		Urls: {
+			clipperFeedbackUrl: "https://www.onenote.com/feedback"
+		}
+	};
+
 	protected module() {
 		return "clipperUrls";
 	}
@@ -25,7 +25,7 @@ export class ClipperUrlsTests extends TestModule {
 			let startingState = MockProps.getMockClipperState();
 			let usid: string = StringUtils.generateGuid();
 
-			let url = ClipperUrls.generateFeedbackUrl(startingState, usid, TestConstants.LogCategories.oneNoteClipperUsage);
+			let url = ClipperUrls.generateFeedbackUrl(startingState, usid, this.testConstants.LogCategories.oneNoteClipperUsage);
 			strictEqual(url.indexOf("#"), -1,
 				"There should be no fragment in the feedback url");
 
@@ -33,11 +33,11 @@ export class ClipperUrlsTests extends TestModule {
 			let hostAndPath = splitUrl[0];
 			let queryParams = splitUrl[1].split("&");
 
-			strictEqual(hostAndPath, TestConstants.Urls.clipperFeedbackUrl,
+			strictEqual(hostAndPath, this.testConstants.Urls.clipperFeedbackUrl,
 				"The feedback host and path should be correct");
 
 			let expectedQueryParams = {
-				LogCategory: TestConstants.LogCategories.oneNoteClipperUsage,
+				LogCategory: this.testConstants.LogCategories.oneNoteClipperUsage,
 				originalUrl: startingState.pageInfo.rawUrl,
 				clipperId: startingState.clientInfo.clipperId,
 				usid: usid,
@@ -47,8 +47,8 @@ export class ClipperUrlsTests extends TestModule {
 
 			strictEqual(queryParams.length, 6, "There must be exactly 6 query params");
 
-			for (let i = 0; i < queryParams.length; i++) {
-				let keyValuePair = queryParams[i].split("=");
+			for (let queryParam of queryParams) {
+				let keyValuePair = queryParam.split("=");
 				let key = keyValuePair[0];
 				let value = keyValuePair[1];
 				ok(expectedQueryParams.hasOwnProperty(key),
