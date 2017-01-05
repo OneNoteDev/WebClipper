@@ -35,7 +35,9 @@ export class YoutubeVideoExtractorTests extends TestModule {
 		"https://www.youtube.com/watch?v=dQw4w9WgXcQ#foo",
 		"https://www.youtube.com/watch?feature=youtu.be&t=30s&v=dQw4w9WgXcQ",
 		"https://m.youtube.com/watch?v=dQw4w9WgXcQ&feature=youtu.be",
-		"https://www.youtube.com/embed/dQw4w9WgXcQ"
+		"https://www.youtube.com/embed/dQw4w9WgXcQ",
+		"https://www.youtube.com/embed/dQw4w9WgXcQ/",
+		"https://www.youtube.com/embed/dQw4w9WgXcQ?start=900"
 	];
 
 	private youtubeExtractor = new YoutubeVideoExtractor();

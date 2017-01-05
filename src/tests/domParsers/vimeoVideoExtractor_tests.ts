@@ -82,6 +82,14 @@ export class VimeoVideoExtractorTests extends TestModule {
 				"The data original src attribute should be set to the player url");
 		});
 
+		test("createEmbedVideoFromUrl should return an iframe with the src set to the player url without query parameters, and the data-original-src set to the player url", () => {
+			let embedVideo = this.vimeoExtractor.createEmbeddedVideoFromUrl("https://vimeo.com/193851364?foo=134");
+			strictEqual(embedVideo.src, "https://player.vimeo.com/video/193851364",
+				"The src should be set to the player url");
+			strictEqual(embedVideo.attributes.getNamedItem("data-original-src").value, "https://player.vimeo.com/video/193851364",
+				"The data original src attribute should be set to the player url");
+		});
+
 		test("createEmbeddedVideoFromUrl should return undefined when provided unsupported parameters for the Vimeo domain", () => {
 			let embedVideo = this.vimeoExtractor.createEmbeddedVideoFromUrl("https://vimeo.com/ondemand/lifeanimated");
 			strictEqual(embedVideo, undefined, "The returned iframe should be undefined");
