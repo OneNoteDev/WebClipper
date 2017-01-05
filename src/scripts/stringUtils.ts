@@ -31,10 +31,10 @@ export class StringUtils {
 		let splitText = text.split(",");
 		let range: number[] = [];
 
-		for (let i of splitText) {
+		for (let page of splitText) {
 			let valueToAppend: number[] = [];
 			let matches: RegExpExecArray;
-			let currentValue = splitText[i].trim();
+			let currentValue = page.trim();
 
 			if (currentValue === "") {
 				// We relax the restriction by allowing and ignoring whitespace between commas
