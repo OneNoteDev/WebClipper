@@ -3,39 +3,40 @@ import * as Log from "../logging/log";
 // Should we be referencing node.d.ts?
 declare function require(name: string);
 
-export module Localization {
+export enum FontFamily {
+	Regular,
+	Bold,
+	Light,
+	Semibold,
+	Semilight
+}
 
-	export enum FontFamily {
-		Regular,
-		Bold,
-		Light,
-		Semibold,
-		Semilight
-	}
-
-	let localizedStrings: {};
-	let formattedFontFamilies: {} = {};
+export class Localization {
+	private static localizedStrings: {};
+	private static formattedFontFamilies: {} = {};
 
 	// The fallback for when we are unable to fetch locstrings from our server
-	let backupStrings = require("../../strings.json");
+	private static backupStrings = require("../../strings.json");
+
+	public static FontFamily = FontFamily;
 
 	/*
 	 * Gets the matching localized string, or the fallback (unlocalized) string if
 	 * unavailable.
 	 */
-	export function getLocalizedString(stringId: string): string {
+	public static getLocalizedString(stringId: string): string {
 		if (!stringId) {
 			throw new Error("stringId must be a non-empty string, but was: " + stringId);
 		}
 
-		if (localizedStrings) {
-			let localResult = localizedStrings[stringId];
+		if (Localization.localizedStrings) {
+			let localResult = Localization.localizedStrings[stringId];
 			if (localResult) {
 				return localResult;
 			}
 		}
 
-		let backupResult = backupStrings[stringId];
+		let backupResult = Localization.backupStrings[stringId];
 		if (backupResult) {
 			return backupResult;
 		}
@@ -43,32 +44,32 @@ export module Localization {
 		throw new Error("getLocalizedString could not find a localized or fallback string: " + stringId);
 	}
 
-	export function setLocalizedStrings(localizedStringsAsJson: {}): void {
-		localizedStrings = localizedStringsAsJson;
+	public static setLocalizedStrings(localizedStringsAsJson: {}): void {
+		Localization.localizedStrings = localizedStringsAsJson;
 	}
 
-	export function getFontFamilyAsStyle(family: FontFamily): string {
-		return "font-family: " + getFontFamily(family) + ";";
+	public static getFontFamilyAsStyle(family: FontFamily): string {
+		return "font-family: " + Localization.getFontFamily(family) + ";";
 	}
 
-	export function getFontFamily(family: FontFamily): string {
+	public static getFontFamily(family: FontFamily): string {
 		// Check cache first
-		if (formattedFontFamilies[family]) {
-			return formattedFontFamilies[family];
+		if (Localization.formattedFontFamilies[family]) {
+			return Localization.formattedFontFamilies[family];
 		}
 
 		let stringId = "WebClipper.FontFamily." + FontFamily[family].toString();
 
-		let fontFamily = getLocalizedString(stringId);
-		formattedFontFamilies[family] = formatFontFamily(fontFamily);
-		return formattedFontFamilies[family];
+		let fontFamily = Localization.getLocalizedString(stringId);
+		Localization.formattedFontFamilies[family] = Localization.formatFontFamily(fontFamily);
+		return Localization.formattedFontFamilies[family];
 	}
 
 	/*
 	 * If we want to set font families through JavaScript, it uses a specific
 	 * format. This helper function returns the formatted font family input.
 	 */
-	export function formatFontFamily(fontFamily: string): string {
+	public static formatFontFamily(fontFamily: string): string {
 		if (!fontFamily) {
 			return "";
 		}

@@ -10,7 +10,7 @@ declare function unescape(s: string): string;
 
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
-import {VideoUtils} from "./videoUtils";
+import {SupportedVideoDomains, VideoUtils} from "./videoUtils";
 
 import {VideoExtractorFactory} from "./VideoExtractorFactory";
 
@@ -361,7 +361,7 @@ export class DomUtils {
 		let iframes: HTMLIFrameElement[] = [];
 		try {
 			// Construct the appropriate videoExtractor based on the Domain we are on
-			let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
+			let domain = SupportedVideoDomains[supportedDomain];
 			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
 
 			// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
@@ -947,7 +947,7 @@ export class DomUtils {
 				return undefined;
 			}
 
-			let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
+			let domain = SupportedVideoDomains[supportedDomain];
 			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
 			return extractor.createEmbeddedVideoFromUrl(src);
 		});

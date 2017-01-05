@@ -4,7 +4,7 @@ import {AnimationStrategy} from "../animations/animationStrategy";
 import {Constants} from "../../constants";
 import {ObjectUtils} from "../../objectUtils";
 
-import {Localization} from "../../localization/localization";
+import {FontFamily, Localization} from "../../localization/localization";
 
 export interface DialogButton {
 	id: string;
@@ -16,8 +16,8 @@ export interface DialogPanelProps {
 	message: string;
 	content: HTMLElement[];
 	buttons: DialogButton[];
-	fontFamily?: Localization.FontFamily;
-	buttonFontFamily?: Localization.FontFamily;
+	fontFamily?: FontFamily;
+	buttonFontFamily?: FontFamily;
 	containerId?: string;
 	panelAnimationStrategy?: AnimationStrategy;
 }
