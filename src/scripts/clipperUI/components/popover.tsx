@@ -25,19 +25,8 @@ class PopoverClass extends ComponentBase<{}, PopoverProps> {
 
 	handlePopoverLifecycle(element, isInitialized, context) {
 		if (!isInitialized) {
-			let popoverObj: any = {
-				content: this.props.content,
-				classNames: this.props.classNames,
-				arrowClassNames: this.props.arrowClassNames
-			};
-
-			let mainControllerElem = document.getElementById(Constants.Ids.mainController);
-			if (mainControllerElem) {
-				// We want to set the parent lower in the HTML hierarchy to avoid z-index issues relating to stacking contexts
-				popoverObj.parent = mainControllerElem;
-			}
-
-			this.refToPopper = new popperJS(document.getElementById(this.props.referenceElementId), popoverObj, {
+			let popperElement = this.generatePopperElement(Constants.Ids.mainController);
+			this.refToPopper = new popperJS(document.getElementById(this.props.referenceElementId), popperElement, {
 				placement: this.props.placement,
 				modifiersIgnored: this.props.modifiersIgnored,
 				removeOnDestroy: this.props.removeOnDestroy
@@ -56,6 +45,33 @@ class PopoverClass extends ComponentBase<{}, PopoverProps> {
 				this.refToPopper = undefined;
 			}
 		};
+	}
+
+	private generatePopperElement(parentId: string): HTMLDivElement {
+		let popperElement = document.createElement("div") as HTMLDivElement;
+		popperElement.innerText = this.props.content;
+
+		if (this.props.classNames) {
+			for (let i = 0; i < this.props.classNames.length; i++) {
+				popperElement.classList.add(this.props.classNames[i]);
+			}
+		}
+
+		if (this.props.arrowClassNames) {
+			let arrowElement = document.createElement("div");
+			for (let i = 0; i < this.props.arrowClassNames.length; i++) {
+				arrowElement.classList.add(this.props.arrowClassNames[i]);
+			}
+			popperElement.appendChild(arrowElement);
+		}
+
+		let parent = document.getElementById(parentId);
+		if (parent) {
+			// We want to set the parent lower in the HTML hierarchy to avoid z-index issues relating to stacking contexts
+			parent.appendChild(popperElement);
+		}
+
+		return popperElement;
 	}
 
 	render() {
