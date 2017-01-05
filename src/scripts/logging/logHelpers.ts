@@ -55,7 +55,7 @@ export class LogHelpers {
 		return logEvent;
 	}
 
-	public static createSetContextEventAsJson(key: Log.Context.Custom, value: string): { [key: string]: string } {
+	public static createSetContextEventAsJson(key: Log.Custom, value: string): { [key: string]: string } {
 		let baseEvent = new Log.Event.BaseEvent(Log.Event.Label.SetContextProperty);
 		let event = LogHelpers.createBaseEventAsJson(Log.Event.Category[baseEvent.getEventCategory()], baseEvent.getLabel());
 

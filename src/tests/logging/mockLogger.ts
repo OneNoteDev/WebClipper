@@ -10,5 +10,5 @@ export class MockLogger extends Logger {
 	public logTrace(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): void {}
 	public pushToStream(label: Log.Event.Label, value: any): void {}
 	public logClickEvent(clickId: string): void {}
-	public setContextProperty(key: Log.Context.Custom, value: string): void {}
+	public setContextProperty(key: Log.Custom, value: string): void {}
 }

@@ -93,13 +93,13 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 	private initializeContextProperties() {
 		let clientInfo = this.clientInfo.get();
-		this.logger.setContextProperty(Log.Context.Custom.AppInfoId, Settings.getSetting("App_Id"));
-		this.logger.setContextProperty(Log.Context.Custom.ExtensionLifecycleId, ExtensionBase.getExtensionId());
-		this.logger.setContextProperty(Log.Context.Custom.UserInfoId, undefined);
-		this.logger.setContextProperty(Log.Context.Custom.AuthType, "None");
-		this.logger.setContextProperty(Log.Context.Custom.AppInfoVersion, clientInfo.clipperVersion);
-		this.logger.setContextProperty(Log.Context.Custom.DeviceInfoId, clientInfo.clipperId);
-		this.logger.setContextProperty(Log.Context.Custom.ClipperType, ClientType[clientInfo.clipperType]);
+		this.logger.setContextProperty(Log.Custom.AppInfoId, Settings.getSetting("App_Id"));
+		this.logger.setContextProperty(Log.Custom.ExtensionLifecycleId, ExtensionBase.getExtensionId());
+		this.logger.setContextProperty(Log.Custom.UserInfoId, undefined);
+		this.logger.setContextProperty(Log.Custom.AuthType, "None");
+		this.logger.setContextProperty(Log.Custom.AppInfoVersion, clientInfo.clipperVersion);
+		this.logger.setContextProperty(Log.Custom.DeviceInfoId, clientInfo.clipperId);
+		this.logger.setContextProperty(Log.Custom.ClipperType, ClientType[clientInfo.clipperType]);
 
 		// Sometimes the worker is created really early (e.g., pageNav, inline extension), so we need to wait
 		// for flighting info to be returned before we set the context property
@@ -107,12 +107,12 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			let clientInfoSetCb = ((newClientInfo) => {
 				if (newClientInfo.flightingInfo) {
 					this.clientInfo.unsubscribe(clientInfoSetCb);
-					this.logger.setContextProperty(Log.Context.Custom.FlightInfo, newClientInfo.flightingInfo.join(","));
+					this.logger.setContextProperty(Log.Custom.FlightInfo, newClientInfo.flightingInfo.join(","));
 				}
 			}).bind(this);
 			this.clientInfo.subscribe(clientInfoSetCb, { callOnSubscribe: false });
 		} else {
-			this.logger.setContextProperty(Log.Context.Custom.FlightInfo, clientInfo.flightingInfo.join(","));
+			this.logger.setContextProperty(Log.Custom.FlightInfo, clientInfo.flightingInfo.join(","));
 		}
 	}
 
@@ -279,7 +279,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * Returns the current version of localized strings used in the UI.
 	 */
 	protected getLocalizedStrings(locale: string, callback?: Function) {
-		this.logger.setContextProperty(Log.Context.Custom.BrowserLanguage, locale);
+		this.logger.setContextProperty(Log.Custom.BrowserLanguage, locale);
 
 		let storedLocale = this.clipperData.getValue(ClipperStorageKeys.locale);
 		let localeInStorageIsDifferent = !storedLocale || storedLocale !== locale;

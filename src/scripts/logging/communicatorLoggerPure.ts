@@ -54,7 +54,7 @@ export class CommunicatorLoggerPure extends Logger {
 		this.sendDataPackage(Log.LogMethods.LogClickEvent, arguments);
 	}
 
-	public setContextProperty(key: Log.Context.Custom | string, value: string): void {
+	public setContextProperty(key: Log.Custom | string, value: string): void {
 		this.sendDataPackage(Log.LogMethods.SetContextProperty, arguments);
 	}
 

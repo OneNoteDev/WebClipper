@@ -13,7 +13,7 @@ class MockLoggerDecorator extends LoggerDecorator {
 	protected outputFailure(label: Log.Failure.Label, failureType: Log.Failure.Type, failureInfo?: OneNoteApi.GenericError, id?: string): void {}
 	protected outputUserFunnel(label: Log.Funnel.Label): void {}
 	protected outputTrace(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): void {}
-	protected outputSetContext(key: Log.Context.Custom, value: string | number | boolean): void {}
+	protected outputSetContext(key: Log.Custom, value: string | number | boolean): void {}
 }
 
 export class LoggerDecoratorTests extends TestModule {

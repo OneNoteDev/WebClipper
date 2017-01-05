@@ -31,7 +31,7 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 		let injectMessageHandlerThunk = () => { return new IFrameMessageHandler(() => parent); };
 		super(clientInfo, auth, new ClipperData(new LocalStorage()), uiMessageHandlerThunk, injectMessageHandlerThunk);
 
-		this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, Log.unknownValue);
+		this.logger.setContextProperty(Log.Custom.InPrivateBrowsing, Log.unknownValue);
 
 		let invokeOptions = {
 			invokeMode: InvokeMode.Default

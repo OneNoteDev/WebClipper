@@ -14,7 +14,7 @@ class MockAlwaysFalseContext implements Context {
 	requirementsAreMet(requirements: { [key: string]: string | number | boolean }): boolean { return false; }
 }
 
-let requiredContext = Log.Context.Custom.AppInfoId;
+let requiredContext = Log.Custom.AppInfoId;
 class MockOneRequirementContext implements Context {
 	requirementsAreMet(requirements: { [key: string]: string | number | boolean }): boolean {
 		return !!requirements[Log.Context.toString(requiredContext)];
@@ -35,7 +35,7 @@ class MockSessionLogger extends SessionLogger {
 	protected handleUserFunnel(label: Log.Funnel.Label): void {}
 	protected handleTrace(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): void {}
 	protected handleSetUserSessionId(sessionId?: string): string { return "usid"; }
-	protected handleSetContext(key: Log.Context.Custom, value: string | number | boolean): void {}
+	protected handleSetContext(key: Log.Custom, value: string | number | boolean): void {}
 }
 
 export class SessionLoggerTests extends TestModule {

@@ -9,7 +9,7 @@ export abstract class Logger {
 	public abstract logTrace(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): void;
 	public abstract pushToStream(label: Log.Event.Label, value: any): void;
 	public abstract logClickEvent(clickId: string): void;
-	public abstract setContextProperty(key: Log.Context.Custom, value: string): void;
+	public abstract setContextProperty(key: Log.Custom, value: string): void;
 
 	public logJsonParseUnexpected(value: any): void {
 		this.logFailure(Log.Failure.Label.JsonParse, Log.Failure.Type.Unexpected, undefined /* failureInfo */, value);

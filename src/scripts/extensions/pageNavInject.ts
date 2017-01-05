@@ -106,8 +106,8 @@ export class PageNavInject extends FrameInjectBase<FrameInjectOptions> {
 	 * Sets context properties relating to page info
 	 */
 	private setPageInfoContextProperties(): void {
-		this.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[DomUtils.getPageContentType(document)]);
-		this.logger.setContextProperty(Log.Context.Custom.InvokeHostname, UrlUtils.getHostname(document.URL));
-		this.logger.setContextProperty(Log.Context.Custom.PageLanguage, DomUtils.getLocale(document));
+		this.logger.setContextProperty(Log.Custom.ContentType, OneNoteApi.ContentType[DomUtils.getPageContentType(document)]);
+		this.logger.setContextProperty(Log.Custom.InvokeHostname, UrlUtils.getHostname(document.URL));
+		this.logger.setContextProperty(Log.Custom.PageLanguage, DomUtils.getLocale(document));
 	}
 }

@@ -42,7 +42,7 @@ export abstract class SessionLogger extends Logger {
 	protected abstract handleSessionEnd(endTrigger: Log.Session.EndTrigger): void;
 	protected abstract handleTrace(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): void;
 	protected abstract handleSetUserSessionId(sessionId?: string): string;
-	protected abstract handleSetContext(key: Log.Context.Custom, value: string | number | boolean): void;
+	protected abstract handleSetContext(key: Log.Custom, value: string | number | boolean): void;
 
 	public hasUserInteracted(): boolean {
 		return this.userHasInteracted;
@@ -207,7 +207,7 @@ export abstract class SessionLogger extends Logger {
 		this.handleClickEvent(clickId);
 	}
 
-	public setContextProperty(key: Log.Context.Custom, value: string | number | boolean): void {
+	public setContextProperty(key: Log.Custom, value: string | number | boolean): void {
 		this.setContextPropertyPure(key, value);
 
 		this.handleSetContext(key, value);
@@ -217,7 +217,7 @@ export abstract class SessionLogger extends Logger {
 		}
 	}
 
-	protected setContextPropertyPure(key: Log.Context.Custom, value: string | number | boolean): void {
+	protected setContextPropertyPure(key: Log.Custom, value: string | number | boolean): void {
 		let keyAsString = Log.Context.toString(key);
 		this.contextProperties[keyAsString] = value;
 	}

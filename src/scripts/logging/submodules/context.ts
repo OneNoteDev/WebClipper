@@ -1,5 +1,25 @@
-export module Context {
-	let contextKeyToStringMap = {
+export enum Custom {
+	AppInfoId,
+	AppInfoVersion,
+	ExtensionLifecycleId,
+	DeviceInfoId,
+	SessionId,
+	UserInfoId,
+	UserInfoLanguage,
+	AuthType,
+	BrowserLanguage,
+	ClipperType,
+	ContentType,
+	FlightInfo,
+	InPrivateBrowsing,
+	InvokeHostname,
+	PageLanguage
+}
+
+export class Context {
+	public static Custom = Custom;
+
+	public static contextKeyToStringMap = {
 		AppInfoId: "AppInfo.Id",
 		AppInfoVersion: "AppInfo.Version",
 		DeviceInfoId: "DeviceInfo.Id",
@@ -17,25 +37,7 @@ export module Context {
 		PageLanguage: "PageLanguage"
 	};
 
-	export enum Custom {
-		AppInfoId,
-		AppInfoVersion,
-		ExtensionLifecycleId,
-		DeviceInfoId,
-		SessionId,
-		UserInfoId,
-		UserInfoLanguage,
-		AuthType,
-		BrowserLanguage,
-		ClipperType,
-		ContentType,
-		FlightInfo,
-		InPrivateBrowsing,
-		InvokeHostname,
-		PageLanguage
-	}
-
-	export function toString(key: Custom): string {
-		return contextKeyToStringMap[Custom[key]];
+	public static toString(key: Custom): string {
+		return Context.contextKeyToStringMap[Custom[key]];
 	}
 }

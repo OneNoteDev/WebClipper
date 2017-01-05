@@ -10,16 +10,29 @@ import {Localization} from "../../localization/localization";
 
 import {Failure, LogDataPackage, LogMethods, NoOp, PropertyName, reportData, unknownValue} from "../log";
 
-export module ErrorUtils {
-	enum ErrorPropertyName {
-		Error,
-		StatusCode,
-		Response,
-		ResponseHeaders,
-		Timeout
-	}
+enum ErrorPropertyName {
+	Error,
+	StatusCode,
+	Response,
+	ResponseHeaders,
+	Timeout
+}
 
-	export function toString(originalError: OneNoteApi.GenericError): string {
+export interface FailureLogEventData {
+	label: Failure.Label;
+	properties: { failureType: Failure.Type, failureInfo: OneNoteApi.GenericError, stackTrace: string, failureId?: string };
+	clientInfo?: SmartValue<ClientInfo>;
+}
+
+export interface NoOpLogEventData {
+	label: NoOp.Label;
+	channel: string;
+	clientInfo: SmartValue<ClientInfo>;
+	url: string;
+}
+
+export class ErrorUtils {
+	public static toString(originalError: OneNoteApi.GenericError): string {
 		if (!originalError) {
 			return undefined;
 		}
@@ -40,7 +53,7 @@ export module ErrorUtils {
 		return JSON.stringify(errorToObject);
 	}
 
-	export function clone(originalError: OneNoteApi.GenericError): OneNoteApi.GenericError | OneNoteApi.RequestError {
+	public static clone(originalError: OneNoteApi.GenericError): OneNoteApi.GenericError | OneNoteApi.RequestError {
 		if (!originalError) {
 			return undefined;
 		}
@@ -57,16 +70,10 @@ export module ErrorUtils {
 		}
 	}
 
-	export interface FailureLogEventData {
-		label: Failure.Label;
-		properties: { failureType: Failure.Type, failureInfo: OneNoteApi.GenericError, stackTrace: string, failureId?: string };
-		clientInfo?: SmartValue<ClientInfo>;
-	}
-
 	/**
 	 * Sends a request to the misc logging endpoint with relevant failure data as query parameters
 	 */
-	export function sendFailureLogRequest(data: FailureLogEventData): void {
+	public static sendFailureLogRequest(data: FailureLogEventData): void {
 		let propsObject: { [key: string]: string } = {};
 
 		propsObject[Constants.Urls.QueryParams.failureType] = Failure.Type[data.properties.failureType];
@@ -78,7 +85,7 @@ export module ErrorUtils {
 		}
 
 		let clientInfo: SmartValue<ClientInfo> = data.clientInfo as SmartValue<ClientInfo>;
-		addDelayedSetValuesOnNoOp(propsObject, clientInfo);
+		ErrorUtils.addDelayedSetValuesOnNoOp(propsObject, clientInfo);
 
 		LogManager.sendMiscLogRequest({
 			label: Failure.Label[data.label],
@@ -87,7 +94,7 @@ export module ErrorUtils {
 		}, true);
 	}
 
-	export function handleCommunicatorError(channel: string, e: Error, clientInfo: SmartValue<ClientInfo>, message?: string) {
+	public static handleCommunicatorError(channel: string, e: Error, clientInfo: SmartValue<ClientInfo>, message?: string) {
 		let errorValue: string;
 		if (message) {
 			errorValue = JSON.stringify({ message: message, error: e.toString() });
@@ -108,18 +115,11 @@ export module ErrorUtils {
 		throw e;
 	}
 
-	export interface NoOpLogEventData {
-		label: NoOp.Label;
-		channel: string;
-		clientInfo: SmartValue<ClientInfo>;
-		url: string;
-	}
-
 	/*
 	* Sends a request to the misc logging endpoint with noop-relevant data as query parameters
 	*	and shows an alert if the relevant property is set.
 	*/
-	export function sendNoOpTrackerRequest(props: NoOpLogEventData, shouldShowAlert = false): void {
+	public static sendNoOpTrackerRequest(props: NoOpLogEventData, shouldShowAlert = false): void {
 		let propsObject: { [key: string]: string } = {};
 
 		propsObject[Constants.Urls.QueryParams.channel] = props.channel;
@@ -127,7 +127,7 @@ export module ErrorUtils {
 		propsObject[Constants.Urls.QueryParams.timeoutInMs] = Constants.Settings.noOpTrackerTimeoutDuration.toString();
 
 		let clientInfo: SmartValue<ClientInfo> = props.clientInfo as SmartValue<ClientInfo>;
-		addDelayedSetValuesOnNoOp(propsObject, clientInfo);
+		ErrorUtils.addDelayedSetValuesOnNoOp(propsObject, clientInfo);
 
 		LogManager.sendMiscLogRequest({
 			label: NoOp.Label[props.label],
@@ -144,9 +144,9 @@ export module ErrorUtils {
 	* Returns a TimeOut that should be cleared, otherwise sends a request to onenote.com/count
 	*	with relevant no-op tracking data
 	*/
-	export function setNoOpTrackerRequestTimeout(props: NoOpLogEventData, shouldShowAlert = false) {
+	public static setNoOpTrackerRequestTimeout(props: NoOpLogEventData, shouldShowAlert = false) {
 		return setTimeout(() => {
-			sendNoOpTrackerRequest(props, shouldShowAlert);
+			ErrorUtils.sendNoOpTrackerRequest(props, shouldShowAlert);
 		}, Constants.Settings.noOpTrackerTimeoutDuration);
 	}
 
@@ -156,7 +156,7 @@ export module ErrorUtils {
 	 * until after the noop timeout before we attempt to retrieve them (e.g., smart values).
 	 * This is a helper function for adding these values to the props object on delay.
 	 */
-	function addDelayedSetValuesOnNoOp(props: {[key: string]: string}, clientInfo?: SmartValue<ClientInfo>): void {
+	private static addDelayedSetValuesOnNoOp(props: {[key: string]: string}, clientInfo?: SmartValue<ClientInfo>): void {
 		if (clientInfo) {
 			props[Constants.Urls.QueryParams.clientType] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : ClientType[clientInfo.get().clipperType];
 			props[Constants.Urls.QueryParams.clipperVersion] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperVersion;

@@ -57,7 +57,7 @@ export class UnsupportedBrowserInject {
 	}
 
 	private logUnsupportedBrowserEvent() {
-		let logData: Log.ErrorUtils.FailureLogEventData = {
+		let logData: Log.FailureLogEventData = {
 			label: Log.Failure.Label.UnsupportedBrowser, // We currently only don't support older versions (<10) of IE
 			properties: {
 				failureType: Log.Failure.Type.Expected,

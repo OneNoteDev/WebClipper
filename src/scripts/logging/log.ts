@@ -46,8 +46,8 @@ export function parseAndLogDataPackage(data: LogDataPackage, logger: Logger) {
 }
 
 export {Click} from "./submodules/click";
-export {Context} from "./submodules/context";
-export {ErrorUtils} from "./submodules/errorUtils";
+export {Context, Custom} from "./submodules/context";
+export {ErrorUtils, FailureLogEventData} from "./submodules/errorUtils";
 export {Event} from "./submodules/event";
 export {Failure} from "./submodules/failure";
 export {Funnel} from "./submodules/funnel";

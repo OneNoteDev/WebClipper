@@ -40,7 +40,7 @@ export class ConsoleLoggerDecorator extends LoggerDecorator {
 		this.pureConsoleLogger.logClickEvent(clickId);
 	}
 
-	protected outputSetContext(key: Log.Context.Custom, value: string): void {
+	protected outputSetContext(key: Log.Custom, value: string): void {
 		this.pureConsoleLogger.setContextProperty(key, value);
 	}
 }

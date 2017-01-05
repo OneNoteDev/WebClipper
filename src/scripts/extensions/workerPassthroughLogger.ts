@@ -59,7 +59,7 @@ export class WorkerPassthroughLogger extends Logger {
 		}
 	}
 
-	public setContextProperty(key: Log.Context.Custom, value: string): void {
+	public setContextProperty(key: Log.Custom, value: string): void {
 		for (let worker of this.workers) {
 			worker.getLogger().setContextProperty(key, value);
 		}

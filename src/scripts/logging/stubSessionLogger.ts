@@ -27,7 +27,7 @@ export class StubSessionLogger extends SessionLogger {
 
 	public logClickEvent(clickId: string): void {}
 
-	public setContextProperty(key: Log.Context.Custom, value: string): void {}
+	public setContextProperty(key: Log.Custom, value: string): void {}
 
 	protected handleClickEvent(clickId: string): void {}
 
@@ -45,5 +45,5 @@ export class StubSessionLogger extends SessionLogger {
 
 	protected handleTrace(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): void {}
 
-	protected handleSetContext(key: Log.Context.Custom, value: string | number | boolean): void {}
+	protected handleSetContext(key: Log.Custom, value: string | number | boolean): void {}
 }

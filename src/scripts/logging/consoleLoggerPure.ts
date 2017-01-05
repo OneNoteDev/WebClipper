@@ -51,7 +51,7 @@ export class ConsoleLoggerPure extends Logger {
 		this.consoleShell.logToConsole(clickEvent);
 	}
 
-	public setContextProperty(key: Log.Context.Custom, value: string): void {
+	public setContextProperty(key: Log.Custom, value: string): void {
 		this.consoleShell.setContextProperty(Log.Context.toString(key), value);
 	}
 }

@@ -178,9 +178,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.captureAugmentedContent();
 				this.captureBookmarkContent();
 
-				Clipper.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[updatedPageInfo.contentType]);
-				Clipper.logger.setContextProperty(Log.Context.Custom.InvokeHostname, UrlUtils.getHostname(updatedPageInfo.rawUrl));
-				Clipper.logger.setContextProperty(Log.Context.Custom.PageLanguage, updatedPageInfo.contentLocale);
+				Clipper.logger.setContextProperty(Log.Custom.ContentType, OneNoteApi.ContentType[updatedPageInfo.contentType]);
+				Clipper.logger.setContextProperty(Log.Custom.InvokeHostname, UrlUtils.getHostname(updatedPageInfo.rawUrl));
+				Clipper.logger.setContextProperty(Log.Custom.PageLanguage, updatedPageInfo.contentLocale);
 			}
 		});
 
@@ -410,8 +410,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				}
 
 				this.state.setState({ userResult: { status: Status.Succeeded, data: updatedUser } });
-				Clipper.logger.setContextProperty(Log.Context.Custom.AuthType, updatedUser.user.authType);
-				Clipper.logger.setContextProperty(Log.Context.Custom.UserInfoId, updatedUser.user.cid);
+				Clipper.logger.setContextProperty(Log.Custom.AuthType, updatedUser.user.authType);
+				Clipper.logger.setContextProperty(Log.Custom.UserInfoId, updatedUser.user.cid);
 			} else {
 				this.state.setState({ userResult: { status: Status.Failed, data: updatedUser } });
 			}

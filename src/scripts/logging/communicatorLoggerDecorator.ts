@@ -45,7 +45,7 @@ export class CommunicatorLoggerDecorator extends LoggerDecorator {
 		this.pureLogger.logClickEvent(clickId);
 	}
 
-	protected outputSetContext(key: Log.Context.Custom, value: string): void {
+	protected outputSetContext(key: Log.Custom, value: string): void {
 		this.pureLogger.setContextProperty(key, value);
 	}
 }

@@ -37,7 +37,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		this.tabId = tab;
 		this.noOpTrackerInvoked = false;
 
-		this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, tab.private.toString());
+		this.logger.setContextProperty(Log.Custom.InPrivateBrowsing, tab.private.toString());
 
 		this.invokeDebugLoggingIfEnabled();
 	}

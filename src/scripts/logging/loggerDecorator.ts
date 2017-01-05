@@ -31,7 +31,7 @@ export abstract class LoggerDecorator extends SessionLogger {
 	protected abstract outputFailure(label: Log.Failure.Label, failureType: Log.Failure.Type, failureInfo?: OneNoteApi.GenericError, id?: string): void;
 	protected abstract outputUserFunnel(label: Log.Funnel.Label): void;
 	protected abstract outputTrace(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): void;
-	protected abstract outputSetContext(key: Log.Context.Custom, value: string | number | boolean): void;
+	protected abstract outputSetContext(key: Log.Custom, value: string | number | boolean): void;
 
 	// @Overrides SessionLogger
 	protected generateSessionId(): string {
@@ -68,8 +68,8 @@ export abstract class LoggerDecorator extends SessionLogger {
 		}
 
 		this.sessionId.set(sessionId);
-		this.setContextPropertyPure(Log.Context.Custom.SessionId, sessionId);
-		this.outputSetContext(Log.Context.Custom.SessionId, sessionId);
+		this.setContextPropertyPure(Log.Custom.SessionId, sessionId);
+		this.outputSetContext(Log.Custom.SessionId, sessionId);
 
 		return sessionId;
 	}
@@ -127,7 +127,7 @@ export abstract class LoggerDecorator extends SessionLogger {
 		}
 	}
 
-	protected handleSetContext(key: Log.Context.Custom, value: string | number | boolean): void {
+	protected handleSetContext(key: Log.Custom, value: string | number | boolean): void {
 		this.outputSetContext(key, value);
 		if (this.component) {
 			this.component.setContextProperty(key, value);
