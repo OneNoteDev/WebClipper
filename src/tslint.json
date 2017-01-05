@@ -10,6 +10,7 @@
 		"curly": true,
 		"eofline": true,
 		"indent": [ true, "tabs" ],
+		"interface-name": [false],
 		"jsdoc-format": true,
 		"max-classes-per-file": [true, 1],
 		"max-line-length": [false],
