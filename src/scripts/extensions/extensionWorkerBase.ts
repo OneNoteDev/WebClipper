@@ -21,13 +21,13 @@ import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
 
 import * as Log from "../logging/log";
-import {LogHelpers} from "../logging/logHelpers";
+import { LogHelpers } from "../logging/logHelpers";
 import {SessionLogger} from "../logging/sessionLogger";
 
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
-import {ChangeLog} from "../versioning/changeLog";
+import {ChangeLogUpdate} from "../versioning/changeLog";
 
 import {AuthenticationHelper} from "./authenticationHelper";
 import {ExtensionBase} from "./extensionBase";
@@ -157,7 +157,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * Notify the UI to invoke the What's New tooltip. Resolve with true if it was thought to be successfully
 	 * injected; otherwise resolves with false.
 	 */
-	protected abstract invokeWhatsNewTooltipBrowserSpecific(newVersions: ChangeLog.Update[]): Promise<boolean>;
+	protected abstract invokeWhatsNewTooltipBrowserSpecific(newVersions: ChangeLogUpdate[]): Promise<boolean>;
 
 	/**
 	 * Notify the UI to invoke a specific tooltip. Resolve with true if successfully injected, and false otherwise;
@@ -218,7 +218,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * Notify the UI to invoke the What's New experience. Resolve with true if it was thought to be successfully
 	 * injected; otherwise resolves with false.
 	 */
-	public invokeWhatsNewTooltip(newVersions: ChangeLog.Update[]): Promise<boolean> {
+	public invokeWhatsNewTooltip(newVersions: ChangeLogUpdate[]): Promise<boolean> {
 		let invokeWhatsNewEvent = new Log.Event.PromiseEvent(Log.Event.Label.InvokeWhatsNew);
 
 		return this.registerLocalizedStringsForPageNav().then((successful) => {
@@ -388,7 +388,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	/**
 	 * Register communicator functions specific to the What's New experience
 	 */
-	protected registerWhatsNewCommunicatorFunctions(newVersions: ChangeLog.Update[]) {
+	protected registerWhatsNewCommunicatorFunctions(newVersions: ChangeLogUpdate[]) {
 		this.registerTooltipToRenderInPageNav(TooltipType.WhatsNew, {
 			updates: newVersions
 		} as WhatsNew);

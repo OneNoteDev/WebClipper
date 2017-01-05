@@ -21,7 +21,7 @@ import {Logger} from "../logging/logger";
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
-import {ChangeLog} from "../versioning/changeLog";
+import {ChangeLog, ChangeLogSchema, ChangeLogUpdate} from "../versioning/changeLog";
 import {ChangeLogHelper} from "../versioning/changeLogHelper";
 import {Version} from "../versioning/version";
 
@@ -181,15 +181,15 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		return lastSeenVersionStr ? new Version(lastSeenVersionStr) : undefined;
 	}
 
-	protected getNewUpdates(lastSeenVersion: Version, currentVersion: Version): Promise<ChangeLog.Update[]> {
-		return new Promise<ChangeLog.Update[]>((resolve, reject) => {
+	protected getNewUpdates(lastSeenVersion: Version, currentVersion: Version): Promise<ChangeLogUpdate[]> {
+		return new Promise<ChangeLogUpdate[]>((resolve, reject) => {
 			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
 			let changelogUrl = UrlUtils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
 			HttpWithRetries.get(changelogUrl).then((request: XMLHttpRequest) => {
 				try {
-					let schemas: ChangeLog.Schema[] = JSON.parse(request.responseText);
-					let allUpdates: ChangeLog.Update[];
+					let schemas: ChangeLogSchema[] = JSON.parse(request.responseText);
+					let allUpdates: ChangeLogUpdate[];
 					for (let i = 0; i < schemas.length; i++) {
 						if (schemas[i].schemaVersion === ChangeLog.schemaVersionSupported) {
 							allUpdates = schemas[i].updates;

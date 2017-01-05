@@ -1,7 +1,7 @@
 import * as Log from "./log";
 
-export module LogHelpers {
-	export function createBaseEventAsJson(subCategory: string, label: string): { [key: string]: string } {
+export class LogHelpers {
+	public static createBaseEventAsJson(subCategory: string, label: string): { [key: string]: string } {
 		let baseEvent: { [key: string]: string } = {};
 		baseEvent[Log.PropertyName.Reserved.EventType] = Log.reportData;
 		baseEvent[Log.PropertyName.Reserved.Label] = label;
@@ -17,7 +17,7 @@ export module LogHelpers {
 	 * Creates and returns an event with category of Click and a label of `clickId`
 	 * @param clickId
 	 */
-	export function createClickEventAsJson(clickId: string): { [key: string]: string } {
+	public static createClickEventAsJson(clickId: string): { [key: string]: string } {
 		if (!clickId) {
 			throw new Error("Button clicked without an ID! Logged with ID " + JSON.stringify(clickId));
 		}
@@ -26,7 +26,7 @@ export module LogHelpers {
 		return clickEvent;
 	}
 
-	export function createLogEventAsJson(event: Log.Event.BaseEvent): { [key: string]: string | number | boolean } {
+	public static createLogEventAsJson(event: Log.Event.BaseEvent): { [key: string]: string | number | boolean } {
 		if (!event.timerWasStopped()) {
 			event.stopTimer();
 		}
@@ -37,16 +37,16 @@ export module LogHelpers {
 		let logEvent: { [key: string]: string | number | boolean } =
 			LogHelpers.createBaseEventAsJson(Log.Event.Category[eventCategory], event.getLabel());
 		logEvent[Log.PropertyName.Reserved.Duration] = event.getDuration();
-		addToLogEvent(logEvent, event.getCustomProperties());
+		LogHelpers.addToLogEvent(logEvent, event.getCustomProperties());
 
 		switch (eventCategory) {
 			case Log.Event.Category.BaseEvent:
 				break;
 			case Log.Event.Category.PromiseEvent:
-				addPromiseEventItems(logEvent, event as Log.Event.PromiseEvent);
+				LogHelpers.addPromiseEventItems(logEvent, event as Log.Event.PromiseEvent);
 				break;
 			case Log.Event.Category.StreamEvent:
-				addStreamEventItems(logEvent, event as Log.Event.StreamEvent);
+				LogHelpers.addStreamEventItems(logEvent, event as Log.Event.StreamEvent);
 				break;
 			default:
 				throw new Error("createLogEvent does not specify a case for event category: " + Log.Event.Category[eventCategory as Log.Event.Category]);
@@ -55,21 +55,7 @@ export module LogHelpers {
 		return logEvent;
 	}
 
-	function addPromiseEventItems(logEvent: { [key: string]: string | number | boolean }, promiseEvent: Log.Event.PromiseEvent) {
-		let status: string = promiseEvent.getStatus();
-		logEvent[Log.PropertyName.Reserved.Status] = status;
-
-		if (status === Log.Status[Log.Status.Failed]) {
-			logEvent[Log.PropertyName.Reserved.FailureInfo] = promiseEvent.getFailureInfo();
-			logEvent[Log.PropertyName.Reserved.FailureType] = promiseEvent.getFailureType();
-		}
-	}
-
-	function addStreamEventItems(logEvent: { [key: string]: string | number | boolean }, streamEvent: Log.Event.StreamEvent) {
-		logEvent[Log.PropertyName.Reserved.Stream] = JSON.stringify(streamEvent.getEventData().Stream);
-	}
-
-	export function createSetContextEventAsJson(key: Log.Context.Custom, value: string): { [key: string]: string } {
+	public static createSetContextEventAsJson(key: Log.Context.Custom, value: string): { [key: string]: string } {
 		let baseEvent = new Log.Event.BaseEvent(Log.Event.Label.SetContextProperty);
 		let event = LogHelpers.createBaseEventAsJson(Log.Event.Category[baseEvent.getEventCategory()], baseEvent.getLabel());
 
@@ -81,7 +67,7 @@ export module LogHelpers {
 		return event;
 	}
 
-	export function createFailureEventAsJson(label: Log.Failure.Label, failureType: Log.Failure.Type, failureInfo?: OneNoteApi.GenericError, id?: string): { [key: string]: string } {
+	public static createFailureEventAsJson(label: Log.Failure.Label, failureType: Log.Failure.Type, failureInfo?: OneNoteApi.GenericError, id?: string): { [key: string]: string } {
 		let failureEvent: { [key: string]: string } = LogHelpers.createBaseEventAsJson(Log.Failure.category, Log.Failure.Label[label]);
 		failureEvent[Log.PropertyName.Reserved.FailureType] = Log.Failure.Type[failureType];
 		if (failureInfo) {
@@ -95,23 +81,23 @@ export module LogHelpers {
 		return failureEvent;
 	}
 
-	export function createFunnelEventAsJson(label: Log.Funnel.Label): { [key: string]: string } {
+	public static createFunnelEventAsJson(label: Log.Funnel.Label): { [key: string]: string } {
 		let funnelEvent: { [key: string]: string } = LogHelpers.createBaseEventAsJson(Log.Funnel.category, Log.Funnel.Label[label]);
 		return funnelEvent;
 	}
 
-	export function createSessionStartEventAsJson(): { [key: string]: string } {
+	public static createSessionStartEventAsJson(): { [key: string]: string } {
 		let sessionEvent: { [key: string]: string } = LogHelpers.createBaseEventAsJson(Log.Session.category, Log.Session.State[Log.Session.State.Started]);
 		return sessionEvent;
 	}
 
-	export function createSessionEndEventAsJson(endTrigger: Log.Session.EndTrigger): { [key: string]: string } {
+	public static createSessionEndEventAsJson(endTrigger: Log.Session.EndTrigger): { [key: string]: string } {
 		let sessionEvent: { [key: string]: string } = LogHelpers.createBaseEventAsJson(Log.Session.category, Log.Session.State[Log.Session.State.Ended]);
 		sessionEvent[Log.PropertyName.Reserved.Trigger] = Log.Session.EndTrigger[endTrigger];
 		return sessionEvent;
 	}
 
-	export function createTraceEventAsJson(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): { [key: string]: string } {
+	public static createTraceEventAsJson(label: Log.Trace.Label, level: Log.Trace.Level, message?: string): { [key: string]: string } {
 		let traceEvent: { [key: string]: string } = LogHelpers.createBaseEventAsJson(Log.Trace.category, Log.Trace.Label[label]);
 		if (message) {
 			traceEvent[Log.PropertyName.Reserved.Message] = message;
@@ -130,7 +116,7 @@ export module LogHelpers {
 		return traceEvent;
 	}
 
-	export function addToLogEvent(logEvent: { [key: string]: string | number | boolean }, properties?: {}): void {
+	public static addToLogEvent(logEvent: { [key: string]: string | number | boolean }, properties?: {}): void {
 		if (logEvent[Log.PropertyName.Reserved.Status] === Log.Status[Log.Status.Failed]) {
 			logEvent[Log.PropertyName.Reserved.StackTrace] = Log.Failure.getStackTrace();
 		}
@@ -151,12 +137,26 @@ export module LogHelpers {
 		}
 	}
 
-	export function isConsoleOutputEnabled(): boolean {
+	public static isConsoleOutputEnabled(): boolean {
 		try {
 			if (localStorage.getItem(Log.enableConsoleLogging)) {
 				return true;
 			}
 		} catch (e) { };
 		return false;
+	}
+
+	private static addPromiseEventItems(logEvent: { [key: string]: string | number | boolean }, promiseEvent: Log.Event.PromiseEvent) {
+		let status: string = promiseEvent.getStatus();
+		logEvent[Log.PropertyName.Reserved.Status] = status;
+
+		if (status === Log.Status[Log.Status.Failed]) {
+			logEvent[Log.PropertyName.Reserved.FailureInfo] = promiseEvent.getFailureInfo();
+			logEvent[Log.PropertyName.Reserved.FailureType] = promiseEvent.getFailureType();
+		}
+	}
+
+	private static addStreamEventItems(logEvent: { [key: string]: string | number | boolean }, streamEvent: Log.Event.StreamEvent) {
+		logEvent[Log.PropertyName.Reserved.Stream] = JSON.stringify(streamEvent.getEventData().Stream);
 	}
 }

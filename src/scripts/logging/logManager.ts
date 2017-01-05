@@ -11,6 +11,8 @@ import {WebConsole} from "../logging/webConsole";
 import {Communicator} from "../communicator/communicator";
 import {SmartValue} from "../communicator/smartValue";
 
+declare var LogManager;
+
 /**
  * Creates the logger responsible for centralized logging on the backend. If a
  * communicator parameter is specified, it is assumed that console logging is
@@ -21,6 +23,13 @@ export function createExtLogger(sessionId: SmartValue<string>, uiCommunicator?: 
 		return createDebugLogger(uiCommunicator, sessionId);
 	}
 	return new StubSessionLogger();
+}
+
+/**
+ * Sends an event to console with relevant data as query parameters
+ */
+export function sendMiscLogRequest(data: LogManager.MiscLogEventData, keysToCamelCase: boolean): void {
+	console.warn(JSON.stringify({ label: data.label, category: data.category, properties: data.properties }));
 }
 
 function createDebugLogger(uiCommunicator: Communicator, sessionId: SmartValue<string>): SessionLogger {
@@ -34,11 +43,4 @@ function createDebugLogger(uiCommunicator: Communicator, sessionId: SmartValue<s
 		component: commLogger,
 		sessionId: sessionId
 	});
-}
-
-/**
- * Sends an event to console with relevant data as query parameters
- */
-export function sendMiscLogRequest(data: LogManager.MiscLogEventData, keysToCamelCase: boolean): void {
-	console.warn(JSON.stringify({ label: data.label, category: data.category, properties: data.properties }));
 }

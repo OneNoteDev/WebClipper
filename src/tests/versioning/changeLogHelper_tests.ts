@@ -1,10 +1,10 @@
-import {ChangeLog} from "../../scripts/versioning/changeLog";
+import {ChangeLogUpdate} from "../../scripts/versioning/changeLog";
 import {ChangeLogHelper} from "../../scripts/versioning/changeLogHelper";
 import {Version} from "../../scripts/versioning/version";
 import {TestModule} from "../testModule";
 
 export class ChangeLogHelperTests extends TestModule {
-	private generalUpdates: ChangeLog.Update[] = [{
+	private generalUpdates: ChangeLogUpdate[] = [{
 		version: "3.3.1",
 		date: "06/13/2016",
 		changes: [{
@@ -60,7 +60,7 @@ export class ChangeLogHelperTests extends TestModule {
 			deepEqual(ChangeLogHelper.getUpdatesBetweenVersions(this.generalUpdates, undefined, new Version("3.3.0")), []);
 		});
 
-		let multipleUpdates: ChangeLog.Update[] = [{
+		let multipleUpdates: ChangeLogUpdate[] = [{
 			version: "5.3.1",
 			date: "06/28/2016",
 			changes: [{
@@ -159,7 +159,7 @@ export class ChangeLogHelperTests extends TestModule {
 
 		test("Given that there is a single major update with all changes that apply to the browser, it should be returned", () => {
 			let browser = "X";
-			let updates: ChangeLog.Update[] = [{
+			let updates: ChangeLogUpdate[] = [{
 				version: "3.3.1",
 				date: "06/13/2016",
 				changes: [{
@@ -177,7 +177,7 @@ export class ChangeLogHelperTests extends TestModule {
 
 		test("Given that there is a single major update with all changes that don't apply to the browser, filterUpdatesThatDontApplyToBrowser should return an empty list", () => {
 			let browser = "X";
-			let updates: ChangeLog.Update[] = [{
+			let updates: ChangeLogUpdate[] = [{
 				version: "3.3.1",
 				date: "06/13/2016",
 				changes: [{

@@ -2,7 +2,7 @@ import {Constants} from "../../constants";
 
 import {Localization} from "../../localization/localization";
 
-import {ChangeLog} from "../../versioning/changeLog";
+import {ChangeLog, ChangeLogChange} from "../../versioning/changeLog";
 
 import {Clipper} from "../frontEndGlobals";
 import {ComponentBase} from "../componentBase";
@@ -13,7 +13,7 @@ class ChangeLogPanelClass extends ComponentBase<{}, WhatsNew> {
 		return {};
 	}
 
-	createChangeElement(change: ChangeLog.Change) {
+	createChangeElement(change: ChangeLogChange) {
 		let image = change.imageUrl ?
 			<img src={change.imageUrl} /> :
 			undefined;

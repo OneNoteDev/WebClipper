@@ -1,5 +1,5 @@
-import {ChangeLog} from "../versioning/changeLog";
+import {ChangeLogUpdate} from "../versioning/changeLog";
 
 export interface WhatsNew {
-	updates: ChangeLog.Update[];
+	updates: ChangeLogUpdate[];
 }

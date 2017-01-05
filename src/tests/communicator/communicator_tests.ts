@@ -5,13 +5,13 @@ import {TestModule} from "../testModule";
 
 import {MockMessageHandler} from "./mockMessageHandler";
 
-module TestConstants {
-	export var channel = "mockChannel";
-	export var sampleFunction = "sampleFunction";
-	export var sampleSmartValue = "sampleSmartValue";
-}
-
 export class CommunicatorTests extends TestModule {
+	private testConstants = {
+		channel: "mockChannel",
+		sampleFunction: "sampleFunction",
+		sampleSmartValue: "sampleSmartValue"
+	};
+
 	protected module() {
 		return "communicator";
 	}
@@ -20,22 +20,22 @@ export class CommunicatorTests extends TestModule {
 		test("Calling a remote function with a data package should send it across to the other side untampered", () => {
 			let comm = this.getMockCommunicators();
 
-			comm.alpha.registerFunction(TestConstants.sampleFunction, (data) => {
+			comm.alpha.registerFunction(this.testConstants.sampleFunction, (data) => {
 				strictEqual(data, "sample data", "Ensure remote function calls pass along data params");
 			});
 
-			comm.beta.callRemoteFunction(TestConstants.sampleFunction, { param: "sample data" });
+			comm.beta.callRemoteFunction(this.testConstants.sampleFunction, { param: "sample data" });
 		});
 
 		test("callRemoteFunction should call the callback with the resolved data if it is specified", (assert: QUnitAssert) => {
 			let done = assert.async();
 			let comm = this.getMockCommunicators();
 
-			comm.alpha.registerFunction(TestConstants.sampleFunction, () => {
+			comm.alpha.registerFunction(this.testConstants.sampleFunction, () => {
 				return Promise.resolve("returned data");
 			});
 
-			comm.beta.callRemoteFunction(TestConstants.sampleFunction, { param: "initial data", callback: (data) => {
+			comm.beta.callRemoteFunction(this.testConstants.sampleFunction, { param: "initial data", callback: (data) => {
 				strictEqual(data, "returned data", "Ensure remote function calls pass along data params");
 				done();
 			}});
@@ -45,12 +45,12 @@ export class CommunicatorTests extends TestModule {
 			let done = assert.async();
 			let comm = this.getMockCommunicators();
 
-			comm.beta.callRemoteFunction(TestConstants.sampleFunction, { param: "initial data", callback: (data) => {
+			comm.beta.callRemoteFunction(this.testConstants.sampleFunction, { param: "initial data", callback: (data) => {
 				strictEqual(data, "returned data", "Ensure remote function calls pass along data params");
 				done();
 			}});
 
-			comm.alpha.registerFunction(TestConstants.sampleFunction, () => {
+			comm.alpha.registerFunction(this.testConstants.sampleFunction, () => {
 				return Promise.resolve("returned data");
 			});
 		});
@@ -63,7 +63,7 @@ export class CommunicatorTests extends TestModule {
 			let betaValue = new SmartValue<string>("initial beta");
 
 			let count = 0;
-			comm.alpha.subscribeAcrossCommunicator(alphaValue, TestConstants.sampleSmartValue, (data: string) => {
+			comm.alpha.subscribeAcrossCommunicator(alphaValue, this.testConstants.sampleSmartValue, (data: string) => {
 				count++;
 				if (count === 1) {
 					strictEqual(data, "initial beta");
@@ -73,7 +73,7 @@ export class CommunicatorTests extends TestModule {
 				}
 			});
 
-			comm.beta.broadcastAcrossCommunicator(betaValue, TestConstants.sampleSmartValue);
+			comm.beta.broadcastAcrossCommunicator(betaValue, this.testConstants.sampleSmartValue);
 			betaValue.set("updated value");
 		});
 
@@ -176,16 +176,16 @@ export class CommunicatorTests extends TestModule {
 			let mock1 = new MockMessageHandler();
 			let mock2 = new MockMessageHandler(mock1);
 			mock1.setOtherSide(mock2);
-			let alpha = new Communicator(mock1, TestConstants.channel);
-			let beta = new Communicator(mock2, TestConstants.channel);
+			let alpha = new Communicator(mock1, this.testConstants.channel);
+			let beta = new Communicator(mock2, this.testConstants.channel);
 
-			alpha.registerFunction(TestConstants.sampleFunction, (data) => {
+			alpha.registerFunction(this.testConstants.sampleFunction, (data) => {
 				ok(false, "The registered function should not be called");
 			});
 
 			mock2.isCorrupt = true;
 			throws(() => {
-				beta.callRemoteFunction(TestConstants.sampleFunction, { param: "sample data" });
+				beta.callRemoteFunction(this.testConstants.sampleFunction, { param: "sample data" });
 			}, Error(MockMessageHandler.corruptError));
 		});
 
@@ -193,18 +193,18 @@ export class CommunicatorTests extends TestModule {
 			let mock1 = new MockMessageHandler();
 			let mock2 = new MockMessageHandler(mock1);
 			mock1.setOtherSide(mock2);
-			let alpha = new Communicator(mock1, TestConstants.channel);
-			let beta = new Communicator(mock2, TestConstants.channel);
+			let alpha = new Communicator(mock1, this.testConstants.channel);
+			let beta = new Communicator(mock2, this.testConstants.channel);
 			beta.setErrorHandler((e: Error) => {
 				strictEqual(e.message, MockMessageHandler.corruptError);
 			});
 
-			alpha.registerFunction(TestConstants.sampleFunction, (data) => {
+			alpha.registerFunction(this.testConstants.sampleFunction, (data) => {
 				ok(false, "The registered function should not be called");
 			});
 
 			mock2.isCorrupt = true;
-			beta.callRemoteFunction(TestConstants.sampleFunction, { param: "sample data" });
+			beta.callRemoteFunction(this.testConstants.sampleFunction, { param: "sample data" });
 		});
 	}
 
@@ -214,8 +214,8 @@ export class CommunicatorTests extends TestModule {
 		mock1.setOtherSide(mock2);
 
 		return {
-			alpha: new Communicator(mock1, TestConstants.channel),
-			beta: new Communicator(mock2, TestConstants.channel)
+			alpha: new Communicator(mock1, this.testConstants.channel),
+			beta: new Communicator(mock2, this.testConstants.channel)
 		};
 	}
 }

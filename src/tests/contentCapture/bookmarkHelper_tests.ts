@@ -7,6 +7,7 @@ import {ObjectUtils} from "../../scripts/objectUtils";
 import {StubSessionLogger} from "../../scripts/logging/stubSessionLogger";
 
 import {TestModule} from "../testModule";
+import {StandardMetadata, TestHelper} from "./testHelper";
 
 export class BookmarkHelperTests extends TestModule {
 	protected module() {
@@ -21,7 +22,7 @@ export class BookmarkHelperTests extends TestModule {
 		test("bookmarkPage rejects when url is undefined or empty", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let metadata = TestHelper.createListOfMetaTags([TestHelper.StandardMetadata.PrimaryDescription, TestHelper.StandardMetadata.PrimaryThumbnail]);
+			let metadata = TestHelper.createListOfMetaTags([StandardMetadata.PrimaryDescription, StandardMetadata.PrimaryThumbnail]);
 
 			BookmarkHelper.bookmarkPage(undefined, TestHelper.Content.testPageTitle, metadata).then(() => {
 				ok(false, "undefined url should not resolve");
@@ -46,7 +47,7 @@ export class BookmarkHelperTests extends TestModule {
 				description: TestHelper.Content.testDescriptionValue
 			};
 
-			let metadata = TestHelper.createListOfMetaTags([TestHelper.StandardMetadata.PrimaryDescription]);
+			let metadata = TestHelper.createListOfMetaTags([StandardMetadata.PrimaryDescription]);
 
 			BookmarkHelper.bookmarkPage(expectedResult.url, TestHelper.Content.testPageTitle, metadata).then((result: BookmarkResult) => {
 				strictEqual(result.url, expectedResult.url, "bookmarked url is incorrect");
@@ -105,7 +106,7 @@ export class BookmarkHelperTests extends TestModule {
 				title: TestHelper.Content.testPageTitle
 			};
 
-			let metadata = TestHelper.createListOfMetaTags([TestHelper.StandardMetadata.Fake]);
+			let metadata = TestHelper.createListOfMetaTags([StandardMetadata.Fake]);
 
 			BookmarkHelper.bookmarkPage(expectedResult.url, TestHelper.Content.testPageTitle, metadata).then((result: BookmarkResult) => {
 				strictEqual(result.url, expectedResult.url, "bookmarked url is incorrect");
@@ -126,11 +127,11 @@ export class BookmarkHelperTests extends TestModule {
 			strictEqual(BookmarkHelper.getPrimaryDescription(metaTags), undefined, "empty list of meta tags should return undefined");
 
 			metaTags = TestHelper.createListOfMetaTags([
-				TestHelper.StandardMetadata.FallbackDescription,
-				TestHelper.StandardMetadata.FallbackDescription,
-				TestHelper.StandardMetadata.FallbackThumbnail,
-				TestHelper.StandardMetadata.FallbackThumbnail,
-				TestHelper.StandardMetadata.PrimaryThumbnail
+				StandardMetadata.FallbackDescription,
+				StandardMetadata.FallbackDescription,
+				StandardMetadata.FallbackThumbnail,
+				StandardMetadata.FallbackThumbnail,
+				StandardMetadata.PrimaryThumbnail
 			]);
 
 			let result = BookmarkHelper.getPrimaryDescription(metaTags);
@@ -139,17 +140,17 @@ export class BookmarkHelperTests extends TestModule {
 
 		test("getPrimaryDescription returns content of og:description meta tag", () => {
 			let metaTags = TestHelper.createListOfMetaTags([
-				TestHelper.StandardMetadata.PrimaryDescription
+				StandardMetadata.PrimaryDescription
 			]);
 			strictEqual(BookmarkHelper.getPrimaryDescription(metaTags).description, TestHelper.Content.testDescriptionValue, "description is incorrect");
 		});
 
 		test("getFallbackDescription returns undefined if fallback description meta tags do not exist", () => {
 			let metaTags = TestHelper.createListOfMetaTags([
-				TestHelper.StandardMetadata.PrimaryDescription,
-				TestHelper.StandardMetadata.PrimaryThumbnail,
-				TestHelper.StandardMetadata.Fake,
-				TestHelper.StandardMetadata.FallbackThumbnail
+				StandardMetadata.PrimaryDescription,
+				StandardMetadata.PrimaryThumbnail,
+				StandardMetadata.Fake,
+				StandardMetadata.FallbackThumbnail
 			]);
 
 			let result = BookmarkHelper.getFallbackDescription(metaTags);
@@ -162,7 +163,7 @@ export class BookmarkHelperTests extends TestModule {
 			// add all fallback description attributes to tag list
 			for (let iFallback = 0; iFallback < BookmarkHelper.fallbackDescriptionKeyValuePairs.length; iFallback++) {
 				metaTags.push(TestHelper.createListOfMetaTags([
-					TestHelper.StandardMetadata.FallbackDescription
+					StandardMetadata.FallbackDescription
 				], iFallback)[0]);
 			}
 
@@ -194,11 +195,11 @@ export class BookmarkHelperTests extends TestModule {
 			strictEqual(BookmarkHelper.getPrimaryThumbnailSrc(metaTags), undefined, "empty list of meta tags should return undefined");
 
 			metaTags = TestHelper.createListOfMetaTags([
-				TestHelper.StandardMetadata.FallbackDescription,
-				TestHelper.StandardMetadata.FallbackDescription,
-				TestHelper.StandardMetadata.FallbackThumbnail,
-				TestHelper.StandardMetadata.FallbackThumbnail,
-				TestHelper.StandardMetadata.PrimaryDescription
+				StandardMetadata.FallbackDescription,
+				StandardMetadata.FallbackDescription,
+				StandardMetadata.FallbackThumbnail,
+				StandardMetadata.FallbackThumbnail,
+				StandardMetadata.PrimaryDescription
 			]);
 
 			let result = BookmarkHelper.getPrimaryThumbnailSrc(metaTags);
@@ -207,7 +208,7 @@ export class BookmarkHelperTests extends TestModule {
 
 		test("getPrimaryThumbnailSrc returns content of og:image meta tag", () => {
 			let metaTags = TestHelper.createListOfMetaTags([
-				TestHelper.StandardMetadata.PrimaryThumbnail
+				StandardMetadata.PrimaryThumbnail
 			]);
 
 			strictEqual(BookmarkHelper.getPrimaryThumbnailSrc(metaTags).thumbnailSrc, TestHelper.Content.testThumbnailSrcValue, "thumbnail source is incorrect");
@@ -215,10 +216,10 @@ export class BookmarkHelperTests extends TestModule {
 
 		test("getFallbackThumbnailSrc returns undefined if fallback thumbnail src meta tags do not exist", () => {
 			let metaTags = TestHelper.createListOfMetaTags([
-				TestHelper.StandardMetadata.PrimaryDescription,
-				TestHelper.StandardMetadata.PrimaryThumbnail,
-				TestHelper.StandardMetadata.Fake,
-				TestHelper.StandardMetadata.FallbackDescription
+				StandardMetadata.PrimaryDescription,
+				StandardMetadata.PrimaryThumbnail,
+				StandardMetadata.Fake,
+				StandardMetadata.FallbackDescription
 			]);
 
 			let result = BookmarkHelper.getFallbackThumbnailSrc(metaTags);
@@ -231,7 +232,7 @@ export class BookmarkHelperTests extends TestModule {
 			// add all fallback thumbnail src attributes to tag list
 			for (let iFallback = 0; iFallback < BookmarkHelper.fallbackThumbnailKeyValuePairs.length; iFallback++) {
 				metaTags.push(TestHelper.createListOfMetaTags([
-					TestHelper.StandardMetadata.FallbackThumbnail
+					StandardMetadata.FallbackThumbnail
 				], iFallback)[0]);
 			}
 
@@ -300,7 +301,7 @@ export class BookmarkHelperTests extends TestModule {
 
 		test("getMetaContent returns undefined if metadata is undefined", () => {
 			let metaTags = TestHelper.createListOfMetaTags([
-				TestHelper.StandardMetadata.Fake
+				StandardMetadata.Fake
 			]);
 
 			let result = BookmarkHelper.getMetaContent(metaTags, undefined);
@@ -309,7 +310,7 @@ export class BookmarkHelperTests extends TestModule {
 
 		test("getMetaContent returns undefined if metadata is empty", () => {
 			let metaTags = TestHelper.createListOfMetaTags([
-				TestHelper.StandardMetadata.Fake
+				StandardMetadata.Fake
 			]);
 
 			let emptyMetadata: MetadataKeyValuePair = { key: BookmarkHelper.propertyAttrName, value: "" };
@@ -337,129 +338,12 @@ export class BookmarkHelperTests extends TestModule {
 
 		test("getMetaContent returns content if it exists", () => {
 			let metaTags = TestHelper.createListOfMetaTags([
-				TestHelper.StandardMetadata.PrimaryThumbnail
+				StandardMetadata.PrimaryThumbnail
 			]);
 
 			let result = BookmarkHelper.getMetaContent(metaTags, BookmarkHelper.primaryThumbnailKeyValuePair);
 			strictEqual(result, TestHelper.Content.testThumbnailSrcValue, "actual: " + result);
 		});
-	}
-}
-
-module TestHelper {
-	export module Content {
-		export let testDescriptionValue = "test description";
-		export let testThumbnailSrcValue = "http://www.abc.com/thumbnail.jpg";
-		export let testBookmarkUrl = "https://www.onenote.com";
-		export let fallbackDescContentPrefix = "test fallback description ";
-		export let fallbackThumbnailSrcContentBase = "http://www.abc.com/fallback.jpg?src=";
-		export let testPageTitle = "";
-	}
-
-	export function createHTMLMetaElement(attribute: MetadataKeyValuePair, content: string): HTMLMetaElement {
-		let metaElement: HTMLMetaElement = document.createElement("meta") as HTMLMetaElement;
-
-		metaElement.setAttribute(attribute.key, attribute.value);
-		if (content) {
-			metaElement.content = content;
-		}
-
-		return metaElement;
-	}
-
-	export function createHTMLImageElement(srcUrl: string): HTMLImageElement {
-		let imgElement: HTMLImageElement = document.createElement("img") as HTMLImageElement;
-		if (srcUrl) {
-			imgElement.setAttribute(BookmarkHelper.srcAttrName, srcUrl);
-		}
-		return imgElement;
-	}
-
-	export enum StandardMetadata {
-		Fake,
-		FallbackDescription,
-		FallbackThumbnail,
-		PrimaryDescription,
-		PrimaryThumbnail
-	}
-
-	export function createListOfMetaTags(metadataTypes: StandardMetadata[], fallbackIndexer?: number): HTMLMetaElement[] {
-		let metaTags = new Array<HTMLMetaElement>();
-
-		for (let type of metadataTypes) {
-			switch (type) {
-				case StandardMetadata.PrimaryDescription:
-					metaTags.push(
-						TestHelper.createHTMLMetaElement(
-							BookmarkHelper.primaryDescriptionKeyValuePair,
-							TestHelper.Content.testDescriptionValue
-						)
-					);
-					break;
-				case StandardMetadata.PrimaryThumbnail:
-					metaTags.push(
-						TestHelper.createHTMLMetaElement(
-							BookmarkHelper.primaryThumbnailKeyValuePair,
-							TestHelper.Content.testThumbnailSrcValue
-						)
-					);
-					break;
-				case StandardMetadata.Fake:
-					let uselessMetadata: MetadataKeyValuePair = {
-						key: BookmarkHelper.propertyAttrName,
-						value: "attributeFake"
-					};
-					metaTags.push(
-						TestHelper.createHTMLMetaElement(
-							uselessMetadata,
-							"content fake"
-						)
-					);
-					break;
-				case StandardMetadata.FallbackDescription:
-					let descIndexer: number;
-					if (ObjectUtils.isNullOrUndefined(fallbackIndexer)) {
-						// if not provided, get a random fallback description
-						descIndexer = TestHelper.getRandomNumber(BookmarkHelper.fallbackDescriptionKeyValuePairs.length - 1);
-					} else {
-						descIndexer = fallbackIndexer;
-					}
-					let descMetadata: MetadataKeyValuePair = BookmarkHelper.fallbackDescriptionKeyValuePairs[descIndexer];
-
-					metaTags.push(
-						TestHelper.createHTMLMetaElement(
-							descMetadata,
-							TestHelper.Content.fallbackDescContentPrefix + descIndexer
-						)
-					);
-					break;
-				case StandardMetadata.FallbackThumbnail:
-					let thumbnailIndexer: number;
-					if (ObjectUtils.isNullOrUndefined(fallbackIndexer)) {
-						// if not provided, get a random fallback thumbnail src
-						thumbnailIndexer = TestHelper.getRandomNumber(BookmarkHelper.fallbackThumbnailKeyValuePairs.length - 1);
-					} else {
-						thumbnailIndexer = fallbackIndexer;
-					}
-					let thumbnailMetadata: MetadataKeyValuePair = BookmarkHelper.fallbackThumbnailKeyValuePairs[thumbnailIndexer];
-
-					metaTags.push(
-						TestHelper.createHTMLMetaElement(
-							thumbnailMetadata,
-							TestHelper.Content.fallbackThumbnailSrcContentBase + thumbnailIndexer
-						)
-					);
-					break;
-				default:
-					break;
-			}
-		}
-
-		return metaTags;
-	}
-
-	export function getRandomNumber(maxInclusive: number): number {
-		return Math.floor(Math.random() * (maxInclusive + 1));
 	}
 }
 

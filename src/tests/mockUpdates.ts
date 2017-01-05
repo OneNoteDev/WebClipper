@@ -1,7 +1,7 @@
-import {ChangeLog} from "../scripts/versioning/changeLog";
+import {ChangeLogUpdate} from "../scripts/versioning/changeLog";
 
 export class MockUpdates {
-	public static getMockUpdates(): ChangeLog.Update[] {
+	public static getMockUpdates(): ChangeLogUpdate[] {
 		return [{
 			version: "3.1.0",
 			date: "06/03/2016",
@@ -25,7 +25,7 @@ export class MockUpdates {
 		}];
 	}
 
-	public static getMockUpdatesWithSomeImages(): ChangeLog.Update[] {
+	public static getMockUpdatesWithSomeImages(): ChangeLogUpdate[] {
 		return [{
 			version: "3.1.0",
 			date: "06/03/2016",
@@ -51,7 +51,7 @@ export class MockUpdates {
 		}];
 	}
 
-	public static getMockMultipleUpdates(): ChangeLog.Update[] {
+	public static getMockMultipleUpdates(): ChangeLogUpdate[] {
 		return [{
 			version: "3.1.0",
 			date: "06/03/2016",

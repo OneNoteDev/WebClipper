@@ -14,7 +14,7 @@ import * as Log from "../../logging/log";
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
 
-import {ChangeLog} from "../../versioning/changeLog";
+import {ChangeLogUpdate} from "../../versioning/changeLog";
 
 import {AuthenticationHelper} from "../authenticationHelper";
 import {InvokeSource} from "../invokeSource";
@@ -105,7 +105,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 	 * Notify the UI to invoke the What's New tooltip. Resolve with true if it was thought to be successfully
 	 * injected; otherwise resolves with false.
 	 */
-	protected invokeWhatsNewTooltipBrowserSpecific(newVersions: ChangeLog.Update[]): Promise<boolean> {
+	protected invokeWhatsNewTooltipBrowserSpecific(newVersions: ChangeLogUpdate[]): Promise<boolean> {
 		return this.invokePageNavBrowserSpecific();
 	}
 

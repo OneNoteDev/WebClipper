@@ -16,7 +16,7 @@ import {ClipperUrls} from "../../clipperUrls";
 import {Constants} from "../../constants";
 import {AuthType} from "../../userInfo";
 
-import {ChangeLog} from "../../versioning/changeLog";
+import {ChangeLogUpdate} from "../../versioning/changeLog";
 
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
@@ -61,7 +61,7 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 		return this.throwNotImplementedFailure();
 	}
 
-	protected invokeWhatsNewTooltipBrowserSpecific(newVersions: ChangeLog.Update[]): Promise<boolean> {
+	protected invokeWhatsNewTooltipBrowserSpecific(newVersions: ChangeLogUpdate[]): Promise<boolean> {
 		return this.throwNotImplementedFailure();
 	}
 
