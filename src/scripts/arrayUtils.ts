@@ -1,10 +1,10 @@
-export module ArrayUtils {
+export class ArrayUtils {
 	/**
 	 * Given a specified number of items, returns a array of bucket counts where buckets
 	 * are as evenly divided as possible, and every bucket contains no more than maxPerBucket
 	 * items.
 	 */
-	export function createEvenBuckets(numItems: number, maxPerBucket: number): number[] {
+	public static createEvenBuckets(numItems: number, maxPerBucket: number): number[] {
 		if (numItems < 1) {
 			return [];
 		}
@@ -35,7 +35,7 @@ export module ArrayUtils {
 	 * divided as possible, and every bucket contains no more than maxPerBucket items.
 	 * Also retains the ordering of the items when partitions are flattened.
 	 */
-	export function partition(items: any[], maxPerBucket: number): any[][] {
+	public static partition(items: any[], maxPerBucket: number): any[][] {
 		if (items.length === 0) {
 			return [];
 		}
@@ -54,7 +54,7 @@ export module ArrayUtils {
 	/**
 	 * Given an array, returns true if all items are defined; false otherwise.
 	 */
-	export function isArrayComplete(arr: any[]): boolean {
+	public static isArrayComplete(arr: any[]): boolean {
 		for (let i = 0; i < arr.length; i++) {
 			if (!arr[i]) {
 				return false;

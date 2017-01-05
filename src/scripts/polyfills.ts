@@ -2,16 +2,16 @@ declare var require;
 
 let promise = require("es6-promise");
 
-export module Polyfills {
-	export function init() {
-		endsWithPoly();
-		objectAssignPoly();
-		promisePoly();
-		requestAnimationFramePoly();
+export class Polyfills {
+	public static init() {
+		this.endsWithPoly();
+		this.objectAssignPoly();
+		this.promisePoly();
+		this.requestAnimationFramePoly();
 	}
 
 	// See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
-	function endsWithPoly() {
+	private static endsWithPoly() {
 		if (!(String.prototype as any).endsWith) {
 			(String.prototype as any).endsWith = function(searchString, position) {
 				let subjectString = this.toString();
@@ -26,7 +26,7 @@ export module Polyfills {
 	}
 
 	// See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-	function objectAssignPoly() {
+	private static objectAssignPoly() {
 		if (typeof (<any>Object).assign !== "function") {
 			(<any>Object).assign = function(target: Object) {
 				if (!target) {
@@ -49,13 +49,13 @@ export module Polyfills {
 		}
 	}
 
-	function promisePoly() {
+	private static promisePoly() {
 		if (typeof Promise === "undefined") {
 			promise.polyfill();
 		}
 	}
 
-	function requestAnimationFramePoly() {
+	private static requestAnimationFramePoly() {
 		if (!window.requestAnimationFrame) {
 			window.requestAnimationFrame = (<any>window).msRequestAnimationFrame || (<any>window).mozRequestAnimationFrame
 				|| (<any>window).webkitRequestAnimationFrame || (<any>window).oRequestAnimationFrame || ((callback: FrameRequestCallback) => {

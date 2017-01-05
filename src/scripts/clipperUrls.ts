@@ -4,8 +4,8 @@ import {UrlUtils} from "./urlUtils";
 
 import {ClipperState} from "./clipperUI/clipperState";
 
-export module ClipperUrls {
-	export function generateFeedbackUrl(clipperState: ClipperState, usid: string, logCategory: string): string {
+export class ClipperUrls {
+	public static generateFeedbackUrl(clipperState: ClipperState, usid: string, logCategory: string): string {
 		let generatedFeedbackUrl = UrlUtils.addUrlQueryValue(Constants.Urls.clipperFeedbackUrl,
 			"LogCategory", logCategory);
 		generatedFeedbackUrl = UrlUtils.addUrlQueryValue(generatedFeedbackUrl,
@@ -22,15 +22,15 @@ export module ClipperUrls {
 		return generatedFeedbackUrl;
 	}
 
-	export function generateSignInUrl(clipperId: string, sessionId: string, authType: string): string {
-		return addAuthenticationQueryValues(Constants.Urls.Authentication.signInUrl, clipperId, sessionId, authType);
+	public static generateSignInUrl(clipperId: string, sessionId: string, authType: string): string {
+		return this.addAuthenticationQueryValues(Constants.Urls.Authentication.signInUrl, clipperId, sessionId, authType);
 	}
 
-	export function generateSignOutUrl(clipperId: string, sessionId: string, authType: string): string {
-		return addAuthenticationQueryValues(Constants.Urls.Authentication.signOutUrl, clipperId, sessionId, authType);
+	public static generateSignOutUrl(clipperId: string, sessionId: string, authType: string): string {
+		return this.addAuthenticationQueryValues(Constants.Urls.Authentication.signOutUrl, clipperId, sessionId, authType);
 	}
 
-	function addAuthenticationQueryValues(originalUrl: string, clipperId: string, sessionId: string, authType: string): string {
+	private static addAuthenticationQueryValues(originalUrl: string, clipperId: string, sessionId: string, authType: string): string {
 		let authenticationUrl = UrlUtils.addUrlQueryValue(originalUrl, Constants.Urls.QueryParams.authType, authType);
 		authenticationUrl = UrlUtils.addUrlQueryValue(authenticationUrl, Constants.Urls.QueryParams.clipperId, clipperId);
 		authenticationUrl = UrlUtils.addUrlQueryValue(authenticationUrl, Constants.Urls.QueryParams.userSessionId, sessionId);

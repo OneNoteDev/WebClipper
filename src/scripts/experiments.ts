@@ -1,13 +1,13 @@
-﻿export module Experiments {
-	let featuresToNumberlinesMap = {
+﻿export enum Feature {
+	DummyExperiment
+};
+
+export class Experiments {
+	protected static featuresToNumberlinesMap = {
 		DummyExperiment: "dummy-flight"
 	};
 
-	export var updateIntervalForFlights = 60 * 60 * 5 * 1000; // 5 hours
-
-	export enum Feature {
-		DummyExperiment
-	};
+	public static updateIntervalForFlights = 60 * 60 * 5 * 1000; // 5 hours
 
 	/**
 	 * This functions returns true/false if a particular feature (identified by a feature name set in Experiments.ts)
@@ -15,14 +15,14 @@
 	 * @param nameOfFeature the name of the feature, as described in constants.ts
 	 * @returns True/False
 	 */
-	export function isFeatureEnabled(feature: Experiments.Feature, flights: string[]): boolean {
+	public static isFeatureEnabled(feature: Feature, flights: string[]): boolean {
 		let nameOfFeature = Feature[feature];
 
-		if (!featuresToNumberlinesMap || !featuresToNumberlinesMap[nameOfFeature]) {
+		if (!Experiments.featuresToNumberlinesMap || !Experiments.featuresToNumberlinesMap[nameOfFeature]) {
 			return false;
 		}
 
-		let numberline = featuresToNumberlinesMap[nameOfFeature];
+		let numberline = Experiments.featuresToNumberlinesMap[nameOfFeature];
 		if (!flights || flights.indexOf(numberline) === -1) {
 			return false;
 		}

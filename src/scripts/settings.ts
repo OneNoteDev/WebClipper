@@ -4,8 +4,8 @@ declare function require(name: string);
 // Load up the settings file
 let settings = require("../settings.json");
 
-export module Settings {
-	export function getSetting(name: string): any {
+export class Settings {
+	public static getSetting(name: string): any {
 		let localResult = settings[name];
 
 		if (!localResult || !localResult.Value) {
@@ -15,7 +15,7 @@ export module Settings {
 		return localResult.Value;
 	}
 
-	export function setSettingsJsonForTesting(jsonObject?: {}): void {
+	public static setSettingsJsonForTesting(jsonObject?: {}): void {
 		if (jsonObject) {
 			settings = jsonObject;
 		} else {

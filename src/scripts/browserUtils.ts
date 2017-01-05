@@ -1,5 +1,5 @@
-export module BrowserUtils {
-	export function appendHiddenIframeToDocument(url: string) {
+export class BrowserUtils {
+	public static appendHiddenIframeToDocument(url: string) {
 		let iframe = document.createElement("iframe");
 		iframe.hidden = true;
 		iframe.style.display = "none";
@@ -12,7 +12,7 @@ export module BrowserUtils {
 	 *
 	 * @return true if the the browser is supported by the Web Clipper; false otherwise
 	 */
-	export function browserNotSupported(): boolean {
+	public static browserNotSupported(): boolean {
 		// Does not exist on IE8 and below
 		if (!window.addEventListener) {
 			return true;
@@ -29,7 +29,7 @@ export module BrowserUtils {
 	/**
 	 * Assuming the caller is from IE, returns the browser version
 	 */
-	export function ieVersion(): string {
+	public static ieVersion(): string {
 		let ua = window.navigator.userAgent;
 
 		let msieIndex = ua.indexOf("MSIE ");
@@ -52,7 +52,7 @@ export module BrowserUtils {
 		return undefined;
 	}
 
-	export function openPopupWindow(url: string, popupWidth = 1000, popupHeight = 700): Window {
+	public static openPopupWindow(url: string, popupWidth = 1000, popupHeight = 700): Window {
 		let leftPosition: number = (screen.width) ? (screen.width - popupWidth) / 2 : 0;
 		let topPosition: number = (screen.height) ? (screen.height - popupHeight) / 2 : 0;
 
