@@ -6,12 +6,12 @@ import * as Log from "../logging/log";
 
 import {Clipper} from "./frontEndGlobals";
 
-export module OneNoteApiUtils {
-	export module Limits {
-		export var imagesPerRequestLimit = 30;
-	}
+export class OneNoteApiUtils {
+	public Limits = {
+		imagesPerRequestLimit: 30
+	};
 
-	export function logOneNoteApiRequestError(event: Log.Event.PromiseEvent, error: OneNoteApi.RequestError) {
+	public static logOneNoteApiRequestError(event: Log.Event.PromiseEvent, error: OneNoteApi.RequestError) {
 		if (!event || !error) {
 			return;
 		}
@@ -20,12 +20,12 @@ export module OneNoteApiUtils {
 		event.setStatus(Log.Status.Failed);
 		event.setFailureInfo(error);
 
-		let apiResponseCode: string = getApiResponseCode(error);
+		let apiResponseCode: string = this.getApiResponseCode(error);
 		if (!apiResponseCode) {
 			return;
 		}
 
-		let responseCodeInfo = getResponseCodeInformation(apiResponseCode);
+		let responseCodeInfo = this.getResponseCodeInformation(apiResponseCode);
 		if (!responseCodeInfo) {
 			Clipper.logger.logFailure(Log.Failure.Label.UnhandledApiCode, Log.Failure.Type.Unexpected,
 				undefined, apiResponseCode);
@@ -38,7 +38,7 @@ export module OneNoteApiUtils {
 		event.setCustomProperty(Log.PropertyName.Custom.IsRetryable, OneNoteApiUtils.isRetryable(apiResponseCode));
 	}
 
-	export function getApiResponseCode(error: OneNoteApi.RequestError): string {
+	public static getApiResponseCode(error: OneNoteApi.RequestError): string {
 		if (!error || !error.response) {
 			return;
 		}
@@ -58,15 +58,15 @@ export module OneNoteApiUtils {
 		return apiResponseCode ? apiResponseCode : undefined;
 	}
 
-	export function getLocalizedErrorMessage(apiResponseCode: string): string {
-		let responseCodeInfo = getResponseCodeInformation(apiResponseCode);
+	public static getLocalizedErrorMessage(apiResponseCode: string): string {
+		let responseCodeInfo = this.getResponseCodeInformation(apiResponseCode);
 		return responseCodeInfo ? responseCodeInfo.message : Localization.getLocalizedString("WebClipper.Error.GenericError");
 	}
 
 	/**
 	 * Retrieves an error message for the response returned from fetching notebooks as HTML.
 	 */
-	export function getLocalizedErrorMessageForGetNotebooks(apiResponseCode: string): string {
+	public static getLocalizedErrorMessageForGetNotebooks(apiResponseCode: string): string {
 		let fallback = Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage");
 
 		// Actionable codes have a message that have a hyperlink to documentation that users can use to solve their issue
@@ -81,7 +81,7 @@ export module OneNoteApiUtils {
 		}
 
 		// See if there's a specific message we can show
-		let responseCodeInfo = getResponseCodeInformation(apiResponseCode);
+		let responseCodeInfo = this.getResponseCodeInformation(apiResponseCode);
 		if (responseCodeInfo && responseCodeInfo.message) {
 			return responseCodeInfo.message;
 		}
@@ -90,25 +90,38 @@ export module OneNoteApiUtils {
 		return fallback;
 	}
 
-	export function requiresSignout(apiResponseCode: string): boolean {
-		let responseCodeInfo = getResponseCodeInformation(apiResponseCode);
+	public static requiresSignout(apiResponseCode: string): boolean {
+		let responseCodeInfo = this.getResponseCodeInformation(apiResponseCode);
 		return responseCodeInfo ? responseCodeInfo.requiresSignout : false;
 	}
 
-	export function isExpected(apiResponseCode: string): boolean {
-		let responseCodeInfo = getResponseCodeInformation(apiResponseCode);
+	public static isExpected(apiResponseCode: string): boolean {
+		let responseCodeInfo = this.getResponseCodeInformation(apiResponseCode);
 		return responseCodeInfo ? responseCodeInfo.isExpected : false;
 	}
 
-	export function isRetryable(apiResponseCode: string): boolean {
-		let responseCodeInfo = getResponseCodeInformation(apiResponseCode);
+	public static isRetryable(apiResponseCode: string): boolean {
+		let responseCodeInfo = this.getResponseCodeInformation(apiResponseCode);
 		return responseCodeInfo ? responseCodeInfo.isRetryable : false;
+	}
+
+	public static createPatchRequestBody(dataUrls: string[]): OneNoteApi.Revision[] {
+		let requestBody = [];
+		dataUrls.forEach((dataUrl) => {
+			let content = "<p><img src=\"" + dataUrl + "\" /></p>&nbsp;";
+			requestBody.push({
+				target: "body",
+				action: "append",
+				content: content
+			});
+		});
+		return requestBody;
 	}
 
 	/**
 	 * Retrieves response code information given that the context is in POSTing a clip.
 	 */
-	function getResponseCodeInformation(apiResponseCode: string): { message: string, isRetryable: boolean, isExpected: boolean, requiresSignout?: boolean } {
+	private static getResponseCodeInformation(apiResponseCode: string): { message: string, isRetryable: boolean, isExpected: boolean, requiresSignout?: boolean } {
 		let handledExtendedResponseCodes = {
 			10001: { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // UnexpectedServerError
 			10002: { message: Localization.getLocalizedString("WebClipper.Error.GenericError"), isRetryable: true, isExpected: true }, // ServiceUnavailable
@@ -130,18 +143,4 @@ export module OneNoteApiUtils {
 		}
 		return handledExtendedResponseCodes[apiResponseCode];
 	}
-
-	export function createPatchRequestBody(dataUrls: string[]): OneNoteApi.Revision[] {
-		let requestBody = [];
-		dataUrls.forEach((dataUrl) => {
-			let content = "<p><img src=\"" + dataUrl + "\" /></p>&nbsp;";
-			requestBody.push({
-				target: "body",
-				action: "append",
-				content: content
-			});
-		});
-		return requestBody;
-	}
-
 }

@@ -6,9 +6,9 @@ import {ChangeLog} from "../../versioning/changeLog";
 
 import {Clipper} from "../frontEndGlobals";
 import {ComponentBase} from "../componentBase";
-import {TooltipProps} from "../tooltipProps";
+import {WhatsNew} from "../tooltipProps";
 
-class ChangeLogPanelClass extends ComponentBase<{}, TooltipProps.WhatsNew> {
+class ChangeLogPanelClass extends ComponentBase<{}, WhatsNew> {
 	getInitialState(): {} {
 		return {};
 	}

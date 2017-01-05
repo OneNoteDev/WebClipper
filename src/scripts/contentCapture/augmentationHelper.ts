@@ -8,7 +8,7 @@ import {ClipperState} from "../clipperUI/clipperState";
 import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
 import {Status} from "../clipperUI/status";
 
-import {DomUtils} from "../domParsers/domUtils";
+import {DomUtils, EmbeddedVideoIFrameSrcs} from "../domParsers/domUtils";
 
 import {HttpWithRetries} from "../http/HttpWithRetries";
 
@@ -150,7 +150,7 @@ export class AugmentationHelper {
 		let addEmbeddedVideoEvent = new Log.Event.PromiseEvent(Log.Event.Label.AddEmbeddedVideo); // start event timer, just in case it gets logged
 		addEmbeddedVideoEvent.setCustomProperty(Log.PropertyName.Custom.Url, url);
 
-		DomUtils.addEmbeddedVideosWhereSupported(previewElement, pageContent, url).then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
+		DomUtils.addEmbeddedVideosWhereSupported(previewElement, pageContent, url).then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 			// only log when supported video is found on page
 			if (!ObjectUtils.isNullOrUndefined(videoSrcUrls)) {
 				addEmbeddedVideoEvent.setCustomProperty(Log.PropertyName.Custom.VideoSrcUrl, JSON.stringify(videoSrcUrls.map(function (v) { return v.srcAttribute; })));

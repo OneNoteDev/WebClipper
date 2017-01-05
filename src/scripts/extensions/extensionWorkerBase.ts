@@ -8,7 +8,7 @@ import {Polyfills} from "../polyfills";
 import {AuthType, UpdateReason, UserInfo} from "../userInfo";
 import {Settings} from "../settings";
 
-import {TooltipProps} from "../clipperUI/tooltipProps";
+import {WhatsNew} from "../clipperUI/tooltipProps";
 import {TooltipType} from "../clipperUI/tooltipType";
 
 import {Communicator} from "../communicator/communicator";
@@ -391,7 +391,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected registerWhatsNewCommunicatorFunctions(newVersions: ChangeLog.Update[]) {
 		this.registerTooltipToRenderInPageNav(TooltipType.WhatsNew, {
 			updates: newVersions
-		} as TooltipProps.WhatsNew);
+		} as WhatsNew);
 	}
 
 	protected registerTooltipCommunicatorFunctions(tooltipType: TooltipType) {

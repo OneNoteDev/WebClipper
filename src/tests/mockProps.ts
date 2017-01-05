@@ -21,8 +21,8 @@ import {UpdateReason} from "../scripts/userInfo";
  * Collection of mock props used in our tests. Mostly intended for preventing
  * lots of boilerplate, and can be customized to suit the test's needs.
  */
-export module MockProps {
-	export function getMockClipperState(): ClipperState {
+export class MockProps {
+	public static getMockClipperState(): ClipperState {
 		let clipperState: ClipperState = {
 			injectOptions: {
 				frameUrl: "",
@@ -134,7 +134,7 @@ export module MockProps {
 		return clipperState;
 	}
 
-	export function getMockNotebooks(): OneNoteApi.Notebook[] {
+	public static getMockNotebooks(): OneNoteApi.Notebook[] {
 		return [{
 			isDefault: true,
 			userRole: "Owner",
@@ -228,9 +228,9 @@ export module MockProps {
 		}] as OneNoteApi.Notebook[];
 	}
 
-	export function getMockMainControllerProps(): MainControllerProps {
+	public static getMockMainControllerProps(): MainControllerProps {
 		return {
-			clipperState: getMockClipperState(),
+			clipperState: this.getMockClipperState(),
 			onSignInInvoked: () => {
 			},
 			onSignOutInvoked: () => {
@@ -242,7 +242,7 @@ export module MockProps {
 		};
 	}
 
-	export function getMockModeButtonProps(): ModeButtonProps {
+	public static getMockModeButtonProps(): ModeButtonProps {
 		return {
 			imgSrc: "test.png",
 			label: "My Button",

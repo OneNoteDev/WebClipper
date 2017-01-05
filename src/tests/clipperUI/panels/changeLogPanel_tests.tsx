@@ -1,7 +1,5 @@
-import {Constants} from "../../../scripts/constants";
-
-import {TooltipProps} from "../../../scripts/clipperUI/tooltipProps";
 import {ChangeLogPanel} from "../../../scripts/clipperUI/panels/changeLogPanel";
+import {Constants} from "../../../scripts/constants";
 
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockUpdates} from "../../mockUpdates";

@@ -5,12 +5,12 @@ import {ClipMode} from "./clipMode";
 import {ClipperState} from "./clipperState";
 import {Status} from "./status";
 
-export module ClipperStateUtilities {
-	export function isUserLoggedIn(state: ClipperState): boolean {
+export class ClipperStateUtilities {
+	public static isUserLoggedIn(state: ClipperState): boolean {
 		return (state.userResult && state.userResult.status && state.userResult.data && !!state.userResult.data.user);
 	}
 
-	export function clipButtonEnabled(clipperState: ClipperState): boolean {
+	public static clipButtonEnabled(clipperState: ClipperState): boolean {
 		let currentMode = clipperState.currentMode.get();
 		switch (currentMode) {
 			case ClipMode.Pdf:

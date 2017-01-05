@@ -1,7 +1,7 @@
 import {ChangeLog} from "../scripts/versioning/changeLog";
 
-export module MockUpdates {
-	export function getMockUpdates(): ChangeLog.Update[] {
+export class MockUpdates {
+	public static getMockUpdates(): ChangeLog.Update[] {
 		return [{
 			version: "3.1.0",
 			date: "06/03/2016",
@@ -25,7 +25,7 @@ export module MockUpdates {
 		}];
 	}
 
-	export function getMockUpdatesWithSomeImages(): ChangeLog.Update[] {
+	public static getMockUpdatesWithSomeImages(): ChangeLog.Update[] {
 		return [{
 			version: "3.1.0",
 			date: "06/03/2016",
@@ -51,7 +51,7 @@ export module MockUpdates {
 		}];
 	}
 
-	export function getMockMultipleUpdates(): ChangeLog.Update[] {
+	public static getMockMultipleUpdates(): ChangeLog.Update[] {
 		return [{
 			version: "3.1.0",
 			date: "06/03/2016",

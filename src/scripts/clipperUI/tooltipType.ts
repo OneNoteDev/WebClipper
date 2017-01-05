@@ -9,8 +9,8 @@ export enum TooltipType {
 	WhatsNew
 }
 
-export module TooltipTypeUtils {
-	export function toInvokeSource(tooltipType: TooltipType): InvokeSource {
+export class TooltipTypeUtils {
+	public static toInvokeSource(tooltipType: TooltipType): InvokeSource {
 		switch (tooltipType) {
 			case TooltipType.Pdf:
 				return InvokeSource.PdfTooltip;

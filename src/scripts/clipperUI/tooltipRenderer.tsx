@@ -11,7 +11,7 @@ import {Rtl} from "../localization/rtl";
 import {Clipper} from "./frontEndGlobals";
 import {ComponentBase} from "./componentBase";
 import {AnimatedTooltip} from "./animatedTooltip";
-import {TooltipProps} from "./tooltipProps";
+import {WhatsNew} from "./tooltipProps";
 import {TooltipType, TooltipTypeUtils} from "./tooltipType";
 
 import {NewHeightInfo} from "./animations/slidingHeightAnimationStrategy";
@@ -37,7 +37,7 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 	}
 
 	getChangeLogPanel() {
-		let whatsNewProps = this.props.tooltipProps as TooltipProps.WhatsNew;
+		let whatsNewProps = this.props.tooltipProps as WhatsNew;
 		let handleProceedToWebClipperButton = () => {
 			Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.invokeClipperFromPageNav, {
 				param: InvokeSource.WhatsNewTooltip
