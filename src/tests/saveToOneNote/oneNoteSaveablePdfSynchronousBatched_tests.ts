@@ -1,4 +1,5 @@
-import {MockPdfDocument, MockPdfValues} from "../contentCapture/mockPdfDocument";
+import {MockPdfDocument} from "../contentCapture/mockPdfDocument";
+import {MockPdfValues} from "../contentCapture/mockPdfValues";
 
 import {OneNoteSaveablePdfSynchronousBatched} from "../../scripts/saveToOneNote/oneNoteSaveablePdfSynchronousBatched";
 
