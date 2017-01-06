@@ -71,6 +71,7 @@ class PopoverClass extends ComponentBase<{}, PopoverProps> {
 			for (let i = 0; i < this.props.arrowClassNames.length; i++) {
 				arrowElement.classList.add(this.props.arrowClassNames[i]);
 			}
+			arrowElement.setAttribute("x-arrow", "");
 			popperElement.appendChild(arrowElement);
 		}
 
