@@ -8,7 +8,7 @@ import * as popperJS from "popper.js";
 export interface PopoverProps {
 	referenceElementId: string;
 	placement: string; // TODO: use a union type of allowed values
-
+	parentId?: string;
 	content?: string;
 	classNames?: string[];
 	arrowClassNames?: string[];
@@ -25,12 +25,21 @@ class PopoverClass extends ComponentBase<{}, PopoverProps> {
 
 	handlePopoverLifecycle(element, isInitialized, context) {
 		if (!isInitialized) {
-			let popperElement = this.generatePopperElement(Constants.Ids.mainController);
-			this.refToPopper = new popperJS(document.getElementById(this.props.referenceElementId), popperElement, {
+			let popperElement = this.generatePopperElement(this.props.parentId);
+
+			// TODO temporarily typed this way until definitions is updated for popperJS.PopperOptions
+			let popperOptions: any = {
 				placement: this.props.placement,
-				modifiersIgnored: this.props.modifiersIgnored,
-				removeOnDestroy: this.props.removeOnDestroy
-			});
+				removeOnDestroy: this.props.removeOnDestroy,
+				modifiers: {}
+			};
+			if (this.props.modifiersIgnored) {
+				for (let i = 0; i < this.props.modifiersIgnored.length; i++) {
+					popperOptions.modifiers[this.props.modifiersIgnored[i]] = { enabled: false };
+				}
+			}
+
+			this.refToPopper = new popperJS(document.getElementById(this.props.referenceElementId), popperElement, popperOptions);
 		}
 
 		if (isInitialized) {
@@ -65,7 +74,7 @@ class PopoverClass extends ComponentBase<{}, PopoverProps> {
 			popperElement.appendChild(arrowElement);
 		}
 
-		let parent = document.getElementById(parentId);
+		let parent = parentId ? document.getElementById(parentId) : undefined;
 		if (parent) {
 			// We want to set the parent lower in the HTML hierarchy to avoid z-index issues relating to stacking contexts
 			parent.appendChild(popperElement);
