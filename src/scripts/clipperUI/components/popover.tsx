@@ -69,6 +69,8 @@ class PopoverClass extends ComponentBase<{}, PopoverProps> {
 		if (parent) {
 			// We want to set the parent lower in the HTML hierarchy to avoid z-index issues relating to stacking contexts
 			parent.appendChild(popperElement);
+		} else {
+			document.body.appendChild(popperElement);
 		}
 
 		return popperElement;
