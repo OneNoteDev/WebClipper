@@ -11,15 +11,6 @@ import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
-module TestConstants {
-	export module LogCategories {
-		export var oneNoteClipperUsage = "OneNoteClipperUsage";
-	}
-	export module Urls {
-		export var clipperFeedbackUrl = "https://www.onenote.com/feedback";
-	}
-}
-
 export class FooterTests extends TestModule {
 	private defaultComponent;
 	private startingState;

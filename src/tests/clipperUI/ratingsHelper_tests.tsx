@@ -16,16 +16,17 @@ import {StringUtils} from "../../scripts/stringUtils";
 import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
 
-module TestConstants {
-	export module LogCategories {
-		export var oneNoteClipperUsage = "OneNoteClipperUsage";
-	}
-	export module Urls {
-		export var clipperFeedbackUrl = "https://www.onenote.com/feedback";
-	}
-}
-
 export class RatingsHelperTests extends TestModule {
+
+	private testConstants = {
+		LogCategories: {
+			oneNoteClipperUsage: "OneNoteClipperUsage"
+		},
+		Urls: {
+			clipperFeedbackUrl: "https://www.onenote.com/feedback"
+		}
+	};
+
 	protected module() {
 		return "ratingsHelper";
 	}
@@ -261,7 +262,7 @@ export class RatingsHelperTests extends TestModule {
 		test("getFeedbackUrlIfExists returns a feedback url if log category for ratings prompt exists", () => {
 			Settings.setSettingsJsonForTesting({
 				LogCategory_RatingsPrompt: {
-					Value: TestConstants.LogCategories.oneNoteClipperUsage
+					Value: this.testConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 

@@ -4,17 +4,17 @@ import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
-module TestConstants {
-	export module Classes {
-		export var icon = "icon";
-		export var label = "label";
-		export var selected = "selected";
-	}
-}
-
 export class ModeButtonTests extends TestModule {
 	private mockModeButtonProps = MockProps.getMockModeButtonProps();
 	private defaultComponent;
+
+	private testConstants = {
+		Classes: {
+			icon: "icon",
+			label: "label",
+			selected: "selected"
+		}
+	};
 
 	protected module() {
 		return "modeButton";
@@ -36,7 +36,7 @@ export class ModeButtonTests extends TestModule {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild;
-			ok(!modeButton.classList.contains(TestConstants.Classes.selected),
+			ok(!modeButton.classList.contains(this.testConstants.Classes.selected),
 				"The mode button should not have extra styling applied to it");
 		});
 
@@ -53,7 +53,7 @@ export class ModeButtonTests extends TestModule {
 					tooltipText={startingState.tooltipText}/>);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild;
-			ok(modeButton.classList.contains(TestConstants.Classes.selected),
+			ok(modeButton.classList.contains(this.testConstants.Classes.selected),
 				"The mode button should have extra styling applied to it");
 		});
 
@@ -61,7 +61,7 @@ export class ModeButtonTests extends TestModule {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild;
-			let label = modeButton.getElementsByClassName(TestConstants.Classes.label)[0] as Node;
+			let label = modeButton.getElementsByClassName(this.testConstants.Classes.label)[0] as Node;
 			strictEqual(label.textContent, this.mockModeButtonProps.label,
 				"The mode button should be labeled with: " + this.mockModeButtonProps.label);
 		});
@@ -78,7 +78,7 @@ export class ModeButtonTests extends TestModule {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild;
-			let label = modeButton.getElementsByClassName(TestConstants.Classes.icon)[0] as HTMLImageElement;
+			let label = modeButton.getElementsByClassName(this.testConstants.Classes.icon)[0] as HTMLImageElement;
 
 			// endsWith is polyfilled
 			ok((label.src as any).endsWith(this.mockModeButtonProps.imgSrc),

@@ -18,16 +18,16 @@ import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
-module TestConstants {
-	export module LogCategories {
-		export var oneNoteClipperUsage = "OneNoteClipperUsage";
-	}
-	export module Urls {
-		export var clipperFeedbackUrl = "https://www.onenote.com/feedback";
-	}
-}
-
 export class RatingsPanelTests extends TestModule {
+	private testConstants = {
+		LogCategories: {
+			oneNoteClipperUsage: "OneNoteClipperUsage"
+		},
+		Urls: {
+			clipperFeedbackUrl: "https://www.onenote.com/feedback"
+		}
+	};
+
 	protected module() {
 		return "ratingsPanel";
 	}
@@ -95,7 +95,7 @@ export class RatingsPanelTests extends TestModule {
 
 			Settings.setSettingsJsonForTesting({
 				LogCategory_RatingsPrompt: {
-					Value: TestConstants.LogCategories.oneNoteClipperUsage
+					Value: this.testConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 
@@ -151,7 +151,7 @@ export class RatingsPanelTests extends TestModule {
 
 			Settings.setSettingsJsonForTesting({
 				LogCategory_RatingsPrompt: {
-					Value: TestConstants.LogCategories.oneNoteClipperUsage
+					Value: this.testConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 
@@ -295,7 +295,7 @@ export class RatingsPanelTests extends TestModule {
 		test("'Feedback' click at RatingsPromptStage.Feedback goes to RatingsPromptStage.End when feedback url exists", () => {
 			Settings.setSettingsJsonForTesting({
 				LogCategory_RatingsPrompt: {
-					Value: TestConstants.LogCategories.oneNoteClipperUsage
+					Value: this.testConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 
@@ -343,7 +343,7 @@ export class RatingsPanelTests extends TestModule {
 		test("'No Thanks' click at RatingsPromptStage.Feedback goes to RatingsPromptStage.None when feedback url exists", () => {
 			Settings.setSettingsJsonForTesting({
 				LogCategory_RatingsPrompt: {
-					gValue: TestConstants.LogCategories.oneNoteClipperUsage
+					gValue: this.testConstants.LogCategories.oneNoteClipperUsage
 				}
 			});
 

@@ -13,17 +13,6 @@ import {TestModule} from "../testModule";
 
 declare function require(name: string);
 
-module TestConstants {
-	export module Ids {
-		// Dynamically generated, hence not in constants module
-		export var fullPageButton = "fullPageButton";
-		export var regionButton = "regionButton";
-		export var augmentationButton = "augmentationButton";
-
-		export var sectionLocationContainer = "sectionLocationContainer";
-	}
-}
-
 // Currently we set a 100ms delay before the initial render, which breaks our tests
 MainControllerClass.prototype.getInitialState = function() {
 	return {
@@ -34,6 +23,16 @@ MainControllerClass.prototype.getInitialState = function() {
 export class MainControllerTests extends TestModule {
 	private mockMainControllerProps: MainControllerProps;
 	private defaultComponent;
+
+	private testConstants = {
+		Ids: {
+			// Dynamically generated, hence not in constants module
+			fullPageButton: "fullPageButton",
+			regionButton: "regionButton",
+			augmentationButton: "augmentationButton",
+			sectionLocationContainer: "sectionLocationContainer"
+		}
+	};
 
 	protected module() {
 		return "mainController";
@@ -67,8 +66,8 @@ export class MainControllerTests extends TestModule {
 				controllerInstance.state.currentPanel = PanelType.ClipOptions;
 			});
 
-			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
-				TestConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, this.testConstants.Ids.fullPageButton, this.testConstants.Ids.regionButton, this.testConstants.Ids.augmentationButton,
+				this.testConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
 		test("On the pdf clip options panel, the tab order is correct", () => {
@@ -79,8 +78,8 @@ export class MainControllerTests extends TestModule {
 				controllerInstance.state.currentPanel = PanelType.ClipOptions;
 			});
 
-			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
-				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.feedbackButton,
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, this.testConstants.Ids.fullPageButton, this.testConstants.Ids.regionButton, this.testConstants.Ids.augmentationButton,
+				this.testConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.feedbackButton,
 				Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
@@ -96,8 +95,8 @@ export class MainControllerTests extends TestModule {
 				document.getElementById(Constants.Ids.moreClipOptions).click();
 			});
 
-			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
-				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, this.testConstants.Ids.fullPageButton, this.testConstants.Ids.regionButton, this.testConstants.Ids.augmentationButton,
+				this.testConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
 				Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 

@@ -2,18 +2,6 @@ import {Constants} from "../../../constants";
 
 import {ComponentBase} from "../../componentBase";
 
-/**
- * Shared class names used by header elements for consistent styling.
- */
-export module HeaderClasses {
-	export module Button {
-		export let active = " active";
-		export let controlButton = " control-button";
-		export let relatedButtons = " related-buttons";
-		export let activeControlButton = active + controlButton;
-	}
-}
-
 export interface ControlGroup {
 	id?: string;
 	className?: string;
@@ -26,6 +14,18 @@ export interface ControlGroup {
  * buttons.
  */
 export abstract class PreviewViewerHeaderComponentBase<T, P> extends ComponentBase<T, P> {
+	/**
+	 * Shared class names used by header elements for consistent styling.
+	 */
+	public static HeaderClasses = {
+		Button: {
+			active: " active",
+			controlButton: " control-button",
+			relatedButtons: " related-buttons",
+			activeControlButton: " active control-button"
+		}
+	};
+
 	/**
 	 * Gets the list of control groups to be rendered.
 	 */

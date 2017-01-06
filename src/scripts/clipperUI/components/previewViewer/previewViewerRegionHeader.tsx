@@ -7,7 +7,7 @@ import {Localization} from "../../../localization/localization";
 import {ClipperStateProp} from "../../clipperState";
 import {Status} from "../../status";
 
-import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
+import {ControlGroup, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
 
 class PreviewViewerRegionHeaderClass extends PreviewViewerHeaderComponentBase<{}, ClipperStateProp> {
 	addAnotherRegion() {
@@ -30,7 +30,7 @@ class PreviewViewerRegionHeaderClass extends PreviewViewerHeaderComponentBase<{}
 				<button
 					id={Constants.Ids.addAnotherRegionButton}
 					{...this.enableInvoke(this.addAnotherRegion.bind(this), 100) }
-					className={HeaderClasses.Button.controlButton}
+					className={PreviewViewerHeaderComponentBase.HeaderClasses.Button.controlButton}
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }
 					type="button">
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon.png")} />
