@@ -143,6 +143,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 					<Popover
 						referenceElementId={Constants.Ids.rangeInput}
 						placement="bottom"
+						parentId={Constants.Ids.mainController}
 						content={this.getErrorMessageForInvalidPageRange()}
 						classNames={[Constants.Classes.popover]}
 						arrowClassNames={[Constants.Classes.popoverArrow]}
