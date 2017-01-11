@@ -576,11 +576,18 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		let handleSignInEvent = new Log.Event.PromiseEvent(Log.Event.Label.HandleSignInEvent);
 
 		this.setState({ userResult: { status: Status.InProgress } });
-		type ErrorObject = { updateReason: UpdateReason, correlationId?: string, error: string, errorDescription: string };
+
+		type ErrorObject = {
+			updateReason: UpdateReason,
+			correlationId?: string,
+			error: string,
+			errorDescription: string
+		};
 
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signInUser, {
 			param: authType, callback: (data: UserInfo | ErrorObject) => {
 			// For cleaner referencing
+			// TODO: This kind of thing should go away as we move the communicator to be Promise based.
 			let updatedUser = data as UserInfo;
 			let errorObject = data as ErrorObject;
 
