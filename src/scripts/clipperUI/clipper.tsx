@@ -577,40 +577,35 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		this.setState({ userResult: { status: Status.InProgress } });
 		type ErrorObject = { updateReason: UpdateReason, correlationId?: string, error: string, errorDescription: string };
-		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signInUser, { param: authType, callback: (data: UserInfo | ErrorObject) => {
+
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signInUser, {
+			param: authType, callback: (data: UserInfo | ErrorObject) => {
 			// For cleaner referencing
 			let updatedUser = data as UserInfo;
 			let errorObject = data as ErrorObject;
 
-			// Unexpected errors
-			let errorPrefix = AuthType[authType] + "; ";
-			let error: string;
-			if (!updatedUser) {
-				error = errorPrefix + "The " + Constants.FunctionKeys.signInUser + " remote function incorrectly returned an undefined object";
-			} else if (errorObject.error || errorObject.errorDescription) {
-				// Something went wrong on the auth server
-				error = errorPrefix + errorObject.error + ": " + errorObject.errorDescription;
-				handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, errorObject.correlationId);
-			}
+			let errorsFound = errorObject.error || errorObject.errorDescription;
+			if (errorsFound) {
+				errorObject.errorDescription = AuthType[authType] + ": " + errorObject.error + ": " + errorObject.errorDescription;
 
-			if (error) {
-				handleSignInEvent.setStatus(Log.Status.Failed);
-				handleSignInEvent.setFailureInfo({ error: error });
-
-				errorObject.errorDescription = error;
 				this.state.setState({ userResult: { status: Status.Failed, data: errorObject } });
+
+				handleSignInEvent.setStatus(Log.Status.Failed);
+				handleSignInEvent.setFailureInfo({ error: errorObject.errorDescription });
+				handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, errorObject.correlationId);
 
 				Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInFailed);
 			}
 
 			let userInfoReturned = updatedUser && !!updatedUser.user;
 			if (userInfoReturned) {
-				// Sign in succeeded
 				Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
 				Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInCompleted);
 			}
+
 			handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationReturned, userInfoReturned);
-			handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.SignInCancelled, !error && !userInfoReturned);
+			handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.SignInCancelled, !errorsFound && !userInfoReturned);
+
 			Clipper.logger.logEvent(handleSignInEvent);
 		}});
 	}
