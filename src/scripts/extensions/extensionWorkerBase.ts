@@ -511,6 +511,11 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			}).catch((errorObject) => {
 				// Set the user info object to undefined as a result of an attempted sign in
 				this.auth.user.set({ updateReason: UpdateReason.SignInAttempt });
+
+				// Right now we're adding the update reason to the errorObject as well so that it is preserved in the callback.
+				// The right thing to do is revise the way we use callbacks in the communicator and instead use Promises so that
+				// we are able to return distinct objects.
+				errorObject.updateReason = UpdateReason.SignInAttempt;
 				return Promise.reject(errorObject);
 			});
 		});

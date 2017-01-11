@@ -576,7 +576,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		let handleSignInEvent = new Log.Event.PromiseEvent(Log.Event.Label.HandleSignInEvent);
 
 		this.setState({ userResult: { status: Status.InProgress } });
-		type ErrorObject = { correlationId?: string, error: string, errorDescription: string };
+		type ErrorObject = { updateReason: UpdateReason, correlationId?: string, error: string, errorDescription: string };
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signInUser, { param: authType, callback: (data: UserInfo | ErrorObject) => {
 			// For cleaner referencing
 			let updatedUser = data as UserInfo;
@@ -598,7 +598,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				handleSignInEvent.setFailureInfo({ error: error });
 
 				errorObject.errorDescription = error;
-				this.state.setState({ userResult: { status: Status.Failed, data: updatedUser } });
+				this.state.setState({ userResult: { status: Status.Failed, data: errorObject } });
 
 				Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInFailed);
 			}
