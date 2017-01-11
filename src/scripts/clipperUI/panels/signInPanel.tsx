@@ -100,9 +100,6 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 	debugInformation() {
 		if (this.signInErrorDetected() && this.state.debugInformationShowing) {
 			return <div id={Constants.Ids.signInErrorDebugInformation}>
-				<span id={Constants.Ids.signInErrorDebugInformationDescription} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-					{this.props.clipperState.userResult.data.errorDescription}
-				</span>
 				<div id={Constants.Ids.signInErrorDebugInformationContainer} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 					<ul id={Constants.Ids.signInErrorDebugInformationList}>
 						<li>{ClientType[this.props.clipperState.clientInfo.clipperType]}: {this.props.clipperState.clientInfo.clipperVersion}</li>
