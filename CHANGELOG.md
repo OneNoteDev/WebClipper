@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.4.2 (January 11, 2017)
+* Bug: Sign-in errors on O365 were not getting bubbled up to the user (issue #296)
+* Bug: Message around having third-party cookies disabled should also include the need to add live.com as an exception as well.
+
 ## 3.4.1 (January 4, 2017)
 * Bug: Some pages were not clipping the embedded YouTube videos (issue #291)
 
