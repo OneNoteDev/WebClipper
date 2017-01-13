@@ -12,7 +12,7 @@ import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
 
 export class AugmentationHelperTests extends TestModule {
-	private server: Sinon.SinonFakeServer;
+	private server: sinon.SinonFakeServer;
 
 	protected module() {
 		return "augmentationHelper-sinon";

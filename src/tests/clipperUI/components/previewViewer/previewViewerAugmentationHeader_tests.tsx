@@ -77,7 +77,7 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 				document.getElementById(Constants.Ids.highlightButton).click();
 			});
 
-			let spy = sectionPicker.props.toggleHighlight as Sinon.SinonSpy;
+			let spy = sectionPicker.props.toggleHighlight as sinon.SinonSpy;
 			ok(spy.calledOnce, "toggleHighlight should be called exactly once");
 
 			MithrilUtils.simulateAction(() => {
@@ -94,7 +94,7 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 				document.getElementById(Constants.Ids.serif).click();
 			});
 
-			let spy = sectionPicker.props.changeFontFamily as Sinon.SinonSpy;
+			let spy = sectionPicker.props.changeFontFamily as sinon.SinonSpy;
 			ok(spy.calledOnce, "changeFontFamily should be called exactly once");
 			ok(spy.calledWith(true), "changeFontFamily should be called with true");
 		});
@@ -106,7 +106,7 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 				document.getElementById(Constants.Ids.sansSerif).click();
 			});
 
-			let spy = sectionPicker.props.changeFontFamily as Sinon.SinonSpy;
+			let spy = sectionPicker.props.changeFontFamily as sinon.SinonSpy;
 			ok(spy.calledOnce, "changeFontFamily should be called exactly once");
 			ok(spy.calledWith(false), "changeFontFamily should be called with false");
 		});
@@ -118,7 +118,7 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 				document.getElementById(Constants.Ids.incrementFontSize).click();
 			});
 
-			let spy = sectionPicker.props.changeFontSize as Sinon.SinonSpy;
+			let spy = sectionPicker.props.changeFontSize as sinon.SinonSpy;
 			ok(spy.calledOnce, "changeFontSize should be called exactly once");
 			ok(spy.calledWith(true), "changeFontSize should be called with true");
 		});
@@ -130,7 +130,7 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 				document.getElementById(Constants.Ids.decrementFontSize).click();
 			});
 
-			let spy = sectionPicker.props.changeFontSize as Sinon.SinonSpy;
+			let spy = sectionPicker.props.changeFontSize as sinon.SinonSpy;
 			ok(spy.calledOnce, "changeFontSize should be called exactly once");
 			ok(spy.calledWith(false), "changeFontSize should be called with false");
 		});

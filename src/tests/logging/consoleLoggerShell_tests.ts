@@ -32,8 +32,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				EventName: "MyEvent"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledOnce, "The log function should be called once");
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledWith("[MyEvent]", sinon.match(event)),
+			ok((this.mockConsole.log as sinon.SinonSpy).calledOnce, "The log function should be called once");
+			ok((this.mockConsole.log as sinon.SinonSpy).calledWith("[MyEvent]", sinon.match(event)),
 				"The log function should be called with the message and object");
 		});
 
@@ -43,8 +43,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				Level: "None"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledOnce, "The log function should be called once");
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledWith("[MyEvent] [None]", sinon.match(event)),
+			ok((this.mockConsole.log as sinon.SinonSpy).calledOnce, "The log function should be called once");
+			ok((this.mockConsole.log as sinon.SinonSpy).calledWith("[MyEvent] [None]", sinon.match(event)),
 				"The log message should contain the EventName and Level tag");
 		});
 
@@ -54,8 +54,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				Status: "Failed"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.error as Sinon.SinonSpy).calledOnce, "The error function should be called once");
-			ok((this.mockConsole.error as Sinon.SinonSpy).calledWith("[MyEvent] [Error]", sinon.match(event)),
+			ok((this.mockConsole.error as sinon.SinonSpy).calledOnce, "The error function should be called once");
+			ok((this.mockConsole.error as sinon.SinonSpy).calledWith("[MyEvent] [Error]", sinon.match(event)),
 				"The error message should contain the EventName and Level Error tag");
 		});
 
@@ -66,8 +66,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				Message: "Hello world"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledOnce, "The log function should be called once");
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledWith("[MyEvent] [None] Hello world", sinon.match(event)),
+			ok((this.mockConsole.log as sinon.SinonSpy).calledOnce, "The log function should be called once");
+			ok((this.mockConsole.log as sinon.SinonSpy).calledWith("[MyEvent] [None] Hello world", sinon.match(event)),
 				"The log message should contain the EventName, Level tag, and message");
 		});
 
@@ -77,8 +77,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				Message: "Hello world"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledOnce, "The log function should be called once");
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledWith("[MyEvent] Hello world", sinon.match(event)),
+			ok((this.mockConsole.log as sinon.SinonSpy).calledOnce, "The log function should be called once");
+			ok((this.mockConsole.log as sinon.SinonSpy).calledWith("[MyEvent] Hello world", sinon.match(event)),
 				"The log message should contain the EventName and message");
 		});
 
@@ -89,8 +89,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				Message: "Hello world"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.warn as Sinon.SinonSpy).calledOnce, "The warn function should be called once");
-			ok((this.mockConsole.warn as Sinon.SinonSpy).calledWith("[MyEvent] [Warning] Hello world", sinon.match(event)),
+			ok((this.mockConsole.warn as sinon.SinonSpy).calledOnce, "The warn function should be called once");
+			ok((this.mockConsole.warn as sinon.SinonSpy).calledWith("[MyEvent] [Warning] Hello world", sinon.match(event)),
 				"The warn message should contain the EventName and message");
 		});
 
@@ -101,8 +101,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				Message: "Hello world"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.error as Sinon.SinonSpy).calledOnce, "The error function should be called once");
-			ok((this.mockConsole.error as Sinon.SinonSpy).calledWith("[MyEvent] [Error] Hello world", sinon.match(event)),
+			ok((this.mockConsole.error as sinon.SinonSpy).calledOnce, "The error function should be called once");
+			ok((this.mockConsole.error as sinon.SinonSpy).calledWith("[MyEvent] [Error] Hello world", sinon.match(event)),
 				"The error message should contain the EventName and message");
 		});
 
@@ -113,8 +113,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				Message: "Hello world"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.info as Sinon.SinonSpy).calledOnce, "The info function should be called once");
-			ok((this.mockConsole.info as Sinon.SinonSpy).calledWith("[MyEvent] [Verbose] Hello world", sinon.match(event)),
+			ok((this.mockConsole.info as sinon.SinonSpy).calledOnce, "The info function should be called once");
+			ok((this.mockConsole.info as sinon.SinonSpy).calledWith("[MyEvent] [Verbose] Hello world", sinon.match(event)),
 				"The info message should contain the EventName and message");
 		});
 
@@ -125,8 +125,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				Message: "Hello world"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.info as Sinon.SinonSpy).calledOnce, "The info function should be called once");
-			ok((this.mockConsole.info as Sinon.SinonSpy).calledWith("[MyEvent] [Information] Hello world", sinon.match(event)),
+			ok((this.mockConsole.info as sinon.SinonSpy).calledOnce, "The info function should be called once");
+			ok((this.mockConsole.info as sinon.SinonSpy).calledWith("[MyEvent] [Information] Hello world", sinon.match(event)),
 				"The info message should contain the EventName and message");
 		});
 
@@ -137,8 +137,8 @@ export class ConsoleLoggerShellTests extends TestModule {
 				Message: "Hello world"
 			};
 			this.consoleLoggerShell.logToConsole(event);
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledOnce, "The log function should be called once");
-			ok((this.mockConsole.log as Sinon.SinonSpy).calledWith("[MyEvent] [asdf] Hello world", sinon.match(event)),
+			ok((this.mockConsole.log as sinon.SinonSpy).calledOnce, "The log function should be called once");
+			ok((this.mockConsole.log as sinon.SinonSpy).calledWith("[MyEvent] [asdf] Hello world", sinon.match(event)),
 				"The log message should contain the EventName and message");
 		});
 	}

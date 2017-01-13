@@ -19,7 +19,7 @@ import {AsyncUtils} from "../asyncUtils";
 import {TestModule} from "../testModule";
 
 export class SaveToOneNoteTests extends TestModule {
-	private server: Sinon.SinonFakeServer;
+	private server: sinon.SinonFakeServer;
 	private saveToOneNote: SaveToOneNote;
 
 	protected module() {
