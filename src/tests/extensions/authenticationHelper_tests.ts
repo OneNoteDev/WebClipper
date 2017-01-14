@@ -130,7 +130,7 @@ export class AuthenticationHelperTests extends TestModule {
 }
 
 export class AuthenticationHelperSinonTests extends TestModule {
-	private server: Sinon.SinonFakeServer;
+	private server: sinon.SinonFakeServer;
 	private mockClipperData: ClipperData;
 	private mockLogger: Logger;
 	private authentationHelper;

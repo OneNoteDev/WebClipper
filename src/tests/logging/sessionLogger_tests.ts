@@ -43,9 +43,9 @@ export class SessionLoggerTests extends TestModule {
 	private mockAlwaysFalseContext: Context;
 	private mockOneReqContext: Context;
 
-	private alwaysTrueReqCheckSpy: Sinon.SinonSpy;
-	private alwaysFalseReqCheckSpy: Sinon.SinonSpy;
-	private oneReqCheckSpy: Sinon.SinonSpy;
+	private alwaysTrueReqCheckSpy: sinon.SinonSpy;
+	private alwaysFalseReqCheckSpy: sinon.SinonSpy;
+	private oneReqCheckSpy: sinon.SinonSpy;
 
 	protected module() {
 		return "sessionLogger";

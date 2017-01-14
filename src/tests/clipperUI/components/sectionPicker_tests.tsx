@@ -279,7 +279,7 @@ export class SectionPickerSinonTests extends TestModule {
 	private defaultComponent;
 	private mockClipperState = MockProps.getMockClipperState();
 
-	private server: Sinon.SinonFakeServer;
+	private server: sinon.SinonFakeServer;
 
 	protected module() {
 		return "sectionPicker-sinon";

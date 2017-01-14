@@ -30,7 +30,7 @@ export class ClipperCachedHttpTests extends TestModule {
 
 			clipperCachedHttp.getFreshValue(undefined, MockStorage.fetchNonLocalData);
 
-			let logFailureSpy = this.stubLogger.logFailure as Sinon.SinonSpy;
+			let logFailureSpy = this.stubLogger.logFailure as sinon.SinonSpy;
 			ok(logFailureSpy.calledOnce, "logFailure should be called");
 			ok(logFailureSpy.calledWith(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected),
 				"logFailure should be called as an unexpected failure caused by an invalid argument");
@@ -41,7 +41,7 @@ export class ClipperCachedHttpTests extends TestModule {
 
 			clipperCachedHttp.getFreshValue("", MockStorage.fetchNonLocalData);
 
-			let logFailureSpy = this.stubLogger.logFailure as Sinon.SinonSpy;
+			let logFailureSpy = this.stubLogger.logFailure as sinon.SinonSpy;
 			ok(logFailureSpy.calledOnce, "logFailure should be called");
 			ok(logFailureSpy.calledWith(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected),
 				"logFailure should be called as an unexpected failure caused by an invalid argument");
@@ -52,7 +52,7 @@ export class ClipperCachedHttpTests extends TestModule {
 
 			clipperCachedHttp.getFreshValue("k", undefined);
 
-			let logFailureSpy = this.stubLogger.logFailure as Sinon.SinonSpy;
+			let logFailureSpy = this.stubLogger.logFailure as sinon.SinonSpy;
 			ok(logFailureSpy.calledOnce, "logFailure should be called");
 			ok(logFailureSpy.calledWith(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected),
 				"logFailure should be called as an unexpected failure caused by an invalid argument");
@@ -63,7 +63,7 @@ export class ClipperCachedHttpTests extends TestModule {
 
 			clipperCachedHttp.getFreshValue("k", MockStorage.fetchNonLocalData, -1);
 
-			let logFailureSpy = this.stubLogger.logFailure as Sinon.SinonSpy;
+			let logFailureSpy = this.stubLogger.logFailure as sinon.SinonSpy;
 			ok(logFailureSpy.calledOnce, "logFailure should be called");
 			ok(logFailureSpy.calledWith(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected),
 				"logFailure should be called as an unexpected failure caused by an invalid argument");
@@ -75,7 +75,7 @@ export class ClipperCachedHttpTests extends TestModule {
 			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, this.stubLogger);
 
 			clipperCachedHttp.getFreshValue("k", MockStorage.fetchNonLocalData, 0).then((timeStampedData) => {
-				let logEventSpy = this.stubLogger.logEvent as Sinon.SinonSpy;
+				let logEventSpy = this.stubLogger.logEvent as sinon.SinonSpy;
 				ok(logEventSpy.calledOnce,
 					"logEvent should be called when the fetchNonLocalData function is executed");
 			}, (error) => {
@@ -99,7 +99,7 @@ export class ClipperCachedHttpTests extends TestModule {
 			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, this.stubLogger);
 
 			clipperCachedHttp.getFreshValue(key, MockStorage.fetchNonLocalData, expiry).then((timeStampedData) => {
-				let logEventSpy = this.stubLogger.logEvent as Sinon.SinonSpy;
+				let logEventSpy = this.stubLogger.logEvent as sinon.SinonSpy;
 				ok(logEventSpy.notCalled,
 					"logEvent should not be called as the fetchNonLocalData function was not executed");
 			}, (error) => {

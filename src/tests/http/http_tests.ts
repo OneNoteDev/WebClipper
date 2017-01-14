@@ -5,7 +5,7 @@ import {Http} from "../../scripts/http/http";
 import {TestModule} from "../testModule";
 
 export class HttpTests extends TestModule {
-	private server: Sinon.SinonFakeServer;
+	private server: sinon.SinonFakeServer;
 
 	protected module() {
 		return "http";
