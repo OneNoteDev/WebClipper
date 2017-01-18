@@ -3,6 +3,7 @@ import {DomUtils} from "../domParsers/domUtils";
 import * as Log from "../logging/log";
 
 import {Constants} from "../constants";
+import {ClientType} from "../clientType";
 import {Status} from "./status";
 
 import {ClipperStateProp} from "./clipperState";
@@ -248,6 +249,14 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 			return Promise.reject(new Error("Expected the two points to be set, but they were not"));
 		}
 
+		// Taken from https://www.kirupa.com/html5/detecting_retina_high_dpi.htm
+		const query = "(-webkit-min-device-pixel-ratio: 2), (min-device-pixel-ratio: 2), (min-resolution: 192dpi)";
+		const isFirefoxWithHighDpiDisplay = this.props.clipperState.clientInfo.clipperType === ClientType.FirefoxExtension && matchMedia(query).matches;
+
+		if (isFirefoxWithHighDpiDisplay) {
+			devicePixelRatio = 1;
+		}
+
 		return new Promise<HTMLCanvasElement>((resolve) => {
 			let regionSelectionLoadingEvent = new Log.Event.BaseEvent(Log.Event.Label.RegionSelectionLoading);
 			let img: HTMLImageElement = new Image();
@@ -264,17 +273,16 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				let destinationOffsetY = 0;
 				let width = (xMax - xMin);
 				let height = (yMax - yMin);
-				let sourceOffsetX = xMin * this.devicePixelRatio;
-				let sourceOffsetY = yMin * this.devicePixelRatio;
-				let sourceWidth = (xMax - xMin) * this.devicePixelRatio;
-				let sourceHeight = (yMax - yMin) * this.devicePixelRatio;
+				let sourceOffsetX = xMin * devicePixelRatio;
+				let sourceOffsetY = yMin * devicePixelRatio;
+				let sourceWidth = (xMax - xMin) * devicePixelRatio;
+				let sourceHeight = (yMax - yMin) * devicePixelRatio;
 
 				let canvas: HTMLCanvasElement = document.createElement("canvas") as HTMLCanvasElement;
 				canvas.width = width;
 				canvas.height = height;
 				let ctx: CanvasRenderingContext2D = canvas.getContext("2d");
 				ctx.drawImage(img, sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, destinationOffsetX, destinationOffsetY, width, height);
-
 				resolve(canvas);
 			};
 
