@@ -1,5 +1,5 @@
 let oneNoteWebClipperInstallMarkerClassName = "oneNoteWebClipperIsInstalledOnThisBrowser";
-let marker = document.createElement("DIV");
+let marker = document.createElement("div");
 
 // We have to be extra careful with undefines as this is executed before the body is rendered
 if (marker) {
