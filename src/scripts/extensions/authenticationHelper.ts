@@ -53,9 +53,7 @@ export class AuthenticationHelper {
 			}
 
 			let getUserInformationFunction = () => {
-				return this.getClipperInfoCookie(clipperId).then((cookie) => {
-					return this.retrieveUserInformation(clipperId, cookie);
-				});
+				return this.retrieveUserInformation(clipperId, undefined);
 			};
 
 			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
