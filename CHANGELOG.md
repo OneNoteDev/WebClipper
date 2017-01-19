@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.4.3 (January 18, 2017)
+* Bug: No longer inject an empty div into every page (issues #166, #303)
+
 ## 3.4.2 (January 11, 2017)
 * Bug: Sign-in errors on O365 were not getting bubbled up to the user (issue #296)
 * Bug: Message around having third-party cookies disabled should also include the need to add live.com as an exception as well.
