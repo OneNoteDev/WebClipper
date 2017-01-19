@@ -220,7 +220,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.takeTabScreenshot, {
 			callback: (dataUrl: string) => {
 				Clipper.logger.logEvent(regionSelectionCapturingEvent);
-				this.saveCompressedSelectionToState(dataUrl, isFirefoxWithHighDpiDisplay).then((canvas) => {
+				this.saveCompressedSelectionToState(dataUrl).then((canvas) => {
 					regionSelectionProcessingEvent.setCustomProperty(Log.PropertyName.Custom.Width, canvas.width);
 					regionSelectionProcessingEvent.setCustomProperty(Log.PropertyName.Custom.Height, canvas.height);
 					regionSelectionProcessingEvent.setCustomProperty(Log.PropertyName.Custom.IsHighDpiScreen, isHighDpiScreen);
@@ -234,8 +234,8 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	 * Given a base image in url form, captures the sub-image defined by the state's first and second points, compresses it if
 	 * necessary, then saves it to state if the process was successful
 	 */
-	private saveCompressedSelectionToState(baseDataUrl: string, isFirefoxWithHighDpiDisplay: boolean): Promise<HTMLCanvasElement> {
-		return this.createSelectionAsCanvas(baseDataUrl, isFirefoxWithHighDpiDisplay).then((canvas) => {
+	private saveCompressedSelectionToState(baseDataUrl: string): Promise<HTMLCanvasElement> {
+		return this.createSelectionAsCanvas(baseDataUrl).then((canvas) => {
 			let compressedSelection = this.getCompressedDataUrl(canvas);
 			this.completeSelection(compressedSelection);
 			return Promise.resolve(canvas);
@@ -250,7 +250,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	/**
 	 * Given a base image in url form, creates a canvas containing the sub-image defined by the state's first and second points
 	 */
-	private createSelectionAsCanvas(baseDataUrl: string, isFirefoxWithHighDpiDisplay?: boolean): Promise<HTMLCanvasElement> {
+	private createSelectionAsCanvas(baseDataUrl: string): Promise<HTMLCanvasElement> {
 		if (!baseDataUrl) {
 			return Promise.reject(new Error("baseDataUrl should be a non-empty string, but was: " + baseDataUrl));
 		}
