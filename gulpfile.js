@@ -4,6 +4,7 @@ var require;
 
 var argv = require("yargs").argv;
 var browserify = require("browserify");
+var bump = require('gulp-bump');
 var concat = require("gulp-concat");
 var del = require("del");
 var fileExists = require("file-exists");
@@ -67,6 +68,31 @@ function printGlobResults(glob) {
 		console.log(filePath);
 	});
 }
+
+////////////////////////////////////////
+// VERSIONING
+////////////////////////////////////////
+gulp.task('bump', function () {
+	var bumpType = argv.minor ? 'minor' : 'patch';
+
+	var filesWithVersions = [
+		'./src/scripts/extensions/chrome/manifest.json',
+		'./src/scripts/extensions/edge/manifest.json',
+		'./src/scripts/extensions/edge/package/AppXManifest.xml',
+		'./src/scripts/extensions/firefox/manifest.json'
+	]
+
+	var tasks = [];
+	for (var i = 0; i < filesWithVersions.length; i++) {
+		var fileName = filesWithVersions[i];
+		tasks.push(gulp.src(fileName)
+			.pipe(bump({ type: bumpType }))
+			.pipe(gulp.dest(fileName.substring(0,fileName.lastIndexOf("/") + 1)))
+		);
+	}
+
+	return tasks;
+});
 
 ////////////////////////////////////////
 // CLEAN
