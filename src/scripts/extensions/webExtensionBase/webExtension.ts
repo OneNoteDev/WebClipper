@@ -45,7 +45,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		this.registerTabRemoveListener();
 	}
 
-	public static getExtensionVersion(): string {
+	protected getExtensionVersion(): string {
 		return WebExtension.browser.runtime.getManifest().version;
 	}
 

@@ -61,7 +61,7 @@ export class UnsupportedBrowserInject {
 			label: Log.Failure.Label.UnsupportedBrowser, // We currently only don't support older versions (<10) of IE
 			properties: {
 				failureType: Log.Failure.Type.Expected,
-				failureInfo: { error: JSON.stringify({ browserVersion: BrowserUtils.ieVersion(), clipperVersion: ExtensionBase.getExtensionVersion(), clientType: ClientType[ClientType.Bookmarklet] }) },
+				failureInfo: { error: JSON.stringify({ browserVersion: BrowserUtils.ieVersion(), clientType: ClientType[ClientType.Bookmarklet] }) },
 				stackTrace: Log.Failure.getStackTrace()
 			}
 		};

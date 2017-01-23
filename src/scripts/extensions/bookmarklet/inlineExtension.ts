@@ -33,7 +33,11 @@ export class InlineExtension extends ExtensionBase<InlineWorker, any, any> {
 		this.addWorker(this.worker);
 	}
 
-	getIdFromTab(tab: any): any {
+	protected getExtensionVersion(): string {
+		return "3.4.3";
+	}
+
+	protected getIdFromTab(tab: any): any {
 		return undefined;
 	}
 

@@ -42,7 +42,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
-	protected static version = "3.4.3";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
@@ -71,7 +70,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 		this.clientInfo = new SmartValue<ClientInfo>({
 			clipperType: clipperType,
-			clipperVersion: ExtensionBase.getExtensionVersion(),
+			clipperVersion: this.getExtensionVersion(),
 			clipperId: clipperId
 		});
 
@@ -86,16 +85,13 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 	protected abstract addPageNavListener(callback: (tab: TTab) => void);
 	protected abstract checkIfTabIsOnWhitelistedUrl(tab: TTab): boolean;
-	protected abstract getIdFromTab(tab: TTab): TTabIdentifier;
 	protected abstract createWorker(tab: TTab): TWorker;
+	protected abstract getExtensionVersion(): string;
+	protected abstract getIdFromTab(tab: TTab): TTabIdentifier;
 	protected abstract onFirstRun();
 
 	public static getExtensionId(): string {
 		return ExtensionBase.extensionId;
-	}
-
-	public static getExtensionVersion(): string {
-		return ExtensionBase.version;
 	}
 
 	public static shouldCheckForMajorUpdates(lastSeenVersion: Version, currentVersion: Version) {
@@ -155,7 +151,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clientType, ClientType[clipperType]);
 		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperId, clipperId);
-		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperVersion,  ExtensionBase.getExtensionVersion());
+		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperVersion,  this.getExtensionVersion());
 		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.inlineInstall, isInlineInstall.toString());
 
 		this.logger.logTrace(Log.Trace.Label.RequestForClipperInstalledPageUrl, Log.Trace.Level.Information, installUrl);
@@ -363,7 +359,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				return;
 			}
 
-			let extensionVersion = new Version(ExtensionBase.getExtensionVersion());
+			let extensionVersion = new Version(this.getExtensionVersion());
 
 			if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
 				let tooltips = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
@@ -434,6 +430,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	private updateLastSeenVersionInStorageToCurrent() {
-		this.clipperData.setValue(ClipperStorageKeys.lastSeenVersion, ExtensionBase.getExtensionVersion());
+		this.clipperData.setValue(ClipperStorageKeys.lastSeenVersion, this.getExtensionVersion());
 	}
 }

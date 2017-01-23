@@ -56,7 +56,7 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 		this.registerContextMenuItems();
 	}
 
-	public static getExtensionVersion(): string {
+	protected getExtensionVersion(): string {
 		return safari.extension.bundleVersion;
 	}
 
