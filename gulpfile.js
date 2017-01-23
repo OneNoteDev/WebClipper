@@ -94,6 +94,10 @@ gulp.task("bump", function () {
 		);
 	}
 
+	console.log("\n\n\n****** READ THIS *******\n");
+	console.log("Right now you'll need to still *manually update*\nSafari's info.plist file to the new version number.\n");
+	console.log("************************\n\n\n");
+
 	return tasks;
 });
 
