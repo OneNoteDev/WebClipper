@@ -73,14 +73,16 @@ function printGlobResults(glob) {
 ////////////////////////////////////////
 // VERSIONING
 ////////////////////////////////////////
-gulp.task('bump', function () {
-	var bumpType = argv.minor ? 'minor' : 'patch';
+gulp.task("bump", function () {
+	var bumpType = argv.minor ? "minor" : "patch";
 
 	var filesWithVersions = [
-		'./src/scripts/extensions/chrome/manifest.json',
-		'./src/scripts/extensions/edge/manifest.json',
-		'./src/scripts/extensions/edge/package/AppXManifest.xml',
-		'./src/scripts/extensions/firefox/manifest.json'
+		"./package.json",
+		"./src/scripts/extensions/bookmarklet/manifest.json",
+		"./src/scripts/extensions/chrome/manifest.json",
+		"./src/scripts/extensions/edge/manifest.json",
+		"./src/scripts/extensions/edge/package/AppXManifest.xml",
+		"./src/scripts/extensions/firefox/manifest.json"
 	]
 
 	var tasks = [];
