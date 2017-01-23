@@ -8,6 +8,7 @@ var bump = require('gulp-bump');
 var concat = require("gulp-concat");
 var del = require("del");
 var fileExists = require("file-exists");
+var fs = require("fs");
 var forever = require("forever");
 var globby = require("globby");
 var gulp = require("gulp");
@@ -469,6 +470,10 @@ function exportCommonWebExtensionFiles(targetDir) {
 }
 
 function exportBookmarkletJS(targetDir) {
+	// Generate a variable which contains the current version number.
+	var manifest = JSON.parse(fs.readFileSync("./src/scripts/extensions/bookmarklet/manifest.json"));
+	fs.writeFileSync(PATHS.BUNDLEROOT + "bookmarklet_version.js", 'var bookmarklet_version = "' + manifest.version + '"');	
+
 	var jsCommonTask = exportCommonJS(targetDir);
 
 	var invokeTask = gulp.src([
@@ -477,6 +482,7 @@ function exportBookmarkletJS(targetDir) {
 		targetDir + "rangy-core.js",
 		targetDir + "sanitize-html.js",
 		targetDir + "URI.min.js",
+		PATHS.BUNDLEROOT + "bookmarklet_version.js",
 		PATHS.BUNDLEROOT + "bookmarklet.js"
 	]).pipe(concat("invoke.js")).pipe(gulp.dest(targetDir));
 

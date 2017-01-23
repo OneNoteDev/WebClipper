@@ -9,7 +9,10 @@ import {LocalStorage} from "../../storage/localStorage";
 
 import {ExtensionBase} from "../extensionBase";
 
-import {InlineWorker} from "./inlineWorker";
+import { InlineWorker } from "./inlineWorker";
+
+// Generated at build time.
+declare var bookmarklet_version;
 
 /**
  * This class is used for the cases where we don't really have an extension running in the background
@@ -34,7 +37,7 @@ export class InlineExtension extends ExtensionBase<InlineWorker, any, any> {
 	}
 
 	protected getExtensionVersion(): string {
-		return "3.4.3";
+		return bookmarklet_version;
 	}
 
 	protected getIdFromTab(tab: any): any {
