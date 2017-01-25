@@ -127,23 +127,6 @@ export class ModeButtonSelectorTests extends TestModule {
 			strictEqual(label.textContent, this.stringsJson["WebClipper.ClipType.Region.Button"]);
 		});
 
-		test("The region button should be labeled 'Image' in Edge and an image was selected", () => {
-			let startingState = MockProps.getMockClipperState();
-			startingState.clientInfo.clipperType = ClientType.EdgeExtension;
-			startingState.invokeOptions = {
-				invokeMode: InvokeMode.ContextImage,
-				invokeDataForMode: "dummy-img"
-			};
-			MithrilUtils.mountToFixture(
-				<ModeButtonSelector clipperState={ startingState } />);
-
-			let modeButtonSelector = MithrilUtils.getFixture().firstElementChild;
-			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
-			let imageButton = buttonElements[1];
-			let label = imageButton.getElementsByClassName(TestConstants.Classes.label)[0] as Node;
-			strictEqual(label.textContent, this.stringsJson["WebClipper.ClipType.Image.Button"]);
-		});
-
 		test("The selection button should appear when invokeMode is set to selection", () => {
 			let startingState = MockProps.getMockClipperState();
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;

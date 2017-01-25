@@ -10,6 +10,6 @@ invoke({
 	frameUrl: frameUrl,
 	enableAddANote: true,
 	enableEditableTitle: true,
-	enableRegionClipping: false,
+	enableRegionClipping: true,
 	extMessageHandlerThunk: () => { return new WebExtensionContentMessageHandler(); }
 });

@@ -78,12 +78,6 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getRegionModeButtonLabel(): string {
-		// As of 09/13/16, Edge does not support grabbing the viewport screenshot, so this mode only surfaces
-		// when the user selects an image through the context menu. In this scenario, it's best that we call it
-		// 'Image' instead of 'Region' mode. 
-		if (this.props.clipperState.clientInfo.clipperType === ClientType.EdgeExtension) {
-			return "WebClipper.ClipType.Image.Button";
-		}
 		return "WebClipper.ClipType.Region.Button";
 	}
 
