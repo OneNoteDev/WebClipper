@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.4.4 (January 31, 2017)
+* Bug: Unable to sign into Edge because of third-party cookie detection issue.
+
 ## 3.4.3 (January 18, 2017)
 * Bug: No longer inject an empty div into every page (issues #166, #303)
 
