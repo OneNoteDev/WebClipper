@@ -66,6 +66,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 
 	signInFailureThirdPartyCookiesBlocked(): boolean {
 		return this.signInAttempted()
+			&& !this.props.clipperState.userResult.data.user
 			&& !this.props.clipperState.userResult.data.writeableCookies;
 	}
 
@@ -115,9 +116,26 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 		if (this.signInFailureContainsErrorDescription()) {
 			return this.props.clipperState.userResult.data.errorDescription;
 		} else if (this.signInFailureThirdPartyCookiesBlocked()) {
+
+			let browserSpecificMessage = "";
+			switch (this.props.clipperState.clientInfo.clipperType) {
+				case ClientType.ChromeExtension:
+					browserSpecificMessage = Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Chrome");
+					break;
+				case ClientType.EdgeExtension:
+					browserSpecificMessage = Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Edge");
+					break;
+				case ClientType.FirefoxExtension:
+					browserSpecificMessage = Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Firefox");
+					break;
+				default:
+					browserSpecificMessage = Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Line2");
+					break;
+			}
+
 			return <div>
 				<div class={Constants.Ids.signInErrorCookieInformation}>{Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Line1")}</div>
-				<div class={Constants.Ids.signInErrorCookieInformation}>{Localization.getLocalizedString("WebClipper.Error.CookiesDisabled.Line2")}</div>
+				<div class={Constants.Ids.signInErrorCookieInformation}>{browserSpecificMessage}</div>
 			</div>;
 		}
 
