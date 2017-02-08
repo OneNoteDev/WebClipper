@@ -47,10 +47,12 @@ export module Constants {
 
 		// radioButton
 		export var radioIndicatorFill = "radio-indicator-fill";
-
+		
 		// spriteAnimation
 		export var spinner = "spinner";
 
+		export var srOnly = "sr-only";
+		
 		// tooltip
 		export var tooltip = "tooltip";
 

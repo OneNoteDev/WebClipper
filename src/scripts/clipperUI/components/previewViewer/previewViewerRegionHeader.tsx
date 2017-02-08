@@ -20,7 +20,16 @@ class PreviewViewerRegionHeaderClass extends PreviewViewerHeaderComponentBase<{}
 	}
 
 	getControlGroups(): ControlGroup[] {
-		return [this.getAddRegionGroup()];
+		return [this.getScreenReaderTitleGroup(), this.getAddRegionGroup()];
+	}
+
+	private getScreenReaderTitleGroup() {
+		return {
+			className: Constants.Classes.srOnly,
+			innerElements: [
+				<div>{Localization.getLocalizedString("WebClipper.ClipType.Region.Button")}</div>
+			]
+		}
 	}
 
 	private getAddRegionGroup(): ControlGroup {
