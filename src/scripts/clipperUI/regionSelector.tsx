@@ -200,8 +200,17 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	 * the maximum allowed size)
 	 */
 	private startRegionClip() {
+		// Taken from https://www.kirupa.com/html5/detecting_retina_high_dpi.htm
+		// We check this here so that we can log it as a custom property on the regionSelectionProcessingEvent
+		const query = "(-webkit-min-device-pixel-ratio: 2), (min-device-pixel-ratio: 2), (min-resolution: 192dpi)";
+		const isHighDpiScreen = matchMedia(query).matches;
+		const isFirefoxWithHighDpiDisplay = this.props.clipperState.clientInfo.clipperType === ClientType.FirefoxExtension && isHighDpiScreen;
+
 		// Firefox reports this value incorrectly if this iframe is hidden, so store it now since we know we're visible
-		this.devicePixelRatio = window.devicePixelRatio;
+		// In addition to this, Firefox currently has a bug where they are not using devicePixelRatio correctly 
+		// on HighDPI screens such as Retina screens or the Surface Pro 4
+		// Bug link: https://bugzilla.mozilla.org/show_bug.cgi?id=1278507 
+		this.devicePixelRatio = isFirefoxWithHighDpiDisplay ? window.devicePixelRatio / 2 : window.devicePixelRatio;
 
 		let regionSelectionProcessingEvent = new Log.Event.BaseEvent(Log.Event.Label.RegionSelectionProcessing);
 		let regionSelectionCapturingEvent = new Log.Event.BaseEvent(Log.Event.Label.RegionSelectionCapturing);
@@ -214,6 +223,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				this.saveCompressedSelectionToState(dataUrl).then((canvas) => {
 					regionSelectionProcessingEvent.setCustomProperty(Log.PropertyName.Custom.Width, canvas.width);
 					regionSelectionProcessingEvent.setCustomProperty(Log.PropertyName.Custom.Height, canvas.height);
+					regionSelectionProcessingEvent.setCustomProperty(Log.PropertyName.Custom.IsHighDpiScreen, isHighDpiScreen);
 					Clipper.logger.logEvent(regionSelectionProcessingEvent);
 				});
 			}
@@ -249,13 +259,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 			return Promise.reject(new Error("Expected the two points to be set, but they were not"));
 		}
 
-		// Taken from https://www.kirupa.com/html5/detecting_retina_high_dpi.htm
-		const query = "(-webkit-min-device-pixel-ratio: 2), (min-device-pixel-ratio: 2), (min-resolution: 192dpi)";
-		const isFirefoxWithHighDpiDisplay = this.props.clipperState.clientInfo.clipperType === ClientType.FirefoxExtension && matchMedia(query).matches;
-
-		if (isFirefoxWithHighDpiDisplay) {
-			devicePixelRatio = 1;
-		}
+		const devicePixelRatio = this.devicePixelRatio;
 
 		return new Promise<HTMLCanvasElement>((resolve) => {
 			let regionSelectionLoadingEvent = new Log.Event.BaseEvent(Log.Event.Label.RegionSelectionLoading);
