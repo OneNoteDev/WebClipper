@@ -16,6 +16,7 @@ import {ModeButton} from "./modeButton";
 
 class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	onModeSelected(newMode: ClipMode) {
+		// Set the focus on the preview
 		this.props.clipperState.setState({
 			currentMode: this.props.clipperState.currentMode.set(newMode)
 		});

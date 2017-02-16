@@ -71,7 +71,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 			.replace("{0}", ""); // TODO can we change this loc string to remove the {0}?
 
 		let sourceUrl = this.props.clipperState.pageInfo ? this.props.clipperState.pageInfo.rawUrl : "";
-
+		
 		return (
 			<div id={Constants.Ids.previewSubtitleContainer}>
 				{this.props.clipperState.injectOptions && this.props.clipperState.injectOptions.enableAddANote
@@ -79,8 +79,8 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 					: undefined}
 				{this.props.clipperState.currentMode.get() !== ClipMode.Bookmark
 					? <div id={Constants.Ids.previewUrlContainer}>
-						{sourceUrlCitationPrefix}
-						<a href={sourceUrl} target="_blank" title={sourceUrl}>{sourceUrl}</a>
+						<span aria-label={sourceUrlCitationPrefix}>{sourceUrlCitationPrefix}</span>
+						<a href={sourceUrl} target="_blank" aria-label={sourceUrl} title={sourceUrl}>{sourceUrl}</a>
 					</div>
 					: undefined}
 			</div>
