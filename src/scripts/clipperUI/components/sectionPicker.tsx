@@ -282,11 +282,13 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			localizedStrings.notebookLoadFailureMessage = OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(this.state.apiResponseCode);
 		}
 
+		let locationLabel = Localization.getLocalizedString("WebClipper.Label.ClipLocation");
+
 		return (
 			<div id={Constants.Ids.locationPickerContainer}>
 				<div className="optionLabel">
-					<label className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
-						{Localization.getLocalizedString("WebClipper.Label.ClipLocation")}
+					<label className="buttonLabelFont" aria-label={locationLabel} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+						{locationLabel}
 					</label>
 				</div>
 				<OneNotePicker.OneNotePickerComponent
