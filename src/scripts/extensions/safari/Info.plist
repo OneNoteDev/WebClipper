@@ -42,7 +42,6 @@
 		<dict>
 			<key>Start</key>
 			<array>
-				<string>appendIsInstalledMarker.js</string>
 				<string>safariDebugLoggingInject.js</string>
 				<string>safariInject.js</string>
 				<string>safariPageNavInject.js</string>
