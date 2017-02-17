@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.5.2 (February 17, 2017)
+* Bug: Fix Region mode being off on high dpi screens like Retina or Surface Book in Firefox
+* Bug: Article mode was sometimes being shown when we should have been in PDF mode.
+
 ## 3.4.5 (February 1, 2017)
 * Bug: Unable to sign into Edge because of third-party cookie detection issue.
 
