@@ -7,7 +7,7 @@
 	<Identity 
 		Name="Microsoft.OneNoteWebClipper" 
 		Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" 
-		Version="3.4.5.0" />
+		Version="3.6.0.0" />
 
 	<Properties> 
 		<DisplayName>OneNote Web Clipper</DisplayName> 
@@ -20,59 +20,7 @@
 	</Dependencies> 
 
 	<Resources>
-		<Resource Language="en" />
-		<Resource Language="am" />
-		<Resource Language="ar" />
-		<Resource Language="bg" />
-		<Resource Language="bn" />
-		<Resource Language="ca" />
-		<Resource Language="cs" />
-		<Resource Language="da" />
-		<Resource Language="de" />
-		<Resource Language="el" />
-		<Resource Language="en-gb" />
 		<Resource Language="en-us" />
-		<Resource Language="es" />
-		<Resource Language="es-419" />
-		<Resource Language="et" />
-		<Resource Language="fa" />
-		<Resource Language="fi" />
-		<Resource Language="fil" />
-		<Resource Language="fr" />
-		<Resource Language="gu" />
-		<Resource Language="he" />
-		<Resource Language="hi" />
-		<Resource Language="hr" />
-		<Resource Language="hu" />
-		<Resource Language="id" />
-		<Resource Language="it" />
-		<Resource Language="ja" />
-		<Resource Language="kn" />
-		<Resource Language="ko" />
-		<Resource Language="lt" />
-		<Resource Language="lv" />
-		<Resource Language="ml" />
-		<Resource Language="mr" />
-		<Resource Language="ms" />
-		<Resource Language="nl" />
-		<Resource Language="no" />
-		<Resource Language="pl" />
-		<Resource Language="pt-br" />
-		<Resource Language="pt-pt" />
-		<Resource Language="ro" />
-		<Resource Language="ru" />
-		<Resource Language="sk" />
-		<Resource Language="sl" />
-		<Resource Language="sv" />
-		<Resource Language="sw" />
-		<Resource Language="ta" />
-		<Resource Language="te" />
-		<Resource Language="th" />
-		<Resource Language="tr" />
-		<Resource Language="uk" />
-		<Resource Language="vi" />
-		<Resource Language="zh-cn" />
-		<Resource Language="zh-tw" />
 		<Resource uap:Scale="200"/>
 	</Resources> 
 
