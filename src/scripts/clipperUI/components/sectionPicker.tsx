@@ -284,7 +284,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 		return (
 			<div id={Constants.Ids.locationPickerContainer}>
-				<div className="optionLabel" tabIndex={50}>
+				<div id={Constants.Ids.optionLabel} className="optionLabel" tabIndex={50}>
 					<label className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 						{Localization.getLocalizedString("WebClipper.Label.ClipLocation")}
 					</label>
