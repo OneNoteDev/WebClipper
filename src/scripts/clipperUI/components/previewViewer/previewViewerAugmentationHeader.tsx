@@ -26,11 +26,16 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 
 		return {
 			id: Constants.Ids.highlightControl,
-			innerElements: [<img
-				id={Constants.Ids.highlightButton}
-				{...this.enableInvoke(this.props.toggleHighlight, 100) }
-				className={classForHighlighter}
-				src={ExtensionUtils.getImageResourceUrl(imgSrc) } />
+			innerElements: [
+				<img
+					role="button"
+					aria-label="Toggle Highlighter for Article"
+					aria-pressed={highlighterEnabled ? "true" : "false"}
+					id={Constants.Ids.highlightButton}
+					{...this.enableInvoke(this.props.toggleHighlight, 100) }
+					className={classForHighlighter}
+					src={ExtensionUtils.getImageResourceUrl(imgSrc)}
+				/>
 			]
 		};
 	}
@@ -40,6 +45,8 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			id: Constants.Ids.serifControl,
 			innerElements: [
 				<button
+					aria-label="Change font to Sans-Serif"	
+					aria-pressed={!this.props.serif ? "true" : "false"}
 					id={Constants.Ids.sansSerif}
 					{...this.enableInvoke(this.props.changeFontFamily, 101, false) }
 					className={!this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
@@ -47,6 +54,8 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SansSerifButtonLabel") }
 				</button>,
 				<button
+					aria-label="Change font to Serif"	
+					aria-pressed={!this.props.serif ? "true" : "false"}
 					id={Constants.Ids.serif}
 					{...this.enableInvoke(this.props.changeFontFamily, 102, true) }
 					className={this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
@@ -63,11 +72,13 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			className: HeaderClasses.Button.relatedButtons,
 			innerElements: [
 				<button className={HeaderClasses.Button.controlButton}
+					aria-label="Decrease font size"
 					type="button" {...this.enableInvoke(this.props.changeFontSize, 103, false) }
 					id={Constants.Ids.decrementFontSize}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_down.png") } />
 				</button>,
 				<button className={HeaderClasses.Button.controlButton}
+					aria-label="Increase font size"
 					type="button" {...this.enableInvoke(this.props.changeFontSize, 104, true) }
 					id={Constants.Ids.incrementFontSize}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_up.png") } />
