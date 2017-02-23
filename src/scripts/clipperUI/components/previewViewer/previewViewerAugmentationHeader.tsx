@@ -45,7 +45,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			id: Constants.Ids.serifControl,
 			innerElements: [
 				<button
-					aria-label="Change font to Sans-Serif"	
+					aria-label="Change font to Sans-Serif"
 					aria-pressed={!this.props.serif ? "true" : "false"}
 					id={Constants.Ids.sansSerif}
 					{...this.enableInvoke(this.props.changeFontFamily, 101, false) }
@@ -54,7 +54,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SansSerifButtonLabel") }
 				</button>,
 				<button
-					aria-label="Change font to Serif"	
+					aria-label="Change font to Serif"
 					aria-pressed={!this.props.serif ? "true" : "false"}
 					id={Constants.Ids.serif}
 					{...this.enableInvoke(this.props.changeFontFamily, 102, true) }
