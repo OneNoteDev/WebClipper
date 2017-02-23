@@ -28,6 +28,7 @@ export module PropertyName {
 		InitialDataUrlLength,
 		InvokeMode,
 		InvokeSource,
+		IsHighDpiScreen,
 		IsRetryable,
 		IsSerif,
 		Key,
