@@ -134,6 +134,7 @@ export module Constants {
 		// optionsPanel
 		export var clipButton = "clipButton";
 		export var clipButtonContainer = "clipButtonContainer";
+		export var optionLabel = "optionLabel";
 
 		// previewViewerPdfHeader
 		export var radioAllPagesLabel = "radioAllPagesLabel";
