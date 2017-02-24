@@ -1,4 +1,5 @@
 import {ClientType} from "../../clientType";
+import {Constants} from "../../constants";
 import {Experiments} from "../../experiments";
 
 import {AugmentationHelper} from "../../contentCapture/augmentationHelper";
@@ -23,8 +24,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 
 	private getScreenReaderOnlyElementThatAnnouncesCurrentMode(currentMode: ClipMode) {
 		return (
-			<div aria-live="assertive"
-	
+			<div aria-live="polite" className={Constants.Classes.srOnly}>{ClipMode[currentMode]}</div>
 		);
 	}
 

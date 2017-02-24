@@ -51,6 +51,9 @@ export module Constants {
 		// spriteAnimation
 		export var spinner = "spinner";
 
+		// Accessibility 
+		export var srOnly = "sr-only";
+		
 		// tooltip
 		export var tooltip = "tooltip";
 
