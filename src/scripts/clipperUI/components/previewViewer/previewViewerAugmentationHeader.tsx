@@ -55,7 +55,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 				</button>,
 				<button
 					aria-label="Change font to Serif"
-					aria-pressed={!this.props.serif ? "true" : "false"}
+					aria-pressed={this.props.serif ? "true" : "false"}
 					id={Constants.Ids.serif}
 					{...this.enableInvoke(this.props.changeFontFamily, 102, true) }
 					className={this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
