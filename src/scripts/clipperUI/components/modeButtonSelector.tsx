@@ -21,6 +21,13 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		});
 	};
 
+	private getScreenReaderOnlyElementThatAnnouncesCurrentMode(currentMode: ClipMode) {
+		return (
+			<div aria-live="assertive"
+	
+		);
+	}
+
 	private getPdfModeButton(currentMode: ClipMode) {
 		if (this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
 			return undefined;
@@ -114,7 +121,8 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		let currentMode = this.props.clipperState.currentMode.get();
 
 		return (
-			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight) }>
+			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}>
+				{ this.getScreenReaderOnlyElementThatAnnouncesCurrentMode(currentMode)}
 				{ this.getFullPageModeButton(currentMode) }
 				{ this.getRegionModeButton(currentMode) }
 				{ this.getAugmentationModeButton(currentMode) }
