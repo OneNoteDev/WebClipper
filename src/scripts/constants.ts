@@ -53,7 +53,7 @@ export module Constants {
 
 		// Accessibility 
 		export var srOnly = "sr-only";
-		
+
 		// tooltip
 		export var tooltip = "tooltip";
 
