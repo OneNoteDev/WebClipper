@@ -23,8 +23,11 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	};
 
 	private getScreenReaderOnlyElementThatAnnouncesCurrentMode(currentMode: ClipMode) {
+		let stringToTellUserModeHasChanged = Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.CurrentModeHasChanged");
+		stringToTellUserModeHasChanged = stringToTellUserModeHasChanged.replace("{0}", ClipMode[currentMode]);
+
 		return (
-			<div aria-live="polite" className={Constants.Classes.srOnly}>{ClipMode[currentMode]}</div>
+			<div aria-live="polite" className={Constants.Classes.srOnly}>{stringToTellUserModeHasChanged}</div>
 		);
 	}
 
