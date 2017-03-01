@@ -325,6 +325,7 @@ export module Constants {
 		export var tab = 9;
 		export var enter = 13;
 		export var esc = 27;
+		export var c = 67;
 	}
 
 	export module SmartValueKeys {
