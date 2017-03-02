@@ -63,6 +63,8 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 		if (!isInitialized) {
 			let oldOnKeyDown = document.onkeydown;
 			document.onkeydown = (ev: KeyboardEvent) => {
+				// TODO: KeyboardEvent::which is deprecated but PhantomJs doesn't support
+				// 'event constructors', which is necessary to use the recommended KeyboardEvent::key 
 				if (ev.altKey && ev.which === Constants.KeyCodes.c) {
 					this.checkOptionsBeforeStartClip();
 				}
