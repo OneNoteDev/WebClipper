@@ -440,7 +440,7 @@ export class OptionsPanelTests extends TestModule {
 			// 		key: Constants.StringKeyCodes.c
 			// 	});
 			// }
-			
+
 			if (document.createEvent) {
 				clipHotKeyEvent = document.createEvent("KeyboardEvent") as KeyboardEvent;
 				clipHotKeyEvent.initKeyboardEvent(
