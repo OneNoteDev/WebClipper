@@ -1,423 +1,428 @@
-export module Constants {
-	export module Classes {
+export class Constants {
+	// tslint:disable-next-line:variable-name
+	public static Classes = {
 		// animators
-		export var heightAnimator = "height-animator";
-		export var panelAnimator = "panel-animator";
-		export var clearfix = "clearfix";
+		heightAnimator: "height-animator",
+		panelAnimator: "panel-animator",
+		clearfix: "clearfix",
 
 		// changeLogPanel
-		export var change = "change";
-		export var changes = "changes";
-		export var changeBody = "change-body";
-		export var changeDescription = "change-description";
-		export var changeImage = "change-image";
-		export var changeTitle = "change-title";
+		change: "change",
+		changes: "changes",
+		changeBody: "change-body",
+		changeDescription: "change-description",
+		changeImage: "change-image",
+		changeTitle: "change-title",
 
 		// checkbox
-		export var checkboxCheck = "checkboxCheck";
+		checkboxCheck: "checkboxCheck",
 
 		// textArea input control
-		export var textAreaInput = "textAreaInput";
-		export var textAreaInputMirror = "textAreaInputMirror";
+		textAreaInput: "textAreaInput",
+		textAreaInputMirror: "textAreaInputMirror",
 
 		// popover
-		export var popover = "popover";
-		export var popoverArrow = "popover-arrow";
+		popover: "popover",
+		popoverArrow: "popover-arrow",
 
 		// previewViewer
-		export var deleteHighlightButton = "delete-highlight";
-		export var highlightable = "highlightable";
-		export var highlighted = "highlighted";
-		export var regionSelection = "region-selection";
-		export var regionSelectionImage = "region-selection-image";
-		export var regionSelectionRemoveButton = "region-selection-remove-button";
+		deleteHighlightButton: "delete-highlight",
+		highlightable: "highlightable",
+		highlighted: "highlighted",
+		regionSelection: "region-selection",
+		regionSelectionImage: "region-selection-image",
+		regionSelectionRemoveButton: "region-selection-remove-button",
 
 		// pdfPreviewViewer
-		export var attachmentOverlay = "attachment-overlay";
-		export var centeredInCanvas = "centered-in-canvas";
-		export var overlay = "overlay";
-		export var overlayHidden = "overlay-hidden";
-		export var overlayNumber = "overlay-number";
-		export var pdfPreviewImage = "pdf-preview-image";
-		export var pdfPreviewImageCanvas = "pdf-preview-image-canvas";
-		export var unselected = "unselected";
+		attachmentOverlay: "attachment-overlay",
+		centeredInCanvas: "centered-in-canvas",
+		overlay: "overlay",
+		overlayHidden: "overlay-hidden",
+		overlayNumber: "overlay-number",
+		pdfPreviewImage: "pdf-preview-image",
+		pdfPreviewImageCanvas: "pdf-preview-image-canvas",
+		unselected: "unselected",
 
-		export var localPdfPanelTitle = "local-pdf-panel-title";
-		export var localPdfPanelSubtitle = "local-pdf-panel-subtitle";
+		localPdfPanelTitle: "local-pdf-panel-title",
+		localPdfPanelSubtitle: "local-pdf-panel-subtitle",
 
 		// radioButton
-		export var radioIndicatorFill = "radio-indicator-fill";
+		radioIndicatorFill: "radio-indicator-fill",
 
 		// spriteAnimation
-		export var spinner = "spinner";
+		spinner: "spinner",
 
 		// tooltip
-		export var tooltip = "tooltip";
+		tooltip: "tooltip",
 
 		// rotatingMessageSpriteAnimation
-		export var centeredInPreview = "centered-in-preview";
-	}
+		centeredInPreview: "centered-in-preview"
+	};
 
-	export module Cookies {
-		export var clipperInfo = "ClipperInfo";
-	}
+	// tslint:disable-next-line:variable-name
+	public static Cookies = {
+		clipperInfo: "ClipperInfo"
+	};
 
-	export module Extension {
-		export module NotificationIds {
-			export var conflictingExtension = "conflictingExtension";
-		}
-	}
-
-	export module Ids {
+	// tslint:disable-next-line:variable-name
+	public static Ids = {
 		// annotationInput
-		export var annotationContainer = "annotationContainer";
-		export var annotationField = "annotationField";
-		export var annotationFieldMirror = "annotationFieldMirror";
-		export var annotationPlaceholder = "annotationPlaceholder";
+		annotationContainer: "annotationContainer",
+		annotationField: "annotationField",
+		annotationFieldMirror: "annotationFieldMirror",
+		annotationPlaceholder: "annotationPlaceholder",
 
 		// bookmarkPreview
-		export var bookmarkThumbnail = "bookmarkThumbnail";
-		export var bookmarkPreviewContentContainer = "bookmarkPreviewContentContainer";
-		export var bookmarkPreviewInnerContainer = "bookmarkPreviewInnerContainer";
+		bookmarkThumbnail: "bookmarkThumbnail",
+		bookmarkPreviewContentContainer: "bookmarkPreviewContentContainer",
+		bookmarkPreviewInnerContainer: "bookmarkPreviewInnerContainer",
 
 		// clippingPanel
-		export var clipperApiProgressContainer = "clipperApiProgressContainer";
+		clipperApiProgressContainer: "clipperApiProgressContainer",
 
 		// clippingPanel
-		export var clipProgressDelayedMessage = "clipProgressDelayedMessage";
-		export var clipProgressIndicatorMessage = "clipProgressIndicatorMessage";
+		clipProgressDelayedMessage: "clipProgressDelayedMessage",
+		clipProgressIndicatorMessage: "clipProgressIndicatorMessage",
 
 		// dialogPanel
-		export var dialogBackButton = "dialogBackButton";
-		export var dialogButtonContainer = "dialogButtonContainer";
-		export var dialogDebugMessageContainer = "dialogDebugMessageContainer";
-		export var dialogMessageContainer = "dialogMessageContainer";
-		export var dialogContentContainer = "dialogContentContainer";
-		export var dialogMessage = "dialogMessage";
-		export var dialogSignOutButton = "dialogSignoutButton";
-		export var dialogTryAgainButton = "dialogTryAgainButton";
+		dialogBackButton: "dialogBackButton",
+		dialogButtonContainer: "dialogButtonContainer",
+		dialogDebugMessageContainer: "dialogDebugMessageContainer",
+		dialogMessageContainer: "dialogMessageContainer",
+		dialogContentContainer: "dialogContentContainer",
+		dialogMessage: "dialogMessage",
+		dialogSignOutButton: "dialogSignoutButton",
+		dialogTryAgainButton: "dialogTryAgainButton",
 
 		// editorPreviewComponentBase
-		export var highlightablePreviewBody = "highlightablePreviewBody";
+		highlightablePreviewBody: "highlightablePreviewBody",
 
 		// failurePanel
-		export var apiErrorMessage = "apiErrorMessage";
-		export var backToHomeButton = "backToHomeButton";
-		export var clipperFailureContainer = "clipperFailureContainer";
-		export var refreshPageButton = "refreshPageButton";
-		export var tryAgainButton = "tryAgainButton";
+		apiErrorMessage: "apiErrorMessage",
+		backToHomeButton: "backToHomeButton",
+		clipperFailureContainer: "clipperFailureContainer",
+		refreshPageButton: "refreshPageButton",
+		tryAgainButton: "tryAgainButton",
 
 		// footer
-		export var clipperFooterContainer = "clipperFooterContainer";
-		export var currentUserControl = "currentUserControl";
-		export var currentUserDetails = "currentUserDetails";
-		export var currentUserEmail = "currentUserEmail";
-		export var currentUserId = "currentUserId";
-		export var currentUserName = "currentUserName";
-		export var feedbackButton = "feedbackButton";
-		export var feedbackImage = "feedbackImage";
-		export var signOutButton = "signOutButton";
-		export var userDropdownArrow = "userDropdownArrow";
-		export var userSettingsContainer = "userSettingsContainer";
+		clipperFooterContainer: "clipperFooterContainer",
+		currentUserControl: "currentUserControl",
+		currentUserDetails: "currentUserDetails",
+		currentUserEmail: "currentUserEmail",
+		currentUserId: "currentUserId",
+		currentUserName: "currentUserName",
+		feedbackButton: "feedbackButton",
+		feedbackImage: "feedbackImage",
+		signOutButton: "signOutButton",
+		userDropdownArrow: "userDropdownArrow",
+		userSettingsContainer: "userSettingsContainer",
 
 		// loadingPanel
-		export var clipperLoadingContainer = "clipperLoadingContainer";
+		clipperLoadingContainer: "clipperLoadingContainer",
 
 		// mainController
-		export var closeButton = "closeButton";
-		export var closeButtonContainer = "closeButtonContainer";
-		export var mainController = "mainController";
+		closeButton: "closeButton",
+		closeButtonContainer: "closeButtonContainer",
+		mainController: "mainController",
 
 		// OneNotePicker
-		export var saveToLocationContainer = "saveToLocationContainer";
+		saveToLocationContainer: "saveToLocationContainer",
 
 		// optionsPanel
-		export var clipButton = "clipButton";
-		export var clipButtonContainer = "clipButtonContainer";
+		clipButton: "clipButton",
+		clipButtonContainer: "clipButtonContainer",
 
 		// previewViewerPdfHeader
-		export var radioAllPagesLabel = "radioAllPagesLabel";
-		export var radioPageRangeLabel = "radioPageRangeLabel";
-		export var rangeInput = "rangeInput";
+		radioAllPagesLabel: "radioAllPagesLabel",
+		radioPageRangeLabel: "radioPageRangeLabel",
+		rangeInput: "rangeInput",
 
 		// previewViewer
-		export var previewBody = "previewBody";
-		export var previewContentContainer = "previewContentContainer";
-		export var previewHeader = "previewHeader";
-		export var previewHeaderContainer = "previewHeaderContainer";
-		export var previewHeaderInput = "previewHeaderInput";
-		export var previewHeaderInputMirror = "previewHeaderInputMirror";
-		export var previewTitleContainer = "previewTitleContainer";
-		export var previewSubtitleContainer = "previewSubtitleContainer";
-		export var previewInnerContainer = "previewInnerContainer";
-		export var previewOptionsContainer = "previewOptionsContainer";
-		export var previewInnerWrapper = "previewInnerWrapper";
-		export var previewOuterContainer = "previewOuterContainer";
-		export var previewUrlContainer = "previewUrlContainer";
-		export var previewNotesContainer = "previewNotesContainer";
+		previewBody: "previewBody",
+		previewContentContainer: "previewContentContainer",
+		previewHeader: "previewHeader",
+		previewHeaderContainer: "previewHeaderContainer",
+		previewHeaderInput: "previewHeaderInput",
+		previewHeaderInputMirror: "previewHeaderInputMirror",
+		previewTitleContainer: "previewTitleContainer",
+		previewSubtitleContainer: "previewSubtitleContainer",
+		previewInnerContainer: "previewInnerContainer",
+		previewOptionsContainer: "previewOptionsContainer",
+		previewInnerWrapper: "previewInnerWrapper",
+		previewOuterContainer: "previewOuterContainer",
+		previewUrlContainer: "previewUrlContainer",
+		previewNotesContainer: "previewNotesContainer",
 
 		// previewViewerFullPageHeader
-		export var fullPageControl = "fullPageControl";
-		export var fullPageHeaderTitle = "fullPageHeaderTitle";
+		fullPageControl: "fullPageControl",
+		fullPageHeaderTitle: "fullPageHeaderTitle",
 
 		// previewViewerPdfHeader
-		export var localPdfFileTitle = "localPdfFileTitle";
-		export var pdfControl = "pdfControl";
-		export var pdfHeaderTitle = "pdfHeaderTitle";
-		export var pageRangeControl = "pageRangeControl";
+		localPdfFileTitle: "localPdfFileTitle",
+		pdfControl: "pdfControl",
+		pdfHeaderTitle: "pdfHeaderTitle",
+		pageRangeControl: "pageRangeControl",
 
 		// pdfClipOptions
-		export var checkboxToDistributePages = "checkboxToDistributePages";
-		export var pdfIsTooLargeToAttachIndicator = "pdfIsTooLargeToAttachIndicator";
-		export var checkboxToAttachPdf = "checkboxToAttachPdf";
-		export var moreClipOptions = "moreClipOptions";
+		checkboxToDistributePages: "checkboxToDistributePages",
+		pdfIsTooLargeToAttachIndicator: "pdfIsTooLargeToAttachIndicator",
+		checkboxToAttachPdf: "checkboxToAttachPdf",
+		moreClipOptions: "moreClipOptions",
 
 		// previewViewerRegionHeader
-		export var addAnotherRegionButton = "addAnotherRegionButton";
-		export var addRegionControl = "addRegionControl";
+		addAnotherRegionButton: "addAnotherRegionButton",
+		addRegionControl: "addRegionControl",
 
 		// previewViewerRegionTitleOnlyHeader
-		export var regionControl = "regionControl";
-		export var regionHeaderTitle = "regionHeaderTitle";
+		regionControl: "regionControl",
+		regionHeaderTitle: "regionHeaderTitle",
 
 		// previewViewerAugmentationHeader
-		export var decrementFontSize = "decrementFontSize";
-		export var fontSizeControl = "fontSizeControl";
-		export var highlightButton = "highlightButton";
-		export var highlightControl = "highlightControl";
-		export var incrementFontSize = "incrementFontSize";
-		export var serifControl = "serifControl";
-		export var sansSerif = "sansSerif";
-		export var serif = "serif";
+		decrementFontSize: "decrementFontSize",
+		fontSizeControl: "fontSizeControl",
+		highlightButton: "highlightButton",
+		highlightControl: "highlightControl",
+		incrementFontSize: "incrementFontSize",
+		serifControl: "serifControl",
+		sansSerif: "sansSerif",
+		serif: "serif",
 
 		// previewViewerBookmarkHeader
-		export var bookmarkControl = "bookmarkControl";
-		export var bookmarkHeaderTitle = "bookmarkHeaderTitle";
+		bookmarkControl: "bookmarkControl",
+		bookmarkHeaderTitle: "bookmarkHeaderTitle",
 
 		// ratingsPrompt
-		export var ratingsButtonFeedbackNo = "ratingsButtonFeedbackNo";
-		export var ratingsButtonFeedbackYes = "ratingsButtonFeedbackYes";
-		export var ratingsButtonInitNo = "ratingsButtonInitNo";
-		export var ratingsButtonInitYes = "ratingsButtonInitYes";
-		export var ratingsButtonRateNo = "ratingsButtonRateNo";
-		export var ratingsButtonRateYes = "ratingsButtonRateYes";
-		export var ratingsPromptContainer = "ratingsPromptContainer";
+		ratingsButtonFeedbackNo: "ratingsButtonFeedbackNo",
+		ratingsButtonFeedbackYes: "ratingsButtonFeedbackYes",
+		ratingsButtonInitNo: "ratingsButtonInitNo",
+		ratingsButtonInitYes: "ratingsButtonInitYes",
+		ratingsButtonRateNo: "ratingsButtonRateNo",
+		ratingsButtonRateYes: "ratingsButtonRateYes",
+		ratingsPromptContainer: "ratingsPromptContainer",
 
 		// regionSelectingPanel
-		export var regionInstructionsContainer = "regionInstructionsContainer";
-		export var regionClipCancelButton = "regionClipCancelButton";
+		regionInstructionsContainer: "regionInstructionsContainer",
+		regionClipCancelButton: "regionClipCancelButton",
 
 		// regionSelector
-		export var innerFrame = "innerFrame";
-		export var outerFrame = "outerFrame";
-		export var regionSelectorContainer = "regionSelectorContainer";
+		innerFrame: "innerFrame",
+		outerFrame: "outerFrame",
+		regionSelectorContainer: "regionSelectorContainer",
 
 		// rotatingMessageSpriteAnimation
-		export var spinnerText = "spinnerText";
+		spinnerText: "spinnerText",
 
 		// sectionPicker
-		export var locationPickerContainer = "locationPickerContainer";
+		locationPickerContainer: "locationPickerContainer",
 
 		// signInPanel
-		export var signInButtonMsa = "signInButtonMsa";
-		export var signInButtonOrgId = "signInButtonOrgId";
-		export var signInContainer = "signInContainer";
-		export var signInErrorCookieInformation = "signInErrorCookieInformation";
-		export var signInErrorDebugInformation = "signInErrorDebugInformation";
-		export var signInErrorDebugInformationDescription = "signInErrorDebugInformationDescription";
-		export var signInErrorDebugInformationContainer = "signInErrorDebugInformationContainer";
-		export var signInErrorDebugInformationList = "signInErrorDebugInformationList";
-		export var signInErrorDescription = "signInErrorDescription";
-		export var signInErrorDescriptionContainer = "signInErrorDescriptionContainer";
-		export var signInErrorMoreInformation = "signInErrorMoreInformation";
-		export var signInLogo = "signInLogo";
-		export var signInMessageLabelContainer = "signInMessageLabelContainer";
-		export var signInText = "signInText";
-		export var signInToggleErrorDropdownArrow = "signInToggleErrorDropdownArrow";
-		export var signInToggleErrorInformationText = "signInToggleErrorInformationText";
+		signInButtonMsa: "signInButtonMsa",
+		signInButtonOrgId: "signInButtonOrgId",
+		signInContainer: "signInContainer",
+		signInErrorCookieInformation: "signInErrorCookieInformation",
+		signInErrorDebugInformation: "signInErrorDebugInformation",
+		signInErrorDebugInformationDescription: "signInErrorDebugInformationDescription",
+		signInErrorDebugInformationContainer: "signInErrorDebugInformationContainer",
+		signInErrorDebugInformationList: "signInErrorDebugInformationList",
+		signInErrorDescription: "signInErrorDescription",
+		signInErrorDescriptionContainer: "signInErrorDescriptionContainer",
+		signInErrorMoreInformation: "signInErrorMoreInformation",
+		signInLogo: "signInLogo",
+		signInMessageLabelContainer: "signInMessageLabelContainer",
+		signInText: "signInText",
+		signInToggleErrorDropdownArrow: "signInToggleErrorDropdownArrow",
+		signInToggleErrorInformationText: "signInToggleErrorInformationText",
 
 		// successPanel
-		export var clipperSuccessContainer = "clipperSuccessContainer";
-		export var launchOneNoteButton = "launchOneNoteButton";
+		clipperSuccessContainer: "clipperSuccessContainer",
+		launchOneNoteButton: "launchOneNoteButton",
 
 		// tooltipRenderer
-		export var pageNavAnimatedTooltip = "pageNavAnimatedTooltip";
+		pageNavAnimatedTooltip: "pageNavAnimatedTooltip",
 
 		// unsupportedBrowser
-		export var unsupportedBrowserContainer = "unsupportedBrowserContainer";
-		export var unsupportedBrowserPanel = "unsupportedBrowserPanel";
+		unsupportedBrowserContainer: "unsupportedBrowserContainer",
+		unsupportedBrowserPanel: "unsupportedBrowserPanel",
 
 		// whatsNewPanel
-		export var changeLogSubPanel = "changeLogSubPanel";
-		export var checkOutWhatsNewButton = "checkOutWhatsNewButton";
-		export var proceedToWebClipperButton = "proceedToWebClipperButton";
-		export var whatsNewTitleSubPanel = "whatsNewTitleSubPanel";
+		changeLogSubPanel: "changeLogSubPanel",
+		checkOutWhatsNewButton: "checkOutWhatsNewButton",
+		proceedToWebClipperButton: "proceedToWebClipperButton",
+		whatsNewTitleSubPanel: "whatsNewTitleSubPanel",
 
-		export var clipperRootScript = "oneNoteCaptureRootScript";
-		export var clipperUiFrame = "oneNoteWebClipper";
-		export var clipperPageNavFrame = "oneNoteWebClipperPageNav";
-		export var clipperExtFrame = "oneNoteWebClipperExtension";
+		clipperRootScript: "oneNoteCaptureRootScript",
+		clipperUiFrame: "oneNoteWebClipper",
+		clipperPageNavFrame: "oneNoteWebClipperPageNav",
+		clipperExtFrame: "oneNoteWebClipperExtension",
 
 		// tooltips
-		export var brandingContainer = "brandingContainer";
-	}
+		brandingContainer: "brandingContainer"
+	};
 
-	export module HeaderValues {
-		export var accept = "Accept";
-		export var appIdKey = "MS-Int-AppId";
-		export var correlationId = "X-CorrelationId";
-		export var noAuthKey = "X-NoAuth";
-		export var userSessionIdKey = "X-UserSessionId";
-	}
+	// tslint:disable-next-line:variable-name
+	public static HeaderValues = {
+		accept: "Accept",
+		appIdKey: "MS-Int-AppId",
+		correlationId: "X-CorrelationId",
+		noAuthKey: "X-NoAuth",
+		userSessionIdKey: "X-UserSessionId"
+	};
 
-	export module CommunicationChannels {
+	// tslint:disable-next-line:variable-name
+	public static CommunicationChannels = {
 		// Debug Logging
-		export var debugLoggingInjectedAndExtension = "DEBUGLOGGINGINJECTED_AND_EXTENSION";
+		debugLoggingInjectedAndExtension: "DEBUGLOGGINGINJECTED_AND_EXTENSION",
 
 		// Web Clipper
-		export var extensionAndUi = "EXTENSION_AND_UI";
-		export var injectedAndUi = "INJECTED_AND_UI";
-		export var injectedAndExtension = "INJECTED_AND_EXTENSION";
+		extensionAndUi: "EXTENSION_AND_UI",
+		injectedAndUi: "INJECTED_AND_UI",
+		injectedAndExtension: "INJECTED_AND_EXTENSION",
 
 		// What's New
-		export var extensionAndPageNavUi = "EXTENSION_AND_PAGENAVUI";
-		export var pageNavInjectedAndPageNavUi = "PAGENAVINJECTED_AND_PAGENAVUI";
-		export var pageNavInjectedAndExtension = "PAGENAVINJECTED_AND_EXTENSION";
-	}
+		extensionAndPageNavUi: "EXTENSION_AND_PAGENAVUI",
+		pageNavInjectedAndPageNavUi: "PAGENAVINJECTED_AND_PAGENAVUI",
+		pageNavInjectedAndExtension: "PAGENAVINJECTED_AND_EXTENSION"
+	};
 
-	export module FunctionKeys {
-		export var clipperStrings = "CLIPPER_STRINGS";
-		export var clipperStringsFrontLoaded = "CLIPPER_STRINGS_FRONT_LOADED";
-		export var closePageNavTooltip = "CLOSE_PAGE_NAV_TOOLTIP";
-		export var createHiddenIFrame = "CREATE_HIDDEN_IFRAME";
-		export var ensureFreshUserBeforeClip = "ENSURE_FRESH_USER_BEFORE_CLIP";
-		export var escHandler = "ESC_HANDLER";
-		export var getInitialUser = "GET_INITIAL_USER";
-		export var getPageNavTooltipProps = "GET_PAGE_NAV_TOOLTIP_PROPS";
-		export var getStorageValue = "GET_STORAGE_VALUE";
-		export var getMultipleStorageValues = "GET_MULTIPLE_STORAGE_VALUES";
-		export var getTooltipToRenderInPageNav = "GET_TOOLTIP_TO_RENDER_IN_PAGE_NAV";
-		export var hideUi = "HIDE_UI";
-		export var invokeClipper = "INVOKE_CLIPPER";
-		export var invokeClipperFromPageNav = "INVOKE_CLIPPER_FROM_PAGE_NAV";
-		export var invokeDebugLogging = "INVOKE_DEBUG_LOGGING";
-		export var invokePageNav = "INVOKE_PAGE_NAV";
-		export var extensionNotAllowedToAccessLocalFiles = "EXTENSION_NOT_ALLOWED_TO_ACCESS_LOCAL_FILES";
-		export var noOpTracker = "NO_OP_TRACKER";
-		export var onSpaNavigate = "ON_SPA_NAVIGATE";
-		export var refreshPage = "REFRESH_PAGE";
-		export var showRefreshClipperMessage = "SHOW_REFRESH_CLIPPER_MESSAGE";
-		export var setInjectOptions = "SET_INJECT_OPTIONS";
-		export var setInvokeOptions = "SET_INVOKE_OPTIONS";
-		export var setStorageValue = "SET_STORAGE_VALUE";
-		export var signInUser = "SIGN_IN_USER";
-		export var signOutUser = "SIGN_OUT_USER";
-		export var tabToLowestIndexedElement = "TAB_TO_LOWEST_INDEXED_ELEMENT";
-		export var takeTabScreenshot = "TAKE_TAB_SCREENSHOT";
-		export var telemetry = "TELEMETRY";
-		export var toggleClipper = "TOGGLE_CLIPPER";
-		export var unloadHandler = "UNLOAD_HANDLER";
-		export var updateFrameHeight = "UPDATE_FRAME_HEIGHT";
-		export var updatePageInfoIfUrlChanged = "UPDATE_PAGE_INFO_IF_URL_CHANGED";
-	}
+	// tslint:disable-next-line:variable-name
+	public static FunctionKeys = {
+		clipperStrings: "CLIPPER_STRINGS",
+		clipperStringsFrontLoaded: "CLIPPER_STRINGS_FRONT_LOADED",
+		closePageNavTooltip: "CLOSE_PAGE_NAV_TOOLTIP",
+		createHiddenIFrame: "CREATE_HIDDEN_IFRAME",
+		ensureFreshUserBeforeClip: "ENSURE_FRESH_USER_BEFORE_CLIP",
+		escHandler: "ESC_HANDLER",
+		getInitialUser: "GET_INITIAL_USER",
+		getPageNavTooltipProps: "GET_PAGE_NAV_TOOLTIP_PROPS",
+		getStorageValue: "GET_STORAGE_VALUE",
+		getMultipleStorageValues: "GET_MULTIPLE_STORAGE_VALUES",
+		getTooltipToRenderInPageNav: "GET_TOOLTIP_TO_RENDER_IN_PAGE_NAV",
+		hideUi: "HIDE_UI",
+		invokeClipper: "INVOKE_CLIPPER",
+		invokeClipperFromPageNav: "INVOKE_CLIPPER_FROM_PAGE_NAV",
+		invokeDebugLogging: "INVOKE_DEBUG_LOGGING",
+		invokePageNav: "INVOKE_PAGE_NAV",
+		extensionNotAllowedToAccessLocalFiles: "EXTENSION_NOT_ALLOWED_TO_ACCESS_LOCAL_FILES",
+		noOpTracker: "NO_OP_TRACKER",
+		onSpaNavigate: "ON_SPA_NAVIGATE",
+		refreshPage: "REFRESH_PAGE",
+		showRefreshClipperMessage: "SHOW_REFRESH_CLIPPER_MESSAGE",
+		setInjectOptions: "SET_INJECT_OPTIONS",
+		setInvokeOptions: "SET_INVOKE_OPTIONS",
+		setStorageValue: "SET_STORAGE_VALUE",
+		signInUser: "SIGN_IN_USER",
+		signOutUser: "SIGN_OUT_USER",
+		tabToLowestIndexedElement: "TAB_TO_LOWEST_INDEXED_ELEMENT",
+		takeTabScreenshot: "TAKE_TAB_SCREENSHOT",
+		telemetry: "TELEMETRY",
+		toggleClipper: "TOGGLE_CLIPPER",
+		unloadHandler: "UNLOAD_HANDLER",
+		updateFrameHeight: "UPDATE_FRAME_HEIGHT",
+		updatePageInfoIfUrlChanged: "UPDATE_PAGE_INFO_IF_URL_CHANGED"
+	};
 
-	export module KeyCodes {
-		export var tab = 9;
-		export var enter = 13;
-		export var esc = 27;
-	}
+	// tslint:disable-next-line:variable-name
+	public static KeyCodes = {
+		tab: 9,
+		enter: 13,
+		esc: 27
+	};
 
-	export module SmartValueKeys {
-		export var clientInfo = "CLIENT_INFO";
-		export var isFullScreen = "IS_FULL_SCREEN";
-		export var pageInfo = "PAGE_INFO";
-		export var sessionId = "SESSION_ID";
-		export var user = "USER";
-	}
+	// tslint:disable-next-line:variable-name
+	public static SmartValueKeys = {
+		clientInfo: "CLIENT_INFO",
+		isFullScreen: "IS_FULL_SCREEN",
+		pageInfo: "PAGE_INFO",
+		sessionId: "SESSION_ID",
+		user: "USER"
+	};
 
-	export module Styles {
-		export var sectionPickerContainerHeight = 280;
-		export var clipperUiWidth = 322;
-		export var clipperUiTopRightOffset = 20;
-		export var clipperUiDropShadowBuffer = 7;
-		export var clipperUiInnerPadding = 30;
+	// tslint:disable-next-line:variable-name
+	public static Styles = {
+		sectionPickerContainerHeight: 280,
+		clipperUiWidth: 322,
+		clipperUiTopRightOffset: 20,
+		clipperUiDropShadowBuffer: 7,
+		clipperUiInnerPadding: 30,
 
-		export module Colors {
-			export var oneNoteHighlightColor = "#fefe56";
+		Colors: {
+			oneNoteHighlightColor: "#fefe56"
 		}
-	}
+	};
 
-	export module Urls {
-		export var serviceDomain = "https://www.onenote.com";
+	public static serviceDomain = "https://www.onenote.com";
+	// tslint:disable-next-line:variable-name
+	public static Urls = {
+		augmentationApiUrl: Constants.serviceDomain + "/onaugmentation/clipperextract/v1.0/",
+		changelogUrl: Constants.serviceDomain + "/whatsnext/webclipper",
+		clipperFeedbackUrl: Constants.serviceDomain + "/feedback",
+		clipperInstallPageUrl: Constants.serviceDomain + "/clipper/installed",
+		fullPageScreenshotUrl: Constants.serviceDomain + "/onaugmentation/clipperDomEnhancer/v1.0/",
+		localizedStringsUrlBase: Constants.serviceDomain + "/strings?ids=WebClipper.",
+		userFlightingEndpoint: Constants.serviceDomain + "/webclipper/userflight",
 
-		export var augmentationApiUrl = serviceDomain + "/onaugmentation/clipperextract/v1.0/";
-		export var changelogUrl = serviceDomain + "/whatsnext/webclipper";
-		export var clipperFeedbackUrl = serviceDomain + "/feedback";
-		export var clipperInstallPageUrl = serviceDomain + "/clipper/installed";
-		export var fullPageScreenshotUrl = serviceDomain + "/onaugmentation/clipperDomEnhancer/v1.0/";
-		export var localizedStringsUrlBase = serviceDomain + "/strings?ids=WebClipper.";
-		export var userFlightingEndpoint = serviceDomain + "/webclipper/userflight";
+		msaDomain: "https://login.live.com",
+		orgIdDomain: "https://login.microsoftonline.com",
 
-		export var msaDomain = "https://login.live.com";
-		export var orgIdDomain = "https://login.microsoftonline.com";
+		Authentication: {
+			authRedirectUrl: Constants.serviceDomain + "/webclipper/auth",
+			signInUrl: Constants.serviceDomain + "/webclipper/signin",
+			signOutUrl: Constants.serviceDomain + "/webclipper/signout",
+			userInformationUrl: Constants.serviceDomain + "/webclipper/userinfo",
+		},
 
-		export module Authentication {
-			export var authRedirectUrl = serviceDomain + "/webclipper/auth";
-			export var signInUrl = serviceDomain + "/webclipper/signin";
-			export var signOutUrl = serviceDomain + "/webclipper/signout";
-			export var userInformationUrl = serviceDomain + "/webclipper/userinfo";
+		QueryParams: {
+			authType: "authType",
+			category: "category",
+			changelogLocale: "omkt",
+			channel: "channel",
+			clientType: "clientType",
+			clipperId: "clipperId",
+			clipperVersion: "clipperVersion",
+			correlationId: "correlationId",
+			error: "error",
+			errorDescription: "error_?description",
+			event: "event",
+			eventName: "eventName",
+			failureId: "failureId",
+			failureInfo: "failureInfo",
+			failureType: "failureType",
+			inlineInstall: "inlineInstall",
+			label: "label",
+			noOpType: "noOpType",
+			stackTrace: "stackTrace",
+			timeoutInMs: "timeoutInMs",
+			url: "url",
+			userSessionId: "userSessionId",
+			wdFromClipper: "wdfromclipper", // This naming convention is standard in OneNote Online
 		}
+	};
 
-		export module QueryParams {
-			export var authType = "authType";
-			export var category = "category";
-			export var changelogLocale = "omkt";
-			export var channel = "channel";
-			export var clientType = "clientType";
-			export var clipperId = "clipperId";
-			export var clipperVersion = "clipperVersion";
-			export var correlationId = "correlationId";
-			export var error = "error";
-			export var errorDescription = "error_?description";
-			export var event = "event";
-			export var eventName = "eventName";
-			export var failureId = "failureId";
-			export var failureInfo = "failureInfo";
-			export var failureType = "failureType";
-			export var inlineInstall = "inlineInstall";
-			export var label = "label";
-			export var noOpType = "noOpType";
-			export var stackTrace = "stackTrace";
-			export var timeoutInMs = "timeoutInMs";
-			export var url = "url";
-			export var userSessionId = "userSessionId";
-			export var wdFromClipper = "wdfromclipper"; // This naming convention is standard in OneNote Online
-		}
-	}
+	// tslint:disable-next-line:variable-name
+	public static LogCategories = {
+		oneNoteClipperUsage: "OneNoteClipperUsage"
+	};
 
-	export module LogCategories {
-		export var oneNoteClipperUsage = "OneNoteClipperUsage";
-	}
-
-	export module Settings {
-		export var fontSizeStep = 2;
-		export var maxClipSuccessForRatingsPrompt = 12;
-		export var maximumJSTimeValue = 1000 * 60 * 60 * 24 * 100000000; // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
-		export var maximumFontSize = 72;
-		export var maximumNumberOfTimesToShowTooltips = 3;
-		export var maximumMimeSizeLimit = 24900000;
-		export var minClipSuccessForRatingsPrompt = 4;
-		export var minimumFontSize = 8;
-		export var minTimeBetweenBadRatings = 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
-		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
-		export var numRetriesPerPatchRequest = 3;
-		export var pdfCheckCreatePageInterval = 2000; // 2 seconds
-		export var pdfClippingMessageDelay = 5000; // 5 seconds
-		export var pdfExtraPageLoadEachSide = 1;
-		export var pdfInitialPageLoadCount = 3;
-		export var timeBetweenDifferentTooltips = 1000 * 60 * 60 * 24 * 7 * 1; // 1 week
-		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 3 weeks
-		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
-		export var timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
-	}
+	// tslint:disable-next-line:variable-name
+	public static Settings = {
+		fontSizeStep: 2,
+		maxClipSuccessForRatingsPrompt: 12,
+		maximumJSTimeValue: 1000 * 60 * 60 * 24 * 100000000, // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
+		maximumFontSize: 72,
+		maximumNumberOfTimesToShowTooltips: 3,
+		maximumMimeSizeLimit: 24900000,
+		minClipSuccessForRatingsPrompt: 4,
+		minimumFontSize: 8,
+		minTimeBetweenBadRatings: 1000 * 60 * 60 * 24 * 7 * 10, // 10 weeks
+		noOpTrackerTimeoutDuration: 20 * 1000, // 20 seconds
+		numRetriesPerPatchRequest: 3,
+		pdfCheckCreatePageInterval: 2000, // 2 seconds
+		pdfClippingMessageDelay: 5000, // 5 seconds
+		pdfExtraPageLoadEachSide: 1,
+		pdfInitialPageLoadCount: 3,
+		timeBetweenDifferentTooltips: 1000 * 60 * 60 * 24 * 7 * 1, // 1 week
+		timeBetweenSameTooltip: 1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
+		timeBetweenTooltips: 1000 * 60 * 60 * 24 * 7 * 3, // 21 days
+		timeUntilPdfPageNumbersFadeOutAfterScroll: 1000 // 1 second
+	};
 }

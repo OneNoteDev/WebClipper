@@ -100,7 +100,7 @@ export class AuthenticationHelper {
 			}, 3000);
 
 			if (navigator.userAgent.search(/edge/i) !== -1) {
-				browser.cookies.get({ "url": Constants.Urls.serviceDomain, "name": Constants.Cookies.clipperInfo }, (cookie) => {
+				browser.cookies.get({ "url": Constants.serviceDomain, "name": Constants.Cookies.clipperInfo }, (cookie) => {
 					clearTimeout(getCookieTimeout);
 					resolve(cookie ? cookie.value : "");
 				});
@@ -116,7 +116,7 @@ export class AuthenticationHelper {
 	 * do it manually.  This method essentially forces the delete of the cookies we rely on for authentication.
 	 */
 	public deleteUserAuthenticationCookies(authType: AuthType): void {
-		browser.cookies.remove({ "url": Constants.Urls.serviceDomain, "name": Constants.Cookies.clipperInfo });
+		browser.cookies.remove({ "url": Constants.serviceDomain, "name": Constants.Cookies.clipperInfo });
 
 		let authenticationDomain = Constants.Urls.msaDomain;
 		if (authType === AuthType.OrgId) {

@@ -312,7 +312,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		let metadataElements: Element[] = BookmarkHelper.getElementsByTagName(doc, BookmarkHelper.metadataTagNames);
 
-		let imageElements: HTMLImageElement[] = BookmarkHelper.getElementsByTagName(doc.body, [DomUtils.Tags.img]) as HTMLImageElement[];
+		let imageElements: HTMLImageElement[] = BookmarkHelper.getElementsByTagName(doc.body, [DomUtils.tags.img]) as HTMLImageElement[];
 
 		// because we are cleaning the document in order to get the cleanest text possible in our description,
 		// make sure this is the last operation being performed on the document

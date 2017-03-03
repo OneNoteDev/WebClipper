@@ -1,6 +1,6 @@
 import {KhanAcademyVideoExtractor} from "./khanAcademyVideoExtractor";
+import {SupportedVideoDomains, VideoUtils} from "./videoUtils";
 import {VideoExtractor} from "./VideoExtractor";
-import {VideoUtils} from "./videoUtils";
 import {VimeoVideoExtractor} from "./vimeoVideoExtractor";
 import {YoutubeVideoExtractor} from "./YoutubeVideoExtractor";
 
@@ -10,9 +10,9 @@ import {YoutubeVideoExtractor} from "./YoutubeVideoExtractor";
  * to be used in the preview and posting to OneNote
  */
 export module VideoExtractorFactory {
-	export function createVideoExtractor(domain: VideoUtils.SupportedVideoDomains): VideoExtractor {
+	export function createVideoExtractor(domain: SupportedVideoDomains): VideoExtractor {
 		// shorter typename
-		let domains = VideoUtils.SupportedVideoDomains;
+		let domains = SupportedVideoDomains;
 		switch (domain) {
 			case domains.KhanAcademy:
 				return new KhanAcademyVideoExtractor();
