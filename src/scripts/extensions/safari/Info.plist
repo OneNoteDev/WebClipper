@@ -15,7 +15,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>3.4</string>
 	<key>CFBundleVersion</key>
-	<string>3.4.5</string>
+	<string>3.6.0</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Global Page</key>
@@ -42,7 +42,6 @@
 		<dict>
 			<key>Start</key>
 			<array>
-				<string>appendIsInstalledMarker.js</string>
 				<string>safariDebugLoggingInject.js</string>
 				<string>safariInject.js</string>
 				<string>safariPageNavInject.js</string>

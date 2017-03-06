@@ -3,15 +3,14 @@
 	"name": "OneNote Web Clipper",
 	"description": "__MSG_appDesc__",
 	"default_locale": "en",
-	"version": "3.4.5.0",
-
+	"version": "3.6.0",
 	"background": {
-		"page": "edgeExtension.html",
+		"scripts": [ "edgeExtension.js" ],
 		"persistent": true
 	},
 
 	"content_scripts": [{
-		"matches": ["<all_urls>"],
+		"matches": ["https://onenote.officeapps.live.com/*", "https://ppc-onenote.officeapps.live.com/*", "https://onenote.officeapps-df.live.com/*", "https://onenote.officeapps.live-int.com/*"],
 		"js": ["appendIsInstalledMarker.js"],
 		"run_at": "document_start",
 		"all_frames": true
@@ -53,7 +52,5 @@
 		"96": "icons/icon-96.png",
 		"128": "icons/icon-128.png",
 		"256": "icons/icon-256.png"
-	},
-
-	"minimum_edge_version": "37.14316.1000.0"
+	}
 }
