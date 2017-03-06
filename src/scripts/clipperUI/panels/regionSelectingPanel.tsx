@@ -25,7 +25,7 @@ class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 						<div className="wideButtonContainer">
 							<span className="wideButtonFont wideActionButton"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
-								{Localization.getLocalizedString("WebClipper.Action.Cancel") }
+								{Localization.getLocalizedString("WebClipper.Action.BackToHome") }
 							</span>
 						</div>
 					</a>
