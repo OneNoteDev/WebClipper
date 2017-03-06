@@ -95,7 +95,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 										this.props.clipperState.userResult.data.user.emailAddress
 										? <div id={Constants.Ids.currentUserId} className="confineText currentUserIdFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>{this.props.clipperState.userResult.data.user.emailAddress}</div>
 										: ""
-									}		
+									}
 									</div>
 								</a>
 							</div>)
