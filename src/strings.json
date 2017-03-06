@@ -1,4 +1,5 @@
 {
+	"WebClipper.Accessibility.ScreenReader.CurrentModeHasChanged" : "The current clipping mode is now '{0}'",	
 	"WebClipper.Action.BackToHome": "Back",
 	"WebClipper.Action.Cancel": "Cancel",
 	"WebClipper.Action.Clip": "Clip",
@@ -111,6 +112,7 @@
 	"WebClipper.Preview.AugmentationModeGenericError": "Something went wrong creating the preview. Try again, or choose a different clipping mode.",
 	"WebClipper.Preview.BookmarkModeGenericError": "Something went wrong creating the bookmark. Try again, or choose a different clipping mode.",
 	"WebClipper.Preview.FullPageModeGenericError": "A preview isn't available, but you can still clip your page.",
+	"WebClipper.Preview.FullPageModeScreenshotDescription": "A full page screenshot of '{0}'",
 	"WebClipper.Preview.LoadingMessage": "Loading preview...",
 	"WebClipper.Preview.NoFullPageScreenshotFound": "No content found. Try another clipping mode.",
 	"WebClipper.Preview.NoContentFound": "No article found. Try another clipping mode.",
