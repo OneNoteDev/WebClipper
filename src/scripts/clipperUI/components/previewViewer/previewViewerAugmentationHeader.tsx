@@ -25,7 +25,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			innerElements: [
 				<div>{Localization.getLocalizedString("WebClipper.ClipType.Article.Button")}</div>
 			]
-		}
+		};
 	}
 
 	private getHighlightGroup(): ControlGroup {

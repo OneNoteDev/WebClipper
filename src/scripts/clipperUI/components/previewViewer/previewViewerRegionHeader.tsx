@@ -29,7 +29,7 @@ class PreviewViewerRegionHeaderClass extends PreviewViewerHeaderComponentBase<{}
 			innerElements: [
 				<div>{Localization.getLocalizedString("WebClipper.ClipType.Region.Button")}</div>
 			]
-		}
+		};
 	}
 
 	private getAddRegionGroup(): ControlGroup {

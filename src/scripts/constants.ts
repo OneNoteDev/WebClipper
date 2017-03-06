@@ -47,7 +47,7 @@ export module Constants {
 
 		// radioButton
 		export var radioIndicatorFill = "radio-indicator-fill";
-		
+
 		// spriteAnimation
 		export var spinner = "spinner";
 
