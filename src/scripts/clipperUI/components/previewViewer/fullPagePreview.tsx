@@ -69,11 +69,14 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 
 		switch (result.status) {
 			case Status.Succeeded:
+				let pageTitle = this.props.clipperState.pageInfo ? this.props.clipperState.pageInfo.contentTitle : "";
+				let altTag = Localization.getLocalizedString("WebClipper.Preview.FullPageModeScreenshotDescription").replace("{0}", pageTitle);
+
 				if (this.props.clipperState.fullPageResult.data) {
 					let screenshotImages: FullPageScreenshotResult = this.props.clipperState.fullPageResult.data;
 					for (let imageData of screenshotImages.Images) {
 						let dataUrl = "data:image/" + screenshotImages.ImageFormat + ";" + screenshotImages.ImageEncoding + "," + imageData;
-						contentBody.push(<img src={dataUrl}></img>);
+						contentBody.push(<img src={dataUrl} alt={altTag}></img>);
 					}
 				}
 				break;

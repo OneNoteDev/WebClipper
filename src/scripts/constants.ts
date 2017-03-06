@@ -51,8 +51,9 @@ export module Constants {
 		// spriteAnimation
 		export var spinner = "spinner";
 
+		// Accessibility 
 		export var srOnly = "sr-only";
-		
+
 		// tooltip
 		export var tooltip = "tooltip";
 
@@ -136,6 +137,7 @@ export module Constants {
 		// optionsPanel
 		export var clipButton = "clipButton";
 		export var clipButtonContainer = "clipButtonContainer";
+		export var optionLabel = "optionLabel";
 
 		// previewViewerPdfHeader
 		export var radioAllPagesLabel = "radioAllPagesLabel";
