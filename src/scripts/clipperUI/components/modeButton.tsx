@@ -29,7 +29,8 @@ class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
 		let idName: string = clipMode + "Button";
 
 		return (
-			<a className={className} id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
+			<a className={className} aria-selected={this.props.selected} aria-role="button"
+				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex) }>
 				<img className="icon" src={this.props.imgSrc} />
 				<span className="label buttonLabelFont"
