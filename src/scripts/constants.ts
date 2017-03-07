@@ -51,6 +51,9 @@ export module Constants {
 		// spriteAnimation
 		export var spinner = "spinner";
 
+		// Accessibility 
+		export var srOnly = "sr-only";
+
 		// tooltip
 		export var tooltip = "tooltip";
 
@@ -134,6 +137,7 @@ export module Constants {
 		// optionsPanel
 		export var clipButton = "clipButton";
 		export var clipButtonContainer = "clipButtonContainer";
+		export var optionLabel = "optionLabel";
 
 		// previewViewerPdfHeader
 		export var radioAllPagesLabel = "radioAllPagesLabel";
@@ -322,9 +326,15 @@ export module Constants {
 	}
 
 	export module KeyCodes {
+		// event.which is deprecated -.-
 		export var tab = 9;
 		export var enter = 13;
 		export var esc = 27;
+		export var c = 67;
+	}
+
+	export module StringKeyCodes {
+		export var c = "KeyC";
 	}
 
 	export module SmartValueKeys {

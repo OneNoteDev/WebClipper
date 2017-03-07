@@ -557,10 +557,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}
 
 		if (this.state && this.state.pageInfo) {
+			if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
+				return ClipMode.Pdf;
+			}
+
 			if (UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
 				return ClipMode.Augmentation;
-			} else if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
-				return ClipMode.Pdf;
 			}
 		}
 

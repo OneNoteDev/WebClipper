@@ -1,5 +1,5 @@
 {
-  "version": "3.4.5",
+  "version": "3.6.0",
   "name": "webclipper",
   "private": true,
   "description": "The core of the OneNote Web Clipper found at https://www.onenote.com/clipper",
@@ -54,7 +54,7 @@
     "node-qunit-phantomjs": "1.5.0",
     "node-static": "0.7.9",
     "onenoteapi": "1.1.0",
-    "onenotepicker": "1.0.6",
+    "onenotepicker": "1.0.7",
     "pdfjs-dist": "1.7.290",
     "popper.js": "1.0.6",
     "qunitjs": "1.20.0",
