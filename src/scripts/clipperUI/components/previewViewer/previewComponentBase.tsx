@@ -117,10 +117,6 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		return true;
 	}
 
-	waddup(): void {
-		console.log("shaddup");
-	}
-
 	render() {
 		if (!PreviewComponentBase.textAreaListenerAttached) {
 			this.addTextAreaListener();
