@@ -286,12 +286,13 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 		return (
 			<div id={Constants.Ids.locationPickerContainer}>
-				<div className="optionLabel">
-					<label className="buttonLabelFont" aria-label={locationLabel} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
-						{locationLabel}
+				<div id={Constants.Ids.optionLabel} className="optionLabel" tabIndex={50}>
+					<label className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+						{Localization.getLocalizedString("WebClipper.Label.ClipLocation")}
 					</label>
 				</div>
 				<OneNotePicker.OneNotePickerComponent
+					tabIndex={51}
 					notebooks={this.state.notebooks}
 					status={Status[this.state.status]}
 					onPopupToggle={this.onPopupToggle.bind(this)}
