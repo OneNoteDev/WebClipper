@@ -72,7 +72,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 			.replace("{0}", ""); // TODO can we change this loc string to remove the {0}?
 
 		let sourceUrl = this.props.clipperState.pageInfo ? this.props.clipperState.pageInfo.rawUrl : "";
-		
+
 		return (
 			<div id={Constants.Ids.previewSubtitleContainer}>
 				{this.props.clipperState.injectOptions && this.props.clipperState.injectOptions.enableAddANote
