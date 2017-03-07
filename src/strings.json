@@ -1,4 +1,9 @@
 {
+	"WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif": "Change font to Sans-Serif",
+	"WebClipper.Accessibility.ScreenReader.ChangeFontToSerif": "Change font to Serif",
+	"WebClipper.Accessibility.ScreenReader.DecreaseFontSize": "Decrease font size",
+	"WebClipper.Accessibility.ScreenReader.IncreaseFontSize": "Increase font size",
+	"WebClipper.Accessibility.ScreenReader.ToggleHighlighterForArticleMode": "Toggle Highlighter Mode For Article",
 	"WebClipper.Action.BackToHome": "Back",
 	"WebClipper.Action.Cancel": "Cancel",
 	"WebClipper.Action.Clip": "Clip",
