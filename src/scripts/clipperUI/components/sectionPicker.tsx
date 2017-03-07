@@ -282,8 +282,6 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			localizedStrings.notebookLoadFailureMessage = OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(this.state.apiResponseCode);
 		}
 
-		let locationLabel = Localization.getLocalizedString("WebClipper.Label.ClipLocation");
-
 		return (
 			<div id={Constants.Ids.locationPickerContainer}>
 				<div id={Constants.Ids.optionLabel} className="optionLabel" tabIndex={50}>
