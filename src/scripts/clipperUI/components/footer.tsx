@@ -77,7 +77,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 				<div>
 					<div className="footerButtonsLeft confineText">
 						<a id={Constants.Ids.feedbackButton} {...this.enableInvoke(this.handleFeedbackButton, 80) }>
-							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")} />
+							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")}/>
 							<span>{Localization.getLocalizedString("WebClipper.Action.Feedback") }</span>
 						</a>
 					</div>
@@ -89,12 +89,13 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 									{
 										this.props.clipperState.userResult.data.user.fullName
 										? <div id={Constants.Ids.currentUserName} className="confineText">{this.props.clipperState.userResult.data.user.fullName}</div>
-										: <div id={Constants.Ids.currentUserName} className="confineText"></div>
+										: <div id={Constants.Ids.currentUserName} className="confineText">{Localization.getLocalizedString("WebClipper.Label.SignedIn")}</div>
 									}
-										<div id={Constants.Ids.currentUserId} className="confineText currentUserIdFont"
-											style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
-											{this.props.clipperState.userResult.data.user.emailAddress}
-										</div>
+									{
+										this.props.clipperState.userResult.data.user.emailAddress
+										? <div id={Constants.Ids.currentUserId} className="confineText currentUserIdFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>{this.props.clipperState.userResult.data.user.emailAddress}</div>
+										: ""
+									}
 									</div>
 								</a>
 							</div>)
