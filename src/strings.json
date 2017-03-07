@@ -1,5 +1,7 @@
 {
-	"WebClipper.Accessibility.ScreenReader.CurrentModeHasChanged" : "The current clipping mode is now '{0}'",	
+	"WebClipper.Accessibility.ScreenReader.CurrentModeHasChanged": "The current clipping mode is now '{0}'",
+	"WebClipper.Accessibility.ScreenReader.ClippingPageToOneNote": "Clipping the current page to OneNote",
+	"WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage": "Text input to edit the title of the page you want to save",
 	"WebClipper.Action.BackToHome": "Back",
 	"WebClipper.Action.Cancel": "Cancel",
 	"WebClipper.Action.Clip": "Clip",

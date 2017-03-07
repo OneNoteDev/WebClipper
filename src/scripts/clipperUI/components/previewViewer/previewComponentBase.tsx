@@ -57,6 +57,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 						{...this.enableInvoke(undefined, 200) }
 						rows="1"
 						id={Constants.Ids.previewHeaderInput}
+						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}
 						className={!titleIsEditable ? Constants.Classes.textAreaInput + inProgressClassIfApplicable : Constants.Classes.textAreaInput}
 						value={contentTitle}
 						readOnly={!titleIsEditable}>
@@ -78,7 +79,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 					? <AnnotationInput clipperState={this.props.clipperState} />
 					: undefined}
 				{this.props.clipperState.currentMode.get() !== ClipMode.Bookmark
-					? <div id={Constants.Ids.previewUrlContainer}>
+					? <div id={Constants.Ids.previewUrlContainer} tabIndex={220}>
 						{sourceUrlCitationPrefix}
 						<a href={sourceUrl} target="_blank" title={sourceUrl}>{sourceUrl}</a>
 					</div>
@@ -114,6 +115,10 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 	// Can be overriden by child classes to disable the title
 	protected isTitleEnabled(): boolean {
 		return true;
+	}
+
+	waddup(): void {
+		console.log("shaddup");
 	}
 
 	render() {
