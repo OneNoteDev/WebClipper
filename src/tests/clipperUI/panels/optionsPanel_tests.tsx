@@ -413,6 +413,7 @@ export class OptionsPanelTests extends TestModule {
 	}
 
 	private assertClipButtonAvailability(isAvailable: boolean, onStartClippedCalled: boolean) {
+		// First test clicking the clip button
 		let clipButton = document.getElementById(Constants.Ids.clipButton);
 		ok(clipButton, "The clip button should be present");
 
@@ -423,6 +424,40 @@ export class OptionsPanelTests extends TestModule {
 
 		MithrilUtils.simulateAction(() => {
 			clipButton.click();
+		});
+
+		strictEqual(this.onStartClipCalled, onStartClippedCalled, "The onStartClip callback should be called only if it's available");
+
+		// Then test the hotkey
+		MithrilUtils.simulateAction(() => {
+			let clipHotKeyEvent;
+
+			// TODO: if initKeyboardEvent gets removed in phantomjs, or KeyboardEvent constructor
+			// 	gets support, then uncomment this line
+			// if (KeyboardEvent) {
+			// 	clipHotKeyEvent = new KeyboardEvent("keydown", {
+			// 		altKey: true,
+			// 		key: Constants.StringKeyCodes.c
+			// 	});
+			// }
+
+			if (document.createEvent) {
+				clipHotKeyEvent = document.createEvent("KeyboardEvent") as KeyboardEvent;
+				clipHotKeyEvent.initKeyboardEvent(
+					"keydown",       // typeArg,
+					true,             // canBubbleArg,
+					true,             // cancelableArg,
+					/* tslint:disable:no-null-keyword */
+					null,             // viewArg,  Specifies UIEvent.view. This value may be null.
+					/* tslint:enable:no-null-keyword */
+					false,            // ctrlKeyArg,
+					true,             // altKeyArg,
+					false,            // shiftKeyArg,
+					false,            // metaKeyArg,
+					9,               // keyCodeArg,
+					0);              // charCodeArg);
+			}
+			document.dispatchEvent(clipHotKeyEvent);
 		});
 
 		strictEqual(this.onStartClipCalled, onStartClippedCalled, "The onStartClip callback should be called only if it's available");
