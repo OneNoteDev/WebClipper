@@ -16,7 +16,16 @@ export interface PreviewViewerAugmentationHeaderProp {
 
 class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentBase<{}, PreviewViewerAugmentationHeaderProp> {
 	getControlGroups(): ControlGroup[] {
-		return [this.getHighlightGroup(), this.getSerifGroup(), this.getFontSizeGroup()];
+		return [this.getScreenReaderTitleGroup(), this.getHighlightGroup(), this.getSerifGroup(), this.getFontSizeGroup()];
+	}
+
+	private getScreenReaderTitleGroup() {
+		return {
+			className: Constants.Classes.srOnly,
+			innerElements: [
+				<div>{Localization.getLocalizedString("WebClipper.ClipType.Article.Button")}</div>
+			]
+		};
 	}
 
 	private getHighlightGroup(): ControlGroup {
