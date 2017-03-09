@@ -10,6 +10,7 @@
 	"WebClipper.Action.BackToHome": "Back",
 	"WebClipper.Action.Cancel": "Cancel",
 	"WebClipper.Action.Clip": "Clip",
+	"WebClipper.Action.CloseTheClipper": "Close the Clipper",
 	"WebClipper.Action.Feedback": "Feedback?",
 	"WebClipper.Action.RefreshPage": "Refresh Page",
 	"WebClipper.Action.Signin": "Sign In",
