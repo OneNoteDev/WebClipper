@@ -83,7 +83,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 					</div>
 					{showUserInfo
 						? (<div className="footerButtonsRight">
-								<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.userControlHandler, 81) }>
+							<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.userControlHandler, 81)} aria-expanded={this.state.userSettingsOpened}>
 									<img id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 									<div id={Constants.Ids.currentUserDetails}>
 									{
