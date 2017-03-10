@@ -481,6 +481,20 @@ export class DomUtils {
 		}
 	}
 
+	public static encodeImageUrls(doc: Document): Promise<void> {
+		return DomUtils.domReplacerAsync(doc, DomUtils.tags.img, (node: Node) => {
+			return new Promise<Node>((resolve) => {
+				let img: HTMLImageElement = <HTMLImageElement>node;
+
+				DomUtils.getImageDataUrl(img.src).then((thumbnailDataUrl: string) => {
+					if (!ObjectUtils.isNullOrUndefined(thumbnailDataUrl)) {
+						img.src = thumbnailDataUrl;
+					}
+					resolve(img);
+				});
+			});
+		});
+	}
 	/**
 	 * Remove blank images from the DOM. A blank image is defined as an image where all
 	 * the pixels are either purely white or fully transparent.
@@ -928,13 +942,17 @@ export class DomUtils {
 	 * elements remain
 	 */
 	public static toOnml(doc: Document): Promise<void> {
-		DomUtils.removeElementsNotSupportedInOnml(doc);
-		DomUtils.removeDisallowedIframes(doc);
-		DomUtils.removeUnwantedItems(doc);
-		DomUtils.convertRelativeUrlsToAbsolute(doc);
-		DomUtils.removeAllStylesAndClasses(doc);
-		DomUtils.removeEventListenerAttributes(doc);
-		return DomUtils.removeBlankImages(doc);
+		return new Promise<void>((resolve) => {
+			DomUtils.removeElementsNotSupportedInOnml(doc);
+			DomUtils.removeDisallowedIframes(doc);
+			DomUtils.removeUnwantedItems(doc);
+			DomUtils.convertRelativeUrlsToAbsolute(doc);
+			DomUtils.removeAllStylesAndClasses(doc);
+			DomUtils.removeEventListenerAttributes(doc);
+			DomUtils.encodeImageUrls(doc).then(() => {
+				resolve(DomUtils.removeBlankImages(doc));
+			});
+		});
 	}
 
 	public static removeDisallowedIframes(doc: Document) {

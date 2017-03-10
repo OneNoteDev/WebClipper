@@ -60,9 +60,7 @@ export class AugmentationHelper {
 					let doc = (new DOMParser()).parseFromString(result.ContentInHtml, "text/html");
 					let previewElement = AugmentationHelper.getArticlePreviewElement(doc);
 
-					DomUtils.removeElementsNotSupportedInOnml(doc);
-					DomUtils.removeDisallowedIframes(doc);
-					DomUtils.removeBlankImages(doc).then(() => {
+					DomUtils.toOnml(doc).then(() => {
 						DomUtils.addPreviewContainerStyling(previewElement);
 						AugmentationHelper.addSupportedVideosToElement(previewElement, pageContent, url);
 						result.ContentInHtml = doc.body.innerHTML;
