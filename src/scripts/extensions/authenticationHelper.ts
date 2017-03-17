@@ -67,6 +67,8 @@ export class AuthenticationHelper {
 				let writeableCookies = this.isThirdPartyCookiesEnabled(response.data);
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.WriteableCookies, writeableCookies);
 
+				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserUpdateReason, UpdateReason[updateReason]);
+
 				if (isValidUser) {
 					this.user.set({ user: response.data, lastUpdated: response.lastUpdated, updateReason: updateReason, writeableCookies: writeableCookies });
 				} else {
