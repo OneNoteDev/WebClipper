@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.6.1 (March 21, 2017)
+* Bug: Add more support for screen readers and tab browsing
+
 ## 3.6.0 (February 17, 2017)
 * Bug: We were still injecting an empty div into the non-Chrome browsers. This fixes that situation.
 
