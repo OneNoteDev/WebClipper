@@ -1,6 +1,7 @@
 import {Constants} from "../../constants";
 
 import {ExtensionUtils} from "../../extensions/extensionUtils";
+import {Localization} from "../../localization/localization";
 
 import {ComponentBase} from "../componentBase";
 
@@ -17,7 +18,7 @@ class CloseButtonClass extends ComponentBase<{}, CloseButtonProps> {
 	render() {
 		return (
 			<div id={Constants.Ids.closeButtonContainer}>
-				<a id={Constants.Ids.closeButton} {...this.enableInvoke(this.props.onClickHandler, 300, this.props.onClickHandlerParams) }>
+				<a id={Constants.Ids.closeButton} aria-label={Localization.getLocalizedString("WebClipper.Action.CloseTheClipper")} {...this.enableInvoke(this.props.onClickHandler, 300, this.props.onClickHandlerParams) }>
 					<img className="closeButtonIcon" src={ExtensionUtils.getImageResourceUrl("close.png")} />
 				</a>
 			</div>

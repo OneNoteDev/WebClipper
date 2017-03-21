@@ -16,7 +16,16 @@ export interface PreviewViewerAugmentationHeaderProp {
 
 class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentBase<{}, PreviewViewerAugmentationHeaderProp> {
 	getControlGroups(): ControlGroup[] {
-		return [this.getHighlightGroup(), this.getSerifGroup(), this.getFontSizeGroup()];
+		return [this.getScreenReaderTitleGroup(), this.getHighlightGroup(), this.getSerifGroup(), this.getFontSizeGroup()];
+	}
+
+	private getScreenReaderTitleGroup() {
+		return {
+			className: Constants.Classes.srOnly,
+			innerElements: [
+				<div>{Localization.getLocalizedString("WebClipper.ClipType.Article.Button")}</div>
+			]
+		};
 	}
 
 	private getHighlightGroup(): ControlGroup {
@@ -26,11 +35,16 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 
 		return {
 			id: Constants.Ids.highlightControl,
-			innerElements: [<img
-				id={Constants.Ids.highlightButton}
-				{...this.enableInvoke(this.props.toggleHighlight, 100) }
-				className={classForHighlighter}
-				src={ExtensionUtils.getImageResourceUrl(imgSrc) } />
+			innerElements: [
+				<img
+					role="button"
+					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ToggleHighlighterForArticleMode")}
+					aria-pressed={highlighterEnabled ? "true" : "false"}
+					id={Constants.Ids.highlightButton}
+					{...this.enableInvoke(this.props.toggleHighlight, 100) }
+					className={classForHighlighter}
+					src={ExtensionUtils.getImageResourceUrl(imgSrc)}
+				/>
 			]
 		};
 	}
@@ -40,6 +54,8 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			id: Constants.Ids.serifControl,
 			innerElements: [
 				<button
+					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif")}
+					aria-pressed={!this.props.serif ? "true" : "false"}
 					id={Constants.Ids.sansSerif}
 					{...this.enableInvoke(this.props.changeFontFamily, 101, false) }
 					className={!this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
@@ -47,6 +63,8 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SansSerifButtonLabel") }
 				</button>,
 				<button
+					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif")}
+					aria-pressed={this.props.serif ? "true" : "false"}
 					id={Constants.Ids.serif}
 					{...this.enableInvoke(this.props.changeFontFamily, 102, true) }
 					className={this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
@@ -63,11 +81,13 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			className: HeaderClasses.Button.relatedButtons,
 			innerElements: [
 				<button className={HeaderClasses.Button.controlButton}
+					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.DecreaseFontSize")}
 					type="button" {...this.enableInvoke(this.props.changeFontSize, 103, false) }
 					id={Constants.Ids.decrementFontSize}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_down.png") } />
 				</button>,
 				<button className={HeaderClasses.Button.controlButton}
+					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.IncreaseFontSize")}
 					type="button" {...this.enableInvoke(this.props.changeFontSize, 104, true) }
 					id={Constants.Ids.incrementFontSize}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_up.png") } />

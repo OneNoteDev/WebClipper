@@ -57,6 +57,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 						{...this.enableInvoke(undefined, 200) }
 						rows="1"
 						id={Constants.Ids.previewHeaderInput}
+						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}
 						className={!titleIsEditable ? Constants.Classes.textAreaInput + inProgressClassIfApplicable : Constants.Classes.textAreaInput}
 						value={contentTitle}
 						readOnly={!titleIsEditable}>
@@ -78,9 +79,9 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 					? <AnnotationInput clipperState={this.props.clipperState} />
 					: undefined}
 				{this.props.clipperState.currentMode.get() !== ClipMode.Bookmark
-					? <div id={Constants.Ids.previewUrlContainer}>
-						{sourceUrlCitationPrefix}
-						<a href={sourceUrl} target="_blank" title={sourceUrl}>{sourceUrl}</a>
+					? <div id={Constants.Ids.previewUrlContainer} tabIndex={220}>
+						<span aria-label={sourceUrlCitationPrefix}>{sourceUrlCitationPrefix}</span>
+						<a href={sourceUrl} target="_blank" aria-label={sourceUrl} title={sourceUrl}>{sourceUrl}</a>
 					</div>
 					: undefined}
 			</div>

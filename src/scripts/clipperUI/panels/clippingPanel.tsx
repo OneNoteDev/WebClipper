@@ -49,7 +49,7 @@ class ClippingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 		return (
 			<div id={Constants.Ids.clipperApiProgressContainer} className="progressPadding">
 				<SpriteAnimation spriteUrl={ExtensionUtils.getImageResourceUrl("spinner_loop.png")} imageHeight={32} totalFrameCount={21} loop={true}/>
-				<span className="actionLabelFont messageLabel"
+				<span className="actionLabelFont messageLabel" role="alert"
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 					{this.getProgressLabel()}
 				</span>
