@@ -16,6 +16,17 @@ import {PreviewComponentBase} from "./previewComponentBase";
 import {PreviewViewerBookmarkHeader} from "./previewViewerBookmarkHeader";
 
 class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
+	// protected focusElement(): void {
+	// 	console.log("focus in bookmark preview");
+	// 	this.annotationInput.focus();
+	// 	return;
+	// }
+
+	protected getPreviewBodyConfig(element: HTMLElement, isInitialized: boolean) {
+		console.log("focus that ish");
+		this.annotationInput.focus();
+	}
+	
 	protected getStatus(): Status {
 		return this.props.clipperState.bookmarkResult.status;
 	}

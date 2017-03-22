@@ -19,16 +19,28 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 
 	private static textAreaListenerAttached = false;
 
+	protected annotationInput: any;
+
 	protected abstract getContentBodyForCurrentStatus(): any[];
 	protected abstract getHeader(): any;
 	protected abstract getStatus(): Status;
 	protected abstract getTitleTextForCurrentStatus(): string;
 
 	/**
+	 * If we want to focus a particular element for a11y reasons,
+	 * the derived class has 2 options. Focus an element that is rendered by default,
+	 * or focus an element that they themselves render (such as Augmentation).
+	 * To use either option, they will override this method and focus that element in there
+	 */
+	protected focusElement(): void {
+		return;
+	}
+
+	/**
 	 * Returns a config callback that should be added to the preview body, and is meant to be
 	 * overridden by child classes on a per-need basis
 	 */
-	protected getPreviewBodyConfig(): any {
+	protected  getPreviewBodyConfig(element: HTMLElement, isInitialized: boolean): any {
 		return undefined;
 	}
 
@@ -67,6 +79,11 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		}
 	}
 
+	saveRefToAnnotationInput(elt: HTMLElement) {
+		console.log("saving annotation input ref");
+		this.annotationInput = elt;
+	}
+
 	private getPreviewSubtitle(): any {
 		let sourceUrlCitationPrefix = Localization.getLocalizedString("WebClipper.FromCitation")
 			.replace("{0}", ""); // TODO can we change this loc string to remove the {0}?
@@ -76,7 +93,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		return (
 			<div id={Constants.Ids.previewSubtitleContainer}>
 				{this.props.clipperState.injectOptions && this.props.clipperState.injectOptions.enableAddANote
-					? <AnnotationInput clipperState={this.props.clipperState} />
+					? <AnnotationInput clipperState={this.props.clipperState} ref={this.saveRefToAnnotationInput.bind(this)}/>
 					: undefined}
 				{this.props.clipperState.currentMode.get() !== ClipMode.Bookmark
 					? <div id={Constants.Ids.previewUrlContainer} tabIndex={220}>
@@ -143,7 +160,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		let previewInnerContainerClass = this.props.clipperState.clientInfo.clipperType === ClientType.Bookmarklet ? "" : this.getPreviewInnerContainerClass();
 
 		return (
-			<div id={Constants.Ids.previewOuterContainer}
+			<div id={Constants.Ids.previewOuterContainer} {...this.onElementFirstDraw(this.focusElement.bind(this))}
 				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }>
 				<div id={Constants.Ids.previewInnerWrapper}>
 					<div id={Constants.Ids.previewInnerContainer} className={previewInnerContainerClass}>

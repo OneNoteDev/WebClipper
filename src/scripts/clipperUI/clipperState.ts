@@ -44,6 +44,7 @@ export interface ClipperState {
 
 	// User input
 	currentMode?: SmartValue<ClipMode>; // Full, Region, Augmentation
+	shouldFocusNewMode?: boolean;
 	saveLocation?: string; // Result from the SectionPicker
 
 	// Content preview data + retrieval status

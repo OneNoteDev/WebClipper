@@ -10,13 +10,24 @@ import {ComponentBase} from "../componentBase";
 
 import * as _ from "lodash";
 
+interface AnnotationInputProps extends ClipperStateProp {
+	ref?: <T extends ComponentBase<any, any>>(component: T) => any;
+}
+
 interface AnnotationInputState {
 	opened: boolean;
 }
 
-class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperStateProp> {
+class AnnotationInputClass extends ComponentBase<AnnotationInputState, AnnotationInputProps> {
 	private static textAreaListenerAttached = false;
 
+	constructor(props: AnnotationInputProps) {
+		super(props);
+		if (this.props.ref) {
+			this.props.ref(this);
+		}
+	}
+	
 	getInitialState(): AnnotationInputState {
 		return { opened: !!this.props.clipperState.previewGlobalInfo.annotation };
 	}
@@ -25,7 +36,17 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 		this.setState({ opened: !this.state.opened });
 	}
 
-	setFocus(textArea: HTMLElement) {
+	setFocusOnPlaceholder() {
+		console.log("setFocusOnPlaceholder");
+		let placeholder = this.refs[Constants.Ids.annotationPlaceholder];
+
+		if (placeholder) {
+			console.log("focusing!");
+			placeholder.focus();
+		}
+	}
+
+	setFocusOnTextArea(textArea: HTMLElement) {
 		textArea.focus();
 	}
 
@@ -78,7 +99,10 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 		if (!this.state.opened) {
 			return (
 				<div id={Constants.Ids.annotationContainer}>
-					<div id={Constants.Ids.annotationPlaceholder} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} {...this.enableInvoke(this.handleAnnotateButton, 210)}>
+					<div id={Constants.Ids.annotationPlaceholder}
+						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}
+						{...this.ref(Constants.Ids.annotationPlaceholder)}
+						{...this.enableInvoke(this.handleAnnotateButton, 210) }>
 						<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon_purple.png")} />
 						<span>{Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")}</span>
 					</div>
@@ -100,7 +124,7 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 						rows={1} tabIndex={211}
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}
 						value={!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
-						onblur={this.onDoneEditing.bind(this)} {...this.onElementFirstDraw(this.setFocus)}>
+						onblur={this.onDoneEditing.bind(this)} {...this.onElementFirstDraw(this.setFocusOnTextArea)}>
 					</textarea>
 				</div>
 			);

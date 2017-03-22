@@ -55,7 +55,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	}
 
 	// Override
-	protected getPreviewBodyConfig() {
+	protected getPreviewBodyConfig(element: HTMLElement, isInitialized: boolean) {
 		if (!this.state.textHighlighter) {
 			this.setHighlighter();
 		}

@@ -98,6 +98,24 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		};
 	}
 
+	focusOnElementWithLowestTabIndex() {
+		let tabbables = document.querySelectorAll("[tabindex]");
+		let lowestTabIndexElement: HTMLElement;
+		if (tabbables.length > 0) {
+			for (let i = 0; i < tabbables.length; i++) {
+				let tabbable = tabbables[i] as HTMLElement;
+				if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
+					lowestTabIndexElement = tabbable;
+				}
+			}
+
+			// lowestTabIndexElement.focus();
+			// console.log("jyn erso");
+		}
+	}
+
+
+
 	handleEscPress() {
 		if (this.isCloseable()) {
 			this.closeClipper(CloseReason.EscPress);
@@ -111,6 +129,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			onBeforeAnimateOut: () => { this.setState({ currentPanel: PanelType.None }); },
 			onBeforeAnimateIn: () => { this.props.clipperState.reset(); },
 			onAnimateInExpand: () => { this.setState({ currentPanel: this.getPanelTypeToShow() }); },
+			onAfterAnimateIn: () => { this.focusOnElementWithLowestTabIndex(); },
 			onAfterAnimateOut: () => { Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi); }
 		});
 
@@ -207,7 +226,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		});
 	}
 
-	onMainControllerDraw(mainControllerElement: HTMLElement) {
+	onMainControllerDraw(mainControllerElement: HTMLElement, isFirstDraw: boolean) {
 		this.controllerAnimationStrategy.animate(mainControllerElement);
 	}
 

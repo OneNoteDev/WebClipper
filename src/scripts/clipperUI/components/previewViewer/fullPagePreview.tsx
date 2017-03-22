@@ -64,6 +64,13 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 		}
 	}
 
+	// protected focusElement(): void {
+	// 	if (this.annotationInput) {
+	// 		this.annotationInput.focus();
+	// 	}
+	// 	return;
+	// }
+
 	private convertFullPageResultToContentData(result: DataResult<FullPageScreenshotResult>): any[] {
 		let contentBody = [];
 

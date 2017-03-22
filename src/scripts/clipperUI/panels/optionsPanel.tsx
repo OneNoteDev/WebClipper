@@ -54,6 +54,22 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 		this.props.onStartClip();
 	}
 
+	focusOnElementWithLowestTabIndex(element: HTMLElement) {
+		let tabbables = element.querySelectorAll("[tabindex]");
+		let lowestTabIndexElement: HTMLElement;
+		if (tabbables.length > 0) {
+			for (let i = 0; i < tabbables.length; i++) {
+				let tabbable = tabbables[i] as HTMLElement;
+				if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
+					lowestTabIndexElement = tabbable;
+				}
+			}
+
+			lowestTabIndexElement.focus();
+			// console.log("jyn erso");
+		}
+	}
+
 	// This function is passed into Mithril's config property
 	// The config property is a function that allows you to hook into 
 	// a component's lifecycle such as mounting and un-mounting
@@ -61,6 +77,8 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 		// If this is the first time we are initializing this element,
 		// 	then attach the listener
 		if (!isInitialized) {
+			this.focusOnElementWithLowestTabIndex(element);
+			
 			let oldOnKeyDown = document.onkeydown;
 			document.onkeydown = (ev: KeyboardEvent) => {
 				// TODO: KeyboardEvent::which is deprecated but PhantomJs doesn't support
@@ -77,7 +95,7 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 			context.onunload = () => {
 				document.onkeydown = oldOnKeyDown ? oldOnKeyDown.bind(document) : undefined;
 			};
-		// There is no else case, since we only care about initializaiton and destruction
+			// There is no else case, since we only care about initializaiton and destruction
 		}
 	}
 

@@ -502,7 +502,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 						}
 					}
 
-					lowestTabIndexElement.focus();
+					// lowestTabIndexElement.focus();
+					console.log("bootymeat jones");
 				}
 			});
 
@@ -749,6 +750,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private static shouldShowMainController(state: ClipperState): boolean {
 		return state.regionResult.status !== Status.InProgress || state.badState;
+	}
+
+	gucciMane() {
+		console.log("suwu");
 	}
 
 	render() {
