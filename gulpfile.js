@@ -36,6 +36,7 @@ var PATHS = {
 	BUILDROOT: "build/",
 	BUNDLEROOT: "build/bundles/",
 	LIBROOT: "lib/",
+	PRELOAD: "preload/",
 	TARGET: {
 		ROOT: "target/",
 		BOOKMARKLET: "target/bookmarklet/",
@@ -47,6 +48,7 @@ var PATHS = {
 		SAFARI: "target/clipper.safariextension/",
 		TESTS: "target/tests/"
 	},
+	// TODO: node_modules should be bundled and not accessed directly
 	NODE_MODULES: "node_modules/",
 	INTERNAL: {
 		SRC: {
@@ -110,6 +112,7 @@ gulp.task("copyStrings", function() {
 		.pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
+// TODO: keep this
 gulp.task("mergeSettings", function() {
 	// note that overwriting of objects depends on ordering in array (last wins)
 	var mergeOrder = [PATHS.SRC.SETTINGS + "default.json"];
@@ -131,7 +134,7 @@ gulp.task("mergeSettings", function() {
 
 	return gulp.src(mergeOrder)
 		.pipe(mergeJSON("settings.json"))
-		.pipe(gulp.dest(PATHS.BUILDROOT));
+		.pipe(gulp.dest(PATHS.PRELOAD));
 });
 
 gulp.task("cleanInternal", function () {
@@ -231,7 +234,7 @@ gulp.task("bundleAppendIsInstalledMarker", function () {
 
 gulp.task("bundleClipperUI", function () {
 	var extensionRoot = PATHS.BUILDROOT + "scripts/clipperUI/";
-	var files = ["clipper.js", "pageNav.js", "localeSpecificTasks.js", "unsupportedBrowser.js"];
+	var files = ["pageNav.js", "localeSpecificTasks.js", "unsupportedBrowser.js"];
 	var tasks = generateBrowserifyTasks(extensionRoot, files);
 	return merge(tasks);
 });
@@ -347,7 +350,6 @@ targetDirHasExportedCommonJs[PATHS.TARGET.TESTS] = false;
 function exportCommonJS(targetDir) {
 	if (!targetDirHasExportedCommonJs[targetDir]) {
 		var defaultExportTask = gulp.src([
-			PATHS.BUNDLEROOT + "clipper.js",
 			PATHS.BUNDLEROOT + "pageNav.js",
 			PATHS.BUNDLEROOT + "localeSpecificTasks.js",
 			PATHS.BUNDLEROOT + "unsupportedBrowser.js"

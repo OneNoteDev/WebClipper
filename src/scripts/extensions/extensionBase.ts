@@ -10,7 +10,7 @@ import {TooltipType} from "../clipperUI/tooltipType";
 
 import {SmartValue} from "../communicator/smartValue";
 
-import {HttpWithRetries} from "../http/HttpWithRetries";
+import {HttpWithRetries} from "../http/httpWithRetries";
 
 import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";

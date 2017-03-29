@@ -10,7 +10,7 @@ import {Status} from "../clipperUI/status";
 
 import {DomUtils} from "../domParsers/domUtils";
 
-import {HttpWithRetries} from "../http/HttpWithRetries";
+import {HttpWithRetries} from "../http/httpWithRetries";
 
 import {Localization} from "../localization/localization";
 
@@ -114,20 +114,22 @@ export class AugmentationHelper {
 			headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
 			headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-			return HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
-				let parsedResponse: any;
-				try {
-					parsedResponse = JSON.parse(request.response);
-				} catch (e) {
-					Clipper.logger.logJsonParseUnexpected(request.response);
-					return Promise.reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
-				}
+			return new Promise<OneNoteApi.ResponsePackage<any>>((resolve, reject) => {
+				return HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
+					let parsedResponse: any;
+					try {
+						parsedResponse = JSON.parse(request.response);
+					} catch (e) {
+						Clipper.logger.logJsonParseUnexpected(request.response);
+						return Promise.reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
+					}
 
-				let responsePackage = {
-					parsedResponse: parsedResponse,
-					request: request
-				};
-				return Promise.resolve(responsePackage);
+					let responsePackage = {
+						parsedResponse: parsedResponse,
+						request: request
+					};
+					return Promise.resolve(responsePackage);
+				});
 			});
 		});
 	}

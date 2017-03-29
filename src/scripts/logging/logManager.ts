@@ -1,3 +1,5 @@
+/// <reference path="logManager.d.ts"/>
+
 import * as Log from "../logging/log";
 import {CommunicatorLoggerDecorator} from "../logging/communicatorLoggerDecorator";
 import {ConsoleLoggerDecorator} from "../logging/consoleLoggerDecorator";

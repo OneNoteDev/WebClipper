@@ -96,7 +96,7 @@ export class SaveToOneNote {
 					});
 				});
 			});
-		}, Promise.resolve());
+		}, Promise.resolve(undefined));
 	}
 
 	private rejectIfNoPatchPermissions(saveLocation: string): Promise<void> {
@@ -159,7 +159,7 @@ export class SaveToOneNote {
 					});
 				});
 			});
-		}, Promise.resolve());
+		}, Promise.resolve(undefined));
 	}
 
 	private patch(pageId: string, saveable: OneNoteSaveable): Promise<any> {

@@ -2,9 +2,9 @@
 	"compilerOptions": {
 		"jsx": "preserve",
 		"module": "commonjs",
+		"target": "es6",
 		"types": [
 			"chrome",
-			"es6-promise",
 			"jquery",
 			"mithril",
 			"pdf",
@@ -16,5 +16,9 @@
 			"velocity-animate"
 		],
 		"outDir": "./build"
+	},
+	"awesomeTypescriptLoaderOptions": {
+		"useBabel": true,
+		"useCache": true
 	}
 }

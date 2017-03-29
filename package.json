@@ -10,9 +10,13 @@
     "type": "git",
     "url": "git+https://github.com/OneNoteDev/WebClipper.git"
   },
+  "scripts": {
+    "build": "npm run settings && npm run webpack",
+    "settings": "gulp mergeSettings",
+    "webpack": "webpack"
+  },
   "devDependencies": {
     "@types/chrome": "0.0.40",
-    "@types/es6-promise": "0.0.32",
     "@types/jquery": "2.0.40",
     "@types/lodash": "4.14.52",
     "@types/mithril": "0.0.31",
@@ -25,10 +29,14 @@
     "@types/sinon": "1.16.35",
     "@types/urijs": "1.15.31",
     "@types/velocity-animate": "1.2.29",
+    "awesome-typescript-loader": "^3.1.2",
+    "babel-core": "^6.24.0",
+    "babel-plugin-transform-react-jsx": "^6.23.0",
+    "babel-preset-es3": "^1.0.1",
     "browserify": "14.1.0",
+    "css-loader": "^0.27.3",
     "del": "2.2.2",
     "es5-shim": "4.5.9",
-    "es6-promise": "4.0.5",
     "file-exists": "2.0.0",
     "forever": "0.15.3",
     "globby": "6.1.0",
@@ -48,6 +56,8 @@
     "gulp-uglify": "2.0.1",
     "gulp-zip": "4.0.0",
     "json3": "3.3.2",
+    "less": "^2.7.2",
+    "less-loader": "^4.0.2",
     "lodash": "4.17.4",
     "merge-stream": "1.0.1",
     "mithril": "0.2.5",
@@ -63,12 +73,16 @@
     "sanitize-html": "1.14.1",
     "sinon": "1.17.7",
     "sinon-qunit": "2.0.0",
+    "source-map-loader": "^0.2.0",
     "ssl-root-cas": "1.2.3",
+    "style-loader": "^0.16.0",
     "tslint": "3.15.1",
     "typescript": "2.1.6",
     "urijs": "1.18.7",
+    "url-loader": "^0.5.8",
     "velocity-animate": "1.4.2",
     "vinyl-source-stream": "1.1.0",
+    "webpack": "^2.3.2",
     "yargs": "6.6.0"
   }
 }
