@@ -1,7 +1,9 @@
 # Change Log
 
-## 3.6.1 (March 21, 2017)
-* Bug: Add more support for screen readers and tab browsing
+## 3.7.0 (March 29, 2017)
+* Improvement: The OneNote Web Clipper is now a11y compliant!
+* Improvement: In region mode, renamed the cancel button to "Back".
+* Bug: Minor logging change to the GetExistingUserInfo call.
 
 ## 3.6.0 (February 17, 2017)
 * Bug: We were still injecting an empty div into the non-Chrome browsers. This fixes that situation.
