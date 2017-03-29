@@ -2,160 +2,171 @@
 // they rename `sanitize` to `sanitizeHtml`, which is the name of the actually exported function
 declare let sanitizeHtml;
 
+// This private has technically been deprecated, but is present in all major browsers as of 2/12/14 and offers
+// the best perf for the UTF byte manipulation we need for truncation and byte size estimation.
+// DO NOT USE IT WITHOUT CHECKING IF IT EXISTS -- in case browser vendors actually remove them
+// ReSharper disable once InconsistentNaming
+declare function unescape(s: string): string;
+
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
-import {VideoUtils} from "./videoUtils";
+import {SupportedVideoDomains, VideoUtils} from "./videoUtils";
 
 import {VideoExtractorFactory} from "./VideoExtractorFactory";
+
+export interface EmbeddedVideoIFrameSrcs {
+	srcAttribute: string;
+	dataOriginalSrcAttribute: string;
+}
 
 /**
  * Dom specific Helper utility methods
  */
-export module DomUtils {
-	export module Tags {
-		export const a = "a";
-		export const b = "b";
-		export const applet = "applet";
-		export const article = "article";
-		export const audio = "audio";
-		export const base = "base";
-		export const body = "body";
-		export const br = "br";
-		export const button = "button";
-		export const canvas = "canvas";
-		export const center = "center";
-		export const cite = "cite";
-		export const del = "del";
-		export const div = "div";
-		export const em = "em";
-		export const embed = "embed";
-		export const figure = "figure";
-		export const font = "font";
-		export const h1 = "h1";
-		export const h2 = "h2";
-		export const h3 = "h3";
-		export const h4 = "h4";
-		export const h5 = "h5";
-		export const h6 = "h6";
-		export const head = "head";
-		export const header = "header";
-		export const hr = "hr";
-		export const html = "html";
-		export const i = "i";
-		export const iframe = "iframe";
-		export const img = "img";
-		export const input = "input";
-		export const li = "li";
-		export const link = "link";
-		export const main = "main";
-		export const map = "map";
-		export const menu = "menu";
-		export const menuitem = "menuitem";
-		export const meta = "meta";
-		export const meter = "meter";
-		export const noscript = "noscript";
-		export const object = "object";
-		export const ol = "ol";
-		export const p = "p";
-		export const progress = "progress";
-		export const script = "script";
-		export const span = "span";
-		export const source = "source";
-		export const strike = "strike";
-		export const strong = "strong";
-		export const style = "style";
-		export const sub = "sub";
-		export const sup = "sup";
-		export const svg = "svg";
-		export const table = "table";
-		export const td = "td";
-		export const title = "title";
-		export const tr = "tr";
-		export const u = "u";
-		export const ul = "ul";
-		export const video = "video";
-	}
+export class DomUtils {
+	public static tags = {
+		a: "a",
+		b: "b",
+		applet: "applet",
+		article: "article",
+		audio: "audio",
+		base: "base",
+		body: "body",
+		br: "br",
+		button: "button",
+		canvas: "canvas",
+		center: "center",
+		cite: "cite",
+		del: "del",
+		div: "div",
+		em: "em",
+		embed: "embed",
+		figure: "figure",
+		font: "font",
+		h1: "h1",
+		h2: "h2",
+		h3: "h3",
+		h4: "h4",
+		h5: "h5",
+		h6: "h6",
+		head: "head",
+		header: "header",
+		hr: "hr",
+		html: "html",
+		i: "i",
+		iframe: "iframe",
+		img: "img",
+		input: "input",
+		li: "li",
+		link: "link",
+		main: "main",
+		map: "map",
+		menu: "menu",
+		menuitem: "menuitem",
+		meta: "meta",
+		meter: "meter",
+		noscript: "noscript",
+		object: "object",
+		ol: "ol",
+		p: "p",
+		progress: "progress",
+		script: "script",
+		span: "span",
+		source: "source",
+		strike: "strike",
+		strong: "strong",
+		style: "style",
+		sub: "sub",
+		sup: "sup",
+		svg: "svg",
+		table: "table",
+		td: "td",
+		title: "title",
+		tr: "tr",
+		u: "u",
+		ul: "ul",
+		video: "video"
+	};
 
 	// See the OneNote Dev Center API Reference for a list of supported attributes and tags
 	// https://dev.onenote.com/docs#/introduction/html-tag-support-for-pages
-	const attributesAllowedByOnml: { [index: string]: string[] } = {
+	protected static attributesAllowedByOnml: { [index: string]: string[] } = {
 		"a": ["href", "name", "target"],
 		"img": ["src"],
 		"*": ["src", "background-color", "color", "font-family", "font-size", "data*", "alt", "height", "width", "style", "id", "type"]
 	};
 
-	const tableTags = [
-		Tags.table,
-		Tags.td,
-		Tags.tr
+	protected static tableTags = [
+		DomUtils.tags.table,
+		DomUtils.tags.td,
+		DomUtils.tags.tr
 	];
 
-	const markupTags = [
-		Tags.b,
-		Tags.em,
-		Tags.strong,
-		Tags.i,
-		Tags.u,
-		Tags.strike,
-		Tags.del,
-		Tags.sup,
-		Tags.sub,
-		Tags.cite,
-		Tags.font
+	protected static markupTags = [
+		DomUtils.tags.b,
+		DomUtils.tags.em,
+		DomUtils.tags.strong,
+		DomUtils.tags.i,
+		DomUtils.tags.u,
+		DomUtils.tags.strike,
+		DomUtils.tags.del,
+		DomUtils.tags.sup,
+		DomUtils.tags.sub,
+		DomUtils.tags.cite,
+		DomUtils.tags.font
 	];
 
-	const htmlTags = [
-		Tags.html,
-		Tags.head,
-		Tags.title,
-		Tags.meta,
-		Tags.body,
-		Tags.div,
-		Tags.span,
-		Tags.article,
-		Tags.figure,
-		Tags.header,
-		Tags.main,
-		Tags.center,
-		Tags.iframe,
-		Tags.a,
-		Tags.p,
-		Tags.br,
-		Tags.h1,
-		Tags.h2,
-		Tags.h3,
-		Tags.h4,
-		Tags.h5,
-		Tags.h6,
-		Tags.ul,
-		Tags.ol,
-		Tags.li,
-		Tags.img,
-		Tags.object,
-		Tags.video
+	protected static htmlTags = [
+		DomUtils.tags.html,
+		DomUtils.tags.head,
+		DomUtils.tags.title,
+		DomUtils.tags.meta,
+		DomUtils.tags.body,
+		DomUtils.tags.div,
+		DomUtils.tags.span,
+		DomUtils.tags.article,
+		DomUtils.tags.figure,
+		DomUtils.tags.header,
+		DomUtils.tags.main,
+		DomUtils.tags.center,
+		DomUtils.tags.iframe,
+		DomUtils.tags.a,
+		DomUtils.tags.p,
+		DomUtils.tags.br,
+		DomUtils.tags.h1,
+		DomUtils.tags.h2,
+		DomUtils.tags.h3,
+		DomUtils.tags.h4,
+		DomUtils.tags.h5,
+		DomUtils.tags.h6,
+		DomUtils.tags.ul,
+		DomUtils.tags.ol,
+		DomUtils.tags.li,
+		DomUtils.tags.img,
+		DomUtils.tags.object,
+		DomUtils.tags.video
 	];
 
 	// TODO: write a module test to make sure these tagsNotSupportedInOnml and the tags above have no intersection
-	const tagsNotSupportedInOnml = [
-		Tags.applet,
-		Tags.audio,
-		Tags.button,
-		Tags.canvas,
-		Tags.embed,
-		Tags.hr,
-		Tags.input,
-		Tags.link,
-		Tags.map,
-		Tags.menu,
-		Tags.menuitem,
-		Tags.meter,
-		Tags.noscript,
-		Tags.progress,
-		Tags.script,
-		Tags.source,
-		Tags.style,
-		Tags.svg,
-		Tags.video
+	protected static tagsNotSupportedInOnml = [
+		DomUtils.tags.applet,
+		DomUtils.tags.audio,
+		DomUtils.tags.button,
+		DomUtils.tags.canvas,
+		DomUtils.tags.embed,
+		DomUtils.tags.hr,
+		DomUtils.tags.input,
+		DomUtils.tags.link,
+		DomUtils.tags.map,
+		DomUtils.tags.menu,
+		DomUtils.tags.menuitem,
+		DomUtils.tags.meter,
+		DomUtils.tags.noscript,
+		DomUtils.tags.progress,
+		DomUtils.tags.script,
+		DomUtils.tags.source,
+		DomUtils.tags.style,
+		DomUtils.tags.svg,
+		DomUtils.tags.video
 	];
 
 	/**
@@ -163,18 +174,18 @@ export module DomUtils {
 	 * with the attributes and the content between the HTML tags scrubbed, while preserving
 	 * document structure
 	 */
-	export function cleanHtml(contentInHtml: string): string {
+	public static cleanHtml(contentInHtml: string): string {
 		let allAttributes: string[] = [];
-		for (let key in attributesAllowedByOnml) {
-			if (attributesAllowedByOnml.hasOwnProperty(key)) {
-				allAttributes = allAttributes.concat(attributesAllowedByOnml[key]);
+		for (let key in DomUtils.attributesAllowedByOnml) {
+			if (DomUtils.attributesAllowedByOnml.hasOwnProperty(key)) {
+				allAttributes = allAttributes.concat(DomUtils.attributesAllowedByOnml[key]);
 			}
 		}
 
-		let tags = htmlTags.concat(markupTags).concat(tableTags);
+		let tags = DomUtils.htmlTags.concat(DomUtils.markupTags).concat(DomUtils.tableTags);
 		let sanitizedHtml = sanitizeHtml(contentInHtml, {
 			allowedTags: tags,
-			allowedAttributes: attributesAllowedByOnml,
+			allowedAttributes: DomUtils.attributesAllowedByOnml,
 			allowedSchemes: sanitizeHtml.defaults.allowedSchemes.concat(["data"]),
 			allowedClasses: {
 				"*": ["MainArticleContainer"]
@@ -184,21 +195,21 @@ export module DomUtils {
 		return sanitizedHtml;
 	}
 
-	export function removeElementsNotSupportedInOnml(doc: Document): void {
+	public static removeElementsNotSupportedInOnml(doc: Document): void {
 		// For elements that cannot be converted into something equivalent in ONML, we remove them ...
-		domReplacer(doc, tagsNotSupportedInOnml.join());
+		DomUtils.domReplacer(doc, DomUtils.tagsNotSupportedInOnml.join());
 
-		let tagsToTurnIntoDiv = [Tags.main, Tags.article, Tags.figure, Tags.header, Tags.center];
+		let tagsToTurnIntoDiv = [DomUtils.tags.main, DomUtils.tags.article, DomUtils.tags.figure, DomUtils.tags.header, DomUtils.tags.center];
 
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
-		domReplacer(doc, tagsToTurnIntoDiv.join(), (node: HTMLElement) => {
+		DomUtils.domReplacer(doc, tagsToTurnIntoDiv.join(), (node: HTMLElement) => {
 			let div = document.createElement("div");
 			div.innerHTML = DomUtils.cleanHtml(node.innerHTML);
 			return div;
 		});
 	}
 
-	export function domReplacer(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Node = () => undefined) {
+	public static domReplacer(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Node = () => undefined) {
 		let nodes: NodeList = doc.querySelectorAll(querySelector);
 
 		for (let i = 0; i < nodes.length; i++) {
@@ -219,7 +230,7 @@ export module DomUtils {
 		}
 	}
 
-	export function domReplacerAsync(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Promise<Node> = () => Promise.resolve(undefined)): Promise<void> {
+	public static domReplacerAsync(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Promise<Node> = () => Promise.resolve(undefined)): Promise<void> {
 		return new Promise<void>((resolve) => {
 			let nodes: NodeList = doc.querySelectorAll(querySelector);
 			let doneCount = 0;
@@ -254,7 +265,7 @@ export module DomUtils {
 	 * returns ClipTypes.EnhancedUrl if there's an embed tag of type application/pdf
 	 * else returns ClipTypes.Html
 	 */
-	export function getPageContentType(doc: Document): OneNoteApi.ContentType {
+	public static getPageContentType(doc: Document): OneNoteApi.ContentType {
 		let anchor = doc.createElement("a");
 		anchor.href = doc.URL;
 		if (/\.pdf$/i.test(anchor.pathname)) {
@@ -284,7 +295,7 @@ export module DomUtils {
 	 * (Most canonical urls involve stripping away directory index, fragments, query
 	 * variables etc. hence we pick the shortest one as it is likely to be correct.)
 	 */
-	export function fetchCanonicalUrl(doc: Document): string {
+	public static fetchCanonicalUrl(doc: Document): string {
 		let canonicalLinkDeclarations = doc.querySelectorAll("link[rel=canonical]");
 		if (canonicalLinkDeclarations.length === 0) {
 			return doc.URL;
@@ -308,45 +319,41 @@ export module DomUtils {
 	 *
 	 * @returns The cleaned DOM
 	 */
-	export function getCleanDomOfCurrentPage(originalDoc: Document): string {
-		let doc = cloneDocument(originalDoc);
-		convertCanvasElementsToImages(doc, originalDoc);
-		addBaseTagIfNecessary(doc, originalDoc.location);
+	public static getCleanDomOfCurrentPage(originalDoc: Document): string {
+		let doc = DomUtils.cloneDocument(originalDoc);
+		DomUtils.convertCanvasElementsToImages(doc, originalDoc);
+		DomUtils.addBaseTagIfNecessary(doc, originalDoc.location);
 
-		addImageSizeInformationToDom(doc);
-		removeUnwantedItems(doc);
+		DomUtils.addImageSizeInformationToDom(doc);
+		DomUtils.removeUnwantedItems(doc);
 
-		let domString = getDomString(doc);
+		let domString = DomUtils.getDomString(doc);
 		return domString;
 	}
 
-	export function removeUnwantedItems(doc: Document): void {
-		removeClipperElements(doc);
-		removeUnwantedElements(doc);
-		removeUnwantedAttributes(doc);
+	public static removeUnwantedItems(doc: Document): void {
+		DomUtils.removeClipperElements(doc);
+		DomUtils.removeUnwantedElements(doc);
+		DomUtils.removeUnwantedAttributes(doc);
+		DomUtils.removeUnsupportedHrefs(doc);
 	}
 
 	/**
 	 * Adds any additional styling to the preview elements
 	 */
-	export function addPreviewContainerStyling(previewElement: HTMLElement) {
+	public static addPreviewContainerStyling(previewElement: HTMLElement) {
 		// What this does is add a little extra padding after each of the paragraphs in an article. This
 		// makes what we are saving into OneNote match what we see in the preview (which is how browsers
 		// render the paragraph elements).
 		previewElement.setAttribute("style", "margin-bottom: 16px");
 	}
 
-	export interface EmbeddedVideoIFrameSrcs {
-		srcAttribute: string;
-		dataOriginalSrcAttribute: string;
-	}
-
-	const dataOriginalSrcAttribute = "data-original-src";
+	protected static dataOriginalSrcAttribute = "data-original-src";
 
 	/**
 	 * Add embedded videos to the article preview where supported
 	 */
-	export function addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<EmbeddedVideoIFrameSrcs[]> {
+	public static addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<EmbeddedVideoIFrameSrcs[]> {
 		let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
 		if (!supportedDomain) {
 			return Promise.resolve();
@@ -355,7 +362,7 @@ export module DomUtils {
 		let iframes: HTMLIFrameElement[] = [];
 		try {
 			// Construct the appropriate videoExtractor based on the Domain we are on
-			let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
+			let domain = SupportedVideoDomains[supportedDomain];
 			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
 
 			// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
@@ -369,13 +376,13 @@ export module DomUtils {
 			return Promise.reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
 		}
 
-		return Promise.resolve(addVideosToElement(previewElement, iframes));
+		return Promise.resolve(DomUtils.addVideosToElement(previewElement, iframes));
 	}
 
 	/**
 	 * Create base iframe with reasonable style properties for video embed in OneNote.
 	 */
-	export function createEmbedVideoIframe(): HTMLIFrameElement {
+	public static createEmbedVideoIframe(): HTMLIFrameElement {
 		let iframe = document.createElement("iframe");
 		// these values must be set inline, else the embed in OneNote won't respect them
 		// width and height set to preserve a 16:9 aspect ratio
@@ -391,7 +398,7 @@ export module DomUtils {
 	 * Add an array of iframes to the top of the article previewer.
 	 * Ordering of iframes in the array will be respected.
 	 */
-	function addVideosToElement(previewElement: HTMLElement, iframeNodes: HTMLIFrameElement[]): EmbeddedVideoIFrameSrcs[] {
+	private static addVideosToElement(previewElement: HTMLElement, iframeNodes: HTMLIFrameElement[]): EmbeddedVideoIFrameSrcs[] {
 		if (ObjectUtils.isNullOrUndefined(previewElement) || ObjectUtils.isNullOrUndefined(iframeNodes) || iframeNodes.length === 0) {
 			return;
 		}
@@ -400,17 +407,17 @@ export module DomUtils {
 
 		let lastInsertedNode: Node;
 		for (let node of iframeNodes) {
-			if (ObjectUtils.isNullOrUndefined(node.src) || ObjectUtils.isNullOrUndefined(node.getAttribute(dataOriginalSrcAttribute))) {
+			if (ObjectUtils.isNullOrUndefined(node.src) || ObjectUtils.isNullOrUndefined(node.getAttribute(DomUtils.dataOriginalSrcAttribute))) {
 				// iframe constructed without a src or data-original-src attribute (somehow)
 				// invalid construction, but we want record of it happening
 				videoSrcUrls.push({ srcAttribute: "", dataOriginalSrcAttribute: "" });
 				continue;
 			}
 
-			lastInsertedNode = insertIFrame(previewElement, node, lastInsertedNode);
-			lastInsertedNode = insertSpacer(previewElement, lastInsertedNode.nextSibling);
+			lastInsertedNode = DomUtils.insertIFrame(previewElement, node, lastInsertedNode);
+			lastInsertedNode = DomUtils.insertSpacer(previewElement, lastInsertedNode.nextSibling);
 
-			videoSrcUrls.push({ srcAttribute: node.src, dataOriginalSrcAttribute: node.getAttribute(dataOriginalSrcAttribute) });
+			videoSrcUrls.push({ srcAttribute: node.src, dataOriginalSrcAttribute: node.getAttribute(DomUtils.dataOriginalSrcAttribute) });
 		}
 
 		return videoSrcUrls;
@@ -421,7 +428,7 @@ export module DomUtils {
 	 * If lastInsertedNode provided, insert the node within the html element
 	 * but immediately after lastInsertedNode instead.
 	 */
-	function insertIFrame(container: HTMLElement, newNode: Node, lastInsertedNode?: Node): Node {
+	private static insertIFrame(container: HTMLElement, newNode: Node, lastInsertedNode?: Node): Node {
 		let referenceNode;
 		if (ObjectUtils.isNullOrUndefined(lastInsertedNode)) {
 			referenceNode = container.children[0]; // initial referenceNode
@@ -436,7 +443,7 @@ export module DomUtils {
 	 * Given an html element and a reference node, insert a <br /> node
 	 * within the html element, before the reference node
 	 */
-	function insertSpacer(container: HTMLElement, referenceNode: Node): Node {
+	private static insertSpacer(container: HTMLElement, referenceNode: Node): Node {
 		let spacerNode = document.createElement("br");
 		return container.insertBefore(spacerNode, referenceNode);
 	}
@@ -444,7 +451,7 @@ export module DomUtils {
 	/**
 	 * Clones the document into a new document object
 	 */
-	export function cloneDocument(originalDoc: Document): Document {
+	public static cloneDocument(originalDoc: Document): Document {
 		return originalDoc.cloneNode(true) as Document;
 	}
 
@@ -452,11 +459,11 @@ export module DomUtils {
 	 * If the head doesn't contains a 'base' tag, then add one in case relative paths are used.
 	 * If the location is not specified, the current document's location will be used.
 	 */
-	export function addBaseTagIfNecessary(doc: Document, location?: Location) {
+	public static addBaseTagIfNecessary(doc: Document, location?: Location) {
 		// Sometimes there is no head in the DOM e.g., pdfs in incognito mode
 		if (!doc.head) {
-			let headElement = doc.createElement(Tags.head);
-			let htmlElement = doc.getElementsByTagName(Tags.html)[0] as HTMLHtmlElement;
+			let headElement = doc.createElement(DomUtils.tags.head);
+			let htmlElement = doc.getElementsByTagName(DomUtils.tags.html)[0] as HTMLHtmlElement;
 			htmlElement.insertBefore(headElement, htmlElement.children[0]);
 		}
 
@@ -464,12 +471,12 @@ export module DomUtils {
 			location = document.location;
 		}
 
-		let bases: NodeList = doc.head.getElementsByTagName(Tags.base);
+		let bases: NodeList = doc.head.getElementsByTagName(DomUtils.tags.base);
 		if (bases.length === 0) {
 			let baseUrl = location.href.split("#")[0].split("?")[0];
 			baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/") + 1);
 
-			let baseTag: HTMLBaseElement = <HTMLBaseElement>doc.createElement(Tags.base);
+			let baseTag: HTMLBaseElement = <HTMLBaseElement>doc.createElement(DomUtils.tags.base);
 			baseTag.href = baseUrl;
 			doc.head.insertBefore(baseTag, doc.head.firstChild);
 		}
@@ -479,8 +486,8 @@ export module DomUtils {
 	 * Remove blank images from the DOM. A blank image is defined as an image where all
 	 * the pixels are either purely white or fully transparent.
 	 */
-	export function removeBlankImages(doc: Document): Promise<void> {
-		return domReplacerAsync(doc, Tags.img, (node: Node) => {
+	public static removeBlankImages(doc: Document): Promise<void> {
+		return DomUtils.domReplacerAsync(doc, DomUtils.tags.img, (node: Node) => {
 			return new Promise<Node>((resolve) => {
 				let img: HTMLImageElement = <HTMLImageElement>node;
 
@@ -492,7 +499,7 @@ export module DomUtils {
 				theImg.crossOrigin = "anonymous";
 
 				theImg.onload = () => {
-					resolve(imageIsBlank(theImg) ? undefined : node);
+					resolve(DomUtils.imageIsBlank(theImg) ? undefined : node);
 				};
 				// onload can return a non-200 in some weird cases, so we have to specify this
 				theImg.onerror = () => {
@@ -510,7 +517,7 @@ export module DomUtils {
 	 * Return true if every pixel in the image is either purely white or fully transparent;
 	 * false otherwise. Assumes that the image is loaded already.
 	 */
-	export function imageIsBlank(img: HTMLImageElement) {
+	public static imageIsBlank(img: HTMLImageElement) {
 		if (img.width === 0 || img.height === 0) {
 			return false;
 		}
@@ -548,21 +555,18 @@ export module DomUtils {
 	/**
 	 * Remove Clipper elements from the DOM entirely
 	 */
-	export function removeClipperElements(doc: Document) {
-		domReplacer(doc, [
+	public static removeClipperElements(doc: Document) {
+		DomUtils.domReplacer(doc, [
 			"#" + Constants.Ids.clipperRootScript,
 			"#" + Constants.Ids.clipperUiFrame,
 			"#" + Constants.Ids.clipperExtFrame
 		].join());
 
 		// Remove iframes that point to local files
-		domReplacer(doc, Tags.iframe, (node: Node) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.iframe, (node: Node) => {
 			let iframe: HTMLIFrameElement = <HTMLIFrameElement>node;
 			let src = iframe.src;
-			if (src.indexOf("chrome-extension://") === 0 ||
-				src.indexOf("safari-extension://") === 0 ||
-				src.indexOf("firefox-extension://") === 0 ||
-				src.indexOf("file://") === 0) {
+			if (this.isLocalReferenceUrl(src)) {
 				return undefined;
 			}
 			return iframe;
@@ -570,16 +574,32 @@ export module DomUtils {
 	}
 
 	/**
+	 * Remove any references to URLs that won't work on another box (i.e. our servers)
+	 */
+	public static removeUnsupportedHrefs(doc: Document) {
+		DomUtils.domReplacer(doc, DomUtils.tags.link, (node: Node) => {
+			let linkElement: HTMLLinkElement = <HTMLLinkElement>node;
+			let href = linkElement.href;
+
+			if (this.isLocalReferenceUrl(href)) {
+				return undefined;
+			}
+
+			return linkElement;
+		});
+	}
+
+	/**
 	 * Remove unwanted elements from the DOM entirely
 	 */
-	export function removeUnwantedElements(doc: Document) {
-		domReplacer(doc, [Tags.script, Tags.noscript].join());
+	public static removeUnwantedElements(doc: Document) {
+		DomUtils.domReplacer(doc, [DomUtils.tags.script, DomUtils.tags.noscript].join());
 	}
 
 	/**
 	 * Remove unwanted attributes from the DOM's elements
 	 */
-	export function removeUnwantedAttributes(doc: Document) {
+	public static removeUnwantedAttributes(doc: Document) {
 		let images = doc.getElementsByTagName("IMG");
 		for (let i = 0; i < images.length; i++) {
 			let image = images[i] as HTMLImageElement;
@@ -592,14 +612,14 @@ export module DomUtils {
 	 * Converts all images and links in a document to using absolute urls. To be
 	 * called in the same context as the website.
 	 */
-	export function convertRelativeUrlsToAbsolute(doc: Document) {
-		domReplacer(doc, Tags.img, (node: Node, index: number) => {
+	public static convertRelativeUrlsToAbsolute(doc: Document) {
+		DomUtils.domReplacer(doc, DomUtils.tags.img, (node: Node, index: number) => {
 			let nodeAsImage = node as HTMLImageElement;
 
 			// We don't use nodeAsImage.src as it returns undefined for relative urls
 			let possiblyRelativeSrcAttr = (nodeAsImage.attributes as any).src;
 			if (possiblyRelativeSrcAttr && possiblyRelativeSrcAttr.value) {
-				nodeAsImage.src = toAbsoluteUrl(possiblyRelativeSrcAttr.value, location.origin);
+				nodeAsImage.src = DomUtils.toAbsoluteUrl(possiblyRelativeSrcAttr.value, location.origin);
 				return nodeAsImage;
 			}
 
@@ -607,12 +627,12 @@ export module DomUtils {
 			return undefined;
 		});
 
-		domReplacer(doc, Tags.a, (node: Node, index: number) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.a, (node: Node, index: number) => {
 			let nodeAsAnchor = node as HTMLAnchorElement;
 
 			let possiblyRelativeSrcAttr = (nodeAsAnchor.attributes as any).href;
 			if (possiblyRelativeSrcAttr && possiblyRelativeSrcAttr.value) {
-				nodeAsAnchor.href = toAbsoluteUrl(possiblyRelativeSrcAttr.value, location.origin);
+				nodeAsAnchor.href = DomUtils.toAbsoluteUrl(possiblyRelativeSrcAttr.value, location.origin);
 				return nodeAsAnchor;
 			}
 
@@ -621,7 +641,7 @@ export module DomUtils {
 		});
 	}
 
-	export function toAbsoluteUrl(url: string, base: string): string {
+	public static toAbsoluteUrl(url: string, base: string): string {
 		if (!url || !base) {
 			throw new Error("parameters must be non-empty, but was: " + url + ", " + base);
 		}
@@ -643,17 +663,17 @@ export module DomUtils {
 	 * Replace canvas elements into images
 	 * TODO: Deal with the situation of not running over max bytes
 	 */
-	export function convertCanvasElementsToImages(doc: Document, originalDoc: Document) {
+	public static convertCanvasElementsToImages(doc: Document, originalDoc: Document) {
 		// We need to get the canvas's data from the original DOM since the cloned DOM doesn't have it
-		let originalCanvasElements: NodeList = originalDoc.querySelectorAll(Tags.canvas);
+		let originalCanvasElements: NodeList = originalDoc.querySelectorAll(DomUtils.tags.canvas);
 
-		domReplacer(doc, Tags.canvas, (node: Node, index: number) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.canvas, (node: Node, index: number) => {
 			let originalCanvas = originalCanvasElements[index] as HTMLCanvasElement;
 			if (!originalCanvas) {
 				return undefined;
 			}
 
-			let image: HTMLImageElement = <HTMLImageElement>doc.createElement(Tags.img);
+			let image: HTMLImageElement = <HTMLImageElement>doc.createElement(DomUtils.tags.img);
 			image.src = originalCanvas.toDataURL();
 			image.style.cssText = window.getComputedStyle(originalCanvas).cssText;
 			return image;
@@ -663,7 +683,7 @@ export module DomUtils {
 	/**
 	 * Given a DOM, it will add image height and width information to all image tags
 	 */
-	export function addImageSizeInformationToDom(doc: Document) {
+	public static addImageSizeInformationToDom(doc: Document) {
 		let imgs = doc.getElementsByTagName("img");
 
 		for (let i = 0; i < imgs.length; i++) {
@@ -685,7 +705,7 @@ export module DomUtils {
 	 * Uses idea by: https://davidwalsh.name/convert-image-data-uri-javascript
 	 * Uses cached image idea by: https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
 	 */
-	export function getImageDataUrl(imageSrcUrl: string): Promise<string> {
+	public static getImageDataUrl(imageSrcUrl: string): Promise<string> {
 		return new Promise<string>((resolve: (result: string) => void, reject: (error: OneNoteApi.GenericError) => void) => {
 			if (ObjectUtils.isNullOrUndefined(imageSrcUrl) || imageSrcUrl === "") {
 				reject({ error: "image source is undefined or empty" });
@@ -696,7 +716,7 @@ export module DomUtils {
 			image.crossOrigin = "anonymous";
 
 			image.onload = () => {
-				let canvas = document.createElement(Tags.canvas) as HTMLCanvasElement;
+				let canvas = document.createElement(DomUtils.tags.canvas) as HTMLCanvasElement;
 				canvas.width = image.naturalWidth;
 				canvas.height = image.naturalHeight;
 
@@ -733,14 +753,14 @@ export module DomUtils {
 		});
 	}
 
-	export let maxBytesForMediaTypes: number = 2097152 - 500; // Settings.Instance.Apis_MediaTypesHandledInMemoryMaxRequestLength - 500 byte buffer for the request padding.
+	public static maxBytesForMediaTypes: number = 2097152 - 500; // Settings.Instance.Apis_MediaTypesHandledInMemoryMaxRequestLength - 500 byte buffer for the request padding.
 
 	/**
 	 * If a high-quality image is too big for the request, then switch to JPEG and step down
 	 */
-	export function adjustImageQualityIfNecessary(canvas: HTMLCanvasElement, dataUrl: string, quality = 1, qualityStep = 0.1): string {
+	public static adjustImageQualityIfNecessary(canvas: HTMLCanvasElement, dataUrl: string, quality = 1, qualityStep = 0.1): string {
 		let stepDownCount = 0;
-		while (quality > 0 && dataUrl.length > maxBytesForMediaTypes) {
+		while (quality > 0 && dataUrl.length > DomUtils.maxBytesForMediaTypes) {
 			dataUrl = canvas.toDataURL("image/jpeg", quality);
 			quality -= qualityStep;
 			stepDownCount++;
@@ -752,15 +772,15 @@ export module DomUtils {
 	/**
 	 * Returns a string representing the entire document
 	 */
-	export function getDomString(doc: Document): string {
-		return getDoctype(doc) + doc.documentElement.outerHTML;
+	public static getDomString(doc: Document): string {
+		return DomUtils.getDoctype(doc) + doc.documentElement.outerHTML;
 	}
 
 	/**
 	 * Returns the document represented by the dom string.
 	 * If title is provided, the title attribute will be populated in the head element.
 	 */
-	export function getDocumentFromDomString(domString: string, title?: string): Document {
+	public static getDocumentFromDomString(domString: string, title?: string): Document {
 		let doc = document.implementation.createHTMLDocument(title);
 		doc.documentElement.innerHTML = domString;
 
@@ -770,7 +790,7 @@ export module DomUtils {
 	/**
 	 * Return the DOCTYPE defined in the file
 	 */
-	export function getDoctype(doc: Document): string {
+	public static getDoctype(doc: Document): string {
 		let doctype: DocumentType = doc.doctype;
 
 		if (!doctype) {
@@ -786,22 +806,16 @@ export module DomUtils {
 			+ ">";
 	}
 
-	// This function has technically been deprecated, but is present in all major browsers as of 2/12/14 and offers
-	// the best perf for the UTF byte manipulation we need for truncation and byte size estimation.
-	// DO NOT USE IT WITHOUT CHECKING IF IT EXISTS -- in case browser vendors actually remove them
-	// ReSharper disable once InconsistentNaming
-	declare function unescape(s: string): string;
-
-	export function getByteSize(s: string) {
+	public static getByteSize(s: string) {
 		if (unescape) {
 			return unescape(encodeURIComponent(s)).length;
 		} else {
-			return getByteArray(s).length;
+			return DomUtils.getByteArray(s).length;
 		}
 	}
 
-	export function truncateStringToByteSize(s: string, maxByteLength: number): string {
-		let bytes: string[] = getByteArray(s);
+	public static truncateStringToByteSize(s: string, maxByteLength: number): string {
+		let bytes: string[] = DomUtils.getByteArray(s);
 		if (bytes.length <= maxByteLength) {
 			return s;
 		}
@@ -819,14 +833,14 @@ export module DomUtils {
 		}
 	}
 
-	export function getByteArray(s: string): string[] {
+	public static getByteArray(s: string): string[] {
 		return encodeURIComponent(s).match(/%..|./g) || [];
 	}
 
 	/**
 	 * Gets the locale of the document
 	 */
-	export function getLocale(doc: Document): string {
+	public static getLocale(doc: Document): string {
 		// window.navigator.userLanguage is defined for IE, and window.navigator.language is defined for other browsers
 		let docLocale = (<HTMLElement>doc.getElementsByTagName("html")[0]).getAttribute("lang");
 		return docLocale ? docLocale : window.navigator.language || (<any>window.navigator).userLanguage;
@@ -836,7 +850,7 @@ export module DomUtils {
 	 * Gets the name of the file from the Url. Right now we mainly
 	 * support getting the name from PDF.
 	 */
-	export function getFileNameFromUrl(doc: Document): string {
+	public static getFileNameFromUrl(doc: Document): string {
 		let urlAnchor = doc.createElement("a");
 		urlAnchor.href = doc.URL;
 
@@ -853,10 +867,10 @@ export module DomUtils {
 	 * Find all non-whitespace text nodes under the provided root node
 	 * Uses idea by: http://stackoverflow.com/a/10730777
 	 */
-	export function textNodesNoWhitespaceUnder(root: Node): Text[] {
+	public static textNodesNoWhitespaceUnder(root: Node): Text[] {
 		let a: Text[] = [];
-		let walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-			acceptNode: function (node: Text) {
+		let walk: TreeWalker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+			acceptNode: (node: Text) => {
 				// Logic to determine whether to accept, reject or skip node
 				// In this case, only accept nodes that have content
 				// other than whitespace
@@ -866,15 +880,16 @@ export module DomUtils {
 			}
 		}, false);
 
-		let n: Node;
-		while (n = walk.nextNode()) {
+		let n: Node = walk.nextNode();
+		while (n) {
 			a.push(n as Text);
+			n = walk.nextNode();
 		}
 
 		return a;
 	}
 
-	export function removeEventListenerAttributes(doc: Document): void {
+	public static removeEventListenerAttributes(doc: Document): void {
 		// See: https://en.wikipedia.org/wiki/DOM_events
 		let attributesToRemove = [
 			"onclick",
@@ -907,6 +922,13 @@ export module DomUtils {
 			"onfocus",
 			"onblur"
 		];
+
+		// for (let attribute of attributesToRemove) {
+		// 	let elements: NodeList = doc.querySelectorAll("[" + attribute + "]");
+		// 	for (let i = 0; i < elements.length; i++) {
+		// 		elements[i].removeAttribute(attribute);
+		// 	}
+
 		for (let i = 0; i < attributesToRemove.length; i++) {
 			let elements = doc.querySelectorAll("[" + attributesToRemove[i] + "]");
 			for (let j = 0; j < elements.length; j++) {
@@ -919,41 +941,41 @@ export module DomUtils {
 	 * Mimics augmentation API cleaning and ensuring that only ONML-compliant
 	 * elements remain
 	 */
-	export function toOnml(doc: Document): Promise<void> {
-		removeElementsNotSupportedInOnml(doc);
-		removeDisallowedIframes(doc);
-		removeUnwantedItems(doc);
-		convertRelativeUrlsToAbsolute(doc);
-		removeAllStylesAndClasses(doc);
-		removeEventListenerAttributes(doc);
-		return removeBlankImages(doc);
+	public static toOnml(doc: Document): Promise<void> {
+		DomUtils.removeElementsNotSupportedInOnml(doc);
+		DomUtils.removeDisallowedIframes(doc);
+		DomUtils.removeUnwantedItems(doc);
+		DomUtils.convertRelativeUrlsToAbsolute(doc);
+		DomUtils.removeAllStylesAndClasses(doc);
+		DomUtils.removeEventListenerAttributes(doc);
+		return DomUtils.removeBlankImages(doc);
 	}
 
-	export function removeDisallowedIframes(doc: Document) {
+	public static removeDisallowedIframes(doc: Document) {
 		// We also detect if the iframe is a video, and we ensure that we have
 		// the correct attribute set so that ONApi recognizes it
-		domReplacer(doc, Tags.iframe, (node) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.iframe, (node) => {
 			let src = (node as HTMLIFrameElement).src;
 			let supportedDomain = VideoUtils.videoDomainIfSupported(src);
 			if (!supportedDomain) {
 				return undefined;
 			}
 
-			let domain = VideoUtils.SupportedVideoDomains[supportedDomain];
+			let domain = SupportedVideoDomains[supportedDomain];
 			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
 			return extractor.createEmbeddedVideoFromUrl(src);
 		});
 	}
 
-	function removeAllStylesAndClasses(doc: Document): void {
-		domReplacer(doc, "*", (oldNode, index) => {
+	private static removeAllStylesAndClasses(doc: Document): void {
+		DomUtils.domReplacer(doc, "*", (oldNode, index) => {
 			(<HTMLElement>oldNode).removeAttribute("style");
 			(<HTMLElement>oldNode).removeAttribute("class");
 			return oldNode;
 		});
 	}
 
-	function isScrolledIntoPartialView(el: HTMLElement): boolean {
+	private static isScrolledIntoPartialView(el: HTMLElement): boolean {
 		let elemTop = el.getBoundingClientRect().top;
 		let elemBottom = el.getBoundingClientRect().bottom;
 
@@ -961,7 +983,7 @@ export module DomUtils {
 		return isVisible;
 	}
 
-	export function getScrollPercent(elem: Element, asDecimalValue = false) {
+	public static getScrollPercent(elem: Element, asDecimalValue = false) {
 		if (!elem) {
 			return 0;
 		}
@@ -973,5 +995,14 @@ export module DomUtils {
 		}
 
 		return scrollValue * 100;
+	}
+
+	private static isLocalReferenceUrl(url: string): Boolean {
+		return (
+			url.indexOf("chrome-extension://") === 0 ||
+			url.indexOf("edge-extension://") === 0 ||
+			url.indexOf("file://") === 0 ||
+			url.indexOf("firefox-extension://") === 0 ||
+			url.indexOf("safari-extension://") === 0);
 	}
 }

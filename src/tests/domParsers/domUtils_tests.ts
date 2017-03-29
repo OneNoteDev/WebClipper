@@ -2,7 +2,7 @@ import {Constants} from "../../scripts/constants";
 
 import {AugmentationHelper} from "../../scripts/contentCapture/augmentationHelper";
 
-import {DomUtils} from "../../scripts/domParsers/domUtils";
+import {DomUtils, EmbeddedVideoIFrameSrcs} from "../../scripts/domParsers/domUtils";
 
 import {TestModule} from "../testModule";
 import {MithrilUtils} from "../mithrilUtils";
@@ -92,6 +92,27 @@ export class DomUtilsTests extends TestModule {
 
 			ok(document.getElementById(arbitraryIframeId),
 				"The non Web Clipper iframe should still be present");
+		});
+
+		test("removeExtensionLinkHrefs should remove all URLs which refer to local extensions, but not any others", () => {
+			let linksToCreate: any = [
+				{ id: "chromeExtensionLink", url: "chrome-extension://abc123abc123abc123/test.css", shouldRemain: false},
+				{ id: "edgeExtensionLink", url: "edge-extension://abc123abc123abc123/test.css", shouldRemain: false },
+				{ id: "fileExtensionLink", url: "file://c:/foo/bar/test.css", shouldRemain: false },
+				{ id: "firefoxExtensionLink", url: "firefox-extension://abc123abc123abc123/test.css", shouldRemain: false },
+				{ id: "safarExtensionLink", url: "safari-extension://abc123abc123abc123/test.css", shouldRemain: false },
+				{ id: "normaHttplLink", url: "https://foo/bar/test.css", shouldRemain: true },
+			];
+
+			for (let link of linksToCreate) {
+				this.createLinkElementWithHref(link.id, link.url);
+			}
+
+			DomUtils.removeUnsupportedHrefs(document);
+
+			for (let link of linksToCreate) {
+				ok(!!document.getElementById(link.id) === link.shouldRemain, "Url not removed when it was expected to: " + link.url);
+			}
 		});
 
 		test("removeUnwantedElements should remove elements with tags that we don't support in full page mode", () => {
@@ -212,7 +233,7 @@ export class DomUtilsTests extends TestModule {
 
 			let pageUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 			let embedUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
-			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, pageUrl).then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
+			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, pageUrl).then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 				strictEqual(videoSrcUrls[0].dataOriginalSrcAttribute, pageUrl);
 				strictEqual(videoSrcUrls[0].srcAttribute, embedUrl);
 			}, (error: OneNoteApi.GenericError) => {
@@ -230,7 +251,7 @@ export class DomUtilsTests extends TestModule {
 
 			let pageUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 			let embedUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
-			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, pageUrl).then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
+			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, pageUrl).then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 				strictEqual(videoSrcUrls[0].dataOriginalSrcAttribute, pageUrl);
 				strictEqual(videoSrcUrls[0].srcAttribute, embedUrl);
 			}, (error: OneNoteApi.GenericError) => {
@@ -246,7 +267,7 @@ export class DomUtilsTests extends TestModule {
 			this.fixture.appendChild(this.createMainArticleContainer());
 			let previewElement = AugmentationHelper.getArticlePreviewElement(document);
 
-			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, "https://vimeo.com/45196609").then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
+			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, "https://vimeo.com/45196609").then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 				let embedUrl = "https://player.vimeo.com/video/45196609";
 				strictEqual(videoSrcUrls[0].dataOriginalSrcAttribute, embedUrl);
 				strictEqual(videoSrcUrls[0].srcAttribute, embedUrl);
@@ -263,7 +284,7 @@ export class DomUtilsTests extends TestModule {
 			this.fixture.appendChild(this.createMainArticleContainer());
 			let previewElement = AugmentationHelper.getArticlePreviewElement(document);
 
-			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithMultipleClipIds, "https://vimeo.com/album/3637653/").then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
+			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithMultipleClipIds, "https://vimeo.com/album/3637653/").then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 				let expectedVideoIds = ["45196609", "45196610", "45196611"];
 				for (let i = 0; i < expectedVideoIds.length; i++) {
 					if (!videoSrcUrls[i]) {
@@ -287,17 +308,17 @@ export class DomUtilsTests extends TestModule {
 			this.fixture.appendChild(this.createMainArticleContainer());
 			let previewElement = AugmentationHelper.getArticlePreviewElement(document);
 
-			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, "https://www.google.com/").then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
+			DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, "https://www.google.com/").then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 				strictEqual(videoSrcUrls, undefined);
 			}, (error: OneNoteApi.GenericError) => {
 				ok(false, "reject should not be called");
 			}).then(() => {
-				DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, "https://www.youtube.com/channel/UC38IQsAvIsxxjztdMZQtwHA").then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
+				DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, "https://www.youtube.com/channel/UC38IQsAvIsxxjztdMZQtwHA").then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 					strictEqual(videoSrcUrls, undefined);
 				}, (error: OneNoteApi.GenericError) => {
 					ok(false, "reject should not be called");
 				}).then(() => {
-					DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, "https://www.vimeo.com/").then((videoSrcUrls: DomUtils.EmbeddedVideoIFrameSrcs[]) => {
+					DomUtils.addEmbeddedVideosWhereSupported(previewElement, vimeoPageContentWithOneClipId, "https://www.vimeo.com/").then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 						strictEqual(videoSrcUrls, undefined);
 					}, (error: OneNoteApi.GenericError) => {
 						ok(false, "reject should not be called");
@@ -461,6 +482,14 @@ export class DomUtilsTests extends TestModule {
 		let div = <any>document.createElement("div") as HTMLHtmlElement;
 		div.className = "MainArticleContainer";
 		return div;
+	}
+
+	private createLinkElementWithHref(id: string, url: string): void {
+		let linkElement = document.createElement("link");
+		linkElement.id = id;
+		linkElement.href = url;
+
+		this.fixture.appendChild(linkElement);
 	}
 }
 
