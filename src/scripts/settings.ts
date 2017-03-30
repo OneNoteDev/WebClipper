@@ -2,7 +2,7 @@ import * as Log from "./logging/log";
 declare function require(name: string);
 
 // Load up the settings file
-let settings = require("../../preload/settings.json");
+let settings = require("settings");
 
 export module Settings {
 	export function getSetting(name: string): any {
@@ -20,7 +20,7 @@ export module Settings {
 			settings = jsonObject;
 		} else {
 			// revert to default
-			settings = require("../../preload/settings.json");
+			settings = require("settings");
 		}
 	}
 }

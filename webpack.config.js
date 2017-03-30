@@ -31,7 +31,7 @@ var PATHS = {
 };
 
 module.exports = function(env) {
-	// TODO env.production, env.dogfood, env.nointernal, env.nominify
+	// TODO: env.production, env.dogfood, env.nointernal, env.nominify
 
 	return {
 		entry: [
@@ -47,6 +47,9 @@ module.exports = function(env) {
 		devtool: 'source-map',
 
 		resolve: {
+			alias: {
+				settings$: path.resolve(__dirname, './preload/settings.json')
+			},
 			// Add '.ts' and '.tsx' to list of default resolvable extensions.
 			extensions: ['.js', '.json', '.ts', '.tsx']
 		},
