@@ -40,3 +40,5 @@ Removes all of the generated files from `build`
 $ gulp watch
 ```
 Automatically rebuilds the project when files are saved
+
+### TODO: npm link (from root of local npm package build, e.g., OneNotePicker-JS, OneNoteApi) -> npm link <npm_package> (from root of WebClipper)

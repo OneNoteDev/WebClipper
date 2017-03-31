@@ -115,7 +115,8 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	// TODO replace with https://www.npmjs.com/package/mithril-component?
+	// TODO: replace with https://www.npmjs.com/package/mithril-component?
+	// TODO: ComponentBase should be its own package
 
 	// Note: currently all components NEED either a child or attribute to work with the MSX transformer.
 	// This <MyButton/> won't work, but this <MyButton dummyProp /> will work.

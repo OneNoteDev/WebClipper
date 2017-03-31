@@ -2,8 +2,11 @@
 "use strict";
 var require;
 
+// TODO: remember that there is a corresponding branch in OneNotePicker-JS
+
 var argv = require("yargs").argv;
 var browserify = require("browserify");
+// TODO: I think all concat()s should be replaceble by webpack bundling
 var concat = require("gulp-concat");
 var del = require("del");
 var fileExists = require("file-exists");
@@ -390,6 +393,7 @@ function exportCommonCSS(targetDir) {
 	]).pipe(gulp.dest(targetDir));
 }
 
+// TODO: keep this
 function exportCommonSrcFiles(targetDir) {
 	var pickerTask = exportPickerFiles(targetDir);
 
