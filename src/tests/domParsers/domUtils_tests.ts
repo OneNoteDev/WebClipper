@@ -94,14 +94,14 @@ export class DomUtilsTests extends TestModule {
 				"The non Web Clipper iframe should still be present");
 		});
 
-		test("removeExtensionLinkHrefs should remove all URLs which refer to local extensions, but not any others", () => {
+		test("removeUnsupportedHrefs should remove all URLs which refer to local extensions, but not any others", () => {
 			let linksToCreate: any = [
 				{ id: "chromeExtensionLink", url: "chrome-extension://abc123abc123abc123/test.css", shouldRemain: false},
 				{ id: "edgeExtensionLink", url: "edge-extension://abc123abc123abc123/test.css", shouldRemain: false },
 				{ id: "fileExtensionLink", url: "file://c:/foo/bar/test.css", shouldRemain: false },
 				{ id: "firefoxExtensionLink", url: "firefox-extension://abc123abc123abc123/test.css", shouldRemain: false },
-				{ id: "safarExtensionLink", url: "safari-extension://abc123abc123abc123/test.css", shouldRemain: false },
-				{ id: "normaHttplLink", url: "https://foo/bar/test.css", shouldRemain: true },
+				{ id: "safariExtensionLink", url: "safari-extension://abc123abc123abc123/test.css", shouldRemain: false },
+				{ id: "normalHttplLink", url: "https://foo/bar/test.css", shouldRemain: true },
 			];
 
 			for (let link of linksToCreate) {
@@ -111,7 +111,7 @@ export class DomUtilsTests extends TestModule {
 			DomUtils.removeUnsupportedHrefs(document);
 
 			for (let link of linksToCreate) {
-				ok(!!document.getElementById(link.id) === link.shouldRemain, "Url not removed when it was expected to: " + link.url);
+				strictEqual(!!document.getElementById(link.id), link.shouldRemain, "Url not removed when it was expected to: " + link.url);
 			}
 		});
 
