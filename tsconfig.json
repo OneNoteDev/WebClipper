@@ -2,10 +2,9 @@
 	"compilerOptions": {
 		"jsx": "preserve",
 		"module": "commonjs",
-		"target": "es5",
+		"target": "es6",
 		"types": [
 			"chrome",
-			"es6-promise",
 			"jquery",
 			"mithril",
 			"pdf",

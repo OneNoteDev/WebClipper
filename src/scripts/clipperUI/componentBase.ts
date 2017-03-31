@@ -120,12 +120,13 @@ export abstract class ComponentBase<TState, TProps> {
 	// Note: currently all components NEED either a child or attribute to work with the MSX transformer.
 	// This <MyButton/> won't work, but this <MyButton dummyProp /> will work.
 	public static componentize() {
+		let _this = this;
 		let component: any = {
-			controller: (props: any) => {
+			controller: function (props: any) {
 				// Instantiate an instance of the inheriting class
-				return new (<any>this)(props);
+				return new (<any>_this)(props);
 			},
-			view: (controller: any, props: any) => {
+			view: function (controller: any, props: any) {
 				controller.props = props;
 				return controller.render();
 			}
