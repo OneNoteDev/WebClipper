@@ -1,5 +1,5 @@
 {
-  "version": "3.6.1",
+  "version": "3.7.0",
   "name": "webclipper",
   "private": true,
   "description": "The core of the OneNote Web Clipper found at https://www.onenote.com/clipper",
@@ -11,8 +11,13 @@
     "url": "git+https://github.com/OneNoteDev/WebClipper.git"
   },
   "scripts": {
+    "build-only": "gulp buildOnly",
     "build": "npm run settings && npm run webpack",
+    "build-old": "gulp build",
+    "clean": "gulp clean",
+    "full": "gulp full",
     "settings": "gulp mergeSettings",
+    "watch": "gulp watch",
     "webpack": "webpack"
   },
   "devDependencies": {

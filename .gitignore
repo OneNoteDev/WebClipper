@@ -7,5 +7,6 @@ typings
 *.user
 src/scripts/**/*_internal.*
 .vscode/tasks.json
+/.idea
 .awcache
 preload
