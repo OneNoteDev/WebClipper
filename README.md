@@ -12,7 +12,7 @@ $ npm install
 ```
 
 ### 3. Build and Test
-The default comand to build and test:
+The default command to build and test:
 ```sh
 $ npm run build
 ```
