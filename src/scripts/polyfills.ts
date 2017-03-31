@@ -1,9 +1,12 @@
 declare var require;
 
+let promise = require("es6-promise");
+
 export module Polyfills {
 	export function init() {
 		endsWithPoly();
 		objectAssignPoly();
+		promisePoly();
 		requestAnimationFramePoly();
 	}
 
@@ -43,6 +46,12 @@ export module Polyfills {
 				}
 				return output;
 			};
+		}
+	}
+
+	function promisePoly() {
+		if (typeof Promise === "undefined") {
+			promise.polyfill();
 		}
 	}
 

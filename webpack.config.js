@@ -57,7 +57,7 @@ module.exports = function(env) {
 		module: {
 			rules: [
 				// All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
-				{ test: /\.tsx?$/, exclude: /(node_modules)/, loader: 'awesome-typescript-loader' },
+				{ test: /\.tsx?$/, exclude: /(node_modules)/, use: [ 'babel-loader', 'ts-loader' ] },
 				{ test: /\.less$/, use: [ 'style-loader', 'css-loader?-url', 'less-loader' ] },
 				// All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
 				{ test: /\.js$/, exclude: /(node_modules)/, enforce: 'pre', loader: 'source-map-loader' },

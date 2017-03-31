@@ -115,19 +115,22 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
+	// TODO replace with https://www.npmjs.com/package/mithril-component?
+
 	// Note: currently all components NEED either a child or attribute to work with the MSX transformer.
 	// This <MyButton/> won't work, but this <MyButton dummyProp /> will work.
 	public static componentize() {
-		let returnValue: any = () => { };
-		returnValue.controller = (props: any) => {
-			// Instantiate an instance of the inheriting class
-			return new (<any>this)(props);
-		};
-		returnValue.view = (controller: any, props: any) => {
-			controller.props = props;
-			return controller.render();
+		let component: any = {
+			controller: (props: any) => {
+				// Instantiate an instance of the inheriting class
+				return new (<any>this)(props);
+			},
+			view: (controller: any, props: any) => {
+				controller.props = props;
+				return controller.render();
+			}
 		};
 
-		return returnValue;
+		return component;
 	}
 }
