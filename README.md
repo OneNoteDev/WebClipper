@@ -3,22 +3,18 @@
 ## Setup
 ### 1. Install npm -- https://nodejs.org/en/download/
 
-### 2. Install gulp globally:
-```sh
-$ npm install --global gulp
-```
 (Note: on windows, you also need to add "%appdata%\npm" to your PATH)
 
-### 3. Install the WebClipper packages
+### 2. Install the WebClipper packages
 From the root of this project, run:
 ```sh
 $ npm install
 ```
 
-### 4. Build and Test
-The default gulp command is to build and test:
+### 3. Build and Test
+The default command to build and test:
 ```sh
-$ gulp
+$ npm run build
 ```
  - Compiles LESS and TypeScript into /build
  - Bundles the JavaScript modules together into /build/bundles
@@ -28,15 +24,15 @@ $ gulp
 At this point you should see the tests passing, and see the packaged code in the `target` folder
 
 
-### Other Gulp shortcuts
-#### Gulp clean
+### Other useful commands
+#### Clean
 ```sh
-$ gulp clean
+$ npm run clean
 ```
 Removes all of the generated files from `build`
 
-#### Gulp watch
+#### Watch
 ```sh
-$ gulp watch
+$ npm run watch
 ```
 Automatically rebuilds the project when files are saved

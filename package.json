@@ -1,11 +1,18 @@
 {
-  "version": "3.6.1",
+  "version": "3.7.0",
   "name": "webclipper",
   "private": true,
   "description": "The core of the OneNote Web Clipper found at https://www.onenote.com/clipper",
   "homepage": "https://github.com/OneNoteDev/WebClipper#readme",
   "author": "Microsoft Corporation",
   "license": "MIT",
+  "scripts": {
+    "build-only": "gulp buildOnly",
+    "watch": "gulp watch",
+    "build": "gulp build",
+    "full": "gulp full",
+    "clean": "gulp clean"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OneNoteDev/WebClipper.git"
