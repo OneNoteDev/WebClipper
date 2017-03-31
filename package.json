@@ -6,6 +6,13 @@
   "homepage": "https://github.com/OneNoteDev/WebClipper#readme",
   "author": "Microsoft Corporation",
   "license": "MIT",
+  "scripts": {
+    "build-only": "gulp buildOnly",
+    "watch": "gulp watch",
+    "build": "gulp build",
+    "full": "gulp full",
+    "clean": "gulp clean"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OneNoteDev/WebClipper.git"
