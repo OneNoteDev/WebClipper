@@ -923,12 +923,6 @@ export class DomUtils {
 			"onblur"
 		];
 
-		// for (let attribute of attributesToRemove) {
-		// 	let elements: NodeList = doc.querySelectorAll("[" + attribute + "]");
-		// 	for (let i = 0; i < elements.length; i++) {
-		// 		elements[i].removeAttribute(attribute);
-		// 	}
-
 		for (let i = 0; i < attributesToRemove.length; i++) {
 			let elements = doc.querySelectorAll("[" + attributesToRemove[i] + "]");
 			for (let j = 0; j < elements.length; j++) {
@@ -998,11 +992,6 @@ export class DomUtils {
 	}
 
 	private static isLocalReferenceUrl(url: string): Boolean {
-		return (
-			url.indexOf("chrome-extension://") === 0 ||
-			url.indexOf("edge-extension://") === 0 ||
-			url.indexOf("file://") === 0 ||
-			url.indexOf("firefox-extension://") === 0 ||
-			url.indexOf("safari-extension://") === 0);
+		return !(url.indexOf("https://") === 0 || url.indexOf("http://") === 0);
 	}
 }
