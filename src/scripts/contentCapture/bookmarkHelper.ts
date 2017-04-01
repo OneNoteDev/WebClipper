@@ -29,7 +29,7 @@ export interface MetadataKeyValuePair {
 export class BookmarkHelper {
 	public static maxNumCharsInDescription = 140;
 
-	public static metadataTagNames: string[] = [ DomUtils.Tags.meta, DomUtils.Tags.link ];
+	public static metadataTagNames: string[] = [ DomUtils.tags.meta, DomUtils.tags.link ];
 
 	public static nameAttrName = "name";
 	public static propertyAttrName = "property";
