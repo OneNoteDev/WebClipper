@@ -36,6 +36,7 @@ export class DomUtils {
 		canvas: "canvas",
 		center: "center",
 		cite: "cite",
+		code: "code",
 		del: "del",
 		div: "div",
 		em: "em",
@@ -68,6 +69,7 @@ export class DomUtils {
 		object: "object",
 		ol: "ol",
 		p: "p",
+		pre: "pre",
 		progress: "progress",
 		script: "script",
 		span: "span",
@@ -112,7 +114,9 @@ export class DomUtils {
 		DomUtils.tags.sup,
 		DomUtils.tags.sub,
 		DomUtils.tags.cite,
-		DomUtils.tags.font
+		DomUtils.tags.font,
+		DomUtils.tags.pre,
+		DomUtils.tags.code
 	];
 
 	protected static htmlTags = [
