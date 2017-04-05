@@ -69,7 +69,7 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 					this.checkOptionsBeforeStartClip();
 				}
 				if (oldOnKeyDown) {
-					oldOnKeyDown.call(document, event);
+					oldOnKeyDown.call(document, ev);
 				}
 			};
 
