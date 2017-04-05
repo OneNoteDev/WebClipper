@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.7.1 (April 5, 2017)
+* Bug: Fixed an undefined reference when using the Clipping hotkey (Alt + C)
+
 ## 3.7.0 (March 29, 2017)
 * Improvement: The OneNote Web Clipper is now a11y compliant!
 * Improvement: In region mode, renamed the cancel button to "Back".
