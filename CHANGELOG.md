@@ -1,7 +1,8 @@
 # Change Log
 
-## 3.7.1 (April 5, 2017)
+## 3.7.2 (April 5, 2017)
 * Bug: Fixed an undefined reference when using the Clipping hotkey (Alt + C)
+* Bug: Fixed article mode with pages containing code (defined by the &lt;pre&gt; or &lt;code&gt; tags)
 
 ## 3.7.0 (March 29, 2017)
 * Improvement: The OneNote Web Clipper is now a11y compliant!
