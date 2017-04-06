@@ -199,6 +199,17 @@ export class DomUtils {
 		return sanitizedHtml;
 	}
 
+	/**
+	 * Many extensions inject their own stylings into the page, and generally that isn't a problem. But,
+	 * occasionally the styling includes a specific font, which can be very, very large. This method
+	 * removes any base64 encoded binaries defined in any <style> tags.
+	 */
+	public static removeStylesWithBase64EncodedBinaries(doc: Document): void {
+		DomUtils.domReplacer(doc, "style", (node: HTMLElement) => {
+			return node.innerHTML.indexOf("data:application") !== -1 ? undefined : node;
+		});
+	}
+
 	public static removeElementsNotSupportedInOnml(doc: Document): void {
 		// For elements that cannot be converted into something equivalent in ONML, we remove them ...
 		DomUtils.domReplacer(doc, DomUtils.tagsNotSupportedInOnml.join());
@@ -336,6 +347,7 @@ export class DomUtils {
 	}
 
 	public static removeUnwantedItems(doc: Document): void {
+		DomUtils.removeStylesWithBase64EncodedBinaries(doc);
 		DomUtils.removeClipperElements(doc);
 		DomUtils.removeUnwantedElements(doc);
 		DomUtils.removeUnwantedAttributes(doc);
