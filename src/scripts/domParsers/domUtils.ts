@@ -202,7 +202,7 @@ export class DomUtils {
 	 */
 	public static removeStylesWithBase64EncodedBinaries(doc: Document): void {
 		DomUtils.domReplacer(doc, "style", (node: HTMLElement) => {
-			return node.innerHTML.indexOf("data:application") !== -1 ? document.createElement("style") : node;
+			return node.innerHTML.indexOf("data:application") !== -1 ? undefined : node;
 		});
 	}
 
