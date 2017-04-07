@@ -9,6 +9,7 @@ import {SmartValue} from "../../communicator/smartValue";
 import {Localization} from "../../localization/localization";
 
 import {Failure, LogDataPackage, LogMethods, NoOp, PropertyName, reportData, unknownValue} from "../log";
+import {Context} from "../submodules/context";
 
 export module ErrorUtils {
 	enum ErrorPropertyName {
@@ -158,9 +159,16 @@ export module ErrorUtils {
 	 */
 	function addDelayedSetValuesOnNoOp(props: {[key: string]: string}, clientInfo?: SmartValue<ClientInfo>): void {
 		if (clientInfo) {
-			props[Constants.Urls.QueryParams.clientType] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : ClientType[clientInfo.get().clipperType];
-			props[Constants.Urls.QueryParams.clipperVersion] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperVersion;
-			props[Constants.Urls.QueryParams.clipperId] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperId;
+			let clientType = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : ClientType[clientInfo.get().clipperType];
+			let clipperVersion = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperVersion;
+			let clipperId = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperId;
+			props[Constants.Urls.QueryParams.clientType] = clientType;
+			props[Constants.Urls.QueryParams.clipperVersion] = clipperVersion;
+			props[Constants.Urls.QueryParams.clipperId] = clipperId;
+
+			props[Context.Custom.ClipperType] = clientType;
+			props[Context.Custom.AppInfoVersion] = clipperVersion;
+			props[Context.Custom.DeviceInfoId] = clipperId;
 		}
 	}
 }
