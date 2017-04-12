@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.6.2 (April 10, 2017)
+* Bug: Ship a hotfix for an unhandled error on Firefox
+
 ## 3.6.1 (March 21, 2017)
 * Bug: Add more support for screen readers and tab browsing
 
