@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.7.3 (April 28, 2017)
+* Bug: Ignore large binary files that may be injected by some extensions
+
 ## 3.7.2 (April 5, 2017)
 * Bug: Fixed an undefined reference when using the Clipping hotkey (Alt + C)
 * Bug: Fixed article mode with pages containing code (defined by the &lt;pre&gt; or &lt;code&gt; tags)
