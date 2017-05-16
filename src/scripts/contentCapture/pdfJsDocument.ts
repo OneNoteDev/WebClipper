@@ -48,7 +48,13 @@ export class PdfJsDocument implements PdfDocument {
 		return new Promise<string>((resolve) => {
 			// In pdf.js, indexes start at 1
 			this.pdf.getPage(pageIndex + 1).then((page) => {
-				let viewport = page.getViewport(1 /* scale */);
+				// Issue #369: When the scale is set to 1, we end up with poor quality images
+				// on high resolution machines. The best explanation I found for this was in
+				// this article: http://stackoverflow.com/questions/35400722/pdf-image-quality-is-bad-using-pdf-js
+				// Note that we played around with setting the scale from 3-5, which looked better on high
+				// resolution monitors - but did not look good at all at lower resolutions. scale=2 seems
+				// to be the happy medium.
+				let viewport = page.getViewport(2 /* scale */);
 				let canvas = document.createElement("canvas") as HTMLCanvasElement;
 				let context = canvas.getContext("2d");
 				canvas.height = viewport.height;
