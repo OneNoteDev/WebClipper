@@ -43,7 +43,7 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 				<div className={Constants.Classes.panelAnimator} {...this.onElementDraw(this.onPanelAnimatorDraw)}>
 					<div id={Constants.Ids.dialogMessageContainer} className="resultPagePadding">
 						<div className="messageLabelContainer" style={Localization.getFontFamilyAsStyle(fontFamily)}>
-							<div id={Constants.Ids.dialogMessage} className="dialogMessageFont messageLabel">
+							<div id={Constants.Ids.dialogMessage} className="dialogMessageFont messageLabel" role="alert">
 								{this.props.message}
 							</div>
 							{this.getExtraMessages()}

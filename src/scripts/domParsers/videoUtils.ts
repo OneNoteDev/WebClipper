@@ -1,21 +1,21 @@
 import {ObjectUtils} from "../objectUtils";
 import {UrlUtils} from "../urlUtils";
 
-export module VideoUtils {
-	export const youTubeWatchVideoBaseUrl = "https://www.youtube.com/watch";
-	export const youTubeVideoIdQueryKey = "v";
+export enum SupportedVideoDomains {
+	YouTube,
+	Vimeo,
+	KhanAcademy
+}
 
-	export enum SupportedVideoDomains {
-		YouTube,
-		Vimeo,
-		KhanAcademy
-	}
+export class VideoUtils {
+	public youTubeWatchVideoBaseUrl = "https://www.youtube.com/watch";
+	public youTubeVideoIdQueryKey = "v";
 
 	/**
 	 * Returns a string from the SupportedVideoDomains enum iff
 	 * the pageUrl's hostname contains the enum string
 	 */
-	export function videoDomainIfSupported(pageUrl: string): string {
+	public static videoDomainIfSupported(pageUrl: string): string {
 		if (!pageUrl) {
 			return;
 		}
@@ -37,7 +37,7 @@ export module VideoUtils {
 		return;
 	}
 
-	export function matchRegexFromPageContent(pageContent: string, regexes: RegExp[]): string[] {
+	public static matchRegexFromPageContent(pageContent: string, regexes: RegExp[]): string[] {
 		if (ObjectUtils.isNullOrUndefined(pageContent)) {
 			return;
 		}

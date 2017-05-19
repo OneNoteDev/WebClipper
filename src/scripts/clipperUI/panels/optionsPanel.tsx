@@ -43,14 +43,42 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 		if (clipperState.currentMode.get() === ClipMode.Pdf && !pdfPreviewInfo.allPages && clipperState.pdfResult.status === Status.Succeeded) {
 			const parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, clipperState.pdfResult.data.get().pdf.numPages());
 			if (parsePageRangeOperation.status !== OperationResult.Succeeded) {
-				_.assign(_.extend(clipperState.pdfPreviewInfo, {
-					shouldShowPopover: true
-				}), clipperState.setState);
+				let newPdfPreviewInfo = _.extend(_.cloneDeep(pdfPreviewInfo), { shouldShowPopover: true });
+				clipperState.setState({
+					pdfPreviewInfo: newPdfPreviewInfo
+				});
 				return;
 			}
 		}
 
 		this.props.onStartClip();
+	}
+
+	// This function is passed into Mithril's config property
+	// The config property is a function that allows you to hook into 
+	// a component's lifecycle such as mounting and un-mounting
+	attachClipHotKeyListener(element, isInitialized, context) {
+		// If this is the first time we are initializing this element,
+		// 	then attach the listener
+		if (!isInitialized) {
+			let oldOnKeyDown = document.onkeydown;
+			document.onkeydown = (ev: KeyboardEvent) => {
+				// TODO: KeyboardEvent::which is deprecated but PhantomJs doesn't support
+				// 'event constructors', which is necessary to use the recommended KeyboardEvent::key 
+				if (ev.altKey && ev.which === Constants.KeyCodes.c) {
+					this.checkOptionsBeforeStartClip();
+				}
+				if (oldOnKeyDown) {
+					oldOnKeyDown.call(document, ev);
+				}
+			};
+
+			// Remove listener when this element is unmounted
+			context.onunload = () => {
+				document.onkeydown = oldOnKeyDown ? oldOnKeyDown.bind(document) : undefined;
+			};
+		// There is no else case, since we only care about initializaiton and destruction
+		}
 	}
 
 	render() {
@@ -59,19 +87,19 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 		let clippingOptionsToRender = this.getCurrentClippingOptions();
 
 		return (
-			<div className="optionsPanel">
+			<div className="optionsPanel" config={this.attachClipHotKeyListener.bind(this)}>
 				<ModeButtonSelector clipperState={this.props.clipperState} />
 				{clippingOptionsToRender}
 				<SectionPicker onPopupToggle={this.props.onPopupToggle.bind(this)} clipperState={this.props.clipperState} />
 				<div id={Constants.Ids.clipButtonContainer} className={clipButtonContainerClassName}>
 					{clipButtonEnabled
-					?	<a id={Constants.Ids.clipButton} className="wideActionButton" {...this.enableInvoke(this.checkOptionsBeforeStartClip.bind(this), 1) }>
+					?	<a id={Constants.Ids.clipButton} className="wideActionButton" {...this.enableInvoke(this.checkOptionsBeforeStartClip.bind(this), 60) } role="button">
 							<span className="wideButtonFont"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 								{Localization.getLocalizedString("WebClipper.Action.Clip")}
 							</span>
 						</a>
-					:	<a id={Constants.Ids.clipButton} className="wideActionButton">
+					:	<a id={Constants.Ids.clipButton} className="wideActionButton" role="button">
 							<span className="wideButtonFont"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 								{Localization.getLocalizedString("WebClipper.Action.Clip")}

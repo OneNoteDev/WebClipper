@@ -33,7 +33,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 			<div id={Constants.Ids.clipperSuccessContainer}>
 				<div className="messageLabelContainer successPagePadding">
 					<SpriteAnimation spriteUrl={ExtensionUtils.getImageResourceUrl("checkmark.png")} imageHeight={28} totalFrameCount={30} loop={false}/>
-					<span className="actionLabelFont messageLabel"
+					<span className="actionLabelFont messageLabel" role="alert"
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 						{Localization.getLocalizedString("WebClipper.Label.ClipSuccessful")}
 					</span>

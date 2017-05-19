@@ -1,6 +1,25 @@
 # Change Log
 
-## 3.4.4 (January 31, 2017)
+## 3.7.3 (April 28, 2017)
+* Bug: Ignore large binary files that may be injected by some extensions
+
+## 3.7.2 (April 5, 2017)
+* Bug: Fixed an undefined reference when using the Clipping hotkey (Alt + C)
+* Bug: Fixed article mode with pages containing code (defined by the &lt;pre&gt; or &lt;code&gt; tags)
+
+## 3.7.0 (March 29, 2017)
+* Improvement: The OneNote Web Clipper is now a11y compliant!
+* Improvement: In region mode, renamed the cancel button to "Back".
+* Bug: Minor logging change to the GetExistingUserInfo call.
+
+## 3.6.0 (February 17, 2017)
+* Bug: We were still injecting an empty div into the non-Chrome browsers. This fixes that situation.
+
+## 3.5.2 (February 17, 2017)
+* Bug: Fix Region mode being off on high dpi screens like Retina or Surface Book in Firefox
+* Bug: Article mode was sometimes being shown when we should have been in PDF mode.
+
+## 3.4.5 (February 1, 2017)
 * Bug: Unable to sign into Edge because of third-party cookie detection issue.
 
 ## 3.4.3 (January 18, 2017)

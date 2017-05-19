@@ -1,5 +1,4 @@
 import {Constants} from "../../constants";
-
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {Localization} from "../../localization/localization";

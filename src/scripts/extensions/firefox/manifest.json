@@ -3,13 +3,13 @@
 	"name": "OneNote Web Clipper",
 	"description": "__MSG_appDesc__",
 	"default_locale": "en",
-	"version": "3.5.1",
+	"version": "3.7.4",
 	"background": {
 		"scripts": [ "firefoxExtension.js" ]
 	},
 
 	"content_scripts": [{
-		"matches": ["<all_urls>"],
+		"matches": ["https://onenote.officeapps.live.com/*", "https://ppc-onenote.officeapps.live.com/*", "https://onenote.officeapps-df.live.com/*", "https://onenote.officeapps.live-int.com/*"],
 		"js": ["appendIsInstalledMarker.js"],
 		"run_at": "document_start",
 		"all_frames": true

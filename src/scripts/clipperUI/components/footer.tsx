@@ -77,25 +77,25 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 				<div>
 					<div className="footerButtonsLeft confineText">
 						<a id={Constants.Ids.feedbackButton} {...this.enableInvoke(this.handleFeedbackButton, 80) }>
-							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")}
-								alt={Localization.getLocalizedString("WebClipper.Action.Feedback") }/>
+							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")}/>
 							<span>{Localization.getLocalizedString("WebClipper.Action.Feedback") }</span>
 						</a>
 					</div>
 					{showUserInfo
 						? (<div className="footerButtonsRight">
-								<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.userControlHandler, 81) }>
+							<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.userControlHandler, 81)} aria-expanded={this.state.userSettingsOpened}>
 									<img id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 									<div id={Constants.Ids.currentUserDetails}>
 									{
 										this.props.clipperState.userResult.data.user.fullName
 										? <div id={Constants.Ids.currentUserName} className="confineText">{this.props.clipperState.userResult.data.user.fullName}</div>
-										: <div id={Constants.Ids.currentUserName} className="confineText"></div>
+										: <div id={Constants.Ids.currentUserName} className="confineText">{Localization.getLocalizedString("WebClipper.Label.SignedIn")}</div>
 									}
-										<div id={Constants.Ids.currentUserId} className="confineText currentUserIdFont"
-											style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
-											{this.props.clipperState.userResult.data.user.emailAddress}
-										</div>
+									{
+										this.props.clipperState.userResult.data.user.emailAddress
+										? <div id={Constants.Ids.currentUserId} className="confineText currentUserIdFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>{this.props.clipperState.userResult.data.user.emailAddress}</div>
+										: ""
+									}
 									</div>
 								</a>
 							</div>)

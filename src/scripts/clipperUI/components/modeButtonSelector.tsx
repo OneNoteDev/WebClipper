@@ -1,4 +1,5 @@
 import {ClientType} from "../../clientType";
+import {Constants} from "../../constants";
 import {Experiments} from "../../experiments";
 
 import {AugmentationHelper} from "../../contentCapture/augmentationHelper";
@@ -20,6 +21,15 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			currentMode: this.props.clipperState.currentMode.set(newMode)
 		});
 	};
+
+	private getScreenReaderOnlyElementThatAnnouncesCurrentMode(currentMode: ClipMode) {
+		let stringToTellUserModeHasChanged = Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.CurrentModeHasChanged");
+		stringToTellUserModeHasChanged = stringToTellUserModeHasChanged.replace("{0}", ClipMode[currentMode]);
+
+		return (
+			<div aria-live="polite" aria-relevant="text" className={Constants.Classes.srOnly}>{stringToTellUserModeHasChanged}</div>
+		);
+	}
 
 	private getPdfModeButton(currentMode: ClipMode) {
 		if (this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
@@ -108,7 +118,8 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		let currentMode = this.props.clipperState.currentMode.get();
 
 		return (
-			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight) }>
+			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}>
+				{ this.getScreenReaderOnlyElementThatAnnouncesCurrentMode(currentMode)}
 				{ this.getFullPageModeButton(currentMode) }
 				{ this.getRegionModeButton(currentMode) }
 				{ this.getAugmentationModeButton(currentMode) }
