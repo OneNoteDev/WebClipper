@@ -52,11 +52,5 @@
 		"96": "icons/icon-96.png",
 		"128": "icons/icon-128.png",
 		"256": "icons/icon-256.png"
-<<<<<<< HEAD
-	},
-
-	"minimum_edge_version": "10.0.15025.0"
-=======
 	}
->>>>>>> master
 }
