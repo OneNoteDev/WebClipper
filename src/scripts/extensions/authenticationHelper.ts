@@ -53,9 +53,7 @@ export class AuthenticationHelper {
 			}
 
 			let getUserInformationFunction = () => {
-				return this.getClipperInfoCookie(clipperId).then((cookie) => {
-					return this.retrieveUserInformation(clipperId, cookie);
-				});
+				return this.retrieveUserInformation(clipperId, undefined);
 			};
 
 			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
@@ -85,53 +83,6 @@ export class AuthenticationHelper {
 
 				resolve(this.user.get());
 			});
-		});
-	}
-
-	/**
-	 * The call to get the user information relies on the proper cookies being passed along or things just don't work. Unfortunately,
-	 * right now the Edge browser doesn't pass those cookies along properly, so we need to do a little work to make sure things are set
-	 * correctly. This uses the WebExtension APIs to retrieve the needed cookie manually.
-	 */
-	public getClipperInfoCookie(clipperId: string): Promise<string> {
-		return new Promise<string>((resolve) => {
-			// This is to work around a bug in Edge where the cookies.get call doesn't return if the cookie isn't set and there is more
-			// than one tab open.  Basically, we're giving it 3 seconds to return and then giving up.
-			let getCookieTimeout = setTimeout(() => {
-				resolve(undefined);
-			}, 3000);
-
-			if (navigator.userAgent.search(/edge/i) !== -1) {
-				browser.cookies.get({ "url": Constants.Urls.serviceDomain, "name": Constants.Cookies.clipperInfo }, (cookie) => {
-					clearTimeout(getCookieTimeout);
-					resolve(cookie ? cookie.value : "");
-				});
-			} else {
-				clearTimeout(getCookieTimeout);
-				resolve(undefined);
-			}
-		});
-	}
-
-	/**
-	 * Similar to getClipperInfoCookie(), The calls from the background process don't delete cookies as well, so we need a way to
-	 * do it manually.  This method essentially forces the delete of the cookies we rely on for authentication.
-	 */
-	public deleteUserAuthenticationCookies(authType: AuthType): void {
-		browser.cookies.remove({ "url": Constants.Urls.serviceDomain, "name": Constants.Cookies.clipperInfo });
-
-		let authenticationDomain = Constants.Urls.msaDomain;
-		if (authType === AuthType.OrgId) {
-			authenticationDomain = Constants.Urls.orgIdDomain;
-		}
-
-		// This part is a little ugly. Because the call to sign out the user is also done in the background, it hits the same issue
-		// where the needed cookies are not being passed along with the request. So, the user never really signs out. To work around
-		// it we are basically manually deleting all of the cookies on the authentication domain. Yeah, it's ugly.
-		browser.cookies.getAll({ "url": authenticationDomain }, (cookies) => {
-			for (let i = 0; i < cookies.length; i++) {
-				browser.cookies.remove({ "url": authenticationDomain + cookies[i].path, name: cookies[i].name });
-			}
 		});
 	}
 
