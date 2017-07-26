@@ -289,11 +289,10 @@ export class SaveToOneNote {
 	private getApi(): OneNoteApi.IOneNoteApi {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.correlationId] = StringUtils.generateGuid();
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 
 		let api = new OneNoteApi.OneNoteApi(this.accessToken, undefined /* timeout */, headers);
 		let apiWithRetries = new OneNoteApiWithRetries(api);
-		return new OneNoteApiWithLogging(apiWithRetries, headers[Constants.HeaderValues.correlationId]);
+		return new OneNoteApiWithLogging(apiWithRetries);
 	}
 }
