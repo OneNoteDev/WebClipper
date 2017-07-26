@@ -28,6 +28,7 @@ export module ClipperStateUtilities {
 				// but when the user clips, we short circuit it and display a message instead
 				return true;
 			case ClipMode.FullPage:
+				// In the past, we used to allow clips while this is pending, however, we found some pages can't be clipped in full page mode	
 				let fullPageScreenshotResult = clipperState.fullPageResult;
 				return fullPageScreenshotResult.status === Status.Succeeded;
 			case ClipMode.Region:
