@@ -499,15 +499,18 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.signInUser, (authType: AuthType) => {
 			return this.doSignInAction(authType).then((redirectOccurred) => {
-				if (redirectOccurred) {
-					return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.SignInAttempt).then((updatedUser: UserInfo) => {
-						return Promise.resolve(updatedUser);
-					});
-				} else {
-					let updatedUser: UserInfo = { updateReason: UpdateReason.SignInCancel };
-					this.auth.user.set(updatedUser);
+				// Recently, a change in sign-in flow broke our redirect detection, so now we give the benefit of the doubt
+				// and always attempt to update userInfo regardless
+				return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.SignInAttempt).then((updatedUser: UserInfo) => {
+					// While redirect detection is somewhat unreliable, it's still sometimes correct. So we try and
+					// detect this case only after we try get the latest userInfo
+					if ((!updatedUser || !updatedUser.user) && !redirectOccurred) {
+						let userInfoToSet: UserInfo = { updateReason: UpdateReason.SignInCancel };
+						this.auth.user.set(userInfoToSet);
+						return Promise.resolve(userInfoToSet);
+					}
 					return Promise.resolve(updatedUser);
-				}
+				});
 			}).catch((errorObject) => {
 				// Set the user info object to undefined as a result of an attempted sign in
 				this.auth.user.set({ updateReason: UpdateReason.SignInAttempt });
