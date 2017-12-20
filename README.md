@@ -15,6 +15,8 @@ $ npm install
 The default command to build and test:
 ```sh
 $ npm run build
+or
+$ npm run build -- --<arg>
 ```
  - Compiles LESS and TypeScript into /build
  - Bundles the JavaScript modules together into /build/bundles
