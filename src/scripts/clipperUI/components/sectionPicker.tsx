@@ -1,5 +1,3 @@
-/// <reference path="../../../../node_modules/onenotepicker/target/oneNotePicker.d.ts"/>
-
 import {Constants} from "../../constants";
 import {Settings} from "../../settings";
 
@@ -7,7 +5,11 @@ import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
 
-import {ClipperStorageKeys} from "../../storage/clipperStorageKeys";
+import { ClipperStorageKeys } from "../../storage/clipperStorageKeys";
+
+import { OneNotePicker, Notebook, Section, GlobalProps, NotebookListUpdater, OneNoteDataProvider, OneNotePickerCallbacks } from "../../../../node_modules/onenotepicker/dist/OneNotePicker";
+import { OneNoteApiDataProvider, SectionGroup } from "../../../../node_modules/onenotepicker/dist/OneNoteApiDataProvider";
+import { OneNoteItemUtils } from "../../../../node_modules/onenotepicker/dist/OneNoteItemUtils";
 
 import {Clipper} from "../frontEndGlobals";
 import {ClipperStateProp} from "../clipperState";
@@ -16,14 +18,28 @@ import {ComponentBase} from "../componentBase";
 import {OneNoteApiUtils} from "../oneNoteApiUtils";
 import {Status} from "../status";
 
+export type notebookOrSectionGroup = Notebook | SectionGroup;
+export type SectionPathElement = notebookOrSectionGroup | Section;
+
 export interface SectionPickerState {
-	notebooks?: OneNoteApi.Notebook[];
+	notebooks?: Notebook[];
 	status?: Status;
 	apiResponseCode?: string;
 	curSection?: {
 		path: string;
-		section: OneNoteApi.Section;
+		currentItemId: string;
 	};
+	authToken?: string;
+	globals?: {
+		focusOnMount: boolean;
+		oneNoteDataProvider: OneNoteDataProvider | undefined;
+		notebookListUpdater: NotebookListUpdater | undefined; 
+		callbacks: OneNotePickerCallbacks;
+		strings?: {};
+		selectedID?: string;
+		ariaSelectedID?: string;
+		notebookExpandDepth?: number;
+	}
 };
 
 interface SectionPickerProp extends ClipperStateProp {
@@ -31,19 +47,64 @@ interface SectionPickerProp extends ClipperStateProp {
 }
 
 export class SectionPickerClass extends ComponentBase<SectionPickerState, SectionPickerProp> {
-	static dataSource: OneNotePicker.OneNotePickerDataSource;
+
+	static dataSource: OneNoteDataProvider;
 
 	getInitialState(): SectionPickerState {
 		return {
 			notebooks: undefined,
 			status: Status.NotStarted,
-			curSection: undefined
+			curSection: undefined,
+			authToken: undefined,
+			globals: {
+				focusOnMount: true,
+				oneNoteDataProvider: undefined,
+				notebookListUpdater: undefined,
+				callbacks: {
+					onNotebookHierarchyUpdated: (newNotebookHierarchy) => {
+					},
+					onSectionSelected: (section, breadcrumbs) => {
+						this.state.globals.selectedID = this.state.curSection.currentItemId;
+
+						const sectionPath = breadcrumbs.map(x => x.name).join('>');
+						console.log(sectionPath);
+					},
+					onPageSelected: (page, breadcrumbs) => {
+						this.state.globals.selectedID = page.id;
+
+						const pagePath = breadcrumbs.map(x => x.name).join(' > ');
+						console.log(pagePath);
+
+					},
+					onAccessibleSelection: (selectedItemId: string) => {
+						this.state.globals.ariaSelectedID = selectedItemId;
+					},
+					onNotebookCreated: (notebook: Notebook) => {
+						this.state.globals.callbacks.onNotebookCreated = undefined;
+
+						if (this.state.globals.notebookListUpdater) {
+							this.state.globals.notebookListUpdater.addNotebook(notebook);
+							this.state.globals.selectedID = notebook.id;
+						}
+
+						console.log(`Notebook created: ${notebook.name}`);
+					},
+					onSectionCreated: (section: Section) => {
+						console.log(`Section created: ${section.name}`);
+
+						if (this.state.globals.notebookListUpdater) {
+							this.state.globals.notebookListUpdater!.addSection(section);
+							this.state.globals.selectedID = section.id;
+						}
+					}
+				}
+			}
 		};
 	}
 
 	onSectionClicked(curSection: any) {
 		this.props.clipperState.setState({
-			saveLocation: curSection.section.id
+			saveLocation: curSection.currentItemId
 		});
 		this.setState({
 			curSection: curSection
@@ -68,8 +129,17 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		}
 
 		let userToken = this.props.clipperState.userResult.data.user.accessToken;
-		SectionPickerClass.dataSource = new OneNotePicker.OneNotePickerDataSource(userToken);
+		SectionPickerClass.dataSource = new OneNoteApiDataProvider(userToken);
 		return true;
+	}
+
+	setAuthToken() {
+		let userToken = this.props.clipperState.userResult.data.user.accessToken;
+		if (!!SectionPickerClass.dataSource) {
+			this.setState({
+				authToken: userToken
+			});
+		}
 	}
 
 	// Begins by updating state with information found in local storage, then retrieves and stores fresh notebook information
@@ -79,6 +149,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		return new Promise<SectionPickerState>((resolve, reject) => {
 			if (this.dataSourceUninitialized()) {
 				this.setDataSource();
+				this.setAuthToken();
 			}
 
 			this.setState({
@@ -90,17 +161,16 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 				if (cachedInfoAsState) {
 					this.setState(cachedInfoAsState);
 					this.props.clipperState.setState({
-						saveLocation: cachedInfoAsState.curSection && cachedInfoAsState.curSection.section ? cachedInfoAsState.curSection.section.id : ""
+						saveLocation: cachedInfoAsState.curSection && cachedInfoAsState.curSection.currentItemId ? cachedInfoAsState.curSection.currentItemId : ""
 					});
 				}
 
 				let getNotebooksEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetNotebooks);
 
-				this.fetchFreshNotebooks(Clipper.getUserSessionId()).then((responsePackage) => {
-					let correlationId = responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId);
+				this.fetchFreshNotebooks(Clipper.getUserSessionId()).then((freshNotebooks) => {
+					let correlationId = this.setCorrelationId();
 					getNotebooksEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
-					let freshNotebooks = responsePackage.parsedResponse;
 					if (!freshNotebooks) {
 						getNotebooksEvent.setStatus(Log.Status.Failed);
 						let error = { error: "GetNotebooks Promise was resolved but returned null or undefined value for notebooks." };
@@ -112,7 +182,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 						return;
 					}
 
-					getNotebooksEvent.setCustomProperty(Log.PropertyName.Custom.MaxDepth, OneNoteApi.NotebookUtils.getDepthOfNotebooks(freshNotebooks));
+					getNotebooksEvent.setCustomProperty(Log.PropertyName.Custom.MaxDepth, OneNoteItemUtils.getDepthOfNotebooks(freshNotebooks));
 
 					Clipper.storeValue(ClipperStorageKeys.cachedNotebooks, JSON.stringify(freshNotebooks));
 
@@ -120,9 +190,9 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 					let freshNotebooksAsState = SectionPickerClass.convertNotebookListToState(freshNotebooks);
 
 					let shouldOverrideCurSectionWithDefault = true;
-					if (this.state.curSection && this.state.curSection.section) {
+					if (this.state.curSection && this.state.curSection.currentItemId) {
 						// The user has already selected a section ...
-						let currentSectionStillExists = OneNoteApi.NotebookUtils.sectionExistsInNotebooks(freshNotebooks, this.state.curSection.section.id);
+						let currentSectionStillExists = this.getCurrentSectionStillExists(freshNotebooks, this.state.curSection.currentItemId);
 						if (currentSectionStillExists) {
 							// ... which exists, so we don't override it with the default
 							freshNotebooksAsState.curSection = this.state.curSection;
@@ -135,7 +205,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 						// A default section was found, so we set it as currently selected since the user has not made a valid selection yet
 						// curSection can be undefined if there's no default found, which is fine
 						Clipper.storeValue(ClipperStorageKeys.currentSelectedSection, JSON.stringify(freshNotebooksAsState.curSection));
-						this.props.clipperState.setState({ saveLocation: freshNotebooksAsState.curSection ? freshNotebooksAsState.curSection.section.id : undefined });
+						this.props.clipperState.setState({ saveLocation: freshNotebooksAsState.curSection ? freshNotebooksAsState.curSection.currentItemId : undefined });
 					}
 
 					this.setState(freshNotebooksAsState);
@@ -163,9 +233,27 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 	dataSourceUninitialized(): boolean {
 		return !SectionPickerClass.dataSource ||
-			!SectionPickerClass.dataSource.authToken ||
-			!ClipperStateUtilities.isUserLoggedIn(this.props.clipperState) ||
-			(SectionPickerClass.dataSource.authToken !== this.props.clipperState.userResult.data.user.accessToken);
+		!this.props.clipperState.userResult.data.user.accessToken ||
+		!ClipperStateUtilities.isUserLoggedIn(this.props.clipperState) ||
+		this.state.authToken !== this.props.clipperState.userResult.data.user.accessToken;
+	}
+
+	private setCorrelationId(): string {
+		const correlationID = this.setFourDigits() + this.setFourDigits() + '-' + this.setFourDigits() + '-' + this.setFourDigits() + '-' + this.setFourDigits() + '-' + this.setFourDigits() + this.setFourDigits() + this.setFourDigits();
+		return correlationID;
+	}
+
+	private setFourDigits(): string {
+		return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+	}
+
+	getCurrentSectionStillExists(freshNotebooks, id): boolean {
+		if (OneNoteItemUtils.find(freshNotebooks, id) === undefined) {
+			return false;
+		} else {
+			return true;
+		}
+
 	}
 
 	// Retrieves the cached notebook list and last selected section from local storage in state form
@@ -204,38 +292,33 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 	}
 
 	// Fetches the user's notebooks from OneNote API, returning both the notebook list and the XHR
-	fetchFreshNotebooks(sessionId: string): Promise<OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>> {
+	fetchFreshNotebooks(sessionId: string): Promise<Notebook[]> {
 		if (this.dataSourceUninitialized()) {
 			this.setDataSource();
 		}
-
-		let headers: { [key: string]: string } = {};
-		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-		headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
-
-		return SectionPickerClass.dataSource.getNotebooks(headers);
+		return SectionPickerClass.dataSource.getNotebooks();
 	}
 
-	// Given a notebook list, converts it to state form where the curSection is the default section (or undefined if not found)
-	static convertNotebookListToState(notebooks: OneNoteApi.Notebook[]): SectionPickerState {
-		let pathToDefaultSection = OneNoteApi.NotebookUtils.getPathFromNotebooksToSection(notebooks, s => s.isDefault);
-		let defaultSectionInfo = SectionPickerClass.formatSectionInfoForStorage(pathToDefaultSection);
-
-		return {
-			notebooks: notebooks,
-			status: Status.Succeeded,
-			curSection: defaultSectionInfo
-		};
+		// Given a notebook list, converts it to state form where the curSection is the expanded section (or undefined if not found)
+	private static convertNotebookListToState(notebooks: Notebook[]): SectionPickerState {
+			let pathToExpandedSection = OneNoteItemUtils.getPathFromNotebooksToSection(notebooks, s => s.expanded);
+			let expandedSectionInfo = SectionPickerClass.formatSectionInfoForStorage(pathToExpandedSection);
+			return {
+				notebooks: notebooks,
+				status: Status.Succeeded,
+				curSection: expandedSectionInfo,
+			};
 	}
 
-	static formatSectionInfoForStorage(pathToSection: OneNoteApi.SectionPathElement[]): { path: string, section: OneNoteApi.Section } {
-		if (!pathToSection || pathToSection.length === 0) {
-			return undefined;
+	private static formatSectionInfoForStorage(pathToSection: OneNoteItemUtils.SectionPathElement[]): { path: string, currentItemId: string } {
+			if (!pathToSection || pathToSection.length === 0) {
+				return undefined;
 		}
-		return {
-			path: pathToSection.map(elem => elem.name).join(" > "),
-			section: pathToSection[pathToSection.length - 1] as OneNoteApi.Section
-		};
+		const section: Section = pathToSection[pathToSection.length - 1];
+			return {
+				path: pathToSection.map(elem => elem.name).join(" > "),
+				currentItemId: section.id
+			};
 	}
 
 	render() {
@@ -253,7 +336,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 				if (cachedInfoAsState) {
 					this.setState(cachedInfoAsState);
 					this.props.clipperState.setState({
-						saveLocation: cachedInfoAsState.curSection && cachedInfoAsState.curSection.section ? cachedInfoAsState.curSection.section.id : ""
+						saveLocation: cachedInfoAsState.curSection && cachedInfoAsState.curSection.path ? cachedInfoAsState.curSection.currentItemId : ""
 					});
 				}
 			});
@@ -272,7 +355,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		// We could have returned correctly, but there is no default Notebook
 		if (this.state.status === Status.Succeeded) {
 			if (this.state.curSection) {
-				curSectionId = this.state.curSection.section.id;
+				curSectionId = this.state.curSection.currentItemId;
 				textToDisplay = this.state.curSection.path;
 			}
 		}
@@ -289,13 +372,13 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 						{Localization.getLocalizedString("WebClipper.Label.ClipLocation")}
 					</label>
 				</div>
-				<OneNotePicker.OneNotePickerComponent
-					tabIndex={51}
+				<OneNotePicker
+					globals={this.state.globals}
 					notebooks={this.state.notebooks}
 					status={Status[this.state.status]}
 					onPopupToggle={this.onPopupToggle.bind(this)}
 					onSectionClicked={this.onSectionClicked.bind(this)}
-					textToDisplay={textToDisplay}
+					dropdownLabel={textToDisplay}
 					curSectionId={curSectionId}
 					localizedStrings={localizedStrings} />
 			</div>
