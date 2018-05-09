@@ -1,10 +1,13 @@
 {
 	"compilerOptions": {
+		"baseUrl": "./",
+		"typeRoots":["./custom_typings/json-loader"],
 		"jsx": "preserve",
+		"lib": ["es2015.promise", "es5", "es6", "dom" ],
 		"module": "commonjs",
+		"target":"es6",
 		"types": [
 			"chrome",
-			"es6-promise",
 			"jquery",
 			"mithril",
 			"pdf",

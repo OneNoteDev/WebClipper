@@ -9,6 +9,7 @@ import {Clipper} from "../clipperUI/frontEndGlobals";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import * as Log from "../logging/log";
+import {BaseOneNoteApi} from "./oneNoteApi";
 
 import {OneNoteApiWithLogging} from "./oneNoteApiWithLogging";
 import {OneNoteApiWithRetries} from "./oneNoteApiWithRetries";
@@ -78,7 +79,7 @@ export class SaveToOneNote {
 		const end = saveable.getNumPages();
 
 		// We start the range at 1 since we have already included the first page
-		return _.range(1, end).reduce((chainedPromise, i) => {
+		return _.range(1, end).reduce((chainedPromise: Promise<any>, i) => {
 			return chainedPromise = chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
 					// Parallelize the POST request intervals with the fetching of current dataUrl
@@ -142,8 +143,8 @@ export class SaveToOneNote {
 
 	private batch(saveable: OneNoteSaveable): Promise<any> {
 		let timeBetweenBatchRequests = SaveToOneNote.timeBeforeFirstBatch;
-		return _.range(saveable.getNumBatches()).reduce((chainedPromise, i) => {
-			return chainedPromise = chainedPromise.then(() => {
+		return _.range(saveable.getNumBatches()).reduce((chainedPromise: Promise<any>, i) => {
+			return chainedPromise= chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
 					// Parallelize the BATCH request intervals with the fetching of the next set of dataUrls
 					let getRevisionsPromise = this.getBatchWithLogging(saveable, i);
@@ -167,7 +168,7 @@ export class SaveToOneNote {
 		// When the getPageContent returns a 200, we start PATCHing the page.
 		let timeBetweenPatchRequests = SaveToOneNote.timeBeforeFirstPatch;
 		return Promise.all([
-			_.range(saveable.getNumPatches()).reduce((chainedPromise, i) => {
+			_.range(saveable.getNumPatches()).reduce((chainedPromise: Promise<any>, i) => {
 				return chainedPromise = chainedPromise.then(() => {
 					return new Promise((resolve, reject) => {
 						// OneNote API returns 204 on a PATCH request when it receives it, but we have no way of telling when it actually
@@ -286,12 +287,12 @@ export class SaveToOneNote {
 	 * We set the correlation id each time this gets called. When using this, make sure you are not reusing
 	 * the same object unless it's your intention to have their API calls use the same correlation id.
 	 */
-	private getApi(): OneNoteApi.IOneNoteApi {
+	private getApi() {
 		let headers: { [key: string]: string } = {};
 		headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
 		headers[Constants.HeaderValues.userSessionIdKey] = Clipper.getUserSessionId();
 
-		let api = new OneNoteApi.OneNoteApi(this.accessToken, undefined /* timeout */, headers);
+		let api = new BaseOneNoteApi(this.accessToken, undefined /* timeout */, headers);
 		let apiWithRetries = new OneNoteApiWithRetries(api);
 		return new OneNoteApiWithLogging(apiWithRetries);
 	}

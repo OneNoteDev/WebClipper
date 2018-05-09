@@ -1,60 +1,56 @@
-import {Polyfills} from "../polyfills";
-
 import {Communicator} from "../communicator/communicator";
-import {IFrameMessageHandler} from "../communicator/iframeMessageHandler";
 import {MessageHandler} from "../communicator/messageHandler";
 
 import {InjectOptions} from "./injectOptions";
 
 export abstract class InjectBase<T extends InjectOptions> {
-	protected options: T;
-	protected extCommunicator: Communicator;
+    protected options: T;
+    protected extCommunicator: Communicator;
 
-	constructor(options: T) {
-		try {
-			Polyfills.init();
-			this.options = options;
+    constructor(options: T) {
+        try {
+            this.options = options;
 
-			this.init();
+            this.init();
 
-			this.initializeExtCommunicator(this.getExtMessageHandlerThunk());
+            this.initializeExtCommunicator(this.getExtMessageHandlerThunk());
 
-			this.initializeEventListeners();
-		} catch (e) {
-			this.handleConstructorError(e);
-			throw e;
-		}
-	}
+            this.initializeEventListeners();
+        } catch (e) {
+            this.handleConstructorError(e);
+            throw e;
+        }
+    }
 
-	protected getExtMessageHandlerThunk(): () => MessageHandler {
-		// If not specified, assume this is an inline environment
-		return this.options.extMessageHandlerThunk ?
-			this.options.extMessageHandlerThunk :
-			this.generateInlineExtThunk();
-	}
+    protected getExtMessageHandlerThunk(): () => MessageHandler {
+        // If not specified, assume this is an inline environment
+        return this.options.extMessageHandlerThunk ?
+            this.options.extMessageHandlerThunk :
+            this.generateInlineExtThunk();
+    }
 
-	/**
-	 * Generates the extension message handler thunk for the inline extension
-	 */
-	protected abstract generateInlineExtThunk(): () => MessageHandler;
+    /**
+     * Generates the extension message handler thunk for the inline extension
+     */
+    protected abstract generateInlineExtThunk(): () => MessageHandler;
 
-	/**
-	 * Performs any initialization that is needed at the beginning of the object's construction
-	 */
-	protected abstract init();
+    /**
+     * Performs any initialization that is needed at the beginning of the object's construction
+     */
+    protected abstract init();
 
-	/**
-	 * Initializes the communicator used with the background extension
-	 */
-	protected abstract initializeExtCommunicator(extMessageHandlerThunk: () => MessageHandler);
+    /**
+     * Initializes the communicator used with the background extension
+     */
+    protected abstract initializeExtCommunicator(extMessageHandlerThunk: () => MessageHandler);
 
-	/**
-	 * Initializes event listeners on the front end
-	 */
-	protected abstract initializeEventListeners();
+    /**
+     * Initializes event listeners on the front end
+     */
+    protected abstract initializeEventListeners();
 
-	/**
-	 * Handler used for when an error is thrown in the constructor
-	 */
-	protected abstract handleConstructorError(e: Error);
+    /**
+     * Handler used for when an error is thrown in the constructor
+     */
+    protected abstract handleConstructorError(e: Error);
 }

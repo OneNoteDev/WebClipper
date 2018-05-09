@@ -1,8 +1,6 @@
-import * as Log from "./logging/log";
-declare function require(name: string);
+import * as importedSettings from "../../generated/settings.json";
 
-// Load up the settings file
-let settings = require("../settings.json");
+let settings = importedSettings;
 
 export module Settings {
 	export function getSetting(name: string): any {
@@ -15,12 +13,9 @@ export module Settings {
 		return localResult.Value;
 	}
 
-	export function setSettingsJsonForTesting(jsonObject?: {}): void {
+	export function setSettingsJsonForTesting(jsonObject?): void {
 		if (jsonObject) {
 			settings = jsonObject;
-		} else {
-			// revert to default
-			settings = require("../settings.json");
 		}
 	}
 }

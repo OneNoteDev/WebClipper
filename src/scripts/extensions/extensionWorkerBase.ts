@@ -4,6 +4,7 @@ import {ClientType} from "../clientType";
 import {ClipperUrls} from "../clipperUrls";
 import {CookieUtils} from "../cookieUtils";
 import {Constants} from "../constants";
+import {LogManager} from "../logging/logManager";
 import {Polyfills} from "../polyfills";
 import {AuthType, UserInfo, UpdateReason} from "../userInfo";
 import {Settings} from "../settings";
@@ -61,8 +62,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected sessionId: SmartValue<string>;
 
 	constructor(clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper, clipperData: ClipperData, uiMessageHandlerThunk: () => MessageHandler, injectMessageHandlerThunk: () => MessageHandler) {
-		Polyfills.init();
-
 		this.onUnloading = () => { };
 
 		this.uiCommunicator = new Communicator(uiMessageHandlerThunk(), Constants.CommunicationChannels.extensionAndUi);

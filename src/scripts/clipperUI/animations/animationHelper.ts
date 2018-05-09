@@ -1,4 +1,4 @@
-declare var Velocity: jquery.velocity.VelocityStatic;
+declare var Velocity: any;
 
 export class AnimationHelper {
 	public static stopAnimationsThen(el: HTMLElement, callback: () => void) {

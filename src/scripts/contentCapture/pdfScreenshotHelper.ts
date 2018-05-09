@@ -70,7 +70,7 @@ export class PdfScreenshotHelper {
 	/**
 	 * Source can be a buffer object, or a url (including local)
 	 */
-	private static getPdfScreenshotResult(source: string | Uint8Array): Promise<PdfScreenshotResult> {
+	private static getPdfScreenshotResult(source): Promise<PdfScreenshotResult> {
 		// Never rejects, interesting
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			PDFJS.getDocument(source).then((pdf) => {

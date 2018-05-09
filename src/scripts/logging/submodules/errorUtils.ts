@@ -1,14 +1,11 @@
 import {ClientInfo} from "../../clientInfo";
 import {ClientType} from "../../clientType";
-import {Constants} from "../../constants";
-import {ObjectUtils} from "../../objectUtils";
-import {Settings} from "../../settings";
-
 import {SmartValue} from "../../communicator/smartValue";
-
+import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
-
-import {Failure, LogDataPackage, LogMethods, NoOp, PropertyName, reportData, unknownValue} from "../log";
+import {ObjectUtils} from "../../objectUtils";
+import {Failure, NoOp, unknownValue} from "../log";
+import {LogManager} from "../logManager";
 
 export module ErrorUtils {
 	enum ErrorPropertyName {
@@ -48,12 +45,23 @@ export module ErrorUtils {
 		let tryCastError: OneNoteApi.RequestError = <OneNoteApi.RequestError>originalError;
 		if (tryCastError && tryCastError.statusCode !== undefined) {
 			if (tryCastError.timeout !== undefined) {
-				return { error: tryCastError.error, statusCode: tryCastError.statusCode, response: tryCastError.response, responseHeaders: tryCastError.responseHeaders, timeout: tryCastError.timeout };
+				return {
+					error: tryCastError.error,
+					statusCode: tryCastError.statusCode,
+					response: tryCastError.response,
+					responseHeaders: tryCastError.responseHeaders,
+					timeout: tryCastError.timeout
+				};
 			} else {
-				return { error: tryCastError.error, statusCode: tryCastError.statusCode, response: tryCastError.response, responseHeaders: tryCastError.responseHeaders };
+				return {
+					error: tryCastError.error,
+					statusCode: tryCastError.statusCode,
+					response: tryCastError.response,
+					responseHeaders: tryCastError.responseHeaders
+				};
 			}
 		} else {
-			return { error: originalError.error };
+			return {error: originalError.error};
 		}
 	}
 
@@ -90,7 +98,7 @@ export module ErrorUtils {
 	export function handleCommunicatorError(channel: string, e: Error, clientInfo: SmartValue<ClientInfo>, message?: string) {
 		let errorValue: string;
 		if (message) {
-			errorValue = JSON.stringify({ message: message, error: e.toString() });
+			errorValue = JSON.stringify({message: message, error: e.toString()});
 		} else {
 			errorValue = e.toString();
 		}
@@ -99,7 +107,7 @@ export module ErrorUtils {
 			label: Failure.Label.UnhandledExceptionThrown,
 			properties: {
 				failureType: Failure.Type.Unexpected,
-				failureInfo: { error: errorValue },
+				failureInfo: {error: errorValue},
 				failureId: "Channel " + channel,
 				stackTrace: Failure.getStackTrace(e)
 			},
@@ -156,7 +164,7 @@ export module ErrorUtils {
 	 * until after the noop timeout before we attempt to retrieve them (e.g., smart values).
 	 * This is a helper function for adding these values to the props object on delay.
 	 */
-	function addDelayedSetValuesOnNoOp(props: {[key: string]: string}, clientInfo?: SmartValue<ClientInfo>): void {
+	function addDelayedSetValuesOnNoOp(props: { [key: string]: string }, clientInfo?: SmartValue<ClientInfo>): void {
 		if (clientInfo) {
 			props[Constants.Urls.QueryParams.clientType] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : ClientType[clientInfo.get().clipperType];
 			props[Constants.Urls.QueryParams.clipperVersion] = ObjectUtils.isNullOrUndefined(clientInfo.get()) ? unknownValue : clientInfo.get().clipperVersion;
