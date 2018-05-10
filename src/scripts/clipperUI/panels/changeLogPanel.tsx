@@ -1,10 +1,6 @@
 import {Constants} from "../../constants";
-
 import {Localization} from "../../localization/localization";
-
 import {ChangeLog} from "../../versioning/changeLog";
-
-import {Clipper} from "../frontEndGlobals";
 import {ComponentBase} from "../componentBase";
 import {TooltipProps} from "../tooltipProps";
 
@@ -15,7 +11,7 @@ class ChangeLogPanelClass extends ComponentBase<{}, TooltipProps.WhatsNew> {
 
 	createChangeElement(change: ChangeLog.Change) {
 		let image = change.imageUrl ?
-			<img src={change.imageUrl} /> :
+			<img src={change.imageUrl}/> :
 			undefined;
 
 		return (
@@ -28,12 +24,14 @@ class ChangeLogPanelClass extends ComponentBase<{}, TooltipProps.WhatsNew> {
 				}
 				<div className={Constants.Classes.changeBody}>
 					<div className={Constants.Classes.changeTitle}>
-						<span className="changeTitleFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
+						<span className="changeTitleFont"
+									style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 							{change.title}
 						</span>
 					</div>
 					<div className={Constants.Classes.changeDescription}>
-						<span className="changeDescriptionFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+						<span className="changeDescriptionFont"
+									style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							{change.description}
 						</span>
 					</div>

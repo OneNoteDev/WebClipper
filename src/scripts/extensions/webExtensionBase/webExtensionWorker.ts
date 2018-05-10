@@ -1,28 +1,18 @@
-import {AuthType} from "../../userInfo";
 import {BrowserUtils} from "../../browserUtils";
 import {ClientInfo} from "../../clientInfo";
 import {ClientType} from "../../clientType";
 import {ClipperUrls} from "../../clipperUrls";
-import {Constants} from "../../constants";
-import {UrlUtils} from "../../urlUtils";
-
-import {Communicator} from "../../communicator/communicator";
 import {SmartValue} from "../../communicator/smartValue";
-
-import {Localization} from "../../localization/localization";
-
+import {Constants} from "../../constants";
 import * as Log from "../../logging/log";
-
 import {ClipperData} from "../../storage/clipperData";
-import {LocalStorage} from "../../storage/LocalStorage";
-
+import {LocalStorage} from "../../storage/localStorage";
+import {UrlUtils} from "../../urlUtils";
+import {AuthType} from "../../userInfo";
 import {ChangeLog} from "../../versioning/changeLog";
-
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InjectHelper} from "../injectHelper";
-import {InvokeSource} from "../invokeSource";
-
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
@@ -37,7 +27,9 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private noOpTrackerInvoked: boolean;
 
 	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
-		let messageHandlerThunk = () => { return new WebExtensionBackgroundMessageHandler(tab.id); };
+		let messageHandlerThunk = () => {
+			return new WebExtensionBackgroundMessageHandler(tab.id);
+		};
 		super(clientInfo, auth, new ClipperData(new LocalStorage()), messageHandlerThunk, messageHandlerThunk);
 
 		this.injectUrls = injectUrls;
@@ -93,7 +85,12 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						label: Log.Failure.Label.UnclippablePage,
 						properties: {
 							failureType: Log.Failure.Type.Expected,
-							failureInfo: { error: JSON.stringify({ error: WebExtension.browser.runtime.lastError.message, url: this.tab.url }) },
+							failureInfo: {
+								error: JSON.stringify({
+									error: WebExtension.browser.runtime.lastError.message,
+									url: this.tab.url
+								})
+							},
 							stackTrace: Log.Failure.getStackTrace()
 						},
 						clientInfo: this.clientInfo
@@ -105,7 +102,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					}
 					resolve(false);
 				} else {
-					WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.webClipperInjectUrl });
+					WebExtension.browser.tabs.executeScript(this.tab.id, {file: this.injectUrls.webClipperInjectUrl});
 
 					if (!this.noOpTrackerInvoked) {
 						this.setUpNoOpTrackers(this.tab.url);
@@ -123,7 +120,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 */
 	protected invokeDebugLoggingBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.debugLoggingInjectUrl }, () => {
+			WebExtension.browser.tabs.executeScript(this.tab.id, {file: this.injectUrls.debugLoggingInjectUrl}, () => {
 				if (WebExtension.browser.runtime.lastError) {
 					// We are probably on a page like about:blank, which is pretty normal
 					resolve(false);
@@ -144,7 +141,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					// We are probably on a page like about:blank, which is pretty normal
 					resolve(false);
 				} else {
-					WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.pageNavInjectUrl });
+					WebExtension.browser.tabs.executeScript(this.tab.id, {file: this.injectUrls.pageNavInjectUrl});
 					resolve(true);
 				}
 			});
@@ -183,8 +180,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 */
 	protected takeTabScreenshot(): Promise<string> {
 		return new Promise<string>((resolve) => {
-			WebExtension.browser.tabs.query({ active: true, lastFocusedWindow: true }, () => {
-				WebExtension.browser.tabs.captureVisibleTab({ format: "png" }, (dataUrl: string) => {
+			WebExtension.browser.tabs.query({active: true, lastFocusedWindow: true}, () => {
+				WebExtension.browser.tabs.captureVisibleTab({format: "png"}, (dataUrl: string) => {
 					resolve(dataUrl);
 				});
 			});
@@ -236,7 +233,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						let error = UrlUtils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.error);
 						let errorDescription = UrlUtils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.errorDescription);
 						if (error || errorDescription) {
-							errorObject = { error: error, errorDescription: errorDescription, correlationId: correlationId };
+							errorObject = {error: error, errorDescription: errorDescription, correlationId: correlationId};
 						}
 
 						WebExtension.browser.webRequest.onCompleted.removeListener(redirectListener);
@@ -258,7 +255,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				});
 			} catch (e) {
 				// In the event that there was an exception thrown during the creation of the popup, fallback to using window.open with a monitor
-				this.logger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, { error: e.message });
+				this.logger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, {error: e.message});
 
 				this.launchPopupAndWaitForClose(url).then((redirectOccurred) => {
 					// From chrome's background, we currently are unable to reliably determine if the redirect happened

@@ -1,14 +1,9 @@
 import {ClientType} from "../../clientType";
-
 import {TooltipType} from "../../clipperUI/tooltipType";
-
 import {InlineMessageHandler} from "../../communicator/inlineMessageHandler";
-
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
-
 import {ExtensionBase} from "../extensionBase";
-
 import {InlineWorker} from "./inlineWorker";
 
 /**
@@ -19,7 +14,7 @@ import {InlineWorker} from "./inlineWorker";
  * to provide the functionality we need.
  *
  * Due to the 'uniqueness' of the inline extension, stub method implementations are treated as scenarios
- * that don't make sense, and are assumed to be intentional. 
+ * that don't make sense, and are assumed to be intentional.
  *
  * Note: this is determined by the InjectOptions.useInlineBackgroundWorker flag
  */

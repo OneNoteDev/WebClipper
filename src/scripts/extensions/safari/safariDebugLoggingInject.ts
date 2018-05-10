@@ -1,9 +1,6 @@
-import {Constants} from "../../constants";
-
 import {MessageHandler} from "../../communicator/messageHandler";
-
+import {Constants} from "../../constants";
 import {DebugLoggingInject} from "../debugLoggingInject";
-
 import {SafariContentMessageHandler} from "./safariMessageHandler";
 
 declare var safari;
@@ -19,8 +16,10 @@ if (window.top === window) {
 	safari.self.addEventListener("message", (event) => {
 		if (event.name === Constants.FunctionKeys.invokeDebugLogging) {
 			let extMessageHandlerThunk: () => MessageHandler =
-				() => { return new SafariContentMessageHandler(); };
-			DebugLoggingInject.main({ extMessageHandlerThunk: extMessageHandlerThunk });
+				() => {
+					return new SafariContentMessageHandler();
+				};
+			DebugLoggingInject.main({extMessageHandlerThunk: extMessageHandlerThunk});
 		}
 	});
 }

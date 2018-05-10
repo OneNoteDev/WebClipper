@@ -33,6 +33,7 @@
     "@types/sinon": "1.16.35",
     "@types/urijs": "1.15.31",
     "@types/velocity-animate": "1.2.29",
+    "babel-loader": "^7.1.4",
     "browserify": "14.1.0",
     "clean-webpack-plugin": "^0.1.19",
     "cross-env": "^5.0.1",

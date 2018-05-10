@@ -1,8 +1,6 @@
+import {UrlUtils} from "../urlUtils";
 import {DomUtils} from "./domUtils";
 import {VideoExtractor} from "./videoExtractor";
-
-import {ObjectUtils} from "../objectUtils";
-import {UrlUtils} from "../urlUtils";
 
 export class YoutubeVideoExtractor extends VideoExtractor {
 	private youTubeWatchVideoBaseUrl = "https://www.youtube.com/watch";

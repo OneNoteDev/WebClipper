@@ -1,34 +1,26 @@
 import {ClientInfo} from "../../clientInfo";
-import {ClientType} from "../../clientType";
-
-import {Communicator} from "../../communicator/communicator";
+import {ClipperUrls} from "../../clipperUrls";
 import {IFrameMessageHandler} from "../../communicator/iframeMessageHandler";
 import {InlineMessageHandler} from "../../communicator/inlineMessageHandler";
 import {SmartValue} from "../../communicator/smartValue";
-
 import * as Log from "../../logging/log";
-import {Logger} from "../../logging/logger";
-
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
-
-import {ClipperUrls} from "../../clipperUrls";
-import {Constants} from "../../constants";
 import {AuthType} from "../../userInfo";
-
 import {ChangeLog} from "../../versioning/changeLog";
-
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InvokeMode} from "../invokeOptions";
 import {InvokeSource} from "../invokeSource";
 
-import {InlineExtension} from "./inlineExtension";
-
 export class InlineWorker extends ExtensionWorkerBase<any, any> {
 	constructor(clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
-		let uiMessageHandlerThunk = () => { return new InlineMessageHandler(); };
-		let injectMessageHandlerThunk = () => { return new IFrameMessageHandler(() => parent); };
+		let uiMessageHandlerThunk = () => {
+			return new InlineMessageHandler();
+		};
+		let injectMessageHandlerThunk = () => {
+			return new IFrameMessageHandler(() => parent);
+		};
 		super(clientInfo, auth, new ClipperData(new LocalStorage()), uiMessageHandlerThunk, injectMessageHandlerThunk);
 
 		this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, Log.unknownValue);

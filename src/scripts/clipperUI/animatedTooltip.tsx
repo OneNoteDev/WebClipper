@@ -1,12 +1,9 @@
 import {Constants} from "../constants";
-
-import {ComponentBase} from "./componentBase";
-import {Tooltip, TooltipProps} from "./tooltip";
-
-import {AnimationState} from "./animations/animationState";
 import {AnimationStrategy} from "./animations/animationStrategy";
 import {ExpandFromRightAnimationStrategy} from "./animations/expandFromRightAnimationStrategy";
-import {SlidingHeightAnimationStrategy, NewHeightInfo} from "./animations/slidingHeightAnimationStrategy";
+import {NewHeightInfo, SlidingHeightAnimationStrategy} from "./animations/slidingHeightAnimationStrategy";
+import {ComponentBase} from "./componentBase";
+import {Tooltip, TooltipProps} from "./tooltip";
 
 export interface AnimatedTooltipState {
 	uiExpanded: boolean;
@@ -24,8 +21,12 @@ export class AnimatedTooltipClass extends ComponentBase<AnimatedTooltipState, An
 	constructor(props: AnimatedTooltipProps) {
 		super(props);
 		this.tooltipAnimationStrategy = new ExpandFromRightAnimationStrategy({
-			extShouldAnimateIn: () => { return this.state.uiExpanded; },
-			extShouldAnimateOut: () => { return !this.state.uiExpanded; },
+			extShouldAnimateIn: () => {
+				return this.state.uiExpanded;
+			},
+			extShouldAnimateOut: () => {
+				return !this.state.uiExpanded;
+			},
 			onAfterAnimateOut: this.props.onAfterCollapse
 		});
 		this.heightAnimationStrategy = new SlidingHeightAnimationStrategy(this.props.elementId, {
@@ -40,7 +41,7 @@ export class AnimatedTooltipClass extends ComponentBase<AnimatedTooltipState, An
 	}
 
 	closeTooltip() {
-		this.setState({ uiExpanded: false });
+		this.setState({uiExpanded: false});
 		if (this.props.onCloseButtonHandler) {
 			this.props.onCloseButtonHandler();
 		}
@@ -57,7 +58,8 @@ export class AnimatedTooltipClass extends ComponentBase<AnimatedTooltipState, An
 	render() {
 		// We have to make the renderablePanel undefined on the collapse for the vertical shrink animation to function correctly
 		let renderablePanel = (
-			<div className={Constants.Classes.heightAnimator + " " + Constants.Classes.clearfix} {...this.onElementDraw(this.onHeightAnimatorDraw) }>
+			<div
+				className={Constants.Classes.heightAnimator + " " + Constants.Classes.clearfix} {...this.onElementDraw(this.onHeightAnimatorDraw)}>
 				{this.state.uiExpanded ? this.props.renderablePanel : undefined}
 			</div>
 		);

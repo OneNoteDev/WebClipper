@@ -1,8 +1,8 @@
 import {KhanAcademyVideoExtractor} from "./khanAcademyVideoExtractor";
 import {VideoExtractor} from "./VideoExtractor";
-import {SupportedVideoDomains, VideoUtils} from "./videoUtils";
+import {SupportedVideoDomains} from "./videoUtils";
 import {VimeoVideoExtractor} from "./vimeoVideoExtractor";
-import {YoutubeVideoExtractor} from "./YoutubeVideoExtractor";
+import {YoutubeVideoExtractor} from "./youtubeVideoExtractor";
 
 /**
  * Factory class to return a domain specific video extractor given a Domain

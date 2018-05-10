@@ -1,14 +1,11 @@
-import {DomUtils} from "../domParsers/domUtils";
-
-import * as Log from "../logging/log";
-
-import {Constants} from "../constants";
 import {ClientType} from "../clientType";
-import {Status} from "./status";
-
+import {Constants} from "../constants";
+import {DomUtils} from "../domParsers/domUtils";
+import * as Log from "../logging/log";
 import {ClipperStateProp} from "./clipperState";
 import {ComponentBase} from "./componentBase";
 import {Clipper} from "./frontEndGlobals";
+import {Status} from "./status";
 
 export interface Point {
 	x: number;
@@ -28,6 +25,13 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 
 	private resizeHandler = this.handleResize.bind(this);
 
+	constructor(props: ClipperStateProp) {
+		super(props);
+		this.resetState();
+
+		window.addEventListener("resize", this.resizeHandler);
+	}
+
 	getInitialState(): RegionSelectorState {
 		return {
 			selectionInProgress: false,
@@ -36,11 +40,18 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		};
 	}
 
-	constructor(props: ClipperStateProp) {
-		super(props);
-		this.resetState();
+	render() {
+		let innerFrameElement = this.getInnerFrame();
 
-		window.addEventListener("resize", this.resizeHandler);
+		return (
+			<div config={this.updateVisualElements.bind(this)} id={Constants.Ids.regionSelectorContainer}
+				onmousedown={this.mouseDownHandler.bind(this)} onmousemove={this.mouseMoveHandler.bind(this)}
+				onmouseup={this.mouseUpHandler.bind(this)} ontouchstart={this.touchStartHandler.bind(this)}
+				ontouchmove={this.touchMoveHandler.bind(this)} ontouchend={this.touchEndHandler.bind(this)}>
+				<canvas id={Constants.Ids.outerFrame} {...this.ref(Constants.Ids.outerFrame)}></canvas>
+				{innerFrameElement}
+			</div>
+		);
 	}
 
 	private onunload() {
@@ -51,8 +62,13 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	 * Start the selection process over
 	 */
 	private resetState() {
-		this.setState({ firstPoint: undefined, secondPoint: undefined, selectionInProgress: false });
-		this.props.clipperState.setState({ regionResult: { status: Status.NotStarted, data: this.props.clipperState.regionResult.data } });
+		this.setState({firstPoint: undefined, secondPoint: undefined, selectionInProgress: false});
+		this.props.clipperState.setState({
+			regionResult: {
+				status: Status.NotStarted,
+				data: this.props.clipperState.regionResult.data
+			}
+		});
 	}
 
 	/**
@@ -60,8 +76,13 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	 */
 	private startSelection(point: Point) {
 		if (this.props.clipperState.regionResult.status !== Status.InProgress) {
-			this.setState({ firstPoint: point, secondPoint: undefined, selectionInProgress: true });
-			this.props.clipperState.setState({ regionResult: { status: Status.InProgress, data: this.props.clipperState.regionResult.data } });
+			this.setState({firstPoint: point, secondPoint: undefined, selectionInProgress: true});
+			this.props.clipperState.setState({
+				regionResult: {
+					status: Status.InProgress,
+					data: this.props.clipperState.regionResult.data
+				}
+			});
 		}
 	}
 
@@ -74,14 +95,14 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 			regionList = [];
 		}
 		regionList.push(dataUrl);
-		this.props.clipperState.setState({ regionResult: { status: Status.Succeeded, data: regionList } });
+		this.props.clipperState.setState({regionResult: {status: Status.Succeeded, data: regionList}});
 	}
 
 	/**
 	 * They are selecting, update the second point
 	 */
 	private moveSelection(point: Point) {
-		this.setState({ secondPoint: point });
+		this.setState({secondPoint: point});
 	}
 
 	/**
@@ -93,7 +114,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				// Nothing to clip, start over
 				this.resetState();
 			} else {
-				this.setState({ secondPoint: point, selectionInProgress: false });
+				this.setState({secondPoint: point, selectionInProgress: false});
 				// Get the image immediately
 				this.startRegionClip();
 			}
@@ -103,7 +124,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	private mouseDownHandler(e: MouseEvent) {
 		// Prevent default "dragging" which sometimes occurs
 		e.preventDefault();
-		this.startSelection({ x: e.pageX, y: e.pageY });
+		this.startSelection({x: e.pageX, y: e.pageY});
 	}
 
 	private mouseMoveHandler(e: MouseEvent) {
@@ -114,34 +135,34 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				return;
 			}
 
-			this.moveSelection({ x: e.pageX, y: e.pageY });
+			this.moveSelection({x: e.pageX, y: e.pageY});
 		}
 	}
 
 	private mouseUpHandler(e: MouseEvent) {
-		this.stopSelection({ x: e.pageX, y: e.pageY });
+		this.stopSelection({x: e.pageX, y: e.pageY});
 	}
 
 	private touchStartHandler(e: TouchEvent) {
 		let eventPoint = e.changedTouches[0];
-		this.startSelection({ x: eventPoint.clientX, y: eventPoint.clientY });
+		this.startSelection({x: eventPoint.clientX, y: eventPoint.clientY});
 	}
 
 	private touchMoveHandler(e: TouchEvent) {
 		if (this.state.selectionInProgress) {
 			let eventPoint = e.changedTouches[0];
-			this.moveSelection({ x: eventPoint.clientX, y: eventPoint.clientY });
+			this.moveSelection({x: eventPoint.clientX, y: eventPoint.clientY});
 			e.preventDefault();
 		}
 	}
 
 	private touchEndHandler(e: TouchEvent) {
 		let eventPoint = e.changedTouches[0];
-		this.stopSelection({ x: eventPoint.clientX, y: eventPoint.clientY });
+		this.stopSelection({x: eventPoint.clientX, y: eventPoint.clientY});
 	}
 
 	private handleResize() {
-		this.setState({ winHeight: window.innerHeight, winWidth: window.innerWidth });
+		this.setState({winHeight: window.innerHeight, winWidth: window.innerWidth});
 	}
 
 	/**
@@ -207,9 +228,9 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		const isFirefoxWithHighDpiDisplay = this.props.clipperState.clientInfo.clipperType === ClientType.FirefoxExtension && isHighDpiScreen;
 
 		// Firefox reports this value incorrectly if this iframe is hidden, so store it now since we know we're visible
-		// In addition to this, Firefox currently has a bug where they are not using devicePixelRatio correctly 
+		// In addition to this, Firefox currently has a bug where they are not using devicePixelRatio correctly
 		// on HighDPI screens such as Retina screens or the Surface Pro 4
-		// Bug link: https://bugzilla.mozilla.org/show_bug.cgi?id=1278507 
+		// Bug link: https://bugzilla.mozilla.org/show_bug.cgi?id=1278507
 		this.devicePixelRatio = isFirefoxWithHighDpiDisplay ? window.devicePixelRatio / 2 : window.devicePixelRatio;
 
 		let regionSelectionProcessingEvent = new Log.Event.BaseEvent(Log.Event.Label.RegionSelectionProcessing);
@@ -241,7 +262,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 			return Promise.resolve(canvas);
 		}).catch((error: Error) => {
 			Clipper.logger.logFailure(Log.Failure.Label.RegionSelectionProcessing, Log.Failure.Type.Unexpected,
-				{ error: error.message });
+				{error: error.message});
 			this.resetState();
 			return Promise.reject(error);
 		});
@@ -316,24 +337,10 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 
 	private getInnerFrame() {
 		if (this.state.secondPoint) {
-			return <div id={Constants.Ids.innerFrame} {...this.ref(Constants.Ids.innerFrame) }></div>;
+			return <div id={Constants.Ids.innerFrame} {...this.ref(Constants.Ids.innerFrame)}></div>;
 		}
 
 		return undefined;
-	}
-
-	render() {
-		let innerFrameElement = this.getInnerFrame();
-
-		return (
-			<div config={this.updateVisualElements.bind(this)} id={Constants.Ids.regionSelectorContainer}
-				onmousedown={this.mouseDownHandler.bind(this)} onmousemove={this.mouseMoveHandler.bind(this)}
-				onmouseup={this.mouseUpHandler.bind(this)} ontouchstart={this.touchStartHandler.bind(this)}
-				ontouchmove={this.touchMoveHandler.bind(this)} ontouchend={this.touchEndHandler.bind(this)}>
-				<canvas id={Constants.Ids.outerFrame} {...this.ref(Constants.Ids.outerFrame)}></canvas>
-				{innerFrameElement}
-			</div>
-		);
 	}
 }
 

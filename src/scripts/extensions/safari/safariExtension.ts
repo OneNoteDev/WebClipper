@@ -1,23 +1,14 @@
 import {ClientType} from "../../clientType";
-import {Constants} from "../../constants";
-import {UrlUtils} from "../../urlUtils";
-
 import {TooltipType} from "../../clipperUI/tooltipType";
-
 import {VideoUtils} from "../../domParsers/videoUtils";
-
 import {Localization} from "../../localization/localization";
-
 import {ClipperData} from "../../storage/clipperData";
-import {LocalStorage} from "../../storage/LocalStorage";
-
-import {Version} from "../../versioning/version";
-
+import {LocalStorage} from "../../storage/localStorage";
+import {UrlUtils} from "../../urlUtils";
 import {ExtensionBase} from "../extensionBase";
 import {InvokeInfo} from "../invokeInfo";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
 import {InvokeSource} from "../invokeSource";
-
 import {ContextItemParameter, ContextType} from "./safariContext";
 import {SafariWorker} from "./safariWorker";
 
@@ -32,19 +23,19 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 		safari.application.addEventListener("command", (event: SafariValidateEvent) => {
 			switch (event.command) {
 				case "ClipperInvoker":
-					this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ExtensionButton }, { invokeMode: InvokeMode.Default });
+					this.invokeClipperInCurrentTab({invokeSource: InvokeSource.ExtensionButton}, {invokeMode: InvokeMode.Default});
 					break;
 				case "ContextClipperInvoker":
-					this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
+					this.invokeClipperInCurrentTab({invokeSource: InvokeSource.ContextMenu}, {invokeMode: InvokeMode.Default});
 					break;
 				case "ContextClipperInvokerWithImage":
-					this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ContextMenu }, {
+					this.invokeClipperInCurrentTab({invokeSource: InvokeSource.ContextMenu}, {
 						invokeDataForMode: this.currentContextItemParameter.parameters.src,
 						invokeMode: InvokeMode.ContextImage
 					});
 					break;
 				case "ContextClipperInvokerWithSelection":
-					this.invokeClipperInCurrentTab({ invokeSource: InvokeSource.ContextMenu }, {
+					this.invokeClipperInCurrentTab({invokeSource: InvokeSource.ContextMenu}, {
 						invokeMode: InvokeMode.ContextTextSelection
 					});
 					break;

@@ -2,7 +2,7 @@ const {join, resolve} = require('path');
 
 //plugins
 // const CleanWebpackPlugin = require('clean-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+// const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const webpack = require('webpack');
 
 const PATHS = {
@@ -35,8 +35,6 @@ const PATHS = {
     }
 };
 
-const OUT_DIR = join(__dirname, './target');
-
 // let internalPaths = [
 //     PATHS.SRC.ROOT + "scripts/**/*_internal.*",
 //     PATHS.BUILDROOT + "scripts/**/*_internal.*",
@@ -51,72 +49,75 @@ const OUT_DIR = join(__dirname, './target');
 //
 // ];
 
+const CHROME_ENTRYPOINTS = {
+    chromeExtension: './src/scripts/extensions/chrome/chromeExtension.ts',
+    chromeDebugLoggingInject: './src/scripts/extensions/chrome/chromeDebugLoggingInject.ts',
+    chromeInject: './src/scripts/extensions/chrome/chromeInject.ts',
+    chromePageNavInject: './src/scripts/extensions/chrome/chromePageNavInject.ts'
+};
+
+const EDGE_ENTRYPOINTS = {
+    edgeExtension: './src/scripts/extensions/edge/edgeExtension.ts',
+    edgeDebugLoggingInject: './src/scripts/extensions/edge/edgeDebugLoggingInject.ts',
+    edgeInject: './src/scripts/extensions/edge/edgeInject.ts',
+    edgeePageNavInject: './src/scripts/extensions/edge/edgePageNavInject.ts'
+};
+
+const FIREFOX_ENTRYPOINTS = {
+    firefoxExtension: './src/scripts/extensions/firefox/firefoxExtension.ts',
+    firefoxDebugLoggingInject: './src/scripts/extensions/firefox/firefoxDebugLoggingInject.ts',
+    firefoxInject: './src/scripts/extensions/firefox/firefoxInject.ts',
+    firefoxPageNavInject: './src/scripts/extensions/firefox/firefoxPageNavInject.ts'
+};
+
+const SAFARI_ENTRYPOINTS = {
+    safariExtension: './src/scripts/extensions/safari/safariExtension.ts',
+    safariDebugLoggingInject: './src/scripts/extensions/safari/safariDebugLoggingInject.ts',
+    safariInject: './src/scripts/extensions/safari/safariInject.ts',
+    safariPageNavInject: './src/scripts/extensions/safari/safariPageNavInject.ts'
+};
+
 // let pathsToClean = [...internalPaths, ...buildBundleTargetPaths];
 
 const ENTRYPOINTS = {
+    ...CHROME_ENTRYPOINTS,
+    ...EDGE_ENTRYPOINTS,
+    ...FIREFOX_ENTRYPOINTS,
+    ...SAFARI_ENTRYPOINTS,
     AppendIsInstalledMarker: './src/scripts/extensions/appendIsInstalledMarker.ts',
     // ClipperUI:[
     //     './src/scripts/clipperUI/clipper.tsx',
-    //     './src/scripts/pageNav.tsx',
+    //     './src/scripts/clipperUI/pageNav.tsx',
     //     './src/scripts/clipperUI/localeSpecificTasks.ts',
-    //     './src/unsupportedBrowser.html'
+    //     './src/scripts/clipperUI/unsupportedBrowser.ts'
     // ],
-    // LogManager:'./src/scripts/logging/logManager.ts',
-    // Bookmarklet: './src/scripts/extensions/bookmarklet/bookmarkletInject.ts',
-    // Chrome: [
-    //     './src/scripts/extensions/chromeExtension.ts',
-    //     './src/scripts/extensions/chromeDebugLoggingInject.ts',
-    //     './src/scripts/extensions/chromeInject.ts',
-    //     './src/scripts/extensions/chromePageNavInject.ts'
-    // ],
-    // Edge: [
-    //     './src/scripts/extensions/edge/edgeExtension.ts',
-    //     './src/scripts/extensions/edge/edgeDebugLoggingInject.ts',
-    //     './src/scripts/extensions/edge/edgeInject.ts',
-    //     './src/scripts/extensions/edge/edgePageNavInject.ts'
-    // ],
-    // Firefox: [
-    //     './src/scripts/extensions/firefox/firefoxExtension.ts',
-    //     './src/scripts/extensions/firefox/firefoxDebugLoggingInject.ts',
-    //     './src/scripts/extensions/firefox/firefoxInject.ts',
-    //     './src/scripts/extensions/firefox/firefoxPageNavInject.ts'
-    // ],
-    // Safari: [
-    //     './src/scripts/extensions/safari/safariExtension.ts',
-    //     './src/scripts/extensions/safari/safariDebugLoggingInject.ts',
-    //     './src/scripts/extensions/safari/safariInject.ts',
-    //     './src/scripts/extensions/safari/safariPageNavInject.ts'
-    // ],
+    LogManager:'./src/scripts/logging/logManager.ts',
+    Bookmarklet: './src/scripts/extensions/bookmarklet/bookmarkletInject.ts',
 };
+
 
 const settings = JSON.stringify(require('./src/settings/settings.prod'));
 console.error('----------------------------');
 console.error(settings);
 
 const webpackConfiguration = {
+    context: join(__dirname, '.'),
     mode: "development",
     entry: ENTRYPOINTS,
     output: {
         filename: '[name].js',
-        path: OUT_DIR,
         libraryTarget: 'umd',
         umdNamedDefine: true
     },
     resolve: {
-        extensions: ['.js', '.ts', '.tsx', '.html'],
+        extensions: ['.js', '.ts', '.tsx'],
     },
-    // plugins: [
-    //     new CleanWebpackPlugin(pathsToClean),
-    // ],
     module: {
         rules: [
             {
-                test: /\.tsx?$/,
-                use: 'ts-loader'
-            },
-            {
-                test: /\.html$/,
-                use: 'html-loader'
+                test: /\.ts(x?)$/,
+                use: ['ts-loader'],
+                exclude: /node_modules/
             }
         ]
     },

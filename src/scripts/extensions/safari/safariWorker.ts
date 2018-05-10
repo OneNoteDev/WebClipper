@@ -1,27 +1,17 @@
-import {AuthType} from "../../userInfo";
 import {ClientInfo} from "../../clientInfo";
-import {ClientType} from "../../clientType";
 import {ClipperUrls} from "../../clipperUrls";
-import {Constants} from "../../constants";
-import {ObjectUtils} from "../../objectUtils";
-import {UrlUtils} from "../../urlUtils";
-
-import {Communicator} from "../../communicator/communicator";
 import {SmartValue} from "../../communicator/smartValue";
-
+import {Constants} from "../../constants";
 import * as Log from "../../logging/log";
-
+import {ObjectUtils} from "../../objectUtils";
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
-
+import {UrlUtils} from "../../urlUtils";
+import {AuthType} from "../../userInfo";
 import {ChangeLog} from "../../versioning/changeLog";
-
 import {AuthenticationHelper} from "../authenticationHelper";
-import {InvokeSource} from "../invokeSource";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
-
 import {SafariBackgroundMessageHandler} from "./safariMessageHandler";
-import {SafariExtension} from "./safariExtension";
 
 declare var safari;
 
@@ -29,7 +19,9 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 	private noOpTrackerInvoked: boolean;
 
 	constructor(tab: any, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
-		let messageHandlerThunk = () => { return new SafariBackgroundMessageHandler(tab); };
+		let messageHandlerThunk = () => {
+			return new SafariBackgroundMessageHandler(tab);
+		};
 		super(clientInfo, auth, new ClipperData(new LocalStorage()), messageHandlerThunk, messageHandlerThunk);
 
 		// The safari browser tab does not have an id so we use the object itself
@@ -158,7 +150,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 						let error = UrlUtils.getQueryValue(event.target.url, Constants.Urls.QueryParams.error);
 						let errorDescription = UrlUtils.getQueryValue(event.target.url, Constants.Urls.QueryParams.errorDescription);
 						if (error || errorDescription) {
-							errorObject = { error: error, errorDescription: errorDescription };
+							errorObject = {error: error, errorDescription: errorDescription};
 						}
 
 						if (newWindow.visible) {

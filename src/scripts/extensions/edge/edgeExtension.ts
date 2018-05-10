@@ -1,5 +1,4 @@
 import {ClientType} from "../../clientType";
-
 import {WebExtension} from "../webExtensionBase/webExtension";
 
 declare var browser;

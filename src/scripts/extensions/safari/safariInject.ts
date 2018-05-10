@@ -1,7 +1,5 @@
 import {Constants} from "../../constants";
-
 import {ClipperInject, ClipperInjectOptions} from "../clipperInject";
-
 import {ContextItemParameter, ContextType} from "./safariContext";
 import {SafariContentMessageHandler} from "./safariMessageHandler";
 
@@ -22,7 +20,9 @@ if (window.top === window) {
 				enableAddANote: true,
 				enableEditableTitle: true,
 				enableRegionClipping: true,
-				extMessageHandlerThunk: () => { return new SafariContentMessageHandler(); }
+				extMessageHandlerThunk: () => {
+					return new SafariContentMessageHandler();
+				}
 			};
 			ClipperInject.main(options);
 		}

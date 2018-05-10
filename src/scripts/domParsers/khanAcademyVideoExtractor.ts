@@ -2,8 +2,6 @@ import {VideoExtractor} from "./videoExtractor";
 import {VideoUtils} from "./videoUtils";
 import {YoutubeVideoExtractor} from "./youtubeVideoExtractor";
 
-import {ObjectUtils} from "../objectUtils";
-
 export class KhanAcademyVideoExtractor extends VideoExtractor {
 	private youtubeExtractor: YoutubeVideoExtractor;
 

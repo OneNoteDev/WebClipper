@@ -1,8 +1,6 @@
 import {Constants} from "../../constants";
-
 import {FrameInjectOptions} from "../injectOptions";
 import {PageNavInject} from "../pageNavInject";
-
 import {SafariContentMessageHandler} from "./safariMessageHandler";
 
 declare var safari;
@@ -19,7 +17,9 @@ if (window.top === window) {
 		if (event.name === Constants.FunctionKeys.invokePageNav) {
 			let options: FrameInjectOptions = {
 				frameUrl: event.message,
-				extMessageHandlerThunk: () => { return new SafariContentMessageHandler(); }
+				extMessageHandlerThunk: () => {
+					return new SafariContentMessageHandler();
+				}
 			};
 			PageNavInject.main(options);
 		}
