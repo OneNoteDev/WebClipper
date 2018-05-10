@@ -1,40 +1,30 @@
 import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
-import {ClipperUrls} from "../clipperUrls";
-import {CookieUtils} from "../cookieUtils";
-import {Constants} from "../constants";
-import {LogManager} from "../logging/logManager";
-import {Polyfills} from "../polyfills";
-import {AuthType, UserInfo, UpdateReason} from "../userInfo";
-import {Settings} from "../settings";
-
 import {TooltipProps} from "../clipperUI/tooltipProps";
 import {TooltipType} from "../clipperUI/tooltipType";
-
+import {ClipperUrls} from "../clipperUrls";
 import {Communicator} from "../communicator/communicator";
 import {MessageHandler} from "../communicator/messageHandler";
 import {SmartValue} from "../communicator/smartValue";
-
+import {Constants} from "../constants";
+import {CookieUtils} from "../cookieUtils";
 import {ClipperCachedHttp} from "../http/clipperCachedHttp";
-
-import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
-
 import * as Log from "../logging/log";
 import {LogHelpers} from "../logging/logHelpers";
+import {LogManager} from "../logging/logManager";
 import {SessionLogger} from "../logging/sessionLogger";
-
+import {Settings} from "../settings";
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
-
+import {AuthType, UpdateReason, UserInfo} from "../userInfo";
 import {ChangeLog} from "../versioning/changeLog";
-
 import {AuthenticationHelper} from "./authenticationHelper";
 import {ExtensionBase} from "./extensionBase";
 import {InvokeInfo} from "./invokeInfo";
-import {InvokeSource} from "./invokeSource";
 import {InvokeMode, InvokeOptions} from "./invokeOptions";
+import {InvokeSource} from "./invokeSource";
 
 /**
  * The abstract base class for all of the extension workers
@@ -62,7 +52,8 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected sessionId: SmartValue<string>;
 
 	constructor(clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper, clipperData: ClipperData, uiMessageHandlerThunk: () => MessageHandler, injectMessageHandlerThunk: () => MessageHandler) {
-		this.onUnloading = () => { };
+		this.onUnloading = () => {
+		};
 
 		this.uiCommunicator = new Communicator(uiMessageHandlerThunk(), Constants.CommunicationChannels.extensionAndUi);
 		this.pageNavUiCommunicator = new Communicator(uiMessageHandlerThunk(), Constants.CommunicationChannels.extensionAndPageNavUi);
@@ -109,7 +100,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 					this.logger.setContextProperty(Log.Context.Custom.FlightInfo, newClientInfo.flightingInfo.join(","));
 				}
 			}).bind(this);
-			this.clientInfo.subscribe(clientInfoSetCb, { callOnSubscribe: false });
+			this.clientInfo.subscribe(clientInfoSetCb, {callOnSubscribe: false});
 		} else {
 			this.logger.setContextProperty(Log.Context.Custom.FlightInfo, clientInfo.flightingInfo.join(","));
 		}
@@ -226,14 +217,14 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 				return this.invokeWhatsNewTooltipBrowserSpecific(newVersions).then((wasInvoked) => {
 					if (!wasInvoked) {
 						invokeWhatsNewEvent.setStatus(Log.Status.Failed);
-						invokeWhatsNewEvent.setFailureInfo({ error: "invoking the What's New experience failed" });
+						invokeWhatsNewEvent.setFailureInfo({error: "invoking the What's New experience failed"});
 					}
 					this.logger.logEvent(invokeWhatsNewEvent);
 					return Promise.resolve(wasInvoked);
 				});
 			} else {
 				invokeWhatsNewEvent.setStatus(Log.Status.Failed);
-				invokeWhatsNewEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
+				invokeWhatsNewEvent.setFailureInfo({error: "getLocalizedStringsForBrowser returned undefined/null"});
 				this.logger.logEvent(invokeWhatsNewEvent);
 				return Promise.resolve(false);
 			}
@@ -253,7 +244,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 				});
 			} else {
 				tooltipInvokeEvent.setStatus(Log.Status.Failed);
-				tooltipInvokeEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
+				tooltipInvokeEvent.setFailureInfo({error: "getLocalizedStringsForBrowser returned undefined/null"});
 				this.logger.logEvent(tooltipInvokeEvent);
 				return Promise.resolve(false);
 			}
@@ -287,7 +278,9 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		getLocaleEvent.setCustomProperty(Log.PropertyName.Custom.StoredLocaleDifferentThanRequested, localeInStorageIsDifferent);
 		this.logger.logEvent(getLocaleEvent);
 
-		let fetchStringDataFunction = () => { return LocalizationHelper.makeLocStringsFetchRequest(locale); };
+		let fetchStringDataFunction = () => {
+			return LocalizationHelper.makeLocStringsFetchRequest(locale);
+		};
 		let updateInterval = localeInStorageIsDifferent ? 0 : ClipperCachedHttp.getDefaultExpiry();
 
 		let getLocalizedStringsEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetLocalizedStrings);
@@ -504,7 +497,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 					// While redirect detection is somewhat unreliable, it's still sometimes correct. So we try and
 					// detect this case only after we try get the latest userInfo
 					if ((!updatedUser || !updatedUser.user) && !redirectOccurred) {
-						let userInfoToSet: UserInfo = { updateReason: UpdateReason.SignInCancel };
+						let userInfoToSet: UserInfo = {updateReason: UpdateReason.SignInCancel};
 						this.auth.user.set(userInfoToSet);
 						return Promise.resolve(userInfoToSet);
 					}
@@ -512,7 +505,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 				});
 			}).catch((errorObject) => {
 				// Set the user info object to undefined as a result of an attempted sign in
-				this.auth.user.set({ updateReason: UpdateReason.SignInAttempt });
+				this.auth.user.set({updateReason: UpdateReason.SignInAttempt});
 
 				// Right now we're adding the update reason to the errorObject as well so that it is preserved in the callback.
 				// The right thing to do is revise the way we use callbacks in the communicator and instead use Promises so that
@@ -529,7 +522,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 				this.doSignOutAction(authType);
 			}
 
-			this.auth.user.set({ updateReason: UpdateReason.SignOutAction });
+			this.auth.user.set({updateReason: UpdateReason.SignOutAction});
 			this.clipperData.setValue(ClipperStorageKeys.userInformation, undefined);
 			this.clipperData.setValue(ClipperStorageKeys.currentSelectedSection, undefined);
 			this.clipperData.setValue(ClipperStorageKeys.cachedNotebooks, undefined);
@@ -587,7 +580,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		});
 
 		this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.invokeClipperFromPageNav, (invokeSource: InvokeSource) => {
-			this.closeAllFramesAndInvokeClipper({ invokeSource: invokeSource }, { invokeMode: InvokeMode.Default });
+			this.closeAllFramesAndInvokeClipper({invokeSource: invokeSource}, {invokeMode: InvokeMode.Default});
 		});
 	}
 

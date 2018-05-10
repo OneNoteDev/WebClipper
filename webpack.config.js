@@ -1,8 +1,9 @@
-const {join} = require('path');
+const {join, resolve} = require('path');
 
 //plugins
 // const CleanWebpackPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const webpack = require('webpack');
 
 const PATHS = {
     SRC: {
@@ -10,7 +11,7 @@ const PATHS = {
         SETTINGS: "./src/settings/"
     },
     BUILDROOT: "build/",
-    GENERATEDROOT:"generated/",
+    GENERATEDROOT: "generated/",
     BUNDLEROOT: "build/bundles/",
     LIBROOT: "lib/",
     TARGET: {
@@ -88,37 +89,42 @@ const ENTRYPOINTS = {
     // ],
 };
 
-const webpackConfiguration =  {
-        entry: ENTRYPOINTS,
-        output: {
-            filename: '[name].js',
-            path: OUT_DIR,
-            publicPath: '/target/',
-            libraryTarget: 'umd',
-            umdNamedDefine: true
-        },
-        resolve: {
-            extensions: ['.js', '.ts', '.tsx', '.html'],
-        },
-        // plugins: [
-        //     new CleanWebpackPlugin(pathsToClean),
-        // ],
-        module: {
-            rules: [
-                {
-                    test: /\.ts$/,
-                    use: 'ts-loader'
-                },
-                {
-                    test: /\.tsx?$/,
-                    use: 'ts-loader'
-                },
-                {
-                    test:/\.html$/,
-                    use: 'html-loader'
-                }
-            ]
-        },
+const settings = JSON.stringify(require('./src/settings/settings.prod'));
+console.error('----------------------------');
+console.error(settings);
+
+const webpackConfiguration = {
+    mode: "development",
+    entry: ENTRYPOINTS,
+    output: {
+        filename: '[name].js',
+        path: OUT_DIR,
+        libraryTarget: 'umd',
+        umdNamedDefine: true
+    },
+    resolve: {
+        extensions: ['.js', '.ts', '.tsx', '.html'],
+    },
+    // plugins: [
+    //     new CleanWebpackPlugin(pathsToClean),
+    // ],
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader'
+            },
+            {
+                test: /\.html$/,
+                use: 'html-loader'
+            }
+        ]
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+            'SETTINGS': JSON.stringify(settings)
+        })
+    ]
 };
 
 module.exports = webpackConfiguration;

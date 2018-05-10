@@ -1,7 +1,7 @@
 import {PromiseUtils} from "../promiseUtils";
 import {IOneNoteApi} from "./iOneNoteApi";
 
-export class OneNoteApiWithRetries implements IOneNoteApi{
+export class OneNoteApiWithRetries implements IOneNoteApi {
 	private api: IOneNoteApi;
 	private maxRetries: number;
 

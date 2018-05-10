@@ -1,14 +1,5 @@
 import {Clipper} from "../clipperUI/frontEndGlobals";
-import {Status} from "../clipperUI/status";
-
-import {SmartValue} from "../communicator/smartValue";
-
 import * as Log from "../logging/log";
-
-import {ArrayUtils} from "../arrayUtils";
-import {Constants} from "../constants";
-import {PageInfo} from "../pageInfo";
-
 import {CaptureFailureInfo} from "./captureFailureInfo";
 import {PdfDocument} from "./pdfDocument";
 import {PdfJsDocument} from "./pdfJsDocument";

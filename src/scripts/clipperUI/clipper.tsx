@@ -1,45 +1,33 @@
 import * as _ from "lodash";
 import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
-
 import {Communicator} from "../communicator/communicator";
 import {IFrameMessageHandler} from "../communicator/iframeMessageHandler";
 import {InlineMessageHandler} from "../communicator/inlineMessageHandler";
 import {SmartValue} from "../communicator/smartValue";
 import {Constants} from "../constants";
-
 import {AugmentationHelper} from "../contentCapture/augmentationHelper";
 import {BookmarkError, BookmarkHelper, BookmarkResult} from "../contentCapture/bookmarkHelper";
 import {FullPageScreenshotHelper} from "../contentCapture/fullPageScreenshotHelper";
 import {PdfScreenshotHelper, PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
-
 import {DomUtils} from "../domParsers/domUtils";
 import {VideoUtils} from "../domParsers/videoUtils";
-
 import {InlineExtension} from "../extensions/bookmarklet/inlineExtension";
-
 import {ClipperInjectOptions} from "../extensions/clipperInject";
 import {InvokeMode, InvokeOptions} from "../extensions/invokeOptions";
-
 import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
-
 import {Localization} from "../localization/localization";
 import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
-
 import * as Log from "../logging/log";
 import {ObjectUtils} from "../objectUtils";
-
 import {PageInfo} from "../pageInfo";
 import {PreviewGlobalInfo} from "../previewInfo";
-
 import {OneNoteSaveableFactory} from "../saveToOneNote/oneNoteSaveableFactory";
 import {SaveToOneNote, SaveToOneNoteOptions} from "../saveToOneNote/saveToOneNote";
 import {SaveToOneNoteLogger} from "../saveToOneNote/saveToOneNoteLogger";
-
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 import {UrlUtils} from "../urlUtils";
 import {AuthType, UpdateReason, UserInfo} from "../userInfo";
-
 import {ClipMode} from "./clipMode";
 import {ClipperState} from "./clipperState";
 import {ClipperStateUtilities} from "./clipperStateUtilities";

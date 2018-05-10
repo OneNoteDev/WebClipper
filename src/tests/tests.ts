@@ -3,10 +3,7 @@
 import {Clipper} from "../scripts/clipperUI/frontEndGlobals";
 import {Communicator} from "../scripts/communicator/communicator";
 import {StubSessionLogger} from "../scripts/logging/stubSessionLogger";
-// Initialization for all tests
-
 import "./arrayUtils_tests";
-
 import "./clipperUI/components/annotationInput_tests";
 import "./clipperUI/components/footer_tests";
 import "./clipperUI/components/modeButton_tests";
@@ -22,10 +19,8 @@ import "./clipperUI/components/previewViewer/previewViewerRegionHeader_tests";
 import "./clipperUI/components/previewViewer/regionPreview_tests";
 import "./clipperUI/components/previewViewer/selectionPreview_tests";
 import "./clipperUI/components/sectionPicker_tests";
-
 import "./clipperUI/mainController_tests";
 import "./clipperUI/oneNoteApiUtils_tests";
-
 import "./clipperUI/panels/changeLogPanel_tests";
 import "./clipperUI/panels/clippingPanel_tests";
 import "./clipperUI/panels/clippingPanelWithDelayedMessage_tests";
@@ -37,15 +32,12 @@ import "./clipperUI/panels/signInPanel_tests";
 import "./clipperUI/ratingsHelper_tests";
 import "./clipperUI/regionSelector_tests";
 import "./clipperUrls_tests";
-
 import "./communicator/communicator_tests";
 import "./communicator/iframeMessageHandler_tests";
 import {MockMessageHandler} from "./communicator/mockMessageHandler";
 import "./communicator/smartValue_tests";
-
 import "./contentCapture/augmentationHelper_tests";
 import "./contentCapture/bookmarkHelper_tests";
-
 import "./domParsers/domUtils_tests";
 import "./domParsers/khanAcademyVideoExtractor_tests";
 import "./domParsers/videoExtractor_tests";
@@ -53,21 +45,16 @@ import "./domParsers/videoUtils_tests";
 import "./domParsers/vimeoVideoExtractor_tests";
 import "./domParsers/youtubeVideoExtractor_tests";
 import "./experiments_tests";
-
 import "./extensions/authenticationHelper_tests";
 import "./extensions/extensionBase_tests";
 import "./extensions/injectHelper_tests";
 import "./extensions/tooltipHelper_tests";
-
 import "./highlighting/highlighter_tests";
-
 import "./http/cachedHttp_tests";
 import "./http/clipperCachedHttp_tests";
 import "./http/http_tests";
-
 import "./localization/localization_tests";
 import "./localization/rtl_tests";
-
 import "./logging/communicatorLoggerPure_tests";
 import "./logging/consoleLoggerShell_tests";
 import "./logging/context_tests";
@@ -77,21 +64,19 @@ import "./logging/logHelpers_tests";
 import "./logging/sessionLogger_tests";
 import "./objectUtils_tests";
 import "./promiseUtils_tests";
-
 import "./saveToOneNote/oneNoteSaveableFactory_tests";
 import "./saveToOneNote/oneNoteSaveablePage_tests";
 import "./saveToOneNote/oneNoteSaveablePdf_tests";
 import "./saveToOneNote/oneNoteSaveablePdfSynchronousBatched_tests";
 import "./saveToOneNote/saveToOneNote_tests";
 import "./settings_tests";
-
 import "./storage/clipperData_tests";
 import "./storage/clipperStorageGateStrategy_tests";
 import "./stringUtils_tests";
 import "./urlUtils_tests";
 import "./versioning/changeLogHelper_tests";
-
 import "./versioning/version_tests";
+// Initialization for all tests
 
 Clipper.setInjectCommunicator(new Communicator(new MockMessageHandler(), "INJECT_MOCK_COMM"));
 Clipper.setExtensionCommunicator(new Communicator(new MockMessageHandler(), "EXTENSION_MOCK_COMM"));

@@ -1,14 +1,11 @@
 import {Constants} from "../constants";
-
 import {ExtensionUtils} from "../extensions/extensionUtils";
-
 import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
-
 import {Status} from "./status";
 
 export interface UnsupportedBrowserState {
-    localizedStringFetchAttemptCompleted: Status;
+	localizedStringFetchAttemptCompleted: Status;
 }
 
 /**
@@ -16,152 +13,153 @@ export interface UnsupportedBrowserState {
  * by the Web Clipper.
  */
 class UnsupportedBrowserClass {
-    public state: UnsupportedBrowserState;
+	public state: UnsupportedBrowserState;
 
-    constructor() {
-        this.state = this.getInitialState();
-    }
+	constructor() {
+		this.state = this.getInitialState();
+	}
 
-    getInitialState(): UnsupportedBrowserState {
-        return {
-            localizedStringFetchAttemptCompleted: Status.NotStarted
-        };
-    }
+	getInitialState(): UnsupportedBrowserState {
+		return {
+			localizedStringFetchAttemptCompleted: Status.NotStarted
+		};
+	}
 
-    public setState(newPartialState: UnsupportedBrowserState) {
-        m.startComputation();
-        for (let key in newPartialState) {
-            if (newPartialState.hasOwnProperty(key)) {
-                this.state[key] = newPartialState[key];
-            }
-        }
-        m.endComputation();
-    }
+	public setState(newPartialState: UnsupportedBrowserState) {
+		m.startComputation();
+		for (let key in newPartialState) {
+			if (newPartialState.hasOwnProperty(key)) {
+				this.state[key] = newPartialState[key];
+			}
+		}
+		m.endComputation();
+	}
 
-    public static componentize() {
-        let returnValue: any = () => {
-        };
-        returnValue.controller = (props: any) => {
-            return new (this as any)(props);
-        };
-        returnValue.view = (controller: any, props: any) => {
-            controller.props = props;
-            return controller.render();
-        };
+	public static componentize() {
+		let returnValue: any = () => {
+		};
+		returnValue.controller = (props: any) => {
+			return new (this as any)(props);
+		};
+		returnValue.view = (controller: any, props: any) => {
+			controller.props = props;
+			return controller.render();
+		};
 
-        return returnValue;
-    }
+		return returnValue;
+	}
 
-    private fetchLocalizedStrings(locale: string) {
-        this.setState({
-            localizedStringFetchAttemptCompleted: Status.InProgress
-        });
-        LocalizationHelper.makeLocStringsFetchRequest(locale).then((responsePackage) => {
-            try {
-                Localization.setLocalizedStrings(JSON.parse(responsePackage.parsedResponse));
-                this.setState({
-                    localizedStringFetchAttemptCompleted: Status.Succeeded
-                });
-            } catch (e) {
-                this.setState({
-                    localizedStringFetchAttemptCompleted: Status.Failed
-                });
-            }
-        }).catch(() => {
-            this.setState({
-                localizedStringFetchAttemptCompleted: Status.Failed
-            });
-        });
-    }
+	private fetchLocalizedStrings(locale: string) {
+		this.setState({
+			localizedStringFetchAttemptCompleted: Status.InProgress
+		});
+		LocalizationHelper.makeLocStringsFetchRequest(locale).then((responsePackage) => {
+			try {
+				Localization.setLocalizedStrings(JSON.parse(responsePackage.parsedResponse));
+				this.setState({
+					localizedStringFetchAttemptCompleted: Status.Succeeded
+				});
+			} catch (e) {
+				this.setState({
+					localizedStringFetchAttemptCompleted: Status.Failed
+				});
+			}
+		}).catch(() => {
+			this.setState({
+				localizedStringFetchAttemptCompleted: Status.Failed
+			});
+		});
+	}
 
-    private attemptingFetchLocalizedStrings() {
-        return this.state.localizedStringFetchAttemptCompleted === Status.NotStarted ||
-            this.state.localizedStringFetchAttemptCompleted === Status.InProgress;
-    }
+	private attemptingFetchLocalizedStrings() {
+		return this.state.localizedStringFetchAttemptCompleted === Status.NotStarted ||
+			this.state.localizedStringFetchAttemptCompleted === Status.InProgress;
+	}
 
-    render() {
-        if (this.state.localizedStringFetchAttemptCompleted === Status.NotStarted) {
-            // navigator.userLanguage is only available in IE, and Typescript will not recognize this property
-            this.fetchLocalizedStrings(navigator.language || (<any>navigator).userLanguage);
-        }
+	render() {
+		if (this.state.localizedStringFetchAttemptCompleted === Status.NotStarted) {
+			// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
+			this.fetchLocalizedStrings(navigator.language || (<any>navigator).userLanguage);
+		}
 
-        // In IE8 and below, 'class' is a reserved keyword and cannot be used as a key in a JSON object
-        return ({
-            tag: "div", attrs: {id: Constants.Ids.unsupportedBrowserContainer}, children: [
-                {
-                    tag: "div", attrs: {id: Constants.Ids.unsupportedBrowserPanel, "class": "panelContent"}, children: [
-                        {
-                            tag: "div",
-                            attrs: {
-                                className: Constants.Classes.heightAnimator,
-                                style: "min-height: 276px; max-height: 276px;"
-                            },
-                            children: [
-                                {
-                                    tag: "div",
-                                    attrs: {
-                                        className: Constants.Classes.panelAnimator,
-                                        style: "left: 0px; opacity: 1;"
-                                    },
-                                    children: [
-                                        {
-                                            tag: "div", attrs: {id: Constants.Ids.signInContainer}, children: [
-                                                {
-                                                    tag: "div", attrs: {className: "signInPadding"}, children: [
-                                                        {tag: "img",
-                                                            attrs: {
-                                                                id: Constants.Ids.signInLogo,
-                                                                src: ExtensionUtils.getImageResourceUrl("onenote_logo_clipper.png")
-                                                            }
-                                                        },
-                                                        {
-                                                            tag: "div",
-                                                            attrs: {
-                                                                id: Constants.Ids.signInMessageLabelContainer,
-                                                                "class": "messageLabelContainer"
-                                                            },
-                                                            children: [
-                                                                {
-                                                                    tag: "span",
-                                                                    attrs: {
-                                                                        "class": "messageLabel",
-                                                                        style: Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)
-                                                                    },
-                                                                    children: [
-                                                                        this.attemptingFetchLocalizedStrings() ? "" : Localization.getLocalizedString("WebClipper.Label.OneNoteClipper")
-                                                                    ]
-                                                                }
-                                                            ]
-                                                        },
-                                                        {
-                                                            tag: "div",
-                                                            attrs: {"class": "signInDescription"},
-                                                            children: [
-                                                                {
-                                                                    tag: "span",
-                                                                    attrs: {
-                                                                        id: Constants.Ids.signInText,
-                                                                        style: Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)
-                                                                    },
-                                                                    children: [
-                                                                        this.attemptingFetchLocalizedStrings() ? "" : Localization.getLocalizedString("WebClipper.Label.UnsupportedBrowser")
-                                                                    ]
-                                                                }
-                                                            ]
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        });
-    }
+		// In IE8 and below, 'class' is a reserved keyword and cannot be used as a key in a JSON object
+		return ({
+			tag: "div", attrs: {id: Constants.Ids.unsupportedBrowserContainer}, children: [
+				{
+					tag: "div", attrs: {id: Constants.Ids.unsupportedBrowserPanel, "class": "panelContent"}, children: [
+						{
+							tag: "div",
+							attrs: {
+								className: Constants.Classes.heightAnimator,
+								style: "min-height: 276px; max-height: 276px;"
+							},
+							children: [
+								{
+									tag: "div",
+									attrs: {
+										className: Constants.Classes.panelAnimator,
+										style: "left: 0px; opacity: 1;"
+									},
+									children: [
+										{
+											tag: "div", attrs: {id: Constants.Ids.signInContainer}, children: [
+												{
+													tag: "div", attrs: {className: "signInPadding"}, children: [
+														{
+															tag: "img",
+															attrs: {
+																id: Constants.Ids.signInLogo,
+																src: ExtensionUtils.getImageResourceUrl("onenote_logo_clipper.png")
+															}
+														},
+														{
+															tag: "div",
+															attrs: {
+																id: Constants.Ids.signInMessageLabelContainer,
+																"class": "messageLabelContainer"
+															},
+															children: [
+																{
+																	tag: "span",
+																	attrs: {
+																		"class": "messageLabel",
+																		style: Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)
+																	},
+																	children: [
+																		this.attemptingFetchLocalizedStrings() ? "" : Localization.getLocalizedString("WebClipper.Label.OneNoteClipper")
+																	]
+																}
+															]
+														},
+														{
+															tag: "div",
+															attrs: {"class": "signInDescription"},
+															children: [
+																{
+																	tag: "span",
+																	attrs: {
+																		id: Constants.Ids.signInText,
+																		style: Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)
+																	},
+																	children: [
+																		this.attemptingFetchLocalizedStrings() ? "" : Localization.getLocalizedString("WebClipper.Label.UnsupportedBrowser")
+																	]
+																}
+															]
+														}
+													]
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		});
+	}
 }
 
 let component = UnsupportedBrowserClass.componentize();

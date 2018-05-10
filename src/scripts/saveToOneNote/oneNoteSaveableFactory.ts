@@ -1,24 +1,20 @@
-import {Constants} from "../constants";
-import {OperationResult} from "../operationResult";
-import {StringUtils} from "../stringUtils";
-import {UrlUtils} from "../urlUtils";
+import * as _ from "lodash";
 
 import {ClipMode} from "../clipperUI/clipMode";
 import {ClipperState} from "../clipperUI/clipperState";
-import {Status} from "../clipperUI/status";
-
-import {PdfJsDocument} from "../contentCapture/pdfJsDocument";
+import {Constants} from "../constants";
 
 import {DomUtils} from "../domParsers/domUtils";
 
 import {Localization} from "../localization/localization";
+import {OperationResult} from "../operationResult";
+import {StringUtils} from "../stringUtils";
+import {UrlUtils} from "../urlUtils";
 
 import {OneNoteSaveable} from "./oneNoteSaveable";
 import {OneNoteSaveablePage} from "./oneNoteSaveablePage";
 import {OneNoteSaveablePdf} from "./oneNoteSaveablePdf";
 import {OneNoteSaveablePdfSynchronousBatched} from "./oneNoteSaveablePdfSynchronousBatched";
-
-import * as _ from "lodash";
 
 export class OneNoteSaveableFactory {
 	private static maxImagesPerPatchRequest = 15;
@@ -110,7 +106,7 @@ export class OneNoteSaveableFactory {
 	private addClippedFromUrlToPage(page: OneNoteApi.OneNotePage) {
 		if (this.clipperState.currentMode.get() !== ClipMode.Bookmark) {
 			let sourceUrlCitation = Localization.getLocalizedString("WebClipper.FromCitation")
-			.replace("{0}", '<a href="' + (this.clipperState.pageInfo.rawUrl) + '">' + this.clipperState.pageInfo.rawUrl + "</a>");
+				.replace("{0}", '<a href="' + (this.clipperState.pageInfo.rawUrl) + '">' + this.clipperState.pageInfo.rawUrl + "</a>");
 
 			let formattedCitation = this.createPostProcessessedHtml(sourceUrlCitation);
 			page.addOnml(formattedCitation.outerHTML);

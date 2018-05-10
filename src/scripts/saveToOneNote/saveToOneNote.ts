@@ -1,21 +1,19 @@
-import {Constants} from "../constants";
-import {PromiseUtils} from "../promiseUtils";
-import {Settings} from "../settings";
-import {StringUtils} from "../stringUtils";
-import {UserInfo} from "../userInfo";
+import * as _ from "lodash";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
-
-import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
+import {Constants} from "../constants";
 
 import * as Log from "../logging/log";
+import {PromiseUtils} from "../promiseUtils";
+import {Settings} from "../settings";
+
+import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
+import {UserInfo} from "../userInfo";
 import {BaseOneNoteApi} from "./oneNoteApi";
 
 import {OneNoteApiWithLogging} from "./oneNoteApiWithLogging";
 import {OneNoteApiWithRetries} from "./oneNoteApiWithRetries";
 import {OneNoteSaveable} from "./oneNoteSaveable";
-
-import * as _ from "lodash";
 
 export interface SaveToOneNoteOptions {
 	page: OneNoteSaveable;
@@ -60,7 +58,8 @@ export class SaveToOneNote {
 	}
 
 	private saveMultiplePagesSynchronously(options: SaveToOneNoteOptions) {
-		let progressCallback = options.progressCallback ? options.progressCallback : () => { };
+		let progressCallback = options.progressCallback ? options.progressCallback : () => {
+		};
 
 		progressCallback(0, options.page.getNumPages());
 
@@ -73,7 +72,8 @@ export class SaveToOneNote {
 		});
 	}
 
-	private synchronouslyCreateMultiplePages(options: SaveToOneNoteOptions, progressCallback: (completed: number, total: number) => void = () => {}): Promise<any> {
+	private synchronouslyCreateMultiplePages(options: SaveToOneNoteOptions, progressCallback: (completed: number, total: number) => void = () => {
+	}): Promise<any> {
 		const saveable = options.page;
 
 		const end = saveable.getNumPages();
@@ -110,7 +110,7 @@ export class SaveToOneNote {
 					// As of v3.2.9, we have added a new scope for MSA to allow for PATCHing, however currently-logged-in users will not have
 					// this scope, so this call is a workaround to check for permissions, but is very unperformant. We need to investigate a
 					// quicker way of doing this ... perhaps exposing an endpoint that we can use for this sole purpose.
-					this.getApi().getPages({ top: 1, sectionId: saveLocation }).then(() => {
+					this.getApi().getPages({top: 1, sectionId: saveLocation}).then(() => {
 						Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
 						resolve();
 					}).catch((error) => {
@@ -144,7 +144,7 @@ export class SaveToOneNote {
 	private batch(saveable: OneNoteSaveable): Promise<any> {
 		let timeBetweenBatchRequests = SaveToOneNote.timeBeforeFirstBatch;
 		return _.range(saveable.getNumBatches()).reduce((chainedPromise: Promise<any>, i) => {
-			return chainedPromise= chainedPromise.then(() => {
+			return chainedPromise = chainedPromise.then(() => {
 				return new Promise((resolve, reject) => {
 					// Parallelize the BATCH request intervals with the fetching of the next set of dataUrls
 					let getRevisionsPromise = this.getBatchWithLogging(saveable, i);
@@ -231,7 +231,9 @@ export class SaveToOneNote {
 
 			if (revisions.length > 0) {
 				// There's some html in the content itself, but it's negligible compared to the length of the actual dataUrls
-				let lengthOfDataUrls = _.sumBy(revisions, (revision) => { return revision.content.length; });
+				let lengthOfDataUrls = _.sumBy(revisions, (revision) => {
+					return revision.content.length;
+				});
 				event.setCustomProperty(Log.PropertyName.Custom.ByteLength, lengthOfDataUrls);
 				event.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, lengthOfDataUrls / numPages);
 				event.setCustomProperty(Log.PropertyName.Custom.AverageProcessingDurationPerPage, event.getDuration() / numPages);
@@ -270,8 +272,12 @@ export class SaveToOneNote {
 
 			if (numPages > 0) {
 				// There's some html in the content itself, but it's negligible compared to the length of the actual dataUrls
-				const batchRequestOperations = _.range(numPages).map((pageNumber) => { return batchRequest.getOperation(pageNumber); });
-				const lengthOfDataUrls = _.sumBy(batchRequestOperations, (op) => { return op.content.length; });
+				const batchRequestOperations = _.range(numPages).map((pageNumber) => {
+					return batchRequest.getOperation(pageNumber);
+				});
+				const lengthOfDataUrls = _.sumBy(batchRequestOperations, (op) => {
+					return op.content.length;
+				});
 
 				event.setCustomProperty(Log.PropertyName.Custom.ByteLength, lengthOfDataUrls);
 				event.setCustomProperty(Log.PropertyName.Custom.BytesPerPdfPage, lengthOfDataUrls / numPages);

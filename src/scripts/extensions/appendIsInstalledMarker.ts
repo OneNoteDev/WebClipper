@@ -1,3 +1,7 @@
+declare const SETTINGS: string;
+
+console.log(SETTINGS);
+
 let oneNoteWebClipperInstallMarkerClassName = "oneNoteWebClipperIsInstalledOnThisBrowser";
 let marker = document.createElement("div");
 

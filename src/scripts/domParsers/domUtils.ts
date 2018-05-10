@@ -10,9 +10,9 @@ declare function unescape(s: string): string;
 
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
-import {SupportedVideoDomains, VideoUtils} from "./videoUtils";
 
 import {VideoExtractorFactory} from "./VideoExtractorFactory";
+import {SupportedVideoDomains, VideoUtils} from "./videoUtils";
 
 export interface EmbeddedVideoIFrameSrcs {
 	srcAttribute: string;
@@ -389,7 +389,13 @@ export class DomUtils {
 		} catch (e) {
 			// if we end up here, we're unexpectedly broken
 			// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
-			return Promise.reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
+			return Promise.reject({
+				error: JSON.stringify({
+					doc: previewElement.outerHTML,
+					pageContent: pageContent,
+					message: e.message
+				})
+			});
 		}
 
 		return Promise.resolve(DomUtils.addVideosToElement(previewElement, iframes));
@@ -426,14 +432,17 @@ export class DomUtils {
 			if (ObjectUtils.isNullOrUndefined(node.src) || ObjectUtils.isNullOrUndefined(node.getAttribute(DomUtils.dataOriginalSrcAttribute))) {
 				// iframe constructed without a src or data-original-src attribute (somehow)
 				// invalid construction, but we want record of it happening
-				videoSrcUrls.push({ srcAttribute: "", dataOriginalSrcAttribute: "" });
+				videoSrcUrls.push({srcAttribute: "", dataOriginalSrcAttribute: ""});
 				continue;
 			}
 
 			lastInsertedNode = DomUtils.insertIFrame(previewElement, node, lastInsertedNode);
 			lastInsertedNode = DomUtils.insertSpacer(previewElement, lastInsertedNode.nextSibling);
 
-			videoSrcUrls.push({ srcAttribute: node.src, dataOriginalSrcAttribute: node.getAttribute(DomUtils.dataOriginalSrcAttribute) });
+			videoSrcUrls.push({
+				srcAttribute: node.src,
+				dataOriginalSrcAttribute: node.getAttribute(DomUtils.dataOriginalSrcAttribute)
+			});
 		}
 
 		return videoSrcUrls;
@@ -724,7 +733,7 @@ export class DomUtils {
 	public static getImageDataUrl(imageSrcUrl: string): Promise<string> {
 		return new Promise<string>((resolve: (result: string) => void, reject: (error: OneNoteApi.GenericError) => void) => {
 			if (ObjectUtils.isNullOrUndefined(imageSrcUrl) || imageSrcUrl === "") {
-				reject({ error: "image source is undefined or empty" });
+				reject({error: "image source is undefined or empty"});
 			}
 
 			let image = new Image();
@@ -756,7 +765,7 @@ export class DomUtils {
 				if (!ObjectUtils.isNullOrUndefined(erroredImg)) {
 					erroredImgSrc = erroredImg.src;
 				}
-				reject({ error: "onerror occurred fetching " + erroredImgSrc});
+				reject({error: "onerror occurred fetching " + erroredImgSrc});
 			};
 
 			image.src = imageSrcUrl;
@@ -890,7 +899,7 @@ export class DomUtils {
 				// Logic to determine whether to accept, reject or skip node
 				// In this case, only accept nodes that have content
 				// other than whitespace
-				if ( ! /^\s*$/.test(node.data) ) {
+				if (!/^\s*$/.test(node.data)) {
 					return NodeFilter.FILTER_ACCEPT;
 				}
 			}
