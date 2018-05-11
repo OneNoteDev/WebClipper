@@ -16,5 +16,11 @@
 			"velocity-animate"
 		],
 		"outDir": "./build"
-	}
+	},
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"src/**/*.spec.ts"
+	]
 }

@@ -1,0 +1,7 @@
+[*.ts]
+indent_style = tab
+indent_Size = 2
+
+[*.tsx]
+indent_style = tab
+indent_Size = 2
