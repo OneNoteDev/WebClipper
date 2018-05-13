@@ -1,4 +1,4 @@
-﻿﻿/// <binding BeforeBuild='build' />
+/// <binding BeforeBuild='build' />
 "use strict";
 var require;
 
@@ -45,7 +45,6 @@ var PATHS = {
         FIREFOX: "target/firefox/",
         // Note: The Safari extension folder MUST end in ".safariextension"
         SAFARI: "target/clipper.safariextension/",
-        TESTS: "target/tests/"
     },
     NODE_MODULES: "node_modules/",
     INTERNAL: {
@@ -63,7 +62,7 @@ var ARIA_LIB_VERSION = "2.7.1";
 
 // Used for debugging glob declarations
 function printGlobResults(glob) {
-    globby.sync(glob).map(function(filePath) {
+    globby.sync(glob).map(function (filePath) {
         console.log(filePath);
     });
 }
@@ -71,7 +70,7 @@ function printGlobResults(glob) {
 ////////////////////////////////////////
 // CLEAN
 ////////////////////////////////////////
-gulp.task("clean", ["cleanInternal"], function(callback) {
+gulp.task("cleant", ["cleanInternalt"], function (callback) {
     return del([
         PATHS.BUILDROOT,
         PATHS.BUNDLEROOT,
@@ -82,20 +81,20 @@ gulp.task("clean", ["cleanInternal"], function(callback) {
 ////////////////////////////////////////
 // COMPILE CSS
 ////////////////////////////////////////
-gulp.task("compileLess", function() {
+gulp.task("compileLesst", function () {
     return gulp.src(PATHS.SRC.ROOT + "styles/clipper.less")
         .pipe(less())
         .pipe(gulp.dest(PATHS.BUILDROOT + "css"));
 });
 
-gulp.task("compileRtlCss", function() {
+gulp.task("compileRtlCsst", function () {
     return gulp.src(PATHS.BUILDROOT + "css/clipper.css")
         .pipe(rtlcss())
-        .pipe(rename({ suffix: RTL_SUFFIX }))
+        .pipe(rename({suffix: RTL_SUFFIX}))
         .pipe(gulp.dest(PATHS.BUILDROOT + "css"));
 });
 
-gulp.task("compileCss", function(callback) {
+gulp.task("compileCsst", function (callback) {
     runSequence(
         "compileLess",
         "compileRtlCss",
@@ -105,12 +104,12 @@ gulp.task("compileCss", function(callback) {
 ////////////////////////////////////////
 // COMPILE
 ////////////////////////////////////////
-gulp.task("copyStrings", function() {
+gulp.task("copyStringst", function () {
     return gulp.src(PATHS.SRC.ROOT + "strings.json")
         .pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
-gulp.task("mergeSettings", function() {
+gulp.task("mergeSettingst", function () {
     // note that overwriting of objects depends on ordering in array (last wins)
     var mergeOrder = [PATHS.SRC.SETTINGS + "default.json"];
     if (!argv.nointernal) {
@@ -121,7 +120,8 @@ gulp.task("mergeSettings", function() {
         mergeOrder.push(PATHS.SRC.SETTINGS + "production.json");
         if (!argv.nointernal) {
             mergeOrder.push(PATHS.INTERNAL.SRC.SETTINGS + "production.json");
-        };
+        }
+        ;
     } else if (argv.dogfood) {
         mergeOrder.push(PATHS.SRC.SETTINGS + "dogfood.json");
         if (!argv.nointernal) {
@@ -134,7 +134,7 @@ gulp.task("mergeSettings", function() {
         .pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
-gulp.task("cleanInternal", function () {
+gulp.task("cleanInternalt", function () {
     return del([
         PATHS.SRC.ROOT + "scripts/**/*_internal.*",
         PATHS.BUILDROOT + "scripts/**/*_internal.*",
@@ -142,7 +142,7 @@ gulp.task("cleanInternal", function () {
     ]);
 });
 
-gulp.task("copyInternal", function () {
+gulp.task("copyInternalt", function () {
     if (fileExists(PATHS.INTERNAL.SRC.SCRIPTS + "logging/logManager.ts") && !argv.nointernal) {
         return gulp.src(PATHS.INTERNAL.SRC.SCRIPTS + "**/*.+(ts|tsx|d.ts)")
             .pipe(rename(function (path) {
@@ -155,14 +155,14 @@ gulp.task("copyInternal", function () {
     }
 });
 
-gulp.task("preCompileInternal", function (callback) {
+gulp.task("preCompileInternalt", function (callback) {
     runSequence(
         "cleanInternal",
         "copyInternal",
         callback);
 });
 
-gulp.task("compileTypeScript", ["copyStrings", "mergeSettings", "preCompileInternal"], function () {
+gulp.task("compileTypeScriptt", ["copyStringst", "mergeSettingst", "preCompileInternalt"], function () {
     var tsProject = ts.createProject("./tsconfig.json", {
         typescript: require('typescript'),
         noEmitOnError: true
@@ -173,16 +173,16 @@ gulp.task("compileTypeScript", ["copyStrings", "mergeSettings", "preCompileInter
         .pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
-gulp.task("mithrilify", function() {
+gulp.task("mithrilifyt", function () {
     return gulp.src(PATHS.BUILDROOT + "**/*.jsx")
         .pipe(msx())
         .pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
-gulp.task("compile", function(callback) {
+gulp.task("compilet", function (callback) {
     runSequence(
-        "compileTypeScript",
-        "mithrilify",
+        "compileTypeScriptt",
+        "mithrilifyt",
         callback);
 });
 
@@ -190,7 +190,7 @@ gulp.task("compile", function(callback) {
 // TSLINT
 ////////////////////////////////////////
 //The actual task to run
-gulp.task("tslint", function() {
+gulp.task("tslintt", function () {
     var tsFiles = [
         PATHS.SRC.ROOT + "**/*.ts",
         PATHS.SRC.ROOT + "**/*.tsx",
@@ -222,28 +222,28 @@ function generateBrowserifyTasks(folderPath, files) {
     return tasks;
 }
 
-gulp.task("bundleAppendIsInstalledMarker", function () {
+gulp.task("bundleAppendIsInstalledMarkert", function () {
     var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/";
     var files = ["appendIsInstalledMarker.js"];
     var tasks = generateBrowserifyTasks(extensionRoot, files);
     return merge(tasks);
 });
 
-gulp.task("bundleClipperUI", function () {
+gulp.task("bundleClipperUIt", function () {
     var extensionRoot = PATHS.BUILDROOT + "scripts/clipperUI/";
     var files = ["clipper.js", "pageNav.js", "localeSpecificTasks.js", "unsupportedBrowser.js"];
     var tasks = generateBrowserifyTasks(extensionRoot, files);
     return merge(tasks);
 });
 
-gulp.task("bundleLogManager", function () {
-    var defaultLogManager = browserify(PATHS.BUILDROOT + "scripts/logging/logManager.js", { standalone: "LogManager" })
+gulp.task("bundleLogManagert", function () {
+    var defaultLogManager = browserify(PATHS.BUILDROOT + "scripts/logging/logManager.js", {standalone: "LogManager"})
         .bundle()
         .pipe(source("logManager.js"))
         .pipe(gulp.dest(PATHS.BUNDLEROOT));
 
     if (fileExists(PATHS.BUILDROOT + "scripts/logging/logManager_internal.js") && !argv.nointernal) {
-        var internalLogManager = browserify(PATHS.BUILDROOT + "scripts/logging/logManager_internal.js", { standalone: "LogManager" })
+        var internalLogManager = browserify(PATHS.BUILDROOT + "scripts/logging/logManager_internal.js", {standalone: "LogManager"})
             .bundle()
             .pipe(source("logManager_internal.js"))
             .pipe(gulp.dest(PATHS.BUNDLEROOT));
@@ -254,59 +254,51 @@ gulp.task("bundleLogManager", function () {
     return defaultLogManager;
 });
 
-gulp.task("bundleBookmarklet", function() {
+gulp.task("bundleBookmarklett", function () {
     return browserify(PATHS.BUILDROOT + "scripts/extensions/bookmarklet/bookmarkletInject.js")
         .bundle()
         .pipe(source("bookmarklet.js"))
         .pipe(gulp.dest(PATHS.BUNDLEROOT));
 });
 
-gulp.task("bundleChrome", function() {
+gulp.task("bundleChromet", function () {
     var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/chrome/";
     var files = ["chromeExtension.js", "chromeDebugLoggingInject.js", "chromeInject.js", "chromePageNavInject.js"];
     var tasks = generateBrowserifyTasks(extensionRoot, files);
     return merge(tasks);
 });
 
-gulp.task("bundleEdge", function () {
+gulp.task("bundleEdget", function () {
     var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/edge/";
     var files = ["edgeExtension.js", "edgeDebugLoggingInject.js", "edgeInject.js", "edgePageNavInject.js"];
     var tasks = generateBrowserifyTasks(extensionRoot, files);
     return merge(tasks);
 });
 
-gulp.task("bundleFirefox", function () {
+gulp.task("bundleFirefoxt", function () {
     var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/firefox/";
     var files = ["firefoxExtension.js", "firefoxDebugLoggingInject.js", "firefoxInject.js", "firefoxPageNavInject.js"];
     var tasks = generateBrowserifyTasks(extensionRoot, files);
     return merge(tasks);
 });
 
-gulp.task("bundleSafari", function () {
+gulp.task("bundleSafarit", function () {
     var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/safari/";
     var files = ["safariExtension.js", "safariDebugLoggingInject.js", "safariInject.js", "safariPageNavInject.js"];
     var tasks = generateBrowserifyTasks(extensionRoot, files);
     return merge(tasks);
 });
 
-gulp.task("bundleTests", function () {
-    return browserify(PATHS.BUILDROOT + "tests/tests.js")
-        .bundle()
-        .pipe(source("tests.js"))
-        .pipe(gulp.dest(PATHS.BUNDLEROOT));
-});
-
-gulp.task("bundle", function(callback) {
+gulp.task("bundlet", function (callback) {
     runSequence(
-        "bundleAppendIsInstalledMarker",
-        "bundleClipperUI",
-        "bundleLogManager",
-        "bundleBookmarklet",
-        "bundleChrome",
-        "bundleEdge",
-        "bundleFirefox",
-        "bundleSafari",
-        "bundleTests",
+        "bundleAppendIsInstalledMarkert",
+        "bundleClipperUIt",
+        "bundleLogManagert",
+        "bundleBookmarklett",
+        "bundleChromet",
+        "bundleEdget",
+        "bundleFirefoxt",
+        "bundleSafarit",
         callback);
 });
 
@@ -323,7 +315,7 @@ function lowerCasePathName() {
 
 function exportPickerFiles(targetDir) {
     var pickerImages = gulp.src(PATHS.NODE_MODULES + "onenotepicker/target/images/*",
-        { base: PATHS.NODE_MODULES + "onenotepicker/target/" })
+        {base: PATHS.NODE_MODULES + "onenotepicker/target/"})
         .pipe(gulp.dest(targetDir));
 
     var pickerCss = gulp.src(PATHS.NODE_MODULES + "onenotepicker/target/css/*")
@@ -331,7 +323,7 @@ function exportPickerFiles(targetDir) {
 
     var pickerRtlCss = gulp.src(PATHS.NODE_MODULES + "onenotepicker/target/css/*")
         .pipe(rtlcss())
-        .pipe(rename({ suffix: RTL_SUFFIX }))
+        .pipe(rename({suffix: RTL_SUFFIX}))
         .pipe(gulp.dest(targetDir));
 
     return merge(pickerImages, pickerCss, pickerRtlCss);
@@ -343,7 +335,7 @@ targetDirHasExportedCommonJs[PATHS.TARGET.CHROME] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.EDGE_EXTENSION] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.FIREFOX] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.SAFARI] = false;
-targetDirHasExportedCommonJs[PATHS.TARGET.TESTS] = false;
+
 function exportCommonJS(targetDir) {
     if (!targetDirHasExportedCommonJs[targetDir]) {
         var defaultExportTask = gulp.src([
@@ -391,7 +383,7 @@ function exportCommonCSS(targetDir) {
 function exportCommonSrcFiles(targetDir) {
     var pickerTask = exportPickerFiles(targetDir);
 
-    var imagesTask = gulp.src(PATHS.SRC.ROOT + "images/**/*", { base: PATHS.SRC.ROOT })
+    var imagesTask = gulp.src(PATHS.SRC.ROOT + "images/**/*", {base: PATHS.SRC.ROOT})
         .pipe(lowerCasePathName())
         .pipe(gulp.dest(targetDir));
 
@@ -432,10 +424,10 @@ function exportCommonLibFiles(targetDir) {
 }
 
 function exportCommonWebExtensionFiles(targetDir) {
-    var iconsTask = gulp.src(PATHS.SRC.ROOT + "icons/*", { base: PATHS.SRC.ROOT })
+    var iconsTask = gulp.src(PATHS.SRC.ROOT + "icons/*", {base: PATHS.SRC.ROOT})
         .pipe(gulp.dest(targetDir));
 
-    var localesTask = gulp.src(PATHS.SRC.ROOT + "_locales/**/*", { base: PATHS.SRC.ROOT })
+    var localesTask = gulp.src(PATHS.SRC.ROOT + "_locales/**/*", {base: PATHS.SRC.ROOT})
         .pipe(lowerCasePathName())
         .pipe(gulp.dest(targetDir));
 
@@ -776,49 +768,6 @@ function exportSafariLibFiles() {
     return exportCommonLibFiles(targetDir);
 }
 
-function exportTestJS() {
-    var targetDir = PATHS.TARGET.TESTS;
-    var defaultExportJSTask = gulp.src(PATHS.BUNDLEROOT + "tests.js")
-        .pipe(gulp.dest(targetDir));
-
-    var logManagerExportJSTask = gulp.src(PATHS.BUNDLEROOT + "logManager.js")
-        .pipe(gulp.dest(targetDir + "libs"));
-
-    return merge(defaultExportJSTask, logManagerExportJSTask);
-}
-
-function exportTestSrcFiles() {
-    var targetDir = PATHS.TARGET.TESTS;
-
-    return gulp.src(PATHS.SRC.ROOT + "tests/tests.html")
-        .pipe(rename("index.html"))
-        .pipe(gulp.dest(targetDir));
-}
-
-function exportTestLibFiles() {
-    var targetDir = PATHS.TARGET.TESTS;
-
-    var testLibFiles = [
-        PATHS.LIBROOT + "tests/bind_polyfill.js",
-        PATHS.LIBROOT + "tests/jquery-2.2.0.min.js",
-        PATHS.NODE_MODULES + "mithril/mithril.js",
-        PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.js",
-        PATHS.NODE_MODULES + "oneNotePicker/target/oneNotePicker.js",
-        PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js",
-        PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
-        PATHS.NODE_MODULES + "sinon/pkg/sinon.js",
-        PATHS.NODE_MODULES + "sinon-qunit/lib/sinon-qunit.js",
-        PATHS.NODE_MODULES + "urijs/src/URI.min.js",
-        PATHS.SRC.ROOT + "scripts/highlighting/textHighlighter.js",
-        PATHS.NODE_MODULES + "velocity-animate/velocity.js",
-        PATHS.LIBROOT + "sanitize-html.js"
-    ];
-
-    var testLibFileRegexes = [PATHS.NODE_MODULES + "qunitjs/qunit/qunit.+(css|js)"];
-
-    return gulp.src(testLibFileRegexes.concat(assertModuleExists(testLibFiles)))
-        .pipe(gulp.dest(targetDir + "libs"));
-}
 
 // Checks if a file path or list of file paths exists. Throws an error if one or more files don't exist,
 // and returns itself otherwise.
@@ -854,12 +803,12 @@ gulp.task("exportAllCommonJS", function () {
     return merge(exportCommonJsTasks);
 });
 
-gulp.task("exportBookmarklet", function() {
+gulp.task("exportBookmarklet", function () {
     var targetDir = PATHS.TARGET.BOOKMARKLET;
     return exportBookmarkletFiles(targetDir);
 });
 
-gulp.task("exportChrome", function() {
+gulp.task("exportChrome", function () {
     var jsTask = exportChromeJS();
     var cssTask = exportChromeCSS();
     var srcTask = exportChromeSrcFiles();
@@ -868,7 +817,7 @@ gulp.task("exportChrome", function() {
     return merge(jsTask, cssTask, srcTask, libTask);
 });
 
-gulp.task("exportEdge", function() {
+gulp.task("exportEdge", function () {
     var jsTask = exportEdgeJS();
     var cssTask = exportEdgeCSS();
     var srcTask = exportEdgeSrcFiles();
@@ -887,7 +836,7 @@ gulp.task("exportFirefox", function () {
     return merge(jsTask, cssTask, srcTask, libTask);
 });
 
-gulp.task("exportSafari", function() {
+gulp.task("exportSafari", function () {
     var jsTask = exportSafariJS();
     var cssTask = exportSafariCSS();
     var srcTask = exportSafariSrcFiles();
@@ -896,25 +845,18 @@ gulp.task("exportSafari", function() {
     return merge(jsTask, cssTask, srcTask, libTask);
 });
 
-gulp.task("exportTests", function() {
-    var jsTask = exportTestJS();
-    var srcTask = exportTestSrcFiles();
-    var libTask = exportTestLibFiles();
-    return merge(jsTask, srcTask, libTask);
-});
 
-gulp.task("exportJS", function() {
+gulp.task("exportJS", function () {
     var bookmarkletTask = exportBookmarkletJS(PATHS.TARGET.BOOKMARKLET);
     var chromeTask = exportChromeJS();
     var edgeTask = exportEdgeJS();
     var firefoxTask = exportFirefoxJS();
     var safariTask = exportSafariJS();
-    var testTask = exportTestJS();
 
-    return merge(bookmarkletTask, chromeTask, edgeTask, firefoxTask, safariTask, testTask);
+    return merge(bookmarkletTask, chromeTask, edgeTask, firefoxTask, safariTask);
 });
 
-gulp.task("exportCSS", function() {
+gulp.task("exportCSS", function () {
     var bookmarkletTask = exportBookmarkletCSS(PATHS.TARGET.BOOKMARKLET);
     var chromeTask = exportChromeCSS();
     var edgeTask = exportEdgeCSS();
@@ -923,17 +865,16 @@ gulp.task("exportCSS", function() {
     return merge(bookmarkletTask, chromeTask, edgeTask, safariTask);
 });
 
-gulp.task("exportSrcFiles", function() {
+gulp.task("exportSrcFiles", function () {
     var bookmarkletTask = exportBookmarkletSrcFiles(PATHS.TARGET.BOOKMARKLET);
     var chromeTask = exportChromeSrcFiles();
     var edgeTask = exportEdgeSrcFiles();
     var safariTask = exportSafariSrcFiles();
-    var testTask = exportTestSrcFiles();
 
-    return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, testTask);
+    return merge(bookmarkletTask, chromeTask, edgeTask, safariTask);
 });
 
-gulp.task("export", function(callback) {
+gulp.task("export", function (callback) {
     runSequence(
         "exportAllCommonJS",
         "exportBookmarklet",
@@ -941,23 +882,18 @@ gulp.task("export", function(callback) {
         "exportEdge",
         "exportFirefox",
         "exportSafari",
-        "exportTests",
         callback);
 });
 
 ////////////////////////////////////////
 // PACKAGING TASKS
 ////////////////////////////////////////
-gulp.task("packageChrome", function() {
-    return gulp.src([PATHS.TARGET.CHROME + "/**/*", "!" + PATHS.TARGET.CHROME + "/OneNoteWebClipper.zip"]).
-    pipe(zip("OneNoteWebClipper.zip")).
-    pipe(gulp.dest(PATHS.TARGET.CHROME));
+gulp.task("packageChrome", function () {
+    return gulp.src([PATHS.TARGET.CHROME + "/**/*", "!" + PATHS.TARGET.CHROME + "/OneNoteWebClipper.zip"]).pipe(zip("OneNoteWebClipper.zip")).pipe(gulp.dest(PATHS.TARGET.CHROME));
 });
 
-gulp.task("packageFirefox", function() {
-    return gulp.src([PATHS.TARGET.FIREFOX + "/**/*", "!" + PATHS.TARGET.FIREFOX + "/OneNoteWebClipper.xpi"]).
-    pipe(zip("OneNoteWebClipper.xpi")).
-    pipe(gulp.dest(PATHS.TARGET.FIREFOX));
+gulp.task("packageFirefox", function () {
+    return gulp.src([PATHS.TARGET.FIREFOX + "/**/*", "!" + PATHS.TARGET.FIREFOX + "/OneNoteWebClipper.xpi"]).pipe(zip("OneNoteWebClipper.xpi")).pipe(gulp.dest(PATHS.TARGET.FIREFOX));
 });
 
 gulp.task("package", function (callback) {
@@ -970,19 +906,19 @@ gulp.task("package", function (callback) {
 ////////////////////////////////////////
 // PRODUCTION-ONLY TASKS
 ////////////////////////////////////////
-gulp.task("minifyCss", function() {
+gulp.task("minifyCss", function () {
     return gulp.src(PATHS.BUILDROOT + "css/**/*.css")
         .pipe(minifyCSS())
         .pipe(gulp.dest(PATHS.BUILDROOT + "css"));
 });
 
-gulp.task("minifyJs", function() {
+gulp.task("minifyJs", function () {
     return gulp.src(PATHS.BUNDLEROOT + "**/*.js")
         .pipe(uglify())
         .pipe(gulp.dest(PATHS.BUNDLEROOT));
 });
 
-gulp.task("minify", function(callback) {
+gulp.task("minify", function (callback) {
     runSequence(
         "minifyCss",
         "minifyJs",
@@ -992,14 +928,12 @@ gulp.task("minify", function(callback) {
 ////////////////////////////////////////
 // RUN
 ////////////////////////////////////////
-gulp.task("runTests", function() {
-    return qunit(PATHS.TARGET.TESTS + "index.html", {timeout: 10});
-});
+
 
 ////////////////////////////////////////
 // WATCH TASKS
 ////////////////////////////////////////
-gulp.task("watchTS", function() {
+gulp.task("watchTS", function () {
     gulp.watch([
         PATHS.SRC.ROOT + "strings.json",
         PATHS.SRC.ROOT + "settings.json",
@@ -1008,30 +942,29 @@ gulp.task("watchTS", function() {
     ], ["watchTSAction"]);
 });
 
-gulp.task("watchTSAction", function(callback) {
+gulp.task("watchTSAction", function (callback) {
     runSequence(
         "compile",
         "bundle",
         "exportJS",
-        "runTests",
         "tslint",
         callback);
 });
 
-gulp.task("watchLess", function() {
+gulp.task("watchLess", function () {
     gulp.watch(PATHS.SRC.ROOT + "styles/*.less",
         ["watchLessAction"]
     );
 });
 
-gulp.task("watchLessAction", function(callback) {
+gulp.task("watchLessAction", function (callback) {
     runSequence(
         "compileCss",
         "exportCSS",
         callback);
 });
 
-gulp.task("watchSrcFiles", function() {
+gulp.task("watchSrcFiles", function () {
     gulp.watch([
             PATHS.SRC.ROOT + "_locales/*",
             PATHS.SRC.ROOT + "icons/*",
@@ -1045,22 +978,20 @@ gulp.task("watchSrcFiles", function() {
             PATHS.SRC.ROOT + "scripts/extensions/edge/manifest.json",
             PATHS.SRC.ROOT + "scripts/extensions/safari/Info.plist",
             PATHS.SRC.ROOT + "scripts/extensions/safari/safariExtension.html",
-            PATHS.SRC.ROOT + "tests/tests.html"
         ], ["watchSrcAction"]
     );
 });
 
-gulp.task("watchSrcAction", function(callback) {
+gulp.task("watchSrcAction", function (callback) {
     runSequence(
         "exportSrcFiles",
-        "runTests",
         callback);
 });
 
 ////////////////////////////////////////
 // SHORTCUT TASKS
 ////////////////////////////////////////
-gulp.task("buildOnly", function(callback) {
+gulp.task("buildOnly", function (callback) {
     var tasks = ["compileCss", "compile", "bundle"];
     if (argv.production && !argv.nominify) {
         tasks.push("minify");
@@ -1070,7 +1001,7 @@ gulp.task("buildOnly", function(callback) {
     runSequence.apply(null, tasks);
 });
 
-gulp.task("watch", function(callback) {
+gulp.task("watch", function (callback) {
     runSequence(
         "buildOnly",
         "watchTS",
@@ -1079,15 +1010,14 @@ gulp.task("watch", function(callback) {
         callback);
 });
 
-gulp.task("build", function(callback) {
+gulp.task("build", function (callback) {
     runSequence(
         "buildOnly",
         "tslint",
-        "runTests",
         callback);
 });
 
-gulp.task("full", function(callback) {
+gulp.task("NoTests", function (callback) {
     runSequence(
         "clean",
         "build",
