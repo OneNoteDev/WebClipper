@@ -2,6 +2,7 @@ import * as _ from "lodash";
 import {Constants} from "../../constants";
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 import {Localization} from "../../localization/localization";
+import {PropertyName} from "../../logging/submodules/propertyName";
 import {PreviewGlobalInfo} from "../../previewInfo";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
@@ -75,6 +76,7 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 						className={Constants.Classes.textAreaInput}
 						role={Constants.Roles.textbox}
 						rows={1} tabIndex={211}
+						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}
 						value={!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
 						onblur={this.onDoneEditing.bind(this)} {...this.onElementFirstDraw(this.setFocus)}>
