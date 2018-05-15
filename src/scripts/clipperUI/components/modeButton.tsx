@@ -1,3 +1,4 @@
+import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
 import {ComponentBase} from "../componentBase";
 import {ClipMode} from "../clipMode";
@@ -28,7 +29,7 @@ class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
 		let idName: string = clipMode + "Button";
 
 		return (
-			<a className={className} role="tab"
+			<a className={className} role={Constants.Roles.tab}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex) }
 				aria-selected={this.props.selected}>

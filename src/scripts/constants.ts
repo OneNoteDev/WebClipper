@@ -434,5 +434,6 @@ export module Constants {
 	export module Roles {
 		export var button = "button";
 		export var textbox = "textbox";
+		export var tab = "tab";
 	}
 }

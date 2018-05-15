@@ -2,7 +2,6 @@ import * as _ from "lodash";
 import {Constants} from "../../constants";
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 import {Localization} from "../../localization/localization";
-import {PropertyName} from "../../logging/submodules/propertyName";
 import {PreviewGlobalInfo} from "../../previewInfo";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
@@ -24,6 +23,28 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 
 	setFocus(textArea: HTMLElement) {
 		textArea.focus();
+	}
+
+    // TODO: change this to a config passed into the textarea?
+	private addTextAreaListener() {
+		document.addEventListener("input", (event) => {
+			let element = event.target;
+			let annotationField = document.getElementById(Constants.Ids.annotationField) as HTMLTextAreaElement;
+			if (!!element && element === annotationField) {
+				this.handleAnnotationFieldChanged(annotationField.value);
+			}
+		});
+	}
+
+	private handleAnnotationFieldChanged(annotationValue: string) {
+		this.props.clipperState.setState({
+			previewGlobalInfo: {
+				previewTitleText: this.props.clipperState.previewGlobalInfo.previewTitleText,
+				annotation: annotationValue,
+				fontSize: this.props.clipperState.previewGlobalInfo.fontSize,
+				serif: this.props.clipperState.previewGlobalInfo.serif
+			}
+		});
 	}
 
 	onDoneEditing(e: Event) {
@@ -84,28 +105,6 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 				</div>
 			);
 		}
-	}
-
-	// TODO: change this to a config passed into the textarea?
-	private addTextAreaListener() {
-		document.addEventListener("input", (event) => {
-			let element = event.target;
-			let annotationField = document.getElementById(Constants.Ids.annotationField) as HTMLTextAreaElement;
-			if (!!element && element === annotationField) {
-				this.handleAnnotationFieldChanged(annotationField.value);
-			}
-		});
-	}
-
-	private handleAnnotationFieldChanged(annotationValue: string) {
-		this.props.clipperState.setState({
-			previewGlobalInfo: {
-				previewTitleText: this.props.clipperState.previewGlobalInfo.previewTitleText,
-				annotation: annotationValue,
-				fontSize: this.props.clipperState.previewGlobalInfo.fontSize,
-				serif: this.props.clipperState.previewGlobalInfo.serif
-			}
-		});
 	}
 }
 
