@@ -1,5 +1,3 @@
-import {Constants} from "../../../constants";
-
 import {ComponentBase} from "../../componentBase";
 
 /**
@@ -43,7 +41,7 @@ export abstract class PreviewViewerHeaderComponentBase<T, P> extends ComponentBa
 			renderables.push(
 				<div id={id ? id : ""} className={className ? className : controlButtonGroup}>
 					{buttonGroups[i].innerElements}
-				</div >);
+				</div>);
 		}
 
 		return (

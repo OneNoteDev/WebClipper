@@ -23,7 +23,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 		return {
 			className: Constants.Classes.srOnly,
 			innerElements: [
-				<div>{Localization.getLocalizedString("WebClipper.ClipType.Article.Button")}</div>
+				<div aria-label="hello hello hello" >{Localization.getLocalizedString("WebClipper.ClipType.Article.Button")}</div>
 			]
 		};
 	}

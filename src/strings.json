@@ -46,7 +46,7 @@
 	"WebClipper.ClipType.Region.Button.Tooltip": "Take a screenshot of the part of the page you\u0027ll select.",
 	"WebClipper.ClipType.Region.ProgressLabel": "Clipping Region",
 	"WebClipper.ClipType.ScreenShot.Button": "Full Page",
-	"WebClipper.ClipType.ScreenShot.Button.Tooltip": "Take a screenshot of the whole page, just like you see it.",
+	"WebClipper.ClipType.ScreenShot.Button.Tooltip": "Take a screenshot of the whole page.",
 	"WebClipper.ClipType.ScreenShot.ProgressLabel": "Clipping Page",
 	"WebClipper.ClipType.Selection.Button": "Selection",
 	"WebClipper.ClipType.Selection.Button.Tooltip": "Clip the selection you made on the web page.",

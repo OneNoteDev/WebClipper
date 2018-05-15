@@ -1,62 +1,46 @@
-import {AuthType, UpdateReason, UserInfo} from "../userInfo";
+import * as _ from "lodash";
 import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
-import {ClientType} from "../clientType";
-import {Constants} from "../constants";
-import {ObjectUtils} from "../objectUtils";
-
-import {PageInfo} from "../pageInfo";
-import {Polyfills} from "../polyfills";
-import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
-import {Settings} from "../settings";
-import {TooltipType} from "./tooltipType";
-import {UrlUtils} from "../urlUtils";
-
 import {Communicator} from "../communicator/communicator";
 import {IFrameMessageHandler} from "../communicator/iframeMessageHandler";
 import {InlineMessageHandler} from "../communicator/inlineMessageHandler";
 import {SmartValue} from "../communicator/smartValue";
-
-import {AugmentationHelper, AugmentationModel} from "../contentCapture/augmentationHelper";
+import {Constants} from "../constants";
+import {AugmentationHelper} from "../contentCapture/augmentationHelper";
 import {BookmarkError, BookmarkHelper, BookmarkResult} from "../contentCapture/bookmarkHelper";
 import {FullPageScreenshotHelper} from "../contentCapture/fullPageScreenshotHelper";
 import {PdfScreenshotHelper, PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
-
 import {DomUtils} from "../domParsers/domUtils";
 import {VideoUtils} from "../domParsers/videoUtils";
-
-import {ClipperInjectOptions} from "../extensions/clipperInject";
-import {InvokeOptions, InvokeMode} from "../extensions/invokeOptions";
-
 import {InlineExtension} from "../extensions/bookmarklet/inlineExtension";
-
+import {ClipperInjectOptions} from "../extensions/clipperInject";
+import {InvokeMode, InvokeOptions} from "../extensions/invokeOptions";
 import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
-
 import {Localization} from "../localization/localization";
-
-import * as Log from "../logging/log";
 import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
-import {Logger} from "../logging/logger";
-
+import * as Log from "../logging/log";
+import {ObjectUtils} from "../objectUtils";
+import {PageInfo} from "../pageInfo";
+import {Polyfills} from "../polyfills";
+import {PreviewGlobalInfo} from "../previewInfo";
 import {OneNoteSaveableFactory} from "../saveToOneNote/oneNoteSaveableFactory";
 import {SaveToOneNote, SaveToOneNoteOptions} from "../saveToOneNote/saveToOneNote";
 import {SaveToOneNoteLogger} from "../saveToOneNote/saveToOneNoteLogger";
-
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
-
+import {UrlUtils} from "../urlUtils";
+import {AuthType, UpdateReason, UserInfo} from "../userInfo";
 import {ClipMode} from "./clipMode";
-import {Clipper} from "./frontEndGlobals";
 import {ClipperState} from "./clipperState";
 import {ClipperStateUtilities} from "./clipperStateUtilities";
 import {ComponentBase} from "./componentBase";
+import {Clipper} from "./frontEndGlobals";
 import {MainController} from "./mainController";
 import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {PreviewViewer} from "./previewViewer";
 import {RatingsHelper} from "./ratingsHelper";
 import {RegionSelector} from "./regionSelector";
 import {Status} from "./status";
-
-import * as _ from "lodash";
+import {TooltipType} from "./tooltipType";
 
 class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private isFullScreen = new SmartValue<boolean>(false);
@@ -68,18 +52,41 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		this.initializeSmartValues();
 	}
 
+	private static shouldShowOptions(state: ClipperState): boolean {
+		return (state.uiExpanded &&
+			ClipperStateUtilities.isUserLoggedIn(state) &&
+			state.oneNoteApiResult.status === Status.NotStarted &&
+			!state.badState);
+	}
+
+	private static shouldShowPreviewViewer(state: ClipperState): boolean {
+		return (this.shouldShowOptions(state) &&
+			(state.currentMode.get() !== ClipMode.Region ||
+				state.regionResult.status === Status.Succeeded));
+	}
+
+	private static shouldShowRegionSelector(state: ClipperState): boolean {
+		return (this.shouldShowOptions(state) &&
+			state.currentMode.get() === ClipMode.Region &&
+			state.regionResult.status !== Status.Succeeded);
+	}
+
+	private static shouldShowMainController(state: ClipperState): boolean {
+		return state.regionResult.status !== Status.InProgress || state.badState;
+	}
+
 	getInitialState(): ClipperState {
 		return {
 			uiExpanded: true,
 			currentMode: new SmartValue<ClipMode>(this.getDefaultClipMode()),
 
-			userResult: { status: Status.NotStarted } ,
-			fullPageResult: { status: Status.NotStarted },
-			pdfResult: { data: new SmartValue<PdfScreenshotResult>(), status: Status.NotStarted },
-			regionResult: { status: Status.NotStarted, data: [] },
-			augmentationResult: { status: Status.NotStarted },
-			oneNoteApiResult: { status: Status.NotStarted },
-			bookmarkResult: { status: Status.NotStarted },
+			userResult: {status: Status.NotStarted},
+			fullPageResult: {status: Status.NotStarted},
+			pdfResult: {data: new SmartValue<PdfScreenshotResult>(), status: Status.NotStarted},
+			regionResult: {status: Status.NotStarted, data: []},
+			augmentationResult: {status: Status.NotStarted},
+			oneNoteApiResult: {status: Status.NotStarted},
+			bookmarkResult: {status: Status.NotStarted},
 
 			setState: (partialState: ClipperState) => {
 				this.setState(partialState);
@@ -113,10 +120,33 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		};
 	}
 
+	render() {
+		let previewViewerItem = ClipperClass.shouldShowPreviewViewer(this.state) ?
+			<PreviewViewer clipperState={this.state}/> :
+			undefined;
+		let regionSelectorItem = ClipperClass.shouldShowRegionSelector(this.state) ?
+			<RegionSelector clipperState={this.state}/> : undefined;
+		let mainControllerStyle = ClipperClass.shouldShowMainController(this.state) ? {} : {display: "none"};
+
+		return (
+			<div>
+				{previewViewerItem}
+				{regionSelectorItem}
+				<div style={mainControllerStyle}>
+					<MainController clipperState={this.state}
+													onSignInInvoked={this.handleSignIn.bind(this)}
+													onSignOutInvoked={this.handleSignOut.bind(this)}
+													updateFrameHeight={this.updateFrameHeight.bind(this)}
+													onStartClip={this.handleStartClip.bind(this)}/>
+				</div>
+			</div>
+		);
+	}
+
 	private getResetState(): ClipperState {
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
-			oneNoteApiResult: { status: Status.NotStarted }
+			oneNoteApiResult: {status: Status.NotStarted}
 		};
 	}
 
@@ -135,7 +165,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.showRefreshClipperMessage, (errorMessage: string) => {
 			if (!this.state.badState) {
 				Clipper.logger.logFailure(Log.Failure.Label.OrphanedWebClippersDueToExtensionRefresh, Log.Failure.Type.Expected,
-					{ error: errorMessage });
+					{error: errorMessage});
 				this.state.setState({
 					badState: true
 				});
@@ -143,7 +173,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		});
 
 		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.toggleClipper, () => {
-			this.state.setState({ uiExpanded: !this.state.uiExpanded });
+			this.state.setState({uiExpanded: !this.state.uiExpanded});
 		});
 
 		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.onSpaNavigate, () => {
@@ -151,8 +181,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			if (this.state.uiExpanded) {
 				let hideClipperDueToSpaNavigateEvent = new Log.Event.BaseEvent(Log.Event.Label.HideClipperDueToSpaNavigate);
 				Clipper.logger.logEvent(hideClipperDueToSpaNavigateEvent);
-				this.state.setState({ uiExpanded: false });
-			};
+				this.state.setState({uiExpanded: false});
+			}
+			;
 		});
 
 		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.setInvokeOptions, (options: InvokeOptions) => {
@@ -199,7 +230,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		if (this.state.pdfResult.status === Status.NotStarted) {
 			// If network file, send XHR, get bytes back, convert to PDFDocumentProxy
 			// If local file, get bytes back, convert to PDFDocumentProxy
-			this.state.setState({ pdfResult: { data: new SmartValue<PdfScreenshotResult>(undefined), status: Status.InProgress } });
+			this.state.setState({
+				pdfResult: {
+					data: new SmartValue<PdfScreenshotResult>(undefined),
+					status: Status.InProgress
+				}
+			});
 			this.getPdfScreenshotResultFromRawUrl(this.state.pageInfo.rawUrl)
 				.then((pdfScreenshotResult: PdfScreenshotResult) => {
 					this.state.pdfResult.data.set(pdfScreenshotResult);
@@ -245,10 +281,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				}
 			});
 		} else {
-			this.state.setState({ fullPageResult: { status: Status.InProgress } });
+			this.state.setState({fullPageResult: {status: Status.InProgress}});
 
 			FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData).then((result) => {
-				this.state.setState({ fullPageResult: { data: result, status: Status.Succeeded } });
+				this.state.setState({fullPageResult: {data: result, status: Status.Succeeded}});
 			}, () => {
 				this.state.setState({
 					fullPageResult: {
@@ -273,7 +309,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				}
 			});
 		} else {
-			this.state.setState({ augmentationResult: { status: Status.InProgress } });
+			this.state.setState({augmentationResult: {status: Status.InProgress}});
 
 			let pageInfo = this.state.pageInfo;
 
@@ -285,8 +321,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			AugmentationHelper.augmentPage(augmentationUrl, pageInfo.contentLocale, pageInfo.contentData).then((result) => {
 				result.ContentInHtml = DomUtils.cleanHtml(result.ContentInHtml);
 				this.state.setState({
-					augmentationResult: { data: result, status: Status.Succeeded },
-					augmentationPreviewInfo: { previewBodyHtml: result.ContentInHtml }
+					augmentationResult: {data: result, status: Status.Succeeded},
+					augmentationPreviewInfo: {previewBodyHtml: result.ContentInHtml}
 				});
 			}, () => {
 				this.state.setState({
@@ -302,7 +338,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private captureBookmarkContent() {
-		this.state.setState({ bookmarkResult: { status: Status.InProgress } });
+		this.state.setState({bookmarkResult: {status: Status.InProgress}});
 
 		let pageInfo = this.state.pageInfo;
 		let pageUrl = pageInfo.rawUrl;
@@ -325,7 +361,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		BookmarkHelper.bookmarkPage(pageUrl, pageTitle, metadataElements, true /* allowFallback */, imageElements, textElements).then((result: BookmarkResult) => {
 			this.state.setState({
-				bookmarkResult: { data: result, status: Status.Succeeded }
+				bookmarkResult: {data: result, status: Status.Succeeded}
 			});
 		}, (error: BookmarkError) => {
 			this.state.setState({
@@ -344,10 +380,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private setInvokeOptions(options: InvokeOptions) {
-		this.setState({	invokeOptions: options });
+		this.setState({invokeOptions: options});
 
 		// This needs to happen after the invokeOptions set as it is reliant on that order
-		this.setState({	currentMode: this.state.currentMode.set(this.getDefaultClipMode()) });
+		this.setState({currentMode: this.state.currentMode.set(this.getDefaultClipMode())});
 
 		// We assume that invokeDataForMode is always a non-undefined value where it makes sense
 		// and that it's the background's responsibility to ensure that is the case
@@ -409,15 +445,15 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					Clipper.logger.logFailure(Log.Failure.Label.UserSetWithInvalidExpiredData, Log.Failure.Type.Unexpected);
 				}
 
-				this.state.setState({ userResult: { status: Status.Succeeded, data: updatedUser } });
+				this.state.setState({userResult: {status: Status.Succeeded, data: updatedUser}});
 				Clipper.logger.setContextProperty(Log.Context.Custom.AuthType, updatedUser.user.authType);
 				Clipper.logger.setContextProperty(Log.Context.Custom.UserInfoId, updatedUser.user.cid);
 			} else {
-				this.state.setState({ userResult: { status: Status.Failed, data: updatedUser } });
+				this.state.setState({userResult: {status: Status.Failed, data: updatedUser}});
 			}
 		};
 
-		this.state.setState({ userResult: { status: Status.InProgress } });
+		this.state.setState({userResult: {status: Status.InProgress}});
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.getInitialUser, {
 			callback: (freshInitialUser: UserInfo) => {
 				if (freshInitialUser && freshInitialUser.user) {
@@ -431,13 +467,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}
 		});
 
-		this.state.setState({ fetchLocStringStatus: Status.InProgress });
+		this.state.setState({fetchLocStringStatus: Status.InProgress});
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.clipperStrings, {
 			callback: (data: Object) => {
 				if (data) {
 					Localization.setLocalizedStrings(data);
 				}
-				this.state.setState({ fetchLocStringStatus: Status.Succeeded });
+				this.state.setState({fetchLocStringStatus: Status.Succeeded});
 			}
 		});
 
@@ -473,7 +509,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		// Check the options passed in to determine what kind of Communicator we need to talk to the background task
 		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.setInjectOptions, (options: ClipperInjectOptions) => {
-			this.setState({ injectOptions: options });
+			this.setState({injectOptions: options});
 
 			if (this.state.injectOptions.useInlineBackgroundWorker) {
 				let background = new InlineExtension();
@@ -501,7 +537,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 							lowestTabIndexElement = tabbable;
 						}
 					}
-
 					lowestTabIndexElement.focus();
 				}
 			});
@@ -515,7 +550,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			if (updatedClientInfo) {
 				// The default Clip mode now also depends on clientInfo, in addition to pageInfo
 				// TODO: Don't do this if they already have a mode chosen (once we are updating the pageInfo more object more often)
-				this.state.setState({ currentMode: this.state.currentMode.set(this.getDefaultClipMode()) });
+				this.state.setState({currentMode: this.state.currentMode.set(this.getDefaultClipMode())});
 			}
 		});
 	}
@@ -530,7 +565,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				default:
 					break;
 			}
-		}, { callOnSubscribe: false });
+		}, {callOnSubscribe: false});
 	}
 
 	private initializeNumSuccessfulClips(): void {
@@ -570,14 +605,14 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private updateFrameHeight(newContainerHeight: number) {
-		Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updateFrameHeight, { param: newContainerHeight });
+		Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updateFrameHeight, {param: newContainerHeight});
 	}
 
 	private handleSignIn(authType: AuthType) {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthAttempted);
 		let handleSignInEvent = new Log.Event.PromiseEvent(Log.Event.Label.HandleSignInEvent);
 
-		this.setState({ userResult: { status: Status.InProgress } });
+		this.setState({userResult: {status: Status.InProgress}});
 
 		type ErrorObject = {
 			updateReason: UpdateReason,
@@ -588,40 +623,41 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signInUser, {
 			param: authType, callback: (data: UserInfo | ErrorObject) => {
-			// For cleaner referencing
-			// TODO: This kind of thing should go away as we move the communicator to be Promise based.
-			let updatedUser = data as UserInfo;
-			let errorObject = data as ErrorObject;
+				// For cleaner referencing
+				// TODO: This kind of thing should go away as we move the communicator to be Promise based.
+				let updatedUser = data as UserInfo;
+				let errorObject = data as ErrorObject;
 
-			let errorsFound = errorObject.error || errorObject.errorDescription;
-			if (errorsFound) {
-				errorObject.errorDescription = AuthType[authType] + ": " + errorObject.error + ": " + errorObject.errorDescription;
+				let errorsFound = errorObject.error || errorObject.errorDescription;
+				if (errorsFound) {
+					errorObject.errorDescription = AuthType[authType] + ": " + errorObject.error + ": " + errorObject.errorDescription;
 
-				this.state.setState({ userResult: { status: Status.Failed, data: errorObject } });
+					this.state.setState({userResult: {status: Status.Failed, data: errorObject}});
 
-				handleSignInEvent.setStatus(Log.Status.Failed);
-				handleSignInEvent.setFailureInfo({ error: errorObject.errorDescription });
-				handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, errorObject.correlationId);
+					handleSignInEvent.setStatus(Log.Status.Failed);
+					handleSignInEvent.setFailureInfo({error: errorObject.errorDescription});
+					handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, errorObject.correlationId);
 
-				Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInFailed);
+					Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInFailed);
+				}
+
+				let userInfoReturned = updatedUser && !!updatedUser.user;
+				if (userInfoReturned) {
+					Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
+					Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInCompleted);
+				}
+
+				handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationReturned, userInfoReturned);
+				handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.SignInCancelled, !errorsFound && !userInfoReturned);
+
+				Clipper.logger.logEvent(handleSignInEvent);
 			}
-
-			let userInfoReturned = updatedUser && !!updatedUser.user;
-			if (userInfoReturned) {
-				Clipper.storeValue(ClipperStorageKeys.hasPatchPermissions, "true");
-				Clipper.logger.logUserFunnel(Log.Funnel.Label.AuthSignInCompleted);
-			}
-
-			handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationReturned, userInfoReturned);
-			handleSignInEvent.setCustomProperty(Log.PropertyName.Custom.SignInCancelled, !errorsFound && !userInfoReturned);
-
-			Clipper.logger.logEvent(handleSignInEvent);
-		}});
+		});
 	}
 
 	private handleSignOut(authType: string): void {
 		this.state.setState(this.getSignOutState());
-		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signOutUser, { param: AuthType[authType] });
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signOutUser, {param: AuthType[authType]});
 
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.SignOut);
 		Clipper.logger.logSessionEnd(Log.Session.EndTrigger.SignOut);
@@ -638,34 +674,36 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private handleStartClip(): void {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ClipAttempted);
 
-		this.state.setState({ userResult: { status: Status.InProgress, data: this.state.userResult.data } });
-		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, { callback: (updatedUser: UserInfo) => {
-			if (updatedUser && updatedUser.user) {
-				let currentMode = this.state.currentMode.get();
-				if (currentMode === ClipMode.FullPage) {
-					// A page info refresh needs to be triggered if the url has changed right before the clip action
-					Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged, {
-						callback: () => {
-							this.startClip();
-						}
-					});
-				} else if (currentMode === ClipMode.Bookmark) {
-					// set the rendered bookmark preview HTML as the exact HTML to send to OneNote
-					let previewBodyHtml = document.getElementById("previewBody").innerHTML;
-					this.state.setState({
-						bookmarkPreviewInfo: { previewBodyHtml: previewBodyHtml }
-					});
+		this.state.setState({userResult: {status: Status.InProgress, data: this.state.userResult.data}});
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, {
+			callback: (updatedUser: UserInfo) => {
+				if (updatedUser && updatedUser.user) {
+					let currentMode = this.state.currentMode.get();
+					if (currentMode === ClipMode.FullPage) {
+						// A page info refresh needs to be triggered if the url has changed right before the clip action
+						Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged, {
+							callback: () => {
+								this.startClip();
+							}
+						});
+					} else if (currentMode === ClipMode.Bookmark) {
+						// set the rendered bookmark preview HTML as the exact HTML to send to OneNote
+						let previewBodyHtml = document.getElementById("previewBody").innerHTML;
+						this.state.setState({
+							bookmarkPreviewInfo: {previewBodyHtml: previewBodyHtml}
+						});
 
-					this.startClip();
-				} else {
-					this.startClip();
+						this.startClip();
+					} else {
+						this.startClip();
+					}
 				}
 			}
-		}});
+		});
 	}
 
 	private startClip(): void {
-		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
+		this.state.setState({oneNoteApiResult: {status: Status.InProgress}});
 
 		this.storeLastClippedInformation();
 		SaveToOneNoteLogger.logClip(this.state);
@@ -687,13 +725,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				let numSuccessfulClips = this.state.numSuccessfulClips + 1;
 				Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numSuccessfulClips.toString());
 				this.state.setState({
-					oneNoteApiResult: { data: createPageResponse.parsedResponse, status: Status.Succeeded },
+					oneNoteApiResult: {data: createPageResponse.parsedResponse, status: Status.Succeeded},
 					numSuccessfulClips: numSuccessfulClips,
 					showRatingsPrompt: RatingsHelper.shouldShowRatingsPrompt(this.state)
 				});
 			}).catch((error: OneNoteApi.RequestError) => {
 				OneNoteApiUtils.logOneNoteApiRequestError(clipEvent, error);
-				this.state.setState({ oneNoteApiResult: { data: error, status: Status.Failed } });
+				this.state.setState({oneNoteApiResult: {data: error, status: Status.Failed}});
 			}).then(() => {
 				Clipper.logger.logEvent(clipEvent);
 			});
@@ -727,51 +765,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
 		}
 	}
-
-	private static shouldShowOptions(state: ClipperState): boolean {
-		return (state.uiExpanded &&
-			ClipperStateUtilities.isUserLoggedIn(state) &&
-			state.oneNoteApiResult.status === Status.NotStarted &&
-			!state.badState);
-	}
-
-	private static shouldShowPreviewViewer(state: ClipperState): boolean {
-		return (this.shouldShowOptions(state) &&
-			(state.currentMode.get() !== ClipMode.Region ||
-			state.regionResult.status === Status.Succeeded));
-	}
-
-	private static shouldShowRegionSelector(state: ClipperState): boolean {
-		return (this.shouldShowOptions(state) &&
-			state.currentMode.get() === ClipMode.Region &&
-			state.regionResult.status !== Status.Succeeded);
-	}
-
-	private static shouldShowMainController(state: ClipperState): boolean {
-		return state.regionResult.status !== Status.InProgress || state.badState;
-	}
-
-	render() {
-		let previewViewerItem = ClipperClass.shouldShowPreviewViewer(this.state) ?
-			<PreviewViewer clipperState={this.state} /> :
-			undefined;
-		let regionSelectorItem = ClipperClass.shouldShowRegionSelector(this.state) ? <RegionSelector clipperState={this.state} /> : undefined;
-		let mainControllerStyle = ClipperClass.shouldShowMainController(this.state) ? { } : { display: "none" };
-
-		return (
-			<div>
-				{previewViewerItem}
-				{regionSelectorItem}
-				<div style={mainControllerStyle} >
-					<MainController clipperState={this.state}
-						onSignInInvoked={this.handleSignIn.bind(this) }
-						onSignOutInvoked={this.handleSignOut.bind(this) }
-						updateFrameHeight={this.updateFrameHeight.bind(this) }
-						onStartClip={this.handleStartClip.bind(this) } />
-				</div>
-			</div>
-		);
-	}
 }
 
 Polyfills.init();
@@ -782,7 +775,7 @@ window.onerror = (message: string, filename?: string, lineno?: number, colno?: n
 	let callStack = error ? Log.Failure.getStackTrace(error) : "[unknown stacktrace]";
 
 	Clipper.logger.logFailure(Log.Failure.Label.UnhandledExceptionThrown, Log.Failure.Type.Unexpected,
-		{ error: message + " (" + filename + ":" + lineno + ":" + colno + ") at " + callStack }, "ClipperUI");
+		{error: message + " (" + filename + ":" + lineno + ":" + colno + ") at " + callStack}, "ClipperUI");
 
 	if (oldOnError) {
 		oldOnError(message, filename, lineno, colno, error);
