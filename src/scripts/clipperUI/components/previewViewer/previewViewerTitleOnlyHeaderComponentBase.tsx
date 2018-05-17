@@ -1,15 +1,12 @@
-import {Constants} from "../../../constants";
-import {Experiments} from "../../../experiments";
-
 import {Localization} from "../../../localization/localization";
-
 import {ClipperStateProp} from "../../clipperState";
-
 import {ControlGroup, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
 
 export abstract class PreviewViewerTitleOnlyHeaderComponentBase extends PreviewViewerHeaderComponentBase<{}, ClipperStateProp> {
 	public abstract getControlGroupId(): string;
+
 	public abstract getHeader(): string;
+
 	public abstract getHeaderId(): string;
 
 	getControlGroups(): ControlGroup[] {

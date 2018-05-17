@@ -2,498 +2,498 @@
 	Main clipper UI class defines
 *---------------------------------------------------------*/
 .popover-arrow {
-	content: " ";
-	width: 0;
-	height: 0;
-	border-style: solid;
-	position: absolute;
-	margin-top: 5px;
-	border-width: 0px 10px 10px 10px;
-	border-color: #e81123 transparent #e81123 transparent;
-	top: -5px;
-	left: calc(50%, -5px);
-	margin-top: 0;
-	margin-bottom: 0;
+  content: " ";
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: absolute;
+  margin-top: 5px;
+  border-width: 0px 10px 10px 10px;
+  border-color: #e81123 transparent #e81123 transparent;
+  top: -5px;
+  left: calc(50%, -5px);
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .popover {
-	font-family: @SegoeUi;
-	box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
-	position: absolute;
-	background: #e81123;
-	border-radius: 4px;
-	font-size: 15px;
-	line-height: 20px;
-	pointer-events: none;
-	word-wrap: break-word;
-	color: white;
-	max-width: 160px;
-	border-radius: 3px;
-	padding: 4px;
-	text-align: center;
-	margin-top: 5px;
+  font-family: @SegoeUi;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28);
+  position: absolute;
+  background: #e81123;
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 20px;
+  pointer-events: none;
+  word-wrap: break-word;
+  color: white;
+  max-width: 160px;
+  border-radius: 3px;
+  padding: 4px;
+  text-align: center;
+  margin-top: 5px;
 }
 
 .actionLabelFont {
-	font-weight: normal;
-	font-size: 24px;
-	color: white;
+  font-weight: normal;
+  font-size: 24px;
+  color: white;
 }
 
 .buttonLabelFont {
-	font-weight: normal;
-	font-size: 15px;
-	color: white;
+  font-weight: normal;
+  font-size: 15px;
+  color: white;
 }
 
 .changeDescriptionFont {
-	font-weight: normal;
-	font-size: 13px;
-	color: #e5d5ed;
+  font-weight: normal;
+  font-size: 13px;
+  color: #e5d5ed;
 }
 
 .changeTitleFont {
-	font-weight: normal;
-	font-size: 13px;
-	color: white;
+  font-weight: normal;
+  font-size: 13px;
+  color: white;
 }
 
 .closeButtonIcon {
-	display: block;
-	height: 10px;
-	width: 10px;
-	padding: 10px;
+  display: block;
+  height: 10px;
+  width: 10px;
+  padding: 10px;
 }
 
 .confineText {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .currentUserIdFont {
-	font-weight: normal;
-	font-size: 9px;
-	color: @ClipperLightFontColor;
+  font-weight: normal;
+  font-size: 9px;
+  color: @ClipperLightFontColor;
 }
 
 .dialogMessageFont {
-	font-weight: normal;
-	font-size: 18px;
-	color: white;
+  font-weight: normal;
+  font-size: 18px;
+  color: white;
 }
 
 #dialogDebugMessageContainer {
-	font-size: 10px;
-	color: white;
-	padding-top: 20px;
+  font-size: 10px;
+  color: white;
+  padding-top: 20px;
 
-	-webkit-touch-callout: text;
-	-webkit-user-select: text;
-	-khtml-user-select: text;
-	-moz-user-select: text;
-	-ms-user-select: text;
-	-o-user-select: text;
-	user-select: text;
+  -webkit-touch-callout: text;
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  -o-user-select: text;
+  user-select: text;
 }
 
 .failureMessageFont {
-	font-weight: normal;
-	font-size: 18px;
-	color: white;
+  font-weight: normal;
+  font-size: 18px;
+  color: white;
 }
 
 .footerButtonsLeft {
-	float: left;
-	max-width: 50%;
-	text-align: left;
+  float: left;
+  max-width: 50%;
+  text-align: left;
 }
 
 .footerButtonsRight {
-	overflow: hidden;
-	text-align: right;
+  overflow: hidden;
+  text-align: right;
 }
 
 .footerFont {
-	font-weight: normal;
-	font-size: 11px;
-	color: @ClipperLightFontColor;
+  font-weight: normal;
+  font-size: 11px;
+  color: @ClipperLightFontColor;
 }
 
 .informationLabelFont {
-	font-weight: normal;
-	font-size: 24px;
-	color: white;
+  font-weight: normal;
+  font-size: 24px;
+  color: white;
 }
 
 .modeButton {
-	direction: ltr;
-	display: -webkit-flex;
-	display: -ms-flex;
-	display: inline-flex;
-	-webkit-flex-direction: row;
-	-ms-flex-direction: row;
-	flex-direction: row;
-	width: 100%;
-	vertical-align: top;
+  direction: ltr;
+  display: -webkit-flex;
+  display: -ms-flex;
+  display: inline-flex;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  width: 100%;
+  vertical-align: top;
 
-	&:hover {
-		background: @DarkHoverColor;
-	}
+  &:hover {
+    background: @DarkHoverColor;
+  }
 
-	&.selected {
-		background: @DarkBackgroundColor;
-	}
+  &.selected {
+    background: @DarkBackgroundColor;
+  }
 
-	.icon {
-		height: 24px;
-		padding: 12px;
-		margin: auto;
-	}
+  .icon {
+    height: 24px;
+    padding: 12px;
+    margin: auto;
+  }
 
-	.label {
-		display: flex;
-		align-items: center;
-		-webkit-flex: 2;
-		-ms-flex: 2;
-		flex: 2;
-		padding-left: 8px;
-		text-align: left;
-		margin-top: auto;
-		margin-bottom: auto;
-	}
+  .label {
+    display: flex;
+    align-items: center;
+    -webkit-flex: 2;
+    -ms-flex: 2;
+    flex: 2;
+    padding-left: 8px;
+    text-align: left;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
 }
 
 .clipOptionsContainer {
-	text-align: left;
-	margin-top: 16px;
-	display: flex;
-	flex-direction: column;
+  text-align: left;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
 
-	.clipOptionsTitleContainer {
-		margin-bottom: 3px;
-		display: flex;
-		justify-content: space-between;
+  .clipOptionsTitleContainer {
+    margin-bottom: 3px;
+    display: flex;
+    justify-content: space-between;
 
-		font-size: 15px;
-		color: white;
-		font-family: @SegoeUi;
-		
-		.moreClipOptions {
-			cursor: pointer;
+    font-size: 15px;
+    color: white;
+    font-family: @SegoeUi;
 
-			.arrow {
-				height: 6px;
-				margin-left: 5px;
-				margin-bottom: 1px;	
-			}
-		}
-	}
+    .moreClipOptions {
+      cursor: pointer;
 
-	// PDF
-	.pdf-label-margin {
-		margin-left: 26px;
+      .arrow {
+        height: 6px;
+        margin-left: 5px;
+        margin-bottom: 1px;
+      }
+    }
+  }
 
-		.pdf-label {
-			font-size: 15px;
-			font-family: @SegoeUi;
-			color: #E1B1FF;
-			cursor: pointer;
-			position: relative;
-			line-height: 20px;
+  // PDF
+  .pdf-label-margin {
+    margin-left: 26px;
 
-			&.disabled {
-				color: #E1B1FF;
-				cursor: default;
-			}
+    .pdf-label {
+      font-size: 15px;
+      font-family: @SegoeUi;
+      color: #E1B1FF;
+      cursor: pointer;
+      position: relative;
+      line-height: 20px;
 
-			&.focused {
-				color: #fff;
-			}
+      &.disabled {
+        color: #E1B1FF;
+        cursor: default;
+      }
 
-			.sub-label {
-				color: #E1B1FF;
-			}
-		}
-	}
+      &.focused {
+        color: #fff;
+      }
+
+      .sub-label {
+        color: #E1B1FF;
+      }
+    }
+  }
 
 
 
-	.pdf-control {
-		cursor: pointer; 
-		position: relative; 
-		line-height: 28px;
-		margin-right: auto;
-		margin-bottom: 4px;
+  .pdf-control {
+    cursor: pointer;
+    position: relative;
+    line-height: 28px;
+    margin-right: auto;
+    margin-bottom: 4px;
 
-		&.disabled {
-			cursor: default;
-		}
-	}
+    &.disabled {
+      cursor: default;
+    }
+  }
 
-	.pdf-indicator {
-		position: absolute;
-		top: 7px;
-		left: 0px;
-		width: 14px;
-		height: 14px;
+  .pdf-indicator {
+    position: absolute;
+    top: 7px;
+    left: 0px;
+    width: 14px;
+    height: 14px;
 
-		&.pdf-checkbox-indicator {
-			border: 1px solid white;
-			border-radius: 2px;
-			background-color: @OneNotePurpleTransparent;
+    &.pdf-checkbox-indicator {
+      border: 1px solid white;
+      border-radius: 2px;
+      background-color: @OneNotePurpleTransparent;
 
-			&.disabled {
-				border: 1px solid #E1B1FF;  
-			}
-		}
+      &.disabled {
+        border: 1px solid #E1B1FF;
+      }
+    }
 
-		&.pdf-radio-indicator {
-			border: 1px solid #fff;
-			border-radius: 100%;
+    &.pdf-radio-indicator {
+      border: 1px solid #fff;
+      border-radius: 100%;
 
-			.radio-indicator-fill {
-				position: absolute;
-				top: 3px;
-				left: 3px;
-				width: 8px;
-				height: 8px;
-				background-color: white;
-				border-radius: 100%;
-			}
-		}
-	}
+      .radio-indicator-fill {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 8px;
+        height: 8px;
+        background-color: white;
+        border-radius: 100%;
+      }
+    }
+  }
 
-	.checkboxCheck {
-		position: absolute;
-		top: 7px;
-		left: 6px;
-		width: 4px;
-		height: 11px;
-		transform: rotate(45deg);
-		border: 1px solid white;
-		background: transparent;
-		border-width: 0 1px 1px 0;
-	}
+  .checkboxCheck {
+    position: absolute;
+    top: 7px;
+    left: 6px;
+    width: 4px;
+    height: 11px;
+    transform: rotate(45deg);
+    border: 1px solid white;
+    background: transparent;
+    border-width: 0 1px 1px 0;
+  }
 
-	.warning-image {
-		position: absolute;
-		top: 7px;
-		width: 16px;
-		height: 16px;
-	}
+  .warning-image {
+    position: absolute;
+    top: 7px;
+    width: 16px;
+    height: 16px;
+  }
 
-	#rangeInput {
-		margin-left: 22px;
-		border-radius: 2px;
-		background-color: @OneNotePurpleTransparent;
-		height: 24px;
-		line-height: 20px;
-		padding-left: 6px;
-		width: 128px;
-		border: 1px solid #e1b1ff;
-		font-family: @SegoeUi;
-		font-size: 14px;
-		color: #e1b1ff;
-		outline: none;
-		user-select: auto;
-		float: left;
+  #rangeInput {
+    margin-left: 22px;
+    border-radius: 2px;
+    background-color: @OneNotePurpleTransparent;
+    height: 24px;
+    line-height: 20px;
+    padding-left: 6px;
+    width: 128px;
+    border: 1px solid #e1b1ff;
+    font-family: @SegoeUi;
+    font-size: 14px;
+    color: #e1b1ff;
+    outline: none;
+    user-select: auto;
+    float: left;
 
-		&.focused {
-			color: #fff;
-			border-color: #fff;
-		};
+    &.focused {
+      color: #fff;
+      border-color: #fff;
+    };
 
-		&.invalid {
-			border: #e81123 1px solid;
-			height: 24px;
-		}
+    &.invalid {
+      border: #e81123 1px solid;
+      height: 24px;
+    }
 
-		&::-webkit-input-placeholder {
-			font-style: italic;
-			color: @ClipperLightFontColor;
-		}
+    &::-webkit-input-placeholder {
+      font-style: italic;
+      color: @ClipperLightFontColor;
+    }
 
-		&:-moz-placeholder {
-			font-style: italic;
-			color: @ClipperLightFontColor;
-		}
+    &:-moz-placeholder {
+      font-style: italic;
+      color: @ClipperLightFontColor;
+    }
 
-		&::-moz-placeholder {
-			font-style: italic;
-			color: @ClipperLightFontColor;
-		}
+    &::-moz-placeholder {
+      font-style: italic;
+      color: @ClipperLightFontColor;
+    }
 
-		&:-ms-input-placeholder {
-			font-style: italic;
-			color: @ClipperLightFontColor;
-		}
-	}
+    &:-ms-input-placeholder {
+      font-style: italic;
+      color: @ClipperLightFontColor;
+    }
+  }
 }
 
 .messageLabel {
-	white-space: normal;
+  white-space: normal;
 }
 
 .messageLabelContainer {
-	padding-bottom: 20px;
+  padding-bottom: 20px;
 }
 
 .optionLabel {
-	margin-bottom: 10px;
-	text-align: left;
+  margin-bottom: 10px;
+  text-align: left;
 }
 
 .panelContent {
-	direction: ltr;
+  direction: ltr;
 }
 
 .progressPadding {
-	padding-top: 25px;
-	padding-bottom: 25px + @FooterOffset;
+  padding-top: 25px;
+  padding-bottom: 25px + @FooterOffset;
 }
 
 #clipProgressDelayedMessage, #clipProgressIndicatorMessage {
-	font-size: 16px;
-	color: @ClipperLightFontColor;
+  font-size: 16px;
+  color: @ClipperLightFontColor;
 }
 
 .regionClipPadding {
-	padding-bottom: @FooterOffset;
+  padding-bottom: @FooterOffset;
 }
 
 .resultPagePadding {
-	padding-top: 25px;
-	padding-bottom: 15px;
+  padding-top: 25px;
+  padding-bottom: 15px;
 }
 
 .spinner {
-	height: 32px;
-	width: 32px;
-	margin-bottom: -6px;
-	display: inline-block;
+  height: 32px;
+  width: 32px;
+  margin-bottom: -6px;
+  display: inline-block;
 }
 
 .spinnerText {
-	font-size: 16px;
+  font-size: 16px;
 }
 
 .successPagePadding {
-	padding-top: 16px;
-	padding-bottom: 24px;
+  padding-top: 16px;
+  padding-bottom: 24px;
 }
 
 .userActionButton {
-	float: right;
+  float: right;
 }
 
 .userDetails {
-	text-align: left;
+  text-align: left;
 }
 
 .userDivider {
-	border: none;
-	background-color: @ClipperDividerColor;
-	color: @ClipperDividerColor;
-	height: 1px;
-	margin-top: 12px;
-	margin-bottom: 16px;
-	opacity: 0.3;
+  border: none;
+  background-color: @ClipperDividerColor;
+  color: @ClipperDividerColor;
+  height: 1px;
+  margin-top: 12px;
+  margin-bottom: 16px;
+  opacity: 0.3;
 }
 
 .userSettingsFont {
-	font-weight: normal;
-	font-size: 12px;
-	color: @ClipperLightFontColor;
+  font-weight: normal;
+  font-size: 12px;
+  color: @ClipperLightFontColor;
 }
 
 .wideActionButton {
-	display: inline-block;
-	line-height: 30px;
-	vertical-align: middle;
-	width: 100%;
+  display: inline-block;
+  line-height: 30px;
+  vertical-align: middle;
+  width: 100%;
 }
 
 .wideButtonContainer {
-	background: @WideButtonBackgroundColor;
-	border: 1px solid @WideButtonBackgroundColor;
-	border-radius: 4px;
-	text-align: center;
-	margin-bottom: 10px;
+  background: @WideButtonBackgroundColor;
+  border: 1px solid @WideButtonBackgroundColor;
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 10px;
 
-	&:hover {
-		background: @WideButtonHoverColor;
-		border-color: @WideButtonHoverColor;
-	}
+  &:hover {
+    background: @WideButtonHoverColor;
+    border-color: @WideButtonHoverColor;
+  }
 
-	&.disabled {
-		background: gray;
-		border-color: gray;
+  &.disabled {
+    background: gray;
+    border-color: gray;
 
-		a {
-			cursor: default;
-		}
-	}
+    a {
+      cursor: default;
+    }
+  }
 }
 
 .wideButtonFont {
-	font-family: @SegoeUi;
-	font-weight: normal;
-	font-size: 11pt;
-	color: #7e2ea6;
+  font-family: @SegoeUi;
+  font-weight: normal;
+  font-size: 11pt;
+  color: #7e2ea6;
 }
 
 .loadingContainer {
-	animation: loading 4s linear infinite alternate;
+  animation: loading 4s linear infinite alternate;
 
-	img {
-		display: block;
-	}
+  img {
+    display: block;
+  }
 }
 
 #ratingsPromptContainer {
-	overflow: hidden;
-	padding-left: @ClipperUIInnerPadding;
-	padding-right: @ClipperUIInnerPadding;
-	margin: 30px (@ClipperUIInnerPadding*-1) -20px;
-	padding-bottom: 30px;
+  overflow: hidden;
+  padding-left: @ClipperUIInnerPadding;
+  padding-right: @ClipperUIInnerPadding;
+  margin: 30px (@ClipperUIInnerPadding*-1) -20px;
+  padding-bottom: 30px;
 
-	.resultPagePadding {
-		padding-top: 0px;
-	}
+  .resultPagePadding {
+    padding-top: 0px;
+  }
 
-	.messageLabelContainer {
-		padding-bottom: 0px;
+  .messageLabelContainer {
+    padding-bottom: 0px;
 
-		.dialogMessageFont {
-			font-size: 15px;
-		}
+    .dialogMessageFont {
+      font-size: 15px;
+    }
 
-		.messageLabel {
-			position: relative;
-		}
-	}
+    .messageLabel {
+      position: relative;
+    }
+  }
 
-	.dialogButton {
-		.wideButtonContainer {
-			position: relative;
-			background: transparent;
+  .dialogButton {
+    .wideButtonContainer {
+      position: relative;
+      background: transparent;
 
-			.wideButtonFont {
-				color: #ffffff;
-				font-size: 15px;
-			}
-		}
-	}
+      .wideButtonFont {
+        color: #ffffff;
+        font-size: 15px;
+      }
+    }
+  }
 }
 
 .sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0,0,0,0);
-	border: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
 }
