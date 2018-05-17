@@ -25,6 +25,28 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 		textArea.focus();
 	}
 
+	// TODO: change this to a config passed into the textarea?
+	private addTextAreaListener() {
+		document.addEventListener("input", (event) => {
+			let element = event.target;
+			let annotationField = document.getElementById(Constants.Ids.annotationField) as HTMLTextAreaElement;
+			if (!!element && element === annotationField) {
+				this.handleAnnotationFieldChanged(annotationField.value);
+			}
+		});
+	}
+
+	private handleAnnotationFieldChanged(annotationValue: string) {
+		this.props.clipperState.setState({
+			previewGlobalInfo: {
+				previewTitleText: this.props.clipperState.previewGlobalInfo.previewTitleText,
+				annotation: annotationValue,
+				fontSize: this.props.clipperState.previewGlobalInfo.fontSize,
+				serif: this.props.clipperState.previewGlobalInfo.serif
+			}
+		});
+	}
+
 	onDoneEditing(e: Event) {
 		let value = (e.target as HTMLTextAreaElement).value.trim();
 		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
@@ -54,18 +76,19 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 				<div id={Constants.Ids.annotationContainer}>
 					<div
 						id={Constants.Ids.annotationPlaceholder}
-						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} {...this.enableInvoke(this.handleAnnotateButton, 210)}>
+						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} {...this.enableInvoke(this.handleAnnotateButton, 210)}
+						role="textbox">
 						<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon_purple.png")}/>
-						<span>{Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")}</span>
+						<span aria-label={Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")}>{Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")} </span>
 					</div>
 				</div>
 			);
 		} else {
 			return (
 				<div id={Constants.Ids.annotationContainer}>
-					<pre
-						id={Constants.Ids.annotationFieldMirror}
-						className={Constants.Classes.textAreaInputMirror}>
+				<pre
+					id={Constants.Ids.annotationFieldMirror}
+					className={Constants.Classes.textAreaInputMirror}>
 						<span style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							{!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
 						</span>
@@ -74,7 +97,9 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 					<textarea
 						id={Constants.Ids.annotationField}
 						className={Constants.Classes.textAreaInput}
+						role="textbox"
 						rows={1} tabIndex={211}
+						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}
 						value={!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
 						onblur={this.onDoneEditing.bind(this)} {...this.onElementFirstDraw(this.setFocus)}>
@@ -82,28 +107,6 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 				</div>
 			);
 		}
-	}
-
-	// TODO: change this to a config passed into the textarea?
-	private addTextAreaListener() {
-		document.addEventListener("input", (event) => {
-			let element = event.target;
-			let annotationField = document.getElementById(Constants.Ids.annotationField) as HTMLTextAreaElement;
-			if (!!element && element === annotationField) {
-				this.handleAnnotationFieldChanged(annotationField.value);
-			}
-		});
-	}
-
-	private handleAnnotationFieldChanged(annotationValue: string) {
-		this.props.clipperState.setState({
-			previewGlobalInfo: {
-				previewTitleText: this.props.clipperState.previewGlobalInfo.previewTitleText,
-				annotation: annotationValue,
-				fontSize: this.props.clipperState.previewGlobalInfo.fontSize,
-				serif: this.props.clipperState.previewGlobalInfo.serif
-			}
-		});
 	}
 }
 
