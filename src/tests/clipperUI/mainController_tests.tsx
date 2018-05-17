@@ -1,11 +1,13 @@
 import {ClipMode} from "../../scripts/clipperUI/clipMode";
-import {MainController, MainControllerClass, MainControllerProps, PanelType} from "../../scripts/clipperUI/mainController";
+import {
+	MainController,
+	MainControllerClass,
+	MainControllerProps,
+	PanelType
+} from "../../scripts/clipperUI/mainController";
 import {Status} from "../../scripts/clipperUI/status";
-
 import {SmartValue} from "../../scripts/communicator/smartValue";
-
 import {Constants} from "../../scripts/constants";
-
 import {Assert} from "../assert";
 import {MithrilUtils} from "../mithrilUtils";
 import {MockProps} from "../mockProps";
@@ -25,7 +27,7 @@ module TestConstants {
 }
 
 // Currently we set a 100ms delay before the initial render, which breaks our tests
-MainControllerClass.prototype.getInitialState = function() {
+MainControllerClass.prototype.getInitialState = function () {
 	return {
 		currentPanel: this.getPanelTypeToShow()
 	};
@@ -46,7 +48,7 @@ export class MainControllerTests extends TestModule {
 			onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 			onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 			updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-			onStartClip={this.mockMainControllerProps.onStartClip} />;
+			onStartClip={this.mockMainControllerProps.onStartClip}/>;
 	}
 
 	protected tests() {
@@ -68,7 +70,7 @@ export class MainControllerTests extends TestModule {
 			});
 
 			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
-				Constants.Ids.optionLabel, TestConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
+				TestConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
 		test("On the pdf clip options panel, the tab order is correct", () => {
@@ -80,7 +82,7 @@ export class MainControllerTests extends TestModule {
 			});
 
 			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
-				Constants.Ids.optionLabel, TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.feedbackButton,
+				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.feedbackButton,
 				Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
@@ -97,7 +99,7 @@ export class MainControllerTests extends TestModule {
 			});
 
 			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
-				Constants.Ids.optionLabel, TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
+				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
 				Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
@@ -129,7 +131,7 @@ export class MainControllerTests extends TestModule {
 				controllerInstance.state.currentPanel = PanelType.ClippingFailure;
 			});
 
-			Assert.tabOrderIsIncremental([Constants.Ids.currentUserControl, Constants.Ids.closeButton ]);
+			Assert.tabOrderIsIncremental([Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 
 			let dialogButtons = document.getElementsByClassName("dialogButton");
 			Assert.equalTabIndexes(dialogButtons);
@@ -173,7 +175,7 @@ export class MainControllerTests extends TestModule {
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			strictEqual(controllerInstance.getPanelTypeToShow(), PanelType.None,
 				"If the clipper state is set to not show the UI, getPanelTypeToShow() should return the None panel");
@@ -188,7 +190,7 @@ export class MainControllerTests extends TestModule {
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			ok(document.getElementById(Constants.Ids.clipperLoadingContainer),
 				"The Loading panel should be shown in the UI");
@@ -205,7 +207,7 @@ export class MainControllerTests extends TestModule {
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			ok(document.getElementById(Constants.Ids.clipperLoadingContainer),
 				"The Loading panel should be shown in the UI");
@@ -222,7 +224,7 @@ export class MainControllerTests extends TestModule {
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			ok(document.getElementById(Constants.Ids.clipperLoadingContainer),
 				"The Loading panel should be shown in the UI");
@@ -239,14 +241,14 @@ export class MainControllerTests extends TestModule {
 
 		test("If the user's info is not available, the SignInNeeded panel should be displayed", () => {
 			let props = MockProps.getMockMainControllerProps();
-			props.clipperState.userResult = { status: Status.Failed };
+			props.clipperState.userResult = {status: Status.Failed};
 			let controllerInstance = MithrilUtils.mountToFixture(
 				<MainController
 					clipperState={props.clipperState}
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			ok(document.getElementById(Constants.Ids.signInContainer),
 				"The SignInNeeded panel should be shown in the UI");
@@ -264,7 +266,7 @@ export class MainControllerTests extends TestModule {
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			ok(document.getElementById(Constants.Ids.clipperLoadingContainer),
 				"The Loading panel should be shown in the UI");
@@ -282,7 +284,7 @@ export class MainControllerTests extends TestModule {
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			ok(document.getElementById(Constants.Ids.regionInstructionsContainer),
 				"The RegionInstructions panel should be shown in the UI");
@@ -299,7 +301,7 @@ export class MainControllerTests extends TestModule {
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			ok(document.getElementById(Constants.Ids.clipperApiProgressContainer),
 				"The ClippingToApi panel should be shown in the UI");
@@ -317,7 +319,7 @@ export class MainControllerTests extends TestModule {
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			ok(document.getElementById(Constants.Ids.dialogMessageContainer),
 				"The ClippingFailure panel should be shown in the UI in the form of the dialog panel");
@@ -334,7 +336,7 @@ export class MainControllerTests extends TestModule {
 					onSignInInvoked={this.mockMainControllerProps.onSignInInvoked}
 					onSignOutInvoked={this.mockMainControllerProps.onSignOutInvoked}
 					updateFrameHeight={this.mockMainControllerProps.updateFrameHeight}
-					onStartClip={this.mockMainControllerProps.onStartClip} />);
+					onStartClip={this.mockMainControllerProps.onStartClip}/>);
 
 			ok(document.getElementById(Constants.Ids.clipperSuccessContainer),
 				"The ClippingSuccess panel should be shown in the UI");
@@ -462,6 +464,6 @@ export class MainControllerTests extends TestModule {
 			response: '{"error":{"code":"10004","message":"Unable to create a page in this section because it is password protected.","@api.url":"http://aka.ms/onenote-errors#C10004"}}'
 		} as OneNoteApi.RequestError;
 	}
-	}
+}
 
 (new MainControllerTests()).runTests();
