@@ -1,4 +1,4 @@
-﻿﻿/// <binding BeforeBuild='build' />
+﻿/// <binding BeforeBuild='build' />
 "use strict";
 var require;
 
@@ -289,13 +289,6 @@ gulp.task("bundleSafari", function () {
     return merge(tasks);
 });
 
-gulp.task("bundleTests", function () {
-    return browserify(PATHS.BUILDROOT + "tests/tests.js")
-        .bundle()
-        .pipe(source("tests.js"))
-        .pipe(gulp.dest(PATHS.BUNDLEROOT));
-});
-
 gulp.task("bundle", function(callback) {
     runSequence(
         "bundleAppendIsInstalledMarker",
@@ -306,7 +299,6 @@ gulp.task("bundle", function(callback) {
         "bundleEdge",
         "bundleFirefox",
         "bundleSafari",
-        "bundleTests",
         callback);
 });
 
@@ -343,7 +335,6 @@ targetDirHasExportedCommonJs[PATHS.TARGET.CHROME] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.EDGE_EXTENSION] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.FIREFOX] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.SAFARI] = false;
-targetDirHasExportedCommonJs[PATHS.TARGET.TESTS] = false;
 function exportCommonJS(targetDir) {
     if (!targetDirHasExportedCommonJs[targetDir]) {
         var defaultExportTask = gulp.src([
@@ -776,50 +767,6 @@ function exportSafariLibFiles() {
     return exportCommonLibFiles(targetDir);
 }
 
-function exportTestJS() {
-    var targetDir = PATHS.TARGET.TESTS;
-    var defaultExportJSTask = gulp.src(PATHS.BUNDLEROOT + "tests.js")
-        .pipe(gulp.dest(targetDir));
-
-    var logManagerExportJSTask = gulp.src(PATHS.BUNDLEROOT + "logManager.js")
-        .pipe(gulp.dest(targetDir + "libs"));
-
-    return merge(defaultExportJSTask, logManagerExportJSTask);
-}
-
-function exportTestSrcFiles() {
-    var targetDir = PATHS.TARGET.TESTS;
-
-    return gulp.src(PATHS.SRC.ROOT + "tests/tests.html")
-        .pipe(rename("index.html"))
-        .pipe(gulp.dest(targetDir));
-}
-
-function exportTestLibFiles() {
-    var targetDir = PATHS.TARGET.TESTS;
-
-    var testLibFiles = [
-        PATHS.LIBROOT + "tests/bind_polyfill.js",
-        PATHS.LIBROOT + "tests/jquery-2.2.0.min.js",
-        PATHS.NODE_MODULES + "mithril/mithril.js",
-        PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.js",
-        PATHS.NODE_MODULES + "oneNotePicker/target/oneNotePicker.js",
-        PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js",
-        PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
-        PATHS.NODE_MODULES + "sinon/pkg/sinon.js",
-        PATHS.NODE_MODULES + "sinon-qunit/lib/sinon-qunit.js",
-        PATHS.NODE_MODULES + "urijs/src/URI.min.js",
-        PATHS.SRC.ROOT + "scripts/highlighting/textHighlighter.js",
-        PATHS.NODE_MODULES + "velocity-animate/velocity.js",
-        PATHS.LIBROOT + "sanitize-html.js"
-    ];
-
-    var testLibFileRegexes = [PATHS.NODE_MODULES + "qunitjs/qunit/qunit.+(css|js)"];
-
-    return gulp.src(testLibFileRegexes.concat(assertModuleExists(testLibFiles)))
-        .pipe(gulp.dest(targetDir + "libs"));
-}
-
 // Checks if a file path or list of file paths exists. Throws an error if one or more files don't exist,
 // and returns itself otherwise.
 function assertModuleExists(filePath) {
@@ -896,22 +843,14 @@ gulp.task("exportSafari", function() {
     return merge(jsTask, cssTask, srcTask, libTask);
 });
 
-gulp.task("exportTests", function() {
-    var jsTask = exportTestJS();
-    var srcTask = exportTestSrcFiles();
-    var libTask = exportTestLibFiles();
-    return merge(jsTask, srcTask, libTask);
-});
-
 gulp.task("exportJS", function() {
     var bookmarkletTask = exportBookmarkletJS(PATHS.TARGET.BOOKMARKLET);
     var chromeTask = exportChromeJS();
     var edgeTask = exportEdgeJS();
     var firefoxTask = exportFirefoxJS();
     var safariTask = exportSafariJS();
-    var testTask = exportTestJS();
 
-    return merge(bookmarkletTask, chromeTask, edgeTask, firefoxTask, safariTask, testTask);
+    return merge(bookmarkletTask, chromeTask, edgeTask, firefoxTask, safariTask);
 });
 
 gulp.task("exportCSS", function() {
@@ -928,9 +867,8 @@ gulp.task("exportSrcFiles", function() {
     var chromeTask = exportChromeSrcFiles();
     var edgeTask = exportEdgeSrcFiles();
     var safariTask = exportSafariSrcFiles();
-    var testTask = exportTestSrcFiles();
 
-    return merge(bookmarkletTask, chromeTask, edgeTask, safariTask, testTask);
+    return merge(bookmarkletTask, chromeTask, edgeTask, safariTask);
 });
 
 gulp.task("export", function(callback) {
@@ -941,7 +879,6 @@ gulp.task("export", function(callback) {
         "exportEdge",
         "exportFirefox",
         "exportSafari",
-        "exportTests",
         callback);
 });
 
@@ -992,9 +929,7 @@ gulp.task("minify", function(callback) {
 ////////////////////////////////////////
 // RUN
 ////////////////////////////////////////
-gulp.task("runTests", function() {
-    return qunit(PATHS.TARGET.TESTS + "index.html", {timeout: 10});
-});
+
 
 ////////////////////////////////////////
 // WATCH TASKS
@@ -1013,7 +948,6 @@ gulp.task("watchTSAction", function(callback) {
         "compile",
         "bundle",
         "exportJS",
-        "runTests",
         "tslint",
         callback);
 });
@@ -1045,7 +979,6 @@ gulp.task("watchSrcFiles", function() {
             PATHS.SRC.ROOT + "scripts/extensions/edge/manifest.json",
             PATHS.SRC.ROOT + "scripts/extensions/safari/Info.plist",
             PATHS.SRC.ROOT + "scripts/extensions/safari/safariExtension.html",
-            PATHS.SRC.ROOT + "tests/tests.html"
         ], ["watchSrcAction"]
     );
 });
@@ -1053,7 +986,6 @@ gulp.task("watchSrcFiles", function() {
 gulp.task("watchSrcAction", function(callback) {
     runSequence(
         "exportSrcFiles",
-        "runTests",
         callback);
 });
 
@@ -1083,7 +1015,6 @@ gulp.task("build", function(callback) {
     runSequence(
         "buildOnly",
         "tslint",
-        "runTests",
         callback);
 });
 

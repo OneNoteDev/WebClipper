@@ -1,23 +1,15 @@
 import {Constants} from "../constants";
-
 import {ExtensionUtils} from "../extensions/extensionUtils";
 import {InvokeSource} from "../extensions/invokeSource";
-
-import {ChangeLog} from "../versioning/changeLog";
-
 import {Localization} from "../localization/localization";
-import {Rtl} from "../localization/rtl";
-
-import {Clipper} from "./frontEndGlobals";
-import {ComponentBase} from "./componentBase";
 import {AnimatedTooltip} from "./animatedTooltip";
-import {TooltipProps} from "./tooltipProps";
-import {TooltipType, TooltipTypeUtils} from "./tooltipType";
-
 import {NewHeightInfo} from "./animations/slidingHeightAnimationStrategy";
-
+import {ComponentBase} from "./componentBase";
+import {Clipper} from "./frontEndGlobals";
 import {ChangeLogPanel} from "./panels/changeLogPanel";
 import {DialogButton, DialogPanel} from "./panels/dialogPanel";
+import {TooltipProps} from "./tooltipProps";
+import {TooltipType, TooltipTypeUtils} from "./tooltipType";
 
 export interface TooltipRendererState {
 	tooltipToRenderOverride?: TooltipType;
@@ -46,12 +38,12 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 
 		return (
 			<div>
-				<ChangeLogPanel updates={whatsNewProps.updates} />
+				<ChangeLogPanel updates={whatsNewProps.updates}/>
 				<div className="wideButtonContainer changelog-button">
-					<a id={Constants.Ids.proceedToWebClipperButton} {...this.enableInvoke(handleProceedToWebClipperButton, 10) }>
+					<a id={Constants.Ids.proceedToWebClipperButton} {...this.enableInvoke(handleProceedToWebClipperButton, 10)}>
 						<span className="wideButtonFont wideActionButton"
-							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold) }>
-							{Localization.getLocalizedString("WebClipper.Label.ProceedToWebClipperFun") }
+									style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
+							{Localization.getLocalizedString("WebClipper.Label.ProceedToWebClipperFun")}
 						</span>
 					</a>
 				</div>
@@ -64,11 +56,11 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 		let classes: string[] = [];
 		switch (currentPanel) {
 			case TooltipType.Pdf:
-				/* falls through */
+			/* falls through */
 			case TooltipType.Product:
-				/* falls through */
+			/* falls through */
 			case TooltipType.Recipe:
-				/* falls through */
+			/* falls through */
 			case TooltipType.Video:
 				classes.push("tooltip-upsell");
 				return classes;
@@ -105,7 +97,8 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 		let tooltipImagePath = "tooltips/" + tooltipAsString + ".png";
 		tooltipImagePath = tooltipImagePath.toLowerCase();
 
-		let content: HTMLElement[] = [(<img className="tooltip-image" src={ExtensionUtils.getImageResourceUrl(tooltipImagePath)}/>)];
+		let content: HTMLElement[] = [(
+			<img className="tooltip-image" src={ExtensionUtils.getImageResourceUrl(tooltipImagePath)}/>)];
 
 		let buttons: DialogButton[] = [{
 			id: Constants.Ids.proceedToWebClipperButton,
@@ -123,14 +116,15 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 
 	getWhatsNewPanel() {
 		let onShowChangeLogButton = () => {
-			this.setState({ tooltipToRenderOverride: TooltipType.ChangeLog });
+			this.setState({tooltipToRenderOverride: TooltipType.ChangeLog});
 		};
 		let buttons: DialogButton[] = [{
 			id: Constants.Ids.checkOutWhatsNewButton,
 			label: Localization.getLocalizedString("WebClipper.Label.OpenChangeLogFromTooltip"),
 			handler: onShowChangeLogButton.bind(this)
 		}];
-		return <DialogPanel message={Localization.getLocalizedString("WebClipper.Label.WebClipperWasUpdatedFun") } buttons={buttons}/>;
+		return <DialogPanel message={Localization.getLocalizedString("WebClipper.Label.WebClipperWasUpdatedFun")}
+												buttons={buttons}/>;
 	}
 
 	createTooltipPanelToShow(): any {
@@ -159,7 +153,7 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 				return (
 					<div id={Constants.Ids.brandingContainer}>
 						<p className="tooltip-corner-branding">
-							<img src={ExtensionUtils.getImageResourceUrl("tooltips/onenote_tooltip_branding.png") } />
+							<img src={ExtensionUtils.getImageResourceUrl("tooltips/onenote_tooltip_branding.png")}/>
 						</p>
 					</div>
 				);
@@ -175,7 +169,7 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 				onAfterCollapse={this.props.onTooltipClose}
 				onCloseButtonHandler={this.props.onCloseButtonHandler}
 				onHeightChange={this.props.onHeightChange}
-				renderablePanel={this.createTooltipPanelToShow() }
+				renderablePanel={this.createTooltipPanelToShow()}
 				contentClasses={this.getContentClasses()}/>
 		);
 	}

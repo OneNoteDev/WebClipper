@@ -1,9 +1,5 @@
-import {Constants} from "../constants";
-
 import {Localization} from "../localization/localization";
-
 import {ComponentBase} from "./componentBase";
-
 import {CloseButton} from "./components/closeButton";
 
 export interface TooltipProps {
