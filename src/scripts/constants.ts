@@ -331,6 +331,8 @@ export module Constants {
 		export var enter = 13;
 		export var esc = 27;
 		export var c = 67;
+		export var down = 40;
+		export var up = 38;
 	}
 
 	export module StringKeyCodes {
