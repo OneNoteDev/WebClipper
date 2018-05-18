@@ -35,7 +35,7 @@ class ModeButtonSelectorClass extends ComponentBase<ModeButtonSelectorState, Cli
 			selectedID = 4;
 		}
 		this.setState({ mouseKeyOnButton: selectedID});
-		this.focusOnAButton(selectedID);
+		ModeButtonSelectorClass.focusOnAButton(selectedID);
 	};
 
 	private handleDownArrow() {
@@ -44,14 +44,15 @@ class ModeButtonSelectorClass extends ComponentBase<ModeButtonSelectorState, Cli
 			selectedID = 1;
 		}
 		this.setState({ mouseKeyOnButton: selectedID});
-		this.focusOnAButton(selectedID);
+		ModeButtonSelectorClass.focusOnAButton(selectedID);
 	};
 
-	private focusOnAButton(selectedID) {
+	private static focusOnAButton(selectedID) {
 		const buttons = document.querySelectorAll("a[aria-setsize]");
 		if (buttons.length > 0) {
 			for (let i = 0; i < buttons.length; i++) {
 				let selectable = buttons[i] as HTMLElement;
+				selectable.style.outlineStyle = "";
 				let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
 				if ( ariaIntForEach === selectedID) {
 					selectable.focus();
