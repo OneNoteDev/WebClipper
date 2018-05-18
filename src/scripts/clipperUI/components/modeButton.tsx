@@ -1,6 +1,8 @@
+import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
 import {ClipMode} from "../clipMode";
 import {ComponentBase} from "../componentBase";
+import modeButtonSet = Constants.AriaSet.modeButtonSet;
 
 export interface ModeButtonProps {
 	imgSrc: string;
@@ -46,13 +48,12 @@ class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
 
 		return (
 			<a
-				className={className} role="option" aria-setsize="4" aria-posinset={this.getAriaPositionInSet(idName)}
+				className={className} role="option" aria-setsize="4" aria-posinset={this.getAriaPositionInSet(idName)} data-ariaSet={Constants.AriaSet.modeButtonSet}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex)} tabIndex={this.props.selected ? 40 : ""}
 				aria-selected={this.props.selected}>
 			<img className="icon" src={this.props.imgSrc} />
-				<span className="label buttonLabelFont"
-							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 					{this.props.label}
 				</span>
 			</a>

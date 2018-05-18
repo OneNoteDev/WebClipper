@@ -432,4 +432,8 @@ export module Constants {
 		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
 		export var timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
 	}
+
+	export module AriaSet {
+		export var modeButtonSet = "modeButtonSet";
+	}
 }

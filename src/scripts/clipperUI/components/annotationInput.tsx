@@ -86,9 +86,9 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 		} else {
 			return (
 				<div id={Constants.Ids.annotationContainer}>
-				<pre
-					id={Constants.Ids.annotationFieldMirror}
-					className={Constants.Classes.textAreaInputMirror}>
+					<pre
+						id={Constants.Ids.annotationFieldMirror}
+						className={Constants.Classes.textAreaInputMirror}>
 						<span style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							{!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
 						</span>
