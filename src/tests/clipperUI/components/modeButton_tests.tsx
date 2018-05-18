@@ -66,12 +66,20 @@ export class ModeButtonTests extends TestModule {
 				"The mode button should be labeled with: " + this.mockModeButtonProps.label);
 		});
 
-		test("A button's tab index should match its tabIndex prop", () => {
+		test("A button's aria-pos attribute should match its position in the set", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
-			strictEqual(modeButton.tabIndex, this.mockModeButtonProps.tabIndex,
-				"The mode button's tab index should be: " + this.mockModeButtonProps.tabIndex);
+			strictEqual(modeButton.getAttribute("aria-posinset"), this.mockModeButtonProps["aria-posinset"],
+				"The mode button's aria-pos attribute should be: " + this.mockModeButtonProps.tabIndex);
+		});
+
+		test("A button's aria-setsize attribute should be 4", () => {
+			MithrilUtils.mountToFixture(this.defaultComponent);
+
+			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
+			strictEqual(modeButton.getAttribute("aria-setsize"), this.mockModeButtonProps["aria-setsize"],
+				"The mode button's aria-setsize attribute should be: " + this.mockModeButtonProps.tabIndex);
 		});
 
 		test("A button's image src should match its imgSrc prop", () => {

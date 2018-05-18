@@ -248,6 +248,8 @@ export module MockProps {
 			label: "My Button",
 			myMode: ClipMode.FullPage,
 			tabIndex: 420,
+			"aria-setsize": "4",
+			"aria-posinset": "1",
 			selected: false,
 			onModeSelected: (modeButton: ClipMode) => {
 			},

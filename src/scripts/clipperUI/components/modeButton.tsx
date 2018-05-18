@@ -8,6 +8,8 @@ export interface ModeButtonProps {
 	myMode: ClipMode;
 	tabIndex: number;
 	selected?: boolean;
+	"aria-posinset": string;
+	"aria-setsize": string;
 	onModeSelected: (modeButton: ClipMode) => void;
 	tooltipText?: string;
 }
