@@ -69,8 +69,7 @@ export class MainControllerTests extends TestModule {
 				controllerInstance.state.currentPanel = PanelType.ClipOptions;
 			});
 
-			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
-				TestConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
 		test("On the pdf clip options panel, the tab order is correct", () => {
@@ -81,7 +80,7 @@ export class MainControllerTests extends TestModule {
 				controllerInstance.state.currentPanel = PanelType.ClipOptions;
 			});
 
-			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton,
 				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.feedbackButton,
 				Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
@@ -98,8 +97,7 @@ export class MainControllerTests extends TestModule {
 				document.getElementById(Constants.Ids.moreClipOptions).click();
 			});
 
-			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton,
-				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
 				Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
