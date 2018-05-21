@@ -8,58 +8,7 @@ import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {ModeButton} from "./modeButton";
 
-export interface ModeButtonSelectorState {
-	mouseKeyOnButton?: number;
-}
-
-class ModeButtonSelectorClass extends ComponentBase<ModeButtonSelectorState, ClipperStateProp> {
-	constructor(props) {
-		super(props);
-		this.setState({
-			mouseKeyOnButton: 1
-		});
-	}
-
-	private handleKeydown = (event) => {
-		if (event.keyCode === Constants.KeyCodes.down) {
-			this.handleDownArrow();
-		}
-		if (event.keyCode === Constants.KeyCodes.up) {
-			this.handleUpArrow();
-		}
-	};
-
-	private handleUpArrow() {
-		let selectedID = this.state.mouseKeyOnButton - 1;
-		if (selectedID === 0) {
-			selectedID = 4;
-		}
-		this.setState({ mouseKeyOnButton: selectedID});
-		ModeButtonSelectorClass.focusOnAButton(selectedID);
-	};
-
-	private handleDownArrow() {
-		let selectedID = this.state.mouseKeyOnButton + 1;
-		if (selectedID === 5) {
-			selectedID = 1;
-		}
-		this.setState({ mouseKeyOnButton: selectedID});
-		ModeButtonSelectorClass.focusOnAButton(selectedID);
-	};
-
-	private static focusOnAButton(selectedID) {
-		const buttons = document.querySelectorAll("a[aria-setsize]");
-		if (buttons.length > 0) {
-			for (let i = 0; i < buttons.length; i++) {
-				let selectable = buttons[i] as HTMLElement;
-				selectable.style.outlineStyle = "";
-				let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
-				if ( ariaIntForEach === selectedID) {
-					selectable.focus();
-				}
-			}
-		}
-	};
+class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 
 	onModeSelected(newMode: ClipMode) {
 		this.props.clipperState.setState({
@@ -168,7 +117,7 @@ class ModeButtonSelectorClass extends ComponentBase<ModeButtonSelectorState, Cli
 		let currentMode = this.props.clipperState.currentMode.get();
 
 		return (
-			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox" onkeydown={this.handleKeydown}>
+			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox">
 				{ this.getScreenReaderOnlyElementThatAnnouncesCurrentMode(currentMode)}
 				{ this.getFullPageModeButton(currentMode) }
 				{ this.getRegionModeButton(currentMode) }

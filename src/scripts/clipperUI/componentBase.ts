@@ -109,18 +109,24 @@ export abstract class ComponentBase<TState, TProps> {
 					if (element.hasAttribute("data-ariaset")) {
 						if (element.getAttribute("data-ariaset") === Constants.AriaSet.modeButtonSet) {
 							let nextPosInSet = parseInt(element.getAttribute("aria-posinset"), 10) - 1;
-							const buttons = document.querySelectorAll("modeButtonSet");
+							const buttons = document.querySelectorAll("a[data-ariaset]");
 							if (nextPosInSet === 0) {
 								nextPosInSet = buttons.length;
 							}
-							this.focusOnButton(buttons, nextPosInSet);
+							ComponentBase.focusOnButton(buttons, nextPosInSet);
 						}
 					}
 
 				} else if (e.which === Constants.KeyCodes.down) {
 					if (element.hasAttribute("data-ariaset")) {
-						if(element.getAttribute("data-ariaset") === Constants.AriaSet.modeButtonSet) {
+						if (element.getAttribute("data-ariaset") === Constants.AriaSet.modeButtonSet) {
 							let nextPosInSet = parseInt(element.getAttribute("aria-posinset"), 10) + 1;
+							const buttons = document.querySelectorAll("a[data-ariaset]");
+							console.log(buttons);
+							if (nextPosInSet === (buttons.length + 1) ) {
+								nextPosInSet = 1;
+							}
+							ComponentBase.focusOnButton(buttons, nextPosInSet);
 						}
 					}
 				}
@@ -133,10 +139,13 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	private focusOnButton(buttons, nextPosInSet) {
+	private static focusOnButton(buttons, nextPosInSet) {
+		console.log("buttons", buttons);
+		console.log("nextPOsInSet", nextPosInSet);
 		if (buttons.length > 0) {
 			for (let i = 0; i < buttons.length; i++) {
 				let selectable = buttons[i] as HTMLElement;
+				console.log("Selectable", selectable);
 				selectable.style.outlineStyle = "";
 				let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
 				if (ariaIntForEach === nextPosInSet) {
