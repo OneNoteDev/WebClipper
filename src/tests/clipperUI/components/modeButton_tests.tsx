@@ -1,5 +1,4 @@
 import {ModeButton} from "../../../scripts/clipperUI/components/modeButton";
-
 import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
@@ -27,6 +26,8 @@ export class ModeButtonTests extends TestModule {
 			myMode={this.mockModeButtonProps.myMode}
 			tabIndex={this.mockModeButtonProps.tabIndex}
 			selected={this.mockModeButtonProps.selected}
+			aria-setsize={this.mockModeButtonProps["aria-setsize"]}
+			aria-posinset={this.mockModeButtonProps["aria-posinset"]}
 			onModeSelected={this.mockModeButtonProps.onModeSelected}
 			tooltipText={this.mockModeButtonProps.tooltipText}/>;
 	}
@@ -48,6 +49,8 @@ export class ModeButtonTests extends TestModule {
 					label={startingState.label}
 					myMode={startingState.myMode}
 					tabIndex={startingState.tabIndex}
+					aria-setsize={startingState["aria-setsize"]}
+					aria-posinset={startingState["aria-posinset"]}
 					selected={startingState.selected}
 					onModeSelected={startingState.onModeSelected}
 					tooltipText={startingState.tooltipText}/>);
@@ -71,15 +74,15 @@ export class ModeButtonTests extends TestModule {
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			strictEqual(modeButton.getAttribute("aria-posinset"), this.mockModeButtonProps["aria-posinset"],
-				"The mode button's aria-pos attribute should be: " + this.mockModeButtonProps.tabIndex);
+				"The mode button's aria-pos attribute should be: " + this.mockModeButtonProps["aria-posinset"]);
 		});
 
-		test("A button's aria-setsize attribute should be 4", () => {
+		test("A button's aria-setsize attribute should be equal to the amount of buttons on the page", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			strictEqual(modeButton.getAttribute("aria-setsize"), this.mockModeButtonProps["aria-setsize"],
-				"The mode button's aria-setsize attribute should be: " + this.mockModeButtonProps.tabIndex);
+				"The mode button's aria-setsize attribute should be: " + this.mockModeButtonProps["aria-setsize"]);
 		});
 
 		test("A button's image src should match its imgSrc prop", () => {

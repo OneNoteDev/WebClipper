@@ -31,7 +31,7 @@ class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
 
 		return (
 			<a
-				className={className} role="option" data-ariaSet={Constants.AriaSet.modeButtonSet}
+				className={className} role="option" data-ariaModeButtonSet={Constants.AriaSet.modeButtonSet}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""} aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
 				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex)} tabIndex={this.props.tabIndex}
 				aria-selected={this.props.selected}>

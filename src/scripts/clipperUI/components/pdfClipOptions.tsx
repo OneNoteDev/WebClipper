@@ -1,23 +1,17 @@
 import {Localization} from "../../localization/localization";
-
 import {Constants} from "../../constants";
 import {OperationResult} from "../../operationResult";
 import {PdfPreviewInfo} from "../../previewInfo";
 import {StringUtils} from "../../stringUtils";
-
 import {ExtensionUtils} from "../../extensions/extensionUtils";
-
 import {ComponentBase} from "../componentBase";
 import {ClipperStateProp} from "../clipperState";
 import {Status} from "../status";
-
 import {AnimationHelper} from "../animations/animationHelper";
 import {AnimationState} from "../animations/animationState";
 import {AnimationStrategy} from "../animations/animationStrategy";
 import {FadeInAnimationStrategy} from "../animations/fadeInAnimationStrategy";
-
 import {Popover} from "./popover";
-
 import * as _ from "lodash";
 
 interface PdfClipOptionsState {
@@ -238,7 +232,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			<div className="clipOptionsContainer">
 				<div className="clipOptionsTitleContainer">
 					<span className="clipOptionsTitle">{Localization.getLocalizedString("WebClipper.Label.PdfOptions")}</span>
-					<span className="moreClipOptions" id={Constants.Ids.moreClipOptions} {...this.enableInvoke(this.onMoreClicked, 62) }>
+					<span className="moreClipOptions" id={Constants.Ids.moreClipOptions} {...this.enableInvoke(this.onMoreClicked, 63) }>
 						{expandOptionLabel}<img className="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					</span>
 				</div>
