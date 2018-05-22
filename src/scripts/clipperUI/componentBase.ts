@@ -122,7 +122,6 @@ export abstract class ComponentBase<TState, TProps> {
 						if (element.getAttribute("data-ariaset") === Constants.AriaSet.modeButtonSet) {
 							let nextPosInSet = parseInt(element.getAttribute("aria-posinset"), 10) + 1;
 							const buttons = document.querySelectorAll("a[data-ariaset]");
-							console.log(buttons);
 							if (nextPosInSet === (buttons.length + 1) ) {
 								nextPosInSet = 1;
 							}
@@ -140,12 +139,9 @@ export abstract class ComponentBase<TState, TProps> {
 	}
 
 	private static focusOnButton(buttons, nextPosInSet) {
-		console.log("buttons", buttons);
-		console.log("nextPOsInSet", nextPosInSet);
 		if (buttons.length > 0) {
 			for (let i = 0; i < buttons.length; i++) {
 				let selectable = buttons[i] as HTMLElement;
-				console.log("Selectable", selectable);
 				selectable.style.outlineStyle = "";
 				let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
 				if (ariaIntForEach === nextPosInSet) {

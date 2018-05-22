@@ -20,41 +20,20 @@ class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
 		this.props.onModeSelected(this.props.myMode);
 	}
 
-	private getAriaPositionInSet(name) {
-		switch (name) {
-			case "fullPageButton":
-				return "1";
-			case "regionButton":
-				return "2";
-			case "augmentationButton":
-				return "3";
-			case "bookmarkButton":
-				return "4";
-			default:
-				break;
-		}
-	}
-
-	private static getAriaSetSize() {
-		const buttons = document.querySelectorAll("a[data-ariaSet");
-		return buttons.length;
-	}
-
 	public render() {
 		let className = "modeButton";
 		if (this.props.selected) {
 			className += " selected";
 		}
-
 		let clipMode: string = ClipMode[this.props.myMode];
 		clipMode = clipMode[0].toLowerCase() + clipMode.slice(1);
 		let idName: string = clipMode + "Button";
 
 		return (
 			<a
-				className={className} role="option" aria-setsize={ModeButtonClass.getAriaSetSize()} aria-posinset={this.getAriaPositionInSet(idName)} data-ariaSet={Constants.AriaSet.modeButtonSet}
-				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
-				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex)} tabIndex={this.props.selected ? 40 : ""}
+				className={className} role="option" data-ariaSet={Constants.AriaSet.modeButtonSet}
+				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""} aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
+				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex)} tabIndex={this.props.tabIndex}
 				aria-selected={this.props.selected}>
 			<img className="icon" src={this.props.imgSrc} />
 				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
