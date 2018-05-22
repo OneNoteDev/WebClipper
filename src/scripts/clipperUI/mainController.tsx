@@ -98,39 +98,19 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 
 	initAnimationStrategy() {
 		this.controllerAnimationStrategy = new ExpandFromRightAnimationStrategy({
-			extShouldAnimateIn: () => {
-				return this.props.clipperState.uiExpanded;
-			},
-			extShouldAnimateOut: () => {
-				return !this.props.clipperState.uiExpanded;
-			},
-			onBeforeAnimateOut: () => {
-				this.setState({currentPanel: PanelType.None});
-			},
-			onBeforeAnimateIn: () => {
-				this.props.clipperState.reset();
-			},
-			onAnimateInExpand: () => {
-				this.setState({currentPanel: this.getPanelTypeToShow()});
-			},
-			onAfterAnimateOut: () => {
-				Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi);
-			}
+			extShouldAnimateIn: () => { return this.props.clipperState.uiExpanded; },
+			extShouldAnimateOut: () => { return !this.props.clipperState.uiExpanded; },
+			onBeforeAnimateOut: () => { this.setState({currentPanel: PanelType.None}); },
+			onBeforeAnimateIn: () => { this.props.clipperState.reset(); },
+			onAnimateInExpand: () => { this.setState({currentPanel: this.getPanelTypeToShow()}); },
+			onAfterAnimateOut: () => { Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi); }
 		});
 
 		this.panelAnimationStrategy = new FadeInAnimationStrategy({
-			extShouldAnimateIn: () => {
-				return this.state.currentPanel !== PanelType.None;
-			},
-			extShouldAnimateOut: () => {
-				return this.getPanelTypeToShow() !== this.state.currentPanel;
-			},
-			onAfterAnimateOut: () => {
-				this.setState({currentPanel: this.getPanelTypeToShow()});
-			},
-			onAfterAnimateIn: () => {
-				this.setState({currentPanel: this.getPanelTypeToShow()});
-			}
+			extShouldAnimateIn: () => { return this.state.currentPanel !== PanelType.None; },
+			extShouldAnimateOut: () => { return this.getPanelTypeToShow() !== this.state.currentPanel; },
+			onAfterAnimateOut: () => { this.setState({currentPanel: this.getPanelTypeToShow()}); },
+			onAfterAnimateIn: () => { this.setState({currentPanel: this.getPanelTypeToShow()}); }
 		});
 
 		this.heightAnimationStrategy = new SlidingHeightAnimationStrategy(Constants.Ids.mainController, {
@@ -153,6 +133,17 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 	onPopupToggle(shouldNowBeOpen: boolean) {
 		this.popupIsOpen = shouldNowBeOpen;
 		this.updateFrameHeightAfterPopupToggle(shouldNowBeOpen);
+	}
+
+	private updateFrameHeightAfterPopupToggle(shouldNowBeOpen: boolean) {
+		let saveToLocationContainer = document.getElementById(Constants.Ids.saveToLocationContainer);
+		if (saveToLocationContainer) {
+			let currentLocationContainerPosition: ClientRect = saveToLocationContainer.getBoundingClientRect();
+			let aboutToOpenHeight = Constants.Styles.sectionPickerContainerHeight + currentLocationContainerPosition.top + currentLocationContainerPosition.height;
+			let aboutToCloseHeight = document.getElementById(Constants.Ids.mainController).offsetHeight;
+			let newHeight = shouldNowBeOpen ? aboutToOpenHeight : aboutToCloseHeight;
+			this.props.updateFrameHeight(newHeight);
+		}
 	}
 
 	getPanelTypeToShow(): PanelType {
@@ -247,8 +238,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 						Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.refreshPage);
 					}
 				});
-				return <ErrorDialogPanel
-					message={Localization.getLocalizedString("WebClipper.Error.OrphanedWebClipperDetected")} buttons={buttons}/>;
+				return <ErrorDialogPanel message={Localization.getLocalizedString("WebClipper.Error.OrphanedWebClipperDetected")} buttons={buttons}/>;
 			case PanelType.Loading:
 				return <LoadingPanel clipperState={this.props.clipperState}/>;
 			case PanelType.SignInNeeded:
@@ -256,9 +246,9 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 														onSignInInvoked={this.props.onSignInInvoked}/>;
 			case PanelType.ClipOptions:
 				return <OptionsPanel
-					onPopupToggle={this.onPopupToggle.bind(this)}
-					clipperState={this.props.clipperState}
-					onStartClip={this.props.onStartClip}/>;
+								onPopupToggle={this.onPopupToggle.bind(this)}
+								clipperState={this.props.clipperState}
+								onStartClip={this.props.onStartClip}/>;
 			case PanelType.RegionInstructions:
 				return <RegionSelectingPanel clipperState={this.props.clipperState}/>;
 			case PanelType.ClippingToApi:
@@ -268,9 +258,9 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 					}
 
 					return <ClippingPanelWithDelayedMessage
-						clipperState={this.props.clipperState}
-						delay={Constants.Settings.pdfClippingMessageDelay}
-						message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")}/>;
+									clipperState={this.props.clipperState}
+									delay={Constants.Settings.pdfClippingMessageDelay}
+									message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")}/>;
 				}
 				return <ClippingPanel clipperState={this.props.clipperState}/>;
 			case PanelType.ClippingFailure:
@@ -319,8 +309,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				}
 
 				if (this.props.clipperState.showRatingsPrompt) {
-					panels.push(<RatingsPanel clipperState={this.props.clipperState}
-																		animationState={this.state.ratingsPanelAnimationState}/>);
+					panels.push(<RatingsPanel clipperState={this.props.clipperState} animationState={this.state.ratingsPanelAnimationState}/>);
 				}
 
 				return panels;
@@ -351,11 +340,11 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 					// so we will not show the footer. If it doesn't require signout, show the Footer
 					return undefined;
 				}
-			/* falls through */
+				/* falls through */
 			case PanelType.SignInNeeded:
 				return <Footer clipperState={this.props.clipperState} onSignOutInvoked={this.props.onSignOutInvoked}/>;
 			case PanelType.ClippingSuccess:
-			/* falls through */
+				/* falls through */
 			default:
 				return undefined;
 		}
@@ -379,17 +368,6 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				</div>
 			</div>
 		);
-	}
-
-	private updateFrameHeightAfterPopupToggle(shouldNowBeOpen: boolean) {
-		let saveToLocationContainer = document.getElementById(Constants.Ids.saveToLocationContainer);
-		if (saveToLocationContainer) {
-			let currentLocationContainerPosition: ClientRect = saveToLocationContainer.getBoundingClientRect();
-			let aboutToOpenHeight = Constants.Styles.sectionPickerContainerHeight + currentLocationContainerPosition.top + currentLocationContainerPosition.height;
-			let aboutToCloseHeight = document.getElementById(Constants.Ids.mainController).offsetHeight;
-			let newHeight = shouldNowBeOpen ? aboutToOpenHeight : aboutToCloseHeight;
-			this.props.updateFrameHeight(newHeight);
-		}
 	}
 }
 

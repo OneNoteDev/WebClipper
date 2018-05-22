@@ -77,7 +77,7 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 					<div
 						id={Constants.Ids.annotationPlaceholder}
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} {...this.enableInvoke(this.handleAnnotateButton, 210)}
-						role="textbox">
+						role="button">
 						<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon_purple.png")}/>
 						<span aria-label={Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")}>{Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")} </span>
 					</div>

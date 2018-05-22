@@ -20,7 +20,7 @@ export interface SectionPickerState {
 		path: string;
 		section: OneNoteApi.Section;
 	};
-};
+}
 
 interface SectionPickerProp extends ClipperStateProp {
 	onPopupToggle: (shouldNowBeOpen: boolean) => void;
@@ -28,28 +28,6 @@ interface SectionPickerProp extends ClipperStateProp {
 
 export class SectionPickerClass extends ComponentBase<SectionPickerState, SectionPickerProp> {
 	static dataSource: OneNotePicker.OneNotePickerDataSource;
-
-	// Given a notebook list, converts it to state form where the curSection is the default section (or undefined if not found)
-	static convertNotebookListToState(notebooks: OneNoteApi.Notebook[]): SectionPickerState {
-		let pathToDefaultSection = OneNoteApi.NotebookUtils.getPathFromNotebooksToSection(notebooks, s => s.isDefault);
-		let defaultSectionInfo = SectionPickerClass.formatSectionInfoForStorage(pathToDefaultSection);
-
-		return {
-			notebooks: notebooks,
-			status: Status.Succeeded,
-			curSection: defaultSectionInfo
-		};
-	}
-
-	static formatSectionInfoForStorage(pathToSection: OneNoteApi.SectionPathElement[]): { path: string, section: OneNoteApi.Section } {
-		if (!pathToSection || pathToSection.length === 0) {
-			return undefined;
-		}
-		return {
-			path: pathToSection.map(elem => elem.name).join(" > "),
-			section: pathToSection[pathToSection.length - 1] as OneNoteApi.Section
-		};
-	}
 
 	getInitialState(): SectionPickerState {
 		return {
@@ -69,9 +47,6 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		Clipper.storeValue(ClipperStorageKeys.currentSelectedSection, JSON.stringify(curSection));
 		Clipper.logger.logClickEvent(Log.Click.Label.sectionComponent);
 	}
-
-	// Begins by updating state with information found in local storage, then retrieves and stores fresh notebook information
-	// from the API. If the user does not have a previous section selection in storage, or has not made a section selection yet,
 
 	onPopupToggle(shouldNowBeOpen: boolean) {
 		if (shouldNowBeOpen) {
@@ -93,6 +68,8 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		return true;
 	}
 
+	// Begins by updating state with information found in local storage, then retrieves and stores fresh notebook information
+	// from the API. If the user does not have a previous section selection in storage, or has not made a section selection yet,
 	// additionally set the current section to the default section.
 	retrieveAndUpdateNotebookAndSectionSelection(): Promise<SectionPickerState> {
 		return new Promise<SectionPickerState>((resolve, reject) => {
@@ -233,6 +210,28 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
 		return SectionPickerClass.dataSource.getNotebooks(headers);
+	}
+
+	// Given a notebook list, converts it to state form where the curSection is the default section (or undefined if not found)
+	static convertNotebookListToState(notebooks: OneNoteApi.Notebook[]): SectionPickerState {
+		let pathToDefaultSection = OneNoteApi.NotebookUtils.getPathFromNotebooksToSection(notebooks, s => s.isDefault);
+		let defaultSectionInfo = SectionPickerClass.formatSectionInfoForStorage(pathToDefaultSection);
+
+		return {
+			notebooks: notebooks,
+			status: Status.Succeeded,
+			curSection: defaultSectionInfo
+		};
+	}
+
+	static formatSectionInfoForStorage(pathToSection: OneNoteApi.SectionPathElement[]): { path: string, section: OneNoteApi.Section } {
+		if (!pathToSection || pathToSection.length === 0) {
+			return undefined;
+		}
+		return {
+			path: pathToSection.map(elem => elem.name).join(" > "),
+			section: pathToSection[pathToSection.length - 1] as OneNoteApi.Section
+		};
 	}
 
 	render() {
