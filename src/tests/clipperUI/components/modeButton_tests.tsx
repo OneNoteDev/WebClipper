@@ -73,7 +73,7 @@ export class ModeButtonTests extends TestModule {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
-			strictEqual(modeButton.getAttribute("aria-posinset"), this.mockModeButtonProps["aria-posinset"],
+			strictEqual(modeButton.getAttribute("aria-posinset"), this.mockModeButtonProps["aria-posinset"].toString(),
 				"The mode button's aria-pos attribute should be: " + this.mockModeButtonProps["aria-posinset"]);
 		});
 
@@ -81,7 +81,7 @@ export class ModeButtonTests extends TestModule {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
-			strictEqual(modeButton.getAttribute("aria-setsize"), this.mockModeButtonProps["aria-setsize"],
+			strictEqual(modeButton.getAttribute("aria-setsize"), this.mockModeButtonProps["aria-setsize"].toString(),
 				"The mode button's aria-setsize attribute should be: " + this.mockModeButtonProps["aria-setsize"]);
 		});
 

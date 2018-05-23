@@ -59,15 +59,15 @@ export abstract class ComponentBase<TState, TProps> {
 	}
 
 	/*
-   * Helper which handles tabIndex, clicks, and keyboard navigation.
-   *
-   * Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
-   * (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
-   *
-   * Example use:
-   *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
-   */
-	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined) {
+   	* Helper which handles tabIndex, clicks, and keyboard navigation.
+	*
+	* Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
+	* (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
+	*
+	* Example use:
+	*      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
+	*/
+	public enableInvoke(handleMethod: Function, tabIndex = 0 , args?: any, idOverride: string = undefined, ariaSet: string = undefined) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (handleMethod) {
 			handleMethod = handleMethod.bind(this, args);
@@ -106,9 +106,9 @@ export abstract class ComponentBase<TState, TProps> {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
 				} else if (e.which === Constants.KeyCodes.up) {
-					if (element.hasAttribute("data-ariaModeButtonSet")) {
+					if (element.hasAttribute("data-" + ariaSet)) {
 							let nextPosInSet = parseInt(element.getAttribute("aria-posinset"), 10) - 1;
-							const buttons = document.querySelectorAll("a[data-ariaModeButtonSet]");
+							const buttons = document.querySelectorAll("a[data-" + ariaSet + "]");
 							if (nextPosInSet === 0) {
 								nextPosInSet = buttons.length;
 							}
@@ -116,14 +116,15 @@ export abstract class ComponentBase<TState, TProps> {
 					}
 
 				} else if (e.which === Constants.KeyCodes.down) {
-					if (element.hasAttribute("data-ariaModeButtonSet")) {
-							let nextPosInSet = parseInt(element.getAttribute("aria-posinset"), 10) + 1;
-							const buttons = document.querySelectorAll("a[data-ariaModeButtonSet]");
-							if (nextPosInSet === (buttons.length + 1) ) {
-								nextPosInSet = 1;
-							}
-							ComponentBase.focusOnButton(buttons, nextPosInSet);
+					if (element.hasAttribute("data-" + ariaSet)) {
+						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
+						let nextPosInSet = posInSet + 1;
+						const buttons = document.querySelectorAll("a[data-" + ariaSet + "]");
+						if (posInSet === (buttons.length)) {
+							nextPosInSet = 1;
 						}
+						ComponentBase.focusOnButton(buttons, nextPosInSet);
+					}
 				}
 			},
 			onmousedown: (e: MouseEvent) => {
@@ -134,20 +135,18 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	private static focusOnButton(buttons, nextPosInSet) {
-		if (buttons.length > 0) {
-			for (let i = 0; i < buttons.length; i++) {
-				let selectable = buttons[i] as HTMLElement;
-				selectable.style.outlineStyle = "";
-				let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
-				if (ariaIntForEach === nextPosInSet) {
-					selectable.focus();
-				}
+	private static focusOnButton(buttons: NodeListOf<Element>, nextPosInSet: number) {
+		for (let i = 0; i < buttons.length; i++) {
+			let selectable = buttons[i] as HTMLElement;
+			selectable.style.outlineStyle = "";
+			let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
+			if (ariaIntForEach === nextPosInSet) {
+				selectable.focus();
 			}
 		}
 	}
 
-// Note: currently all components NEED either a child or attribute to work with the MSX transformer.
+	// Note: currently all components NEED either a child or attribute to work with the MSX transformer.
 	// This <MyButton/> won't work, but this <MyButton dummyProp /> will work.
 	public static componentize() {
 		let returnValue: any = () => {

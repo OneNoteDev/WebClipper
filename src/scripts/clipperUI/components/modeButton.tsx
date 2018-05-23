@@ -2,18 +2,7 @@ import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
 import {ClipMode} from "../clipMode";
 import {ComponentBase} from "../componentBase";
-
-export interface ModeButtonProps {
-	imgSrc: string;
-	label: string;
-	myMode: ClipMode;
-	tabIndex: number;
-	selected?: boolean;
-	"aria-posinset": string;
-	"aria-setsize": string;
-	onModeSelected: (modeButton: ClipMode) => void;
-	tooltipText?: string;
-}
+import {ModeButtonProps} from "./modeButtonSelector";
 
 class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
 	buttonHandler() {
@@ -30,10 +19,9 @@ class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
 		let idName: string = clipMode + "Button";
 
 		return (
-			<a
-				className={className} role="option" data-ariaModeButtonSet={Constants.AriaSet.modeButtonSet}
+			<a className={className} role="option" data-ariaModeButtonSet={Constants.AriaSet.modeButtonSet}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""} aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
-				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex)} tabIndex={this.props.tabIndex}
+				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex, undefined, undefined,  Constants.AriaSet.modeButtonSet)}
 				aria-selected={this.props.selected}>
 			<img className="icon" src={this.props.imgSrc} />
 				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>

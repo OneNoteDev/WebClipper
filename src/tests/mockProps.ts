@@ -1,20 +1,13 @@
 import {ClientType} from "../scripts/clientType";
-
 import {ClipMode} from "../scripts/clipperUI/clipMode";
 import {ClipperState} from "../scripts/clipperUI/clipperState";
 import {MainControllerProps} from "../scripts/clipperUI/mainController";
 import {Status} from "../scripts/clipperUI/status";
-
-import {ModeButtonProps} from "../scripts/clipperUI/components/modeButton";
-
+import {ModeButtonProps} from "../scripts/clipperUI/components/modeButtonSelector";
 import {SmartValue} from "../scripts/communicator/smartValue";
-
 import {PdfScreenshotResult} from "../scripts/contentCapture/pdfScreenshotHelper";
-
 import {InvokeMode} from "../scripts/extensions/invokeOptions";
-
 import {Localization} from "../scripts/localization/localization";
-
 import {UpdateReason} from "../scripts/userInfo";
 
 /**
@@ -248,8 +241,8 @@ export module MockProps {
 			label: "My Button",
 			myMode: ClipMode.FullPage,
 			tabIndex: 420,
-			"aria-setsize": "4",
-			"aria-posinset": "1",
+			"aria-setsize": 4,
+			"aria-posinset": 1,
 			selected: false,
 			onModeSelected: (modeButton: ClipMode) => {
 			},

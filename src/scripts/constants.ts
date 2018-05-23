@@ -434,6 +434,6 @@ export module Constants {
 	}
 
 	export module AriaSet {
-		export var modeButtonSet = "modeButtonSet";
+		export var modeButtonSet = "ariaModeButtonSet";
 	}
 }
