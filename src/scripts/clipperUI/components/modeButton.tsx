@@ -2,8 +2,17 @@ import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
 import {ClipMode} from "../clipMode";
 import {ComponentBase} from "../componentBase";
-import {PropsForModeElementNoAriaGrouping} from "./modeElementProps";
 import {PropsForAriaGrouping} from "./ariaGroupingProps";
+
+export interface PropsForModeElementNoAriaGrouping {
+	imgSrc: string;
+	label: string;
+	myMode: ClipMode;
+	selected?: boolean;
+	tabIndex?: number;
+	onModeSelected: (modeButton: ClipMode) => void;
+	tooltipText?: string;
+}
 
 export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, PropsForAriaGrouping { }
 
@@ -22,7 +31,7 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 		let idName: string = clipMode + "Button";
 
 		return (
-			<a className={className} role="option" data-ariaModeButtonSet={Constants.AriaSet.modeButtonSet}
+			<a className={className} role="option" data-ariaSet={Constants.AriaSet.modeButtonSet}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""} aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
 				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex, undefined, undefined,  Constants.AriaSet.modeButtonSet)}
 				aria-selected={this.props.selected}>

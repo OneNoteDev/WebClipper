@@ -105,17 +105,17 @@ export abstract class ComponentBase<TState, TProps> {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
 				} else if (e.which === Constants.KeyCodes.up) {
-					if (element.hasAttribute("data-" + ariaSet)) {
+					if (element.hasAttribute("data-ariaSet")) {
 							let nextPosInSet = parseInt(element.getAttribute("aria-posinset"), 10) - 1;
-							const buttons = document.querySelectorAll("a[data-" + ariaSet + "]");
+							const buttons = document.querySelectorAll("a[data-ariaSet=" + ariaSet.toString() + "]");
 							ComponentBase.focusOnButton(buttons, nextPosInSet);
 					}
 
 				} else if (e.which === Constants.KeyCodes.down) {
-					if (element.hasAttribute("data-" + ariaSet)) {
+					if (element.hasAttribute("data-ariaSet")) {
 						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
 						let nextPosInSet = posInSet + 1;
-						const buttons = document.querySelectorAll("a[data-" + ariaSet + "]");
+						const buttons = document.querySelectorAll("a[data-ariaSet=" + ariaSet.toString() + "]");
 						ComponentBase.focusOnButton(buttons, nextPosInSet);
 					}
 				}

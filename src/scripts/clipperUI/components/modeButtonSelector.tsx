@@ -7,7 +7,7 @@ import {ClipMode} from "../clipMode";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {ModeButton} from "./modeButton";
-import {PropsForModeElementNoAriaGrouping} from "./modeElementProps";
+import {PropsForModeElementNoAriaGrouping} from "./modeButton";
 
 class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 
