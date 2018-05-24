@@ -3,12 +3,13 @@ import {ClipMode} from "../scripts/clipperUI/clipMode";
 import {ClipperState} from "../scripts/clipperUI/clipperState";
 import {MainControllerProps} from "../scripts/clipperUI/mainController";
 import {Status} from "../scripts/clipperUI/status";
-import {ModeButtonProps} from "../scripts/clipperUI/components/modeButtonSelector";
+import {PropsForModeButton} from "../scripts/clipperUI/components/modeButton";
 import {SmartValue} from "../scripts/communicator/smartValue";
 import {PdfScreenshotResult} from "../scripts/contentCapture/pdfScreenshotHelper";
 import {InvokeMode} from "../scripts/extensions/invokeOptions";
 import {Localization} from "../scripts/localization/localization";
 import {UpdateReason} from "../scripts/userInfo";
+import {} from "../scripts/clipperUI/components/modeButton";
 
 /**
  * Collection of mock props used in our tests. Mostly intended for preventing
@@ -235,7 +236,7 @@ export module MockProps {
 		};
 	}
 
-	export function getMockModeButtonProps(): ModeButtonProps {
+	export function getMockModeButtonProps(): PropsForModeButton {
 		return {
 			imgSrc: "test.png",
 			label: "My Button",
