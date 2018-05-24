@@ -66,7 +66,7 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Example use:
 	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
 	 */
-	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, ariaForArrowKeyNav: string = undefined) {
+	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, valueOfSetNameForArrowKeyNav: string = undefined) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (handleMethod) {
 			handleMethod = handleMethod.bind(this, args);
@@ -105,16 +105,20 @@ export abstract class ComponentBase<TState, TProps> {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
 				} else if (e.which === Constants.KeyCodes.up) {
-					if (element.hasAttribute("data-ariaForArrowKeyNav")) {
-						let nextPosInSet = parseInt(element.getAttribute("aria-posinset"), 10) - 1;
-						ComponentBase.focusOnButton(ariaForArrowKeyNav, nextPosInSet);
+					if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
+						console.log("Inside the if Block");
+						console.log("data-" + Constants.AriaSet.setNameForArrowKeyNav);
+						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
+						let nextPosInSet = posInSet + 1;
+						ComponentBase.focusOnButton(valueOfSetNameForArrowKeyNav, nextPosInSet);
 					}
 
 				} else if (e.which === Constants.KeyCodes.down) {
-					if (element.hasAttribute("data-ariaForArrowKeyNav")) {
+					if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
+						console.log("DOWNDOWN");
 						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
 						let nextPosInSet = posInSet + 1;
-						ComponentBase.focusOnButton(ariaForArrowKeyNav, nextPosInSet);
+						ComponentBase.focusOnButton(valueOfSetNameForArrowKeyNav, nextPosInSet);
 					}
 				}
 			},
@@ -126,14 +130,15 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	private static focusOnButton(ariaForArrowKeyNav: string, nextPosInSet: number) {
-		const buttons = document.querySelectorAll("a[data-ariaForArrowKeyNav=" + ariaForArrowKeyNav + "]");
+	private static focusOnButton(valueOfSetNameForArrowKeyNav: string, nextPosInSet: number) {
+		const buttons = document.querySelectorAll("a[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + valueOfSetNameForArrowKeyNav + "]");
 		for (let i = 0; i < buttons.length; i++) {
 			let selectable = buttons[i] as HTMLElement;
 			let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
 			if (ariaIntForEach === nextPosInSet) {
 				selectable.style.outlineStyle = "";
 				selectable.focus();
+				return;
 			}
 		}
 	}

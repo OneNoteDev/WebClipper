@@ -2,7 +2,7 @@ import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
 import {ClipMode} from "../clipMode";
 import {ComponentBase} from "../componentBase";
-import {PropsForAriaGrouping} from "./ariaGroupingProps";
+import {ariaSetProps} from "./ariaSetProps";
 
 export interface PropsForModeElementNoAriaGrouping {
 	imgSrc: string;
@@ -14,7 +14,7 @@ export interface PropsForModeElementNoAriaGrouping {
 	tooltipText?: string;
 }
 
-export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, PropsForAriaGrouping { }
+export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, ariaSetProps { }
 
 class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 	buttonHandler() {
@@ -31,14 +31,13 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 		let idName: string = clipMode + "Button";
 
 		return (
-			<a className={className} role="option" data-ariaForArrowKeyNav={Constants.AriaSet.modeButtonSet}
+			<a className={className} role="option" data-setnameforarrowkeynav={Constants.AriaSet.modeButtonSet}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
 				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex, undefined, undefined, Constants.AriaSet.modeButtonSet)}
 				aria-selected={this.props.selected}>
 				<img className="icon" src={this.props.imgSrc}/>
-				<span className="label buttonLabelFont"
-							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 					{this.props.label}
 				</span>
 			</a>

@@ -9,7 +9,6 @@ import {ComponentBase} from "../componentBase";
 import {ModeButton, PropsForModeElementNoAriaGrouping} from "./modeButton";
 
 class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
-
 	onModeSelected(newMode: ClipMode) {
 		this.props.clipperState.setState({
 			currentMode: this.props.clipperState.currentMode.set(newMode)
@@ -113,7 +112,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	private getBookmarkButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
-		if (this.props.clipperState.pageInfo.rawUrl.slice(0, 8) === "file:///") {
+		if (this.props.clipperState.pageInfo.rawUrl.indexOf("file:///") === 0) {
 			return undefined;
 		}
 
@@ -147,10 +146,8 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		for (let i = 0; i < propsForVisibleButtons.length; i++) {
 			let attributes = propsForVisibleButtons[i];
 			let ariaPos = i + 1;
-			visibleButtons.push(<ModeButton imgSrc={attributes.imgSrc} label={attributes.label} myMode={attributes.myMode}
-																			selected={attributes.selected} onModeSelected={attributes.onModeSelected}
-																			tooltipText={attributes.tooltipText} aria-setsize={propsForVisibleButtons.length}
-																			aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : undefined}/>);
+			visibleButtons.push(<ModeButton imgSrc={attributes.imgSrc} label={attributes.label} myMode={attributes.myMode} selected={attributes.selected}
+									onModeSelected={attributes.onModeSelected} tooltipText={attributes.tooltipText} aria-setsize={propsForVisibleButtons.length} aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : undefined}/>);
 		}
 		return visibleButtons;
 	}
