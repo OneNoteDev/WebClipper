@@ -6,8 +6,7 @@ import {Localization} from "../../localization/localization";
 import {ClipMode} from "../clipMode";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
-import {ModeButton} from "./modeButton";
-import {PropsForModeElementNoAriaGrouping} from "./modeButton";
+import {ModeButton, PropsForModeElementNoAriaGrouping} from "./modeButton";
 
 class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 
@@ -17,7 +16,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		});
 	};
 
-	private getScreenReaderOnlyElementPropsThatAnnouncesCurrentMode(currentMode: ClipMode) {
+	private getScreenReaderThatAnnouncesCurrentModeProps(currentMode: ClipMode) {
 		let stringToTellUserModeHasChanged = Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.CurrentModeHasChanged");
 		stringToTellUserModeHasChanged = stringToTellUserModeHasChanged.replace("{0}", ClipMode[currentMode]);
 
@@ -86,7 +85,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 
 		return {
 			imgSrc: ExtensionUtils.getImageResourceUrl("region.png"),
-			label: Localization.getLocalizedString(this.getRegionButtonPropsLabel()),
+			label: Localization.getLocalizedString(this.getRegionButtonLabel()),
 			myMode: ClipMode.Region,
 			selected: currentMode === ClipMode.Region,
 			onModeSelected: this.onModeSelected.bind(this),
@@ -94,7 +93,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		};
 	}
 
-	private getRegionButtonPropsLabel(): string {
+	private getRegionButtonLabel(): string {
 		return "WebClipper.ClipType.Region.Button";
 	}
 
@@ -128,7 +127,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		};
 	}
 
-	private getListOfButtons() {
+	private getListOfButtons(): HTMLElement[] {
 		let currentMode = this.props.clipperState.currentMode.get();
 
 		let buttonProps = [
@@ -141,21 +140,19 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		];
 
 		let visibleButtons = [
-			this.getScreenReaderOnlyElementPropsThatAnnouncesCurrentMode(currentMode),
+			this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode),
 		];
 
-		if (buttonProps) {
-			let propsForVisibleButtons = buttonProps.filter(attributes => !!attributes);
-			for (let i = 0; i < propsForVisibleButtons.length; i++) {
-				let attributes = propsForVisibleButtons[i];
-				let ariaPos = i + 1;
-				visibleButtons.push(<ModeButton imgSrc={attributes.imgSrc} label={attributes.label} myMode={attributes.myMode}
-								selected={attributes.selected} onModeSelected={attributes.onModeSelected}
-								tooltipText={attributes.tooltipText} aria-setsize={propsForVisibleButtons.length}
-								aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : undefined} />);
-			}
-			return visibleButtons;
+		let propsForVisibleButtons = buttonProps.filter(attributes => !!attributes);
+		for (let i = 0; i < propsForVisibleButtons.length; i++) {
+			let attributes = propsForVisibleButtons[i];
+			let ariaPos = i + 1;
+			visibleButtons.push(<ModeButton imgSrc={attributes.imgSrc} label={attributes.label} myMode={attributes.myMode}
+																			selected={attributes.selected} onModeSelected={attributes.onModeSelected}
+																			tooltipText={attributes.tooltipText} aria-setsize={propsForVisibleButtons.length}
+																			aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : undefined}/>);
 		}
+		return visibleButtons;
 	}
 
 	public render() {
