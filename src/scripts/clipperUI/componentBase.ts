@@ -57,17 +57,16 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 		};
 	}
-
 	/*
-   	* Helper which handles tabIndex, clicks, and keyboard navigation.
-	*
-	* Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
-	* (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
-	*
-	* Example use:
-	*      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
-	*/
-	public enableInvoke(handleMethod: Function, tabIndex = 0 , args?: any, idOverride: string = undefined, ariaSet: string = undefined) {
+	 * Helper which handles tabIndex, clicks, and keyboard navigation.
+	 *
+	 * Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
+	 * (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
+	 *
+	 * Example use:
+	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
+	 */
+	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, ariaSet: string = undefined) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (handleMethod) {
 			handleMethod = handleMethod.bind(this, args);
@@ -109,9 +108,6 @@ export abstract class ComponentBase<TState, TProps> {
 					if (element.hasAttribute("data-" + ariaSet)) {
 							let nextPosInSet = parseInt(element.getAttribute("aria-posinset"), 10) - 1;
 							const buttons = document.querySelectorAll("a[data-" + ariaSet + "]");
-							if (nextPosInSet === 0) {
-								nextPosInSet = buttons.length;
-							}
 							ComponentBase.focusOnButton(buttons, nextPosInSet);
 					}
 
@@ -120,9 +116,6 @@ export abstract class ComponentBase<TState, TProps> {
 						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
 						let nextPosInSet = posInSet + 1;
 						const buttons = document.querySelectorAll("a[data-" + ariaSet + "]");
-						if (posInSet === (buttons.length)) {
-							nextPosInSet = 1;
-						}
 						ComponentBase.focusOnButton(buttons, nextPosInSet);
 					}
 				}

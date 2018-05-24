@@ -7,23 +7,7 @@ import {ClipMode} from "../clipMode";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {ModeButton} from "./modeButton";
-
-export interface NoAriaPropsForModeButton {
-	imgSrc: string;
-	label: string;
-	myMode: ClipMode;
-	selected?: boolean;
-	tabIndex?: number;
-	onModeSelected: (modeButton: ClipMode) => void;
-	tooltipText?: string;
-}
-
-export interface AriaPropsForModeButton {
-	"aria-posinset": number;
-	"aria-setsize": number;
-}
-
-export interface ModeButtonProps extends NoAriaPropsForModeButton, AriaPropsForModeButton { }
+import {PropsForModeElementNoAriaGrouping} from "./modeElementProps";
 
 class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 
@@ -42,7 +26,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		);
 	}
 
-	private getPdfButtonProps(currentMode: ClipMode): NoAriaPropsForModeButton {
+	private getPdfButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
 			return undefined;
 		}
@@ -57,7 +41,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		};
 	}
 
-	private getAugmentationButtonProps(currentMode: ClipMode): NoAriaPropsForModeButton {
+	private getAugmentationButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			return undefined;
 		}
@@ -77,7 +61,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		};
 	}
 
-	private getFullPageButtonProps(currentMode: ClipMode): NoAriaPropsForModeButton {
+	private getFullPageButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			return undefined;
 		}
@@ -92,7 +76,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		};
 	}
 
-	private getRegionButtonProps(currentMode: ClipMode): NoAriaPropsForModeButton {
+	private getRegionButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		let enableRegionClipping = this.props.clipperState.injectOptions && this.props.clipperState.injectOptions.enableRegionClipping;
 		let contextImageModeUsed = this.props.clipperState.invokeOptions && this.props.clipperState.invokeOptions.invokeMode === InvokeMode.ContextImage;
 
@@ -114,7 +98,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		return "WebClipper.ClipType.Region.Button";
 	}
 
-	private getSelectionButtonProps(currentMode: ClipMode): NoAriaPropsForModeButton {
+	private getSelectionButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.invokeOptions.invokeMode !== InvokeMode.ContextTextSelection) {
 			return undefined;
 		}
@@ -129,8 +113,8 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		};
 	}
 
-	private getBookmarkButtonProps(currentMode: ClipMode): NoAriaPropsForModeButton {
-		if (this.props.clipperState.pageInfo.rawUrl.indexOf("file:///") === 0) {
+	private getBookmarkButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
+		if (this.props.clipperState.pageInfo.rawUrl.slice(0, 8) === "file:///") {
 			return undefined;
 		}
 
@@ -162,8 +146,9 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 
 		if (buttonProps) {
 			let propsForVisibleButtons = buttonProps.filter(attributes => !!attributes);
-			for (let attributes of propsForVisibleButtons) {
-				let ariaPos = ModeButtonSelectorClass.getIndexOf(propsForVisibleButtons, attributes) + 1;
+			for (let i = 0; i < propsForVisibleButtons.length; i++) {
+				let attributes = propsForVisibleButtons[i];
+				let ariaPos = i + 1;
 				visibleButtons.push(<ModeButton imgSrc={attributes.imgSrc} label={attributes.label} myMode={attributes.myMode}
 								selected={attributes.selected} onModeSelected={attributes.onModeSelected}
 								tooltipText={attributes.tooltipText} aria-setsize={propsForVisibleButtons.length}
@@ -173,16 +158,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		}
 	}
 
-	private static getIndexOf(list, element): number {
-		for (let i = 0; i < list.length; i++) {
-			if (list[i] === element) {
-				return i;
-			}
-		}
-	}
-
 	public render() {
-
 		return (
 			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox">
 				{ this.getListOfButtons() }

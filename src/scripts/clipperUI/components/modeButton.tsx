@@ -2,9 +2,12 @@ import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
 import {ClipMode} from "../clipMode";
 import {ComponentBase} from "../componentBase";
-import {ModeButtonProps} from "./modeButtonSelector";
+import {PropsForModeElementNoAriaGrouping} from "./modeElementProps";
+import {PropsForAriaGrouping} from "./ariaGroupingProps";
 
-class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
+export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, PropsForAriaGrouping { }
+
+class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 	buttonHandler() {
 		this.props.onModeSelected(this.props.myMode);
 	}
