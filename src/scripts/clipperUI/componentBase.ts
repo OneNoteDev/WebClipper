@@ -57,6 +57,7 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 		};
 	}
+
 	/*
 	 * Helper which handles tabIndex, clicks, and keyboard navigation.
 	 *
@@ -106,19 +107,24 @@ export abstract class ComponentBase<TState, TProps> {
 					element.style.outlineStyle = "";
 				} else if (e.which === Constants.KeyCodes.up) {
 					if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
-						console.log("Inside the if Block");
-						console.log("data-" + Constants.AriaSet.setNameForArrowKeyNav);
 						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
-						let nextPosInSet = posInSet + 1;
-						ComponentBase.focusOnButton(valueOfSetNameForArrowKeyNav, nextPosInSet);
+						if (posInSet === 1) {
+							return;
+						}
+						const buttons = document.querySelectorAll("a[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + valueOfSetNameForArrowKeyNav + "]");
+						let nextPosInSet = posInSet - 1;
+						ComponentBase.focusOnButton(buttons, nextPosInSet);
 					}
 
 				} else if (e.which === Constants.KeyCodes.down) {
 					if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
-						console.log("DOWNDOWN");
 						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
 						let nextPosInSet = posInSet + 1;
-						ComponentBase.focusOnButton(valueOfSetNameForArrowKeyNav, nextPosInSet);
+						const buttons = document.querySelectorAll("a[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + valueOfSetNameForArrowKeyNav + "]");
+						if (posInSet === buttons.length) {
+							return;
+						}
+						ComponentBase.focusOnButton(buttons, nextPosInSet);
 					}
 				}
 			},
@@ -130,8 +136,7 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	private static focusOnButton(valueOfSetNameForArrowKeyNav: string, nextPosInSet: number) {
-		const buttons = document.querySelectorAll("a[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + valueOfSetNameForArrowKeyNav + "]");
+	private static focusOnButton(buttons: NodeListOf<Element>, nextPosInSet: number) {
 		for (let i = 0; i < buttons.length; i++) {
 			let selectable = buttons[i] as HTMLElement;
 			let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
