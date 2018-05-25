@@ -105,25 +105,19 @@ export abstract class ComponentBase<TState, TProps> {
 				} else if (e.which === Constants.KeyCodes.tab) {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
-				} else if (e.which === Constants.KeyCodes.up) {
-					if ( setNameForArrowKeyNav === undefined) {
-						return;
-					}
-					if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
-						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
+				}
+
+				if (setNameForArrowKeyNav === undefined || setNameForArrowKeyNav === "") {
+					return;
+				} else if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
+					let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
+					if (e.which === Constants.KeyCodes.up) {
 						if (posInSet === 1) {
 							return;
 						}
 						let nextPosInSet = posInSet - 1;
 						ComponentBase.focusOnButton(setNameForArrowKeyNav, nextPosInSet);
-					}
-
-				} else if (e.which === Constants.KeyCodes.down) {
-					if ( setNameForArrowKeyNav === undefined) {
-						return;
-					}
-					if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
-						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
+					} else if (e.which === Constants.KeyCodes.down) {
 						let setSize = parseInt(element.getAttribute("aria-setsize"), 10);
 						if (posInSet === setSize) {
 							return;

@@ -31,11 +31,10 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 		let idName: string = clipMode + "Button";
 
 		return (
-			<a className={className} role="option"
+			<a className={className} role="option" aria-selected={this.props.selected}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
-				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex, undefined, undefined, Constants.AriaSet.modeButtonSet)}
-				aria-selected={this.props.selected}>
+				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex, undefined, undefined, Constants.AriaSet.modeButtonSet)}>
 				<img className="icon" src={this.props.imgSrc}/>
 				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 					{this.props.label}
