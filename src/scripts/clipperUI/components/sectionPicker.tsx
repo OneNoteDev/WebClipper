@@ -1,18 +1,14 @@
 /// <reference path="../../../../node_modules/onenotepicker/target/oneNotePicker.d.ts"/>
 
 import {Constants} from "../../constants";
-import {Settings} from "../../settings";
-
 import {Localization} from "../../localization/localization";
-
 import * as Log from "../../logging/log";
-
+import {Settings} from "../../settings";
 import {ClipperStorageKeys} from "../../storage/clipperStorageKeys";
-
-import {Clipper} from "../frontEndGlobals";
 import {ClipperStateProp} from "../clipperState";
 import {ClipperStateUtilities} from "../clipperStateUtilities";
 import {ComponentBase} from "../componentBase";
+import {Clipper} from "../frontEndGlobals";
 import {OneNoteApiUtils} from "../oneNoteApiUtils";
 import {Status} from "../status";
 
@@ -24,7 +20,7 @@ export interface SectionPickerState {
 		path: string;
 		section: OneNoteApi.Section;
 	};
-};
+}
 
 interface SectionPickerProp extends ClipperStateProp {
 	onPopupToggle: (shouldNowBeOpen: boolean) => void;
@@ -103,7 +99,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 					let freshNotebooks = responsePackage.parsedResponse;
 					if (!freshNotebooks) {
 						getNotebooksEvent.setStatus(Log.Status.Failed);
-						let error = { error: "GetNotebooks Promise was resolved but returned null or undefined value for notebooks." };
+						let error = {error: "GetNotebooks Promise was resolved but returned null or undefined value for notebooks."};
 						getNotebooksEvent.setFailureInfo(error);
 						this.setState({
 							status: Status.Failed
@@ -135,7 +131,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 						// A default section was found, so we set it as currently selected since the user has not made a valid selection yet
 						// curSection can be undefined if there's no default found, which is fine
 						Clipper.storeValue(ClipperStorageKeys.currentSelectedSection, JSON.stringify(freshNotebooksAsState.curSection));
-						this.props.clipperState.setState({ saveLocation: freshNotebooksAsState.curSection ? freshNotebooksAsState.curSection.section.id : undefined });
+						this.props.clipperState.setState({saveLocation: freshNotebooksAsState.curSection ? freshNotebooksAsState.curSection.section.id : undefined});
 					}
 
 					this.setState(freshNotebooksAsState);
@@ -284,20 +280,20 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 		return (
 			<div id={Constants.Ids.locationPickerContainer}>
-				<div id={Constants.Ids.optionLabel} className="optionLabel" tabIndex={50}>
+				<div id={Constants.Ids.optionLabel} className="optionLabel">
 					<label className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 						{Localization.getLocalizedString("WebClipper.Label.ClipLocation")}
 					</label>
 				</div>
 				<OneNotePicker.OneNotePickerComponent
-					tabIndex={51}
+					tabIndex={50}
 					notebooks={this.state.notebooks}
 					status={Status[this.state.status]}
 					onPopupToggle={this.onPopupToggle.bind(this)}
 					onSectionClicked={this.onSectionClicked.bind(this)}
 					textToDisplay={textToDisplay}
 					curSectionId={curSectionId}
-					localizedStrings={localizedStrings} />
+					localizedStrings={localizedStrings}/>
 			</div>
 		);
 	}

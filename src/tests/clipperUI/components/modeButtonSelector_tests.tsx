@@ -161,14 +161,14 @@ export class ModeButtonSelectorTests extends TestModule {
 			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
 		});
 
-		test("The tabbing should flow in element order, assuming they are all available", () => {
+		test("The aria-posinset attribute should flow in element order, assuming they are all available", () => {
 			let startingState = MockProps.getMockClipperState();
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
 
-			Assert.tabOrderIsIncremental([TestConstants.Ids.fullPageButton, TestConstants.Ids.regionButton,
-				TestConstants.Ids.augmentationButton, TestConstants.Ids.selectionButton, TestConstants.Ids.bookmarkButton]);
+			Assert.posInSetIsDecremental([TestConstants.Ids.fullPageButton,
+				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
 		});
 
 		test("The full page button should have the 'selected' class styling applied to it by default", () => {

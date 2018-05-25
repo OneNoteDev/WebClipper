@@ -331,6 +331,8 @@ export module Constants {
 		export var enter = 13;
 		export var esc = 27;
 		export var c = 67;
+		export var down = 40;
+		export var up = 38;
 	}
 
 	export module StringKeyCodes {
@@ -429,5 +431,10 @@ export module Constants {
 		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 3 weeks
 		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
 		export var timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
+	}
+
+	export module AriaSet {
+		export var setNameForArrowKeyNav = "setnameforarrowkeynav";
+		export var modeButtonSet = "ariaModeButtonSet";
 	}
 }

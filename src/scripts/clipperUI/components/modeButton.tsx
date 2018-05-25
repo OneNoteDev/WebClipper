@@ -1,19 +1,22 @@
+import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
-
-import {ComponentBase} from "../componentBase";
 import {ClipMode} from "../clipMode";
+import {ComponentBase} from "../componentBase";
+import {AriaSetProps} from "./ariaSetProps";
 
-export interface ModeButtonProps {
+export interface PropsForModeElementNoAriaGrouping {
 	imgSrc: string;
 	label: string;
 	myMode: ClipMode;
-	tabIndex: number;
 	selected?: boolean;
+	tabIndex?: number;
 	onModeSelected: (modeButton: ClipMode) => void;
 	tooltipText?: string;
 }
 
-class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
+export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, AriaSetProps { }
+
+class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 	buttonHandler() {
 		this.props.onModeSelected(this.props.myMode);
 	}
@@ -23,18 +26,17 @@ class ModeButtonClass extends ComponentBase<{}, ModeButtonProps> {
 		if (this.props.selected) {
 			className += " selected";
 		}
-
 		let clipMode: string = ClipMode[this.props.myMode];
 		clipMode = clipMode[0].toLowerCase() + clipMode.slice(1);
 		let idName: string = clipMode + "Button";
 
 		return (
-			<a className={className} aria-selected={this.props.selected} role="button"
+			<a className={className} role="option" aria-selected={this.props.selected}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
-				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex) }>
-				<img className="icon" src={this.props.imgSrc} />
-				<span className="label buttonLabelFont"
-					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
+				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex, undefined, undefined, Constants.AriaSet.modeButtonSet)}>
+				<img className="icon" src={this.props.imgSrc}/>
+				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 					{this.props.label}
 				</span>
 			</a>

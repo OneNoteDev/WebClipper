@@ -25,6 +25,20 @@ export module Assert {
 		}
 	}
 
+	export function posInSetIsDecremental(elementIds: string[]) {
+		let elementsInExpectedPosInSetOrder = elementIds.map(id => {return{name: id, elem: document.getElementById(id) }; });
+		Assert.posInSetIsDecrementalForElements(elementsInExpectedPosInSetOrder);
+	}
+
+	export function posInSetIsDecrementalForElements(elements: {name: string, elem: HTMLElement}[]) {
+		if (elements.length < 2 ) {
+			return;
+		}
+		for (let i = 0; i < (elements.length - 1 ); i++) {
+			ok(elements[i].elem.getAttribute("aria-posinset") < elements[i + 1].elem.getAttribute("aria-posinset"), "Element " + elements[i].name + "should have a posInSet less than " + elements[i + 1].name );
+		}
+	}
+
 	export function equalTabIndexes(elements: HTMLElement[] | HTMLCollectionOf<Element> | NodeListOf<HTMLElement>) {
 		// Buttons should have equal tab indexes
 		let expectedTabIndex: number = undefined;

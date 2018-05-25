@@ -1,36 +1,27 @@
 declare var Velocity: jquery.velocity.VelocityStatic;
 
-import {Constants} from "../constants";
-
 import {SmartValue} from "../communicator/smartValue";
-
+import {Constants} from "../constants";
 import {Localization} from "../localization/localization";
-
 import * as Log from "../logging/log";
-
-import {ClipMode} from "./clipMode";
-import {Clipper} from "./frontEndGlobals";
-import {ClipperStateProp} from "./clipperState";
-import {ClipperStateUtilities} from "./clipperStateUtilities";
-import {ComponentBase} from "./componentBase";
-import {OneNoteApiUtils} from "./oneNoteApiUtils";
-import {Status} from "./status";
-
 import {AnimationHelper} from "./animations/animationHelper";
 import {AnimationState} from "./animations/animationState";
 import {AnimationStrategy} from "./animations/animationStrategy";
 import {ExpandFromRightAnimationStrategy} from "./animations/expandFromRightAnimationStrategy";
 import {FadeInAnimationStrategy} from "./animations/fadeInAnimationStrategy";
 import {SlidingHeightAnimationStrategy} from "./animations/slidingHeightAnimationStrategy";
-
+import {ClipMode} from "./clipMode";
+import {ClipperStateProp} from "./clipperState";
+import {ClipperStateUtilities} from "./clipperStateUtilities";
+import {ComponentBase} from "./componentBase";
 import {CloseButton} from "./components/closeButton";
 import {Footer} from "./components/footer";
-import {PdfClipOptions} from "./components/pdfClipOptions";
-
+import {Clipper} from "./frontEndGlobals";
+import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {ClippingPanel} from "./panels/clippingPanel";
 import {ClippingPanelWithDelayedMessage} from "./panels/clippingPanelWithDelayedMessage";
 import {ClippingPanelWithProgressIndicator} from "./panels/clippingPanelWithProgressIndicator";
-import {DialogButton, DialogPanel} from "./panels/dialogPanel";
+import {DialogButton} from "./panels/dialogPanel";
 import {ErrorDialogPanel} from "./panels/errorDialogPanel";
 import {LoadingPanel} from "./panels/loadingPanel";
 import {OptionsPanel} from "./panels/optionsPanel";
@@ -38,6 +29,7 @@ import {RatingsPanel} from "./panels/ratingsPanel";
 import {RegionSelectingPanel} from "./panels/regionSelectingPanel";
 import {SignInPanel} from "./panels/signInPanel";
 import {SuccessPanel} from "./panels/successPanel";
+import {Status} from "./status";
 
 export enum CloseReason {
 	CloseButton,
@@ -108,17 +100,17 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		this.controllerAnimationStrategy = new ExpandFromRightAnimationStrategy({
 			extShouldAnimateIn: () => { return this.props.clipperState.uiExpanded; },
 			extShouldAnimateOut: () => { return !this.props.clipperState.uiExpanded; },
-			onBeforeAnimateOut: () => { this.setState({ currentPanel: PanelType.None }); },
+			onBeforeAnimateOut: () => { this.setState({currentPanel: PanelType.None}); },
 			onBeforeAnimateIn: () => { this.props.clipperState.reset(); },
-			onAnimateInExpand: () => { this.setState({ currentPanel: this.getPanelTypeToShow() }); },
+			onAnimateInExpand: () => { this.setState({currentPanel: this.getPanelTypeToShow()}); },
 			onAfterAnimateOut: () => { Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi); }
 		});
 
 		this.panelAnimationStrategy = new FadeInAnimationStrategy({
 			extShouldAnimateIn: () => { return this.state.currentPanel !== PanelType.None; },
 			extShouldAnimateOut: () => { return this.getPanelTypeToShow() !== this.state.currentPanel; },
-			onAfterAnimateOut: () => { this.setState({ currentPanel: this.getPanelTypeToShow() }); },
-			onAfterAnimateIn: () => { this.setState({ currentPanel: this.getPanelTypeToShow() }); }
+			onAfterAnimateOut: () => { this.setState({currentPanel: this.getPanelTypeToShow()}); },
+			onAfterAnimateIn: () => { this.setState({currentPanel: this.getPanelTypeToShow()}); }
 		});
 
 		this.heightAnimationStrategy = new SlidingHeightAnimationStrategy(Constants.Ids.mainController, {
@@ -203,7 +195,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		// Clear region selections on clipper exit rather than invoke to avoid conflicting logic with scenarios like context menu image selection
 		this.props.clipperState.setState({
 			uiExpanded: false,
-			regionResult: { status: Status.NotStarted, data: [] }
+			regionResult: {status: Status.NotStarted, data: []}
 		});
 	}
 
@@ -225,7 +217,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			// We'll speed things up by stopping the current one, and trigger the next one
 			AnimationHelper.stopAnimationsThen(panelAnimator, () => {
 				this.panelAnimationStrategy.setAnimationState(AnimationState.In);
-				this.setState({ });
+				this.setState({});
 			});
 		}
 	}
@@ -246,31 +238,30 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 						Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.refreshPage);
 					}
 				});
-				return <ErrorDialogPanel message={Localization.getLocalizedString("WebClipper.Error.OrphanedWebClipperDetected") } buttons={buttons} />;
+				return <ErrorDialogPanel message={Localization.getLocalizedString("WebClipper.Error.OrphanedWebClipperDetected")} buttons={buttons}/>;
 			case PanelType.Loading:
-				return <LoadingPanel clipperState={this.props.clipperState} />;
+				return <LoadingPanel clipperState={this.props.clipperState}/>;
 			case PanelType.SignInNeeded:
-				return <SignInPanel clipperState={this.props.clipperState}
-					onSignInInvoked={this.props.onSignInInvoked}/>;
+				return <SignInPanel clipperState={this.props.clipperState} onSignInInvoked={this.props.onSignInInvoked}/>;
 			case PanelType.ClipOptions:
 				return <OptionsPanel
-					onPopupToggle={this.onPopupToggle.bind(this)}
-					clipperState={this.props.clipperState}
-					onStartClip={this.props.onStartClip} />;
+						onPopupToggle={this.onPopupToggle.bind(this)}
+						clipperState={this.props.clipperState}
+						onStartClip={this.props.onStartClip}/>;
 			case PanelType.RegionInstructions:
-				return <RegionSelectingPanel clipperState={this.props.clipperState} />;
+				return <RegionSelectingPanel clipperState={this.props.clipperState}/>;
 			case PanelType.ClippingToApi:
 				if (this.props.clipperState.currentMode.get() === ClipMode.Pdf) {
 					if (this.props.clipperState.pdfPreviewInfo.shouldDistributePages) {
-						return <ClippingPanelWithProgressIndicator clipperState= { this.props.clipperState } />;
+						return <ClippingPanelWithProgressIndicator clipperState={this.props.clipperState}/>;
 					}
 
 					return <ClippingPanelWithDelayedMessage
-						clipperState={this.props.clipperState}
-						delay={Constants.Settings.pdfClippingMessageDelay}
-						message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")} />;
+							clipperState={this.props.clipperState}
+							delay={Constants.Settings.pdfClippingMessageDelay}
+							message={Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabelDelay")}/>;
 				}
-				return <ClippingPanel clipperState={this.props.clipperState} />;
+				return <ClippingPanel clipperState={this.props.clipperState}/>;
 			case PanelType.ClippingFailure:
 				let error = this.props.clipperState.oneNoteApiResult.data as OneNoteApi.RequestError;
 				let apiResponseCode: string = OneNoteApiUtils.getApiResponseCode(error);
@@ -307,17 +298,17 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 					});
 				}
 
-				return <ErrorDialogPanel message={OneNoteApiUtils.getLocalizedErrorMessage(apiResponseCode) }
-					buttons={buttons} />;
+				return <ErrorDialogPanel
+					message={OneNoteApiUtils.getLocalizedErrorMessage(apiResponseCode)} buttons={buttons}/>;
 			case PanelType.ClippingSuccess:
-				let panels: any[] = [<SuccessPanel clipperState={this.props.clipperState} />];
+				let panels: any[] = [<SuccessPanel clipperState={this.props.clipperState}/>];
 
 				if (!this.state.ratingsPanelAnimationState) {
 					this.state.ratingsPanelAnimationState = new SmartValue<AnimationState>(AnimationState.Out);
 				}
 
 				if (this.props.clipperState.showRatingsPrompt) {
-					panels.push(<RatingsPanel clipperState={this.props.clipperState} animationState={this.state.ratingsPanelAnimationState} />);
+					panels.push(<RatingsPanel clipperState={this.props.clipperState} animationState={this.state.ratingsPanelAnimationState}/>);
 				}
 
 				return panels;
@@ -329,7 +320,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 	getCloseButtonForType() {
 		if (this.isCloseable()) {
 			return (
-				<CloseButton onClickHandler={this.closeClipper.bind(this)} onClickHandlerParams={[CloseReason.CloseButton]} />
+				<CloseButton onClickHandler={this.closeClipper.bind(this)} onClickHandlerParams={[CloseReason.CloseButton]}/>
 			);
 		} else {
 			return undefined;
@@ -350,7 +341,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				}
 				/* falls through */
 			case PanelType.SignInNeeded:
-				return <Footer clipperState={this.props.clipperState} onSignOutInvoked={this.props.onSignOutInvoked} />;
+				return <Footer clipperState={this.props.clipperState} onSignOutInvoked={this.props.onSignOutInvoked}/>;
 			case PanelType.ClippingSuccess:
 				/* falls through */
 			default:
@@ -364,7 +355,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		let footerToRender = this.getCurrentFooter();
 
 		return (
-			<div id={Constants.Ids.mainController} {...this.onElementDraw(this.onMainControllerDraw) }>
+			<div id={Constants.Ids.mainController} {...this.onElementDraw(this.onMainControllerDraw)}>
 				{closeButtonToRender}
 				<div className="panelContent">
 					<div className={Constants.Classes.heightAnimator} {...this.onElementDraw(this.onHeightAnimatorDraw)}>

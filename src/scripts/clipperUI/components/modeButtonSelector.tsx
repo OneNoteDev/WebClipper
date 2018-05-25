@@ -1,19 +1,12 @@
-import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
-import {Experiments} from "../../experiments";
-
 import {AugmentationHelper} from "../../contentCapture/augmentationHelper";
-
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 import {InvokeMode} from "../../extensions/invokeOptions";
-
 import {Localization} from "../../localization/localization";
-
 import {ClipMode} from "../clipMode";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
-
-import {ModeButton} from "./modeButton";
+import {ModeButton, PropsForModeElementNoAriaGrouping} from "./modeButton";
 
 class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	onModeSelected(newMode: ClipMode) {
@@ -22,7 +15,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		});
 	};
 
-	private getScreenReaderOnlyElementThatAnnouncesCurrentMode(currentMode: ClipMode) {
+	private getScreenReaderThatAnnouncesCurrentModeProps(currentMode: ClipMode) {
 		let stringToTellUserModeHasChanged = Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.CurrentModeHasChanged");
 		stringToTellUserModeHasChanged = stringToTellUserModeHasChanged.replace("{0}", ClipMode[currentMode]);
 
@@ -31,19 +24,22 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		);
 	}
 
-	private getPdfModeButton(currentMode: ClipMode) {
+	private getPdfButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
 			return undefined;
 		}
 
-		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("pdf.png") }
-			label={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button")}
-			myMode={ClipMode.Pdf} tabIndex={39} selected={currentMode === ClipMode.Pdf}
-			onModeSelected={this.onModeSelected.bind(this) }
-			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button.Tooltip")}/>;
+		return {
+			imgSrc: ExtensionUtils.getImageResourceUrl("pdf.png"),
+			label: Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button"),
+			myMode: ClipMode.Pdf,
+			selected: currentMode === ClipMode.Pdf,
+			onModeSelected: this.onModeSelected.bind(this),
+			tooltipText: Localization.getLocalizedString("WebClipper.ClipType.Pdf.Button.Tooltip")
+		};
 	}
 
-	private getAugmentationModeButton(currentMode: ClipMode) {
+	private getAugmentationButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			return undefined;
 		}
@@ -51,28 +47,34 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		let augmentationType: string = AugmentationHelper.getAugmentationType(this.props.clipperState);
 		let augmentationLabel: string = Localization.getLocalizedString("WebClipper.ClipType." + augmentationType + ".Button");
 		let augmentationTooltip = Localization.getLocalizedString("WebClipper.ClipType.Button.Tooltip").replace("{0}", augmentationLabel);
+		let buttonSelected: boolean = currentMode === ClipMode.Augmentation;
 
-		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl(augmentationType + ".png") }
-			label={augmentationLabel} myMode={ClipMode.Augmentation}
-			tabIndex={42} selected={currentMode === ClipMode.Augmentation}
-			onModeSelected={this.onModeSelected.bind(this) }
-			tooltipText={augmentationTooltip}/>;
+		return {
+			imgSrc: ExtensionUtils.getImageResourceUrl(augmentationType + ".png"),
+			label: augmentationLabel,
+			myMode: ClipMode.Augmentation,
+			selected: buttonSelected,
+			onModeSelected: this.onModeSelected.bind(this),
+			tooltipText: augmentationTooltip
+		};
 	}
 
-	private getFullPageModeButton(currentMode: ClipMode) {
+	private getFullPageButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			return undefined;
 		}
 
-		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("fullpage.png")}
-			label={Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button")}
-			myMode={ClipMode.FullPage} tabIndex={40}
-			selected={currentMode === ClipMode.FullPage}
-			onModeSelected={this.onModeSelected.bind(this) }
-			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button.Tooltip")}/>;
+		return {
+			imgSrc: ExtensionUtils.getImageResourceUrl("fullpage.png"),
+			label: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button"),
+			myMode: ClipMode.FullPage,
+			selected: currentMode === ClipMode.FullPage,
+			onModeSelected: this.onModeSelected.bind(this),
+			tooltipText: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button.Tooltip")
+		};
 	}
 
-	private getRegionModeButton(currentMode: ClipMode) {
+	private getRegionButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		let enableRegionClipping = this.props.clipperState.injectOptions && this.props.clipperState.injectOptions.enableRegionClipping;
 		let contextImageModeUsed = this.props.clipperState.invokeOptions && this.props.clipperState.invokeOptions.invokeMode === InvokeMode.ContextImage;
 
@@ -80,52 +82,79 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			return undefined;
 		}
 
-		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("region.png") }
-			label={Localization.getLocalizedString(this.getRegionModeButtonLabel())}
-			myMode={ClipMode.Region} tabIndex={41} selected={currentMode === ClipMode.Region}
-			onModeSelected={this.onModeSelected.bind(this) }
-			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.MultipleRegions.Button.Tooltip")}/>;
+		return {
+			imgSrc: ExtensionUtils.getImageResourceUrl("region.png"),
+			label: Localization.getLocalizedString(this.getRegionButtonLabel()),
+			myMode: ClipMode.Region,
+			selected: currentMode === ClipMode.Region,
+			onModeSelected: this.onModeSelected.bind(this),
+			tooltipText: Localization.getLocalizedString("WebClipper.ClipType.MultipleRegions.Button.Tooltip")
+		};
 	}
 
-	private getRegionModeButtonLabel(): string {
+	private getRegionButtonLabel(): string {
 		return "WebClipper.ClipType.Region.Button";
 	}
 
-	private getSelectionModeButton(currentMode: ClipMode) {
+	private getSelectionButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.invokeOptions.invokeMode !== InvokeMode.ContextTextSelection) {
 			return undefined;
 		}
 
-		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("select.png") }
-			label={Localization.getLocalizedString("WebClipper.ClipType.Selection.Button")}
-			myMode={ClipMode.Selection} tabIndex={43} selected={currentMode === ClipMode.Selection}
-			onModeSelected={this.onModeSelected.bind(this) }
-			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.Selection.Button.Tooltip")}/>;
+		return {
+			imgSrc: ExtensionUtils.getImageResourceUrl("select.png"),
+			label: Localization.getLocalizedString("WebClipper.ClipType.Selection.Button"),
+			myMode: ClipMode.Selection,
+			selected: currentMode === ClipMode.Selection,
+			onModeSelected: this.onModeSelected.bind(this),
+			tooltipText: Localization.getLocalizedString("WebClipper.ClipType.Selection.Button.Tooltip")
+		};
 	}
 
-	private getBookmarkModeButton(currentMode: ClipMode) {
+	private getBookmarkButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.pageInfo.rawUrl.indexOf("file:///") === 0) {
 			return undefined;
 		}
-		return <ModeButton imgSrc={ExtensionUtils.getImageResourceUrl("bookmark.png") }
-			label={Localization.getLocalizedString("WebClipper.ClipType.Bookmark.Button") }
-			myMode={ClipMode.Bookmark} tabIndex={44} selected={currentMode === ClipMode.Bookmark}
-			onModeSelected={this.onModeSelected.bind(this) }
-			tooltipText={Localization.getLocalizedString("WebClipper.ClipType.Bookmark.Button.Tooltip") } />;
+
+		return {
+			imgSrc: ExtensionUtils.getImageResourceUrl("bookmark.png"),
+			label: Localization.getLocalizedString("WebClipper.ClipType.Bookmark.Button"),
+			myMode: ClipMode.Bookmark,
+			selected: currentMode === ClipMode.Bookmark,
+			onModeSelected: this.onModeSelected.bind(this),
+			tooltipText: Localization.getLocalizedString("WebClipper.ClipType.Bookmark.Button.Tooltip")
+		};
+	}
+
+	private getListOfButtons(): HTMLElement[] {
+		let currentMode = this.props.clipperState.currentMode.get();
+
+		let buttonProps = [
+			this.getFullPageButtonProps(currentMode),
+			this.getRegionButtonProps(currentMode),
+			this.getAugmentationButtonProps(currentMode),
+			this.getSelectionButtonProps(currentMode),
+			this.getBookmarkButtonProps(currentMode),
+			this.getPdfButtonProps(currentMode),
+		];
+
+		let visibleButtons = [
+			this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode),
+		];
+
+		let propsForVisibleButtons = buttonProps.filter(attributes => !!attributes);
+		for (let i = 0; i < propsForVisibleButtons.length; i++) {
+			let attributes = propsForVisibleButtons[i];
+			let ariaPos = i + 1;
+			visibleButtons.push(<ModeButton {...attributes} aria-setsize={propsForVisibleButtons.length} aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : undefined} />);
+		}
+		return visibleButtons;
 	}
 
 	public render() {
-		let currentMode = this.props.clipperState.currentMode.get();
-
 		return (
-			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}>
-				{ this.getScreenReaderOnlyElementThatAnnouncesCurrentMode(currentMode)}
-				{ this.getFullPageModeButton(currentMode) }
-				{ this.getRegionModeButton(currentMode) }
-				{ this.getAugmentationModeButton(currentMode) }
-				{ this.getSelectionModeButton(currentMode) }
-				{ this.getBookmarkModeButton(currentMode) }
-				{ this.getPdfModeButton(currentMode) }
+			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox">
+				{ this.getListOfButtons() }
 			</div>
 		);
 	}

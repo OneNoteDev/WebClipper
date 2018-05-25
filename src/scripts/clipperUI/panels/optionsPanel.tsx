@@ -1,22 +1,15 @@
 import {Constants} from "../../constants";
 import {OperationResult} from "../../operationResult";
 import {StringUtils} from "../../stringUtils";
-
-import {InvokeMode} from "../../extensions/invokeOptions";
-
 import {Localization} from "../../localization/localization";
-
 import {ModeButtonSelector} from "../components/modeButtonSelector";
 import {SectionPicker} from "../components/sectionPicker";
-
 import {ClipMode} from "../clipMode";
 import {ClipperStateProp} from "../clipperState";
 import {ClipperStateUtilities} from "../clipperStateUtilities";
 import {ComponentBase} from "../componentBase";
 import {Status} from "../status";
-
 import {PdfClipOptions} from "../components/pdfClipOptions";
-
 import * as _ from "lodash";
 
 export interface OptionsPanelProp extends ClipperStateProp {
@@ -93,7 +86,7 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 				<SectionPicker onPopupToggle={this.props.onPopupToggle.bind(this)} clipperState={this.props.clipperState} />
 				<div id={Constants.Ids.clipButtonContainer} className={clipButtonContainerClassName}>
 					{clipButtonEnabled
-					?	<a id={Constants.Ids.clipButton} className="wideActionButton" {...this.enableInvoke(this.checkOptionsBeforeStartClip.bind(this), 60) } role="button">
+					?	<a id={Constants.Ids.clipButton} className="wideActionButton" {...this.enableInvoke(this.checkOptionsBeforeStartClip.bind(this), 70) } role="button">
 							<span className="wideButtonFont"
 								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 								{Localization.getLocalizedString("WebClipper.Action.Clip")}

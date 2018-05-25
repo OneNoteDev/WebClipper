@@ -1,14 +1,10 @@
+import * as _ from "lodash";
 import {Constants} from "../../constants";
-import {PreviewGlobalInfo} from "../../previewInfo";
-
 import {ExtensionUtils} from "../../extensions/extensionUtils";
-
 import {Localization} from "../../localization/localization";
-
+import {PreviewGlobalInfo} from "../../previewInfo";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
-
-import * as _ from "lodash";
 
 interface AnnotationInputState {
 	opened: boolean;
@@ -18,11 +14,11 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 	private static textAreaListenerAttached = false;
 
 	getInitialState(): AnnotationInputState {
-		return { opened: !!this.props.clipperState.previewGlobalInfo.annotation };
+		return {opened: !!this.props.clipperState.previewGlobalInfo.annotation};
 	}
 
 	handleAnnotateButton() {
-		this.setState({ opened: !this.state.opened });
+		this.setState({opened: !this.state.opened});
 	}
 
 	setFocus(textArea: HTMLElement) {
@@ -62,7 +58,7 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 		// button the user originally intended to click
 		if (value === "") {
 			let nextMouseupEvent = () => {
-				this.setState({ opened: false });
+				this.setState({opened: false});
 				window.removeEventListener("mouseup", nextMouseupEvent);
 			};
 			window.addEventListener("mouseup", nextMouseupEvent);
@@ -78,16 +74,20 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 		if (!this.state.opened) {
 			return (
 				<div id={Constants.Ids.annotationContainer}>
-					<div id={Constants.Ids.annotationPlaceholder} style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} {...this.enableInvoke(this.handleAnnotateButton, 210)}>
-						<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon_purple.png")} />
-						<span>{Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")}</span>
+					<div
+						id={Constants.Ids.annotationPlaceholder}
+						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)} {...this.enableInvoke(this.handleAnnotateButton, 210)}
+						role="button">
+						<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon_purple.png")}/>
+						<span aria-label={Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")}>{Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")} </span>
 					</div>
 				</div>
 			);
 		} else {
 			return (
 				<div id={Constants.Ids.annotationContainer}>
-					<pre id={Constants.Ids.annotationFieldMirror}
+					<pre
+						id={Constants.Ids.annotationFieldMirror}
 						className={Constants.Classes.textAreaInputMirror}>
 						<span style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							{!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
@@ -97,7 +97,9 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 					<textarea
 						id={Constants.Ids.annotationField}
 						className={Constants.Classes.textAreaInput}
+						role="textbox"
 						rows={1} tabIndex={211}
+						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}
 						value={!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
 						onblur={this.onDoneEditing.bind(this)} {...this.onElementFirstDraw(this.setFocus)}>

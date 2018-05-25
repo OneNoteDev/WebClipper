@@ -9,13 +9,13 @@ export abstract class ComponentBase<TState, TProps> {
 	constructor(props: TProps) {
 		this.props = props;
 		this.state = this.getInitialState();
-		this.refs = { };
+		this.refs = {};
 	}
 
 	public abstract render(props?: TProps);
 
 	public getInitialState(): TState {
-		return { } as TState;
+		return {} as TState;
 	}
 
 	public setState(newPartialState: TState) {
@@ -67,7 +67,7 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Example use:
 	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
 	 */
-	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined) {
+	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, setNameForArrowKeyNav: string = undefined) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (handleMethod) {
 			handleMethod = handleMethod.bind(this, args);
@@ -106,19 +106,54 @@ export abstract class ComponentBase<TState, TProps> {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
 				}
+
+				if (!setNameForArrowKeyNav) {
+					return;
+				} else if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
+					let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
+					if (e.which === Constants.KeyCodes.up) {
+						if (posInSet === 1) {
+							return;
+						}
+						let nextPosInSet = posInSet - 1;
+						ComponentBase.focusOnButton(setNameForArrowKeyNav, nextPosInSet);
+					} else if (e.which === Constants.KeyCodes.down) {
+						let setSize = parseInt(element.getAttribute("aria-setsize"), 10);
+						if (posInSet === setSize) {
+							return;
+						}
+						let nextPosInSet = posInSet + 1;
+						ComponentBase.focusOnButton(setNameForArrowKeyNav, nextPosInSet);
+					}
+				}
 			},
 			onmousedown: (e: MouseEvent) => {
 				let element = e.currentTarget as HTMLElement;
 				element.style.outlineStyle = "none";
 			},
-			tabIndex: tabIndex
+			tabIndex: tabIndex,
+			"data-setnameforarrowkeynav": setNameForArrowKeyNav
 		};
+	}
+
+	private static focusOnButton(setNameForArrowKeyNav: string, nextPosInSet: number) {
+		const buttons = document.querySelectorAll("[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
+		for (let i = 0; i < buttons.length; i++) {
+			let selectable = buttons[i] as HTMLElement;
+			let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
+			if (ariaIntForEach === nextPosInSet) {
+				selectable.style.outlineStyle = "";
+				selectable.focus();
+				return;
+			}
+		}
 	}
 
 	// Note: currently all components NEED either a child or attribute to work with the MSX transformer.
 	// This <MyButton/> won't work, but this <MyButton dummyProp /> will work.
 	public static componentize() {
-		let returnValue: any = () => { };
+		let returnValue: any = () => {
+		};
 		returnValue.controller = (props: any) => {
 			// Instantiate an instance of the inheriting class
 			return new (<any>this)(props);

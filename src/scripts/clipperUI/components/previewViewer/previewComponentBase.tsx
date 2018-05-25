@@ -1,18 +1,13 @@
+import * as _ from "lodash";
 import {ClientType} from "../../../clientType";
 import {Constants} from "../../../constants";
-
-import {PreviewGlobalInfo} from "../../../previewInfo";
-
 import {Localization} from "../../../localization/localization";
-
+import {PreviewGlobalInfo} from "../../../previewInfo";
 import {ClipMode} from "../../clipMode";
 import {ClipperStateProp} from "../../clipperState";
 import {ComponentBase} from "../../componentBase";
 import {Status} from "../../status";
-
 import {AnnotationInput} from "../annotationInput";
-
-import * as _ from "lodash";
 
 export abstract class PreviewComponentBase<TState, TProps extends ClipperStateProp>
 	extends ComponentBase<TState, TProps> {
@@ -50,11 +45,11 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 
 	private getPreviewTitle(contentTitle: string, titleIsEditable: boolean, inProgressClassIfApplicable: string): any {
 		if (this.props.clipperState.currentMode.get() !== ClipMode.Bookmark) {
-				return (
+			return (
 				<div id={Constants.Ids.previewTitleContainer}>
 					<pre className={Constants.Classes.textAreaInputMirror}><span>{contentTitle}</span><br/></pre>
 					<textarea
-						{...this.enableInvoke(undefined, 200) }
+						{...this.enableInvoke(undefined, 200)}
 						rows="1"
 						id={Constants.Ids.previewHeaderInput}
 						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}
@@ -75,13 +70,13 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 
 		return (
 			<div id={Constants.Ids.previewSubtitleContainer}>
-				{this.props.clipperState.injectOptions && this.props.clipperState.injectOptions.enableAddANote
-					? <AnnotationInput clipperState={this.props.clipperState} />
+				{this.props.clipperState.injectOptions && this.props.clipperState.injectOptions.enableAddANote ?
+					<AnnotationInput clipperState={this.props.clipperState}/>
 					: undefined}
-				{this.props.clipperState.currentMode.get() !== ClipMode.Bookmark
-					? <div id={Constants.Ids.previewUrlContainer} tabIndex={220}>
+				{this.props.clipperState.currentMode.get() !== ClipMode.Bookmark ?
+					<div id={Constants.Ids.previewUrlContainer}>
 						<span aria-label={sourceUrlCitationPrefix}>{sourceUrlCitationPrefix}</span>
-						<a href={sourceUrl} target="_blank" aria-label={sourceUrl} title={sourceUrl}>{sourceUrl}</a>
+						<a tabIndex={-1} href={sourceUrl} target="_blank" aria-label={sourceUrl} title={sourceUrl}>{sourceUrl}</a>
 					</div>
 					: undefined}
 			</div>
@@ -143,22 +138,25 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		let previewInnerContainerClass = this.props.clipperState.clientInfo.clipperType === ClientType.Bookmarklet ? "" : this.getPreviewInnerContainerClass();
 
 		return (
-			<div id={Constants.Ids.previewOuterContainer}
-				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }>
+			<div
+				id={Constants.Ids.previewOuterContainer}
+				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 				<div id={Constants.Ids.previewInnerWrapper}>
 					<div id={Constants.Ids.previewInnerContainer} className={previewInnerContainerClass}>
 						<div id={Constants.Ids.previewOptionsContainer}>
 							{this.getHeader()}
 						</div>
-						<div id={Constants.Ids.previewContentContainer} className={inProgressClassIfApplicable + " " + this.getPreviewContentContainerClass() } >
+						<div
+							id={Constants.Ids.previewContentContainer}
+							className={inProgressClassIfApplicable + " " + this.getPreviewContentContainerClass()}>
 							{this.isTitleEnabled() ? <div id={Constants.Ids.previewHeaderContainer}>
 								{this.getPreviewTitle(contentTitle, titleIsEditable, inProgressClassIfApplicable)}
-								{this.getPreviewSubtitle() }
+								{this.getPreviewSubtitle()}
 							</div> : ""}
 							<div
 								style={previewStyle}
 								id={Constants.Ids.previewBody}
-								className={inProgressClassIfApplicable + " " + this.getPreviewBodyClass() }
+								className={inProgressClassIfApplicable + " " + this.getPreviewBodyClass()}
 								config={this.getPreviewBodyConfig.bind(this)}>
 								{contentBody}
 							</div>
