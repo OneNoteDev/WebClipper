@@ -9,7 +9,6 @@ import {PdfScreenshotResult} from "../scripts/contentCapture/pdfScreenshotHelper
 import {InvokeMode} from "../scripts/extensions/invokeOptions";
 import {Localization} from "../scripts/localization/localization";
 import {UpdateReason} from "../scripts/userInfo";
-import {} from "../scripts/clipperUI/components/modeButton";
 
 /**
  * Collection of mock props used in our tests. Mostly intended for preventing

@@ -67,7 +67,7 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Example use:
 	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
 	 */
-	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, valueOfSetNameForArrowKeyNav: string = undefined) {
+	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, setNameForArrowKeyNav: string = undefined) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (handleMethod) {
 			handleMethod = handleMethod.bind(this, args);
@@ -106,24 +106,30 @@ export abstract class ComponentBase<TState, TProps> {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
 				} else if (e.which === Constants.KeyCodes.up) {
+					if ( setNameForArrowKeyNav === undefined) {
+						return;
+					}
 					if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
 						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
 						if (posInSet === 1) {
 							return;
 						}
-						const buttons = document.querySelectorAll("a[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + valueOfSetNameForArrowKeyNav + "]");
+						const buttons = document.querySelectorAll("[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
 						let nextPosInSet = posInSet - 1;
 						ComponentBase.focusOnButton(buttons, nextPosInSet);
 					}
 
 				} else if (e.which === Constants.KeyCodes.down) {
+					if ( setNameForArrowKeyNav === undefined) {
+						return;
+					}
 					if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
 						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
-						let nextPosInSet = posInSet + 1;
-						const buttons = document.querySelectorAll("a[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + valueOfSetNameForArrowKeyNav + "]");
+						const buttons = document.querySelectorAll("[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
 						if (posInSet === buttons.length) {
 							return;
 						}
+						let nextPosInSet = posInSet + 1;
 						ComponentBase.focusOnButton(buttons, nextPosInSet);
 					}
 				}
@@ -132,7 +138,8 @@ export abstract class ComponentBase<TState, TProps> {
 				let element = e.currentTarget as HTMLElement;
 				element.style.outlineStyle = "none";
 			},
-			tabIndex: tabIndex
+			tabIndex: tabIndex,
+			"data-setnameforarrowkeynav": setNameForArrowKeyNav
 		};
 	}
 

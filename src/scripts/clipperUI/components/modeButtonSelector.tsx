@@ -146,8 +146,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		for (let i = 0; i < propsForVisibleButtons.length; i++) {
 			let attributes = propsForVisibleButtons[i];
 			let ariaPos = i + 1;
-			visibleButtons.push(<ModeButton imgSrc={attributes.imgSrc} label={attributes.label} myMode={attributes.myMode} selected={attributes.selected}
-									onModeSelected={attributes.onModeSelected} tooltipText={attributes.tooltipText} aria-setsize={propsForVisibleButtons.length} aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : undefined}/>);
+			visibleButtons.push(<ModeButton {...attributes} aria-setsize={propsForVisibleButtons.length} aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : undefined} />);
 		}
 		return visibleButtons;
 	}

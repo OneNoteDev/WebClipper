@@ -2,7 +2,7 @@ import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
 import {ClipMode} from "../clipMode";
 import {ComponentBase} from "../componentBase";
-import {ariaSetProps} from "./ariaSetProps";
+import {AriaSetProps} from "./ariaSetProps";
 
 export interface PropsForModeElementNoAriaGrouping {
 	imgSrc: string;
@@ -14,7 +14,7 @@ export interface PropsForModeElementNoAriaGrouping {
 	tooltipText?: string;
 }
 
-export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, ariaSetProps { }
+export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, AriaSetProps { }
 
 class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 	buttonHandler() {
@@ -31,7 +31,7 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 		let idName: string = clipMode + "Button";
 
 		return (
-			<a className={className} role="option" data-setnameforarrowkeynav={Constants.AriaSet.modeButtonSet}
+			<a className={className} role="option"
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
 				{...this.enableInvoke(this.buttonHandler, this.props.tabIndex, undefined, undefined, Constants.AriaSet.modeButtonSet)}
