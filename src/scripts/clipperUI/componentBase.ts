@@ -114,9 +114,8 @@ export abstract class ComponentBase<TState, TProps> {
 						if (posInSet === 1) {
 							return;
 						}
-						const buttons = document.querySelectorAll("[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
 						let nextPosInSet = posInSet - 1;
-						ComponentBase.focusOnButton(buttons, nextPosInSet);
+						ComponentBase.focusOnButton(setNameForArrowKeyNav, nextPosInSet);
 					}
 
 				} else if (e.which === Constants.KeyCodes.down) {
@@ -125,12 +124,12 @@ export abstract class ComponentBase<TState, TProps> {
 					}
 					if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
 						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
-						const buttons = document.querySelectorAll("[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
-						if (posInSet === buttons.length) {
+						let setSize = parseInt(element.getAttribute("aria-setsize"), 10);
+						if (posInSet === setSize) {
 							return;
 						}
 						let nextPosInSet = posInSet + 1;
-						ComponentBase.focusOnButton(buttons, nextPosInSet);
+						ComponentBase.focusOnButton(setNameForArrowKeyNav, nextPosInSet);
 					}
 				}
 			},
@@ -143,7 +142,8 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	private static focusOnButton(buttons: NodeListOf<Element>, nextPosInSet: number) {
+	private static focusOnButton(setNameForArrowKeyNav: string, nextPosInSet: number) {
+		const buttons = document.querySelectorAll("[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
 		for (let i = 0; i < buttons.length; i++) {
 			let selectable = buttons[i] as HTMLElement;
 			let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
