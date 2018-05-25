@@ -107,7 +107,7 @@ export abstract class ComponentBase<TState, TProps> {
 					element.style.outlineStyle = "";
 				}
 
-				if (setNameForArrowKeyNav === undefined || setNameForArrowKeyNav === "") {
+				if (!setNameForArrowKeyNav) {
 					return;
 				} else if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
 					let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
