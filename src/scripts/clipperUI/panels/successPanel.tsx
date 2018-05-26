@@ -1,18 +1,11 @@
 import {Constants} from "../../constants";
 import {UrlUtils} from "../../urlUtils";
-
 import {ExtensionUtils} from "../../extensions/extensionUtils";
-
 import {Localization} from "../../localization/localization";
-
 import * as Log from "../../logging/log";
-
-import {ClipMode} from "../clipMode";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {Clipper} from "../frontEndGlobals";
-import {Status} from "../status";
-
 import {SpriteAnimation} from "../components/spriteAnimation";
 
 class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
@@ -38,7 +31,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 						{Localization.getLocalizedString("WebClipper.Label.ClipSuccessful")}
 					</span>
 				</div>
-				<a id={Constants.Ids.launchOneNoteButton} {...this.enableInvoke(this.onLaunchOneNoteButton, 70) }>
+				<a id={Constants.Ids.launchOneNoteButton} {...this.enableInvoke(this.onLaunchOneNoteButton, 70, undefined, undefined, undefined, Constants.DefaultAction.clipSuccessPanel) }>
 					<div className="wideButtonContainer">
 						<span className="wideButtonFont wideActionButton"
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>

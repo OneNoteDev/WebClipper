@@ -333,6 +333,7 @@ export module Constants {
 		export var c = 67;
 		export var down = 40;
 		export var up = 38;
+		export var space = 32;
 	}
 
 	export module StringKeyCodes {
@@ -436,5 +437,11 @@ export module Constants {
 	export module AriaSet {
 		export var setNameForArrowKeyNav = "setnameforarrowkeynav";
 		export var modeButtonSet = "ariaModeButtonSet";
+	}
+
+	export module DefaultAction {
+		export var clipSuccessPanel = "clip-success-panel";
+		export var clipButton = "clip-button";
+		export var regionClipCancelButton = "region-clip-option-button";
 	}
 }

@@ -67,7 +67,7 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Example use:
 	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
 	 */
-	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, setNameForArrowKeyNav: string = undefined) {
+	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, setNameForArrowKeyNav: string = undefined, defaultAction: string = undefined) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (handleMethod) {
 			handleMethod = handleMethod.bind(this, args);
@@ -89,25 +89,15 @@ export abstract class ComponentBase<TState, TProps> {
 			},
 			onkeyup: (e: KeyboardEvent) => {
 				let element = e.currentTarget as HTMLElement;
-				if (e.which === Constants.KeyCodes.enter) {
-					// Hitting Enter on <a> tags that contains an href automatically fire the click event, so don't do it again
-					if (!(element.tagName === "A" && element.hasAttribute("href"))) {
-						// Intentionally sending click event before handling the method
-						// TODO replace this comment with a test that validates the call order is correct
-						let id = element.id;
-
-						Clipper.logger.logClickEvent(id);
-
-						if (handleMethod) {
-							handleMethod(e);
-						}
-					}
+				if (e.which === Constants.KeyCodes.space) {
+					ComponentBase.triggerActionEvent(element, handleMethod, e);
 				} else if (e.which === Constants.KeyCodes.tab) {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
 				}
 
-				if (!setNameForArrowKeyNav) {
+				if (!setNameForArrowKeyNav && !defaultAction) {
+					ComponentBase.enterKeySelection(e);
 					return;
 				} else if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
 					let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
@@ -124,6 +114,10 @@ export abstract class ComponentBase<TState, TProps> {
 						}
 						let nextPosInSet = posInSet + 1;
 						ComponentBase.focusOnButton(setNameForArrowKeyNav, nextPosInSet);
+					} else if (!defaultAction) {
+						ComponentBase.enterKeySelection(e);
+					} else if (e.which === Constants.KeyCodes.enter) {
+						ComponentBase.triggerActionEvent(element, handleMethod, e);
 					}
 				}
 			},
@@ -132,8 +126,34 @@ export abstract class ComponentBase<TState, TProps> {
 				element.style.outlineStyle = "none";
 			},
 			tabIndex: tabIndex,
-			"data-setnameforarrowkeynav": setNameForArrowKeyNav
+			"data-setnameforarrowkeynav": setNameForArrowKeyNav,
+			"data-defaultaction": defaultAction
 		};
+	}
+
+	private static enterKeySelection(e: KeyboardEvent) {
+		if (e.which === Constants.KeyCodes.enter) {
+			let defaultActionElement = document.querySelector("[data-defaultaction]:not([data-defaultaction='undefined'])");
+			let defaultActionElementHtml = defaultActionElement as HTMLElement;
+			if (!!defaultActionElementHtml) {
+				defaultActionElementHtml.click();
+			}
+		}
+	}
+
+	private static triggerActionEvent(element, handleMethod: Function, e: KeyboardEvent) {
+// Hitting Enter on <a> tags that contains an href automatically fire the click event, so don't do it again
+		if (!(element.tagName === "A" && element.hasAttribute("href"))) {
+			// Intentionally sending click event before handling the method
+			// TODO replace this comment with a test that validates the call order is correct
+			let id = element.id;
+
+			Clipper.logger.logClickEvent(id);
+
+			if (handleMethod) {
+				handleMethod(e);
+			}
+		}
 	}
 
 	private static focusOnButton(setNameForArrowKeyNav: string, nextPosInSet: number) {
