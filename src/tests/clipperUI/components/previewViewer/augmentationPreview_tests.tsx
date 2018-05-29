@@ -38,6 +38,15 @@ export class AugmentationPreviewTests extends TestModule {
 				Constants.Ids.incrementFontSize, Constants.Ids.previewHeaderInput]);
 		});
 
+		test("The aria-posinset attribute should flow in order, assuming they are all available", () => {
+			let mockClipperState = this.getMockAugmentationModeState();
+			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
+			MithrilUtils.mountToFixture(defaultComponent);
+
+			Assert.posInSetIsDecremental([Constants.Ids.sansSerif, Constants.Ids.serif]);
+			Assert.posInSetIsDecremental([Constants.Ids.decrementFontSize, Constants.Ids.incrementFontSize]);
+		});
+
 		test("The augmentation header and all related controls should be displayed in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;

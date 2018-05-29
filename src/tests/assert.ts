@@ -20,8 +20,10 @@ export module Assert {
 
 		// Assert tab index ordering
 		for (let i = 1; i < elements.length; i++) {
-			ok(elements[i].elem.tabIndex > elements[i - 1].elem.tabIndex,
-				"Element " + elements[i].name + " should have a greater tabIndex than element " + elements[i - 1].name);
+			if (elements[i].elem.tabIndex) {
+				ok(elements[i].elem.tabIndex > elements[i - 1].elem.tabIndex,
+					"Element " + elements[i].name + " should have a greater tabIndex than element " + elements[i - 1].name);
+			}
 		}
 	}
 

@@ -1,5 +1,3 @@
-import {Constants} from "../../../constants";
-
 import {ComponentBase} from "../../componentBase";
 
 /**
@@ -17,6 +15,8 @@ export module HeaderClasses {
 export interface ControlGroup {
 	id?: string;
 	className?: string;
+	role?: string;
+	isAriaSet?: boolean;
 	innerElements: any[];
 }
 
@@ -40,8 +40,18 @@ export abstract class PreviewViewerHeaderComponentBase<T, P> extends ComponentBa
 		for (let i = 0; i < buttonGroups.length; i++) {
 			let id = buttonGroups[i].id;
 			let className = buttonGroups[i].className;
+			let role = buttonGroups[i].role;
+			let isAriaSet = buttonGroups[i].isAriaSet;
+			if (isAriaSet) {
+				let setsize = buttonGroups[i].innerElements.length;
+				for (let j = 0; j < setsize; j++) {
+					buttonGroups[i].innerElements[j].attrs["aria-posinset"] = j + 1;
+					buttonGroups[i].innerElements[j].attrs["aria-setsize"] = setsize;
+				}
+
+			}
 			renderables.push(
-				<div id={id ? id : ""} className={className ? className : controlButtonGroup}>
+				<div id={id ? id : ""} className={className ? className : controlButtonGroup} role={role ? role : ""}>
 					{buttonGroups[i].innerElements}
 				</div >);
 		}
