@@ -81,7 +81,7 @@ export class MainControllerTests extends TestModule {
 			});
 
 			Assert.tabOrderIsIncremental([Constants.Ids.clipButton,
-				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.feedbackButton,
+				Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, TestConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton,
 				Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 

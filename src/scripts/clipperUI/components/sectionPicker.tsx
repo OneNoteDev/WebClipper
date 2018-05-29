@@ -286,7 +286,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 					</label>
 				</div>
 				<OneNotePicker.OneNotePickerComponent
-					tabIndex={50}
+					tabIndex={70}
 					notebooks={this.state.notebooks}
 					status={Status[this.state.status]}
 					onPopupToggle={this.onPopupToggle.bind(this)}
