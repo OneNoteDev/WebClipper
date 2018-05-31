@@ -442,8 +442,4 @@ export module Constants {
 		export var serifGroupSet = "serifGroupSet";
 		export var fontSizeSet = "fontSizeSet";
 	}
-
-	export module ConditionalTabIndices {
-		export var oneHundredAndOne = 101;
-	}
 }
