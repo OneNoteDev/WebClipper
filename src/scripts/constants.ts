@@ -440,6 +440,5 @@ export module Constants {
 	export module AriaSet {
 		export var modeButtonSet = "ariaModeButtonSet";
 		export var serifGroupSet = "serifGroupSet";
-		export var fontSizeSet = "fontSizeSet";
 	}
 }

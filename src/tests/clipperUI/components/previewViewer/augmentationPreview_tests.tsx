@@ -43,6 +43,28 @@ export class AugmentationPreviewTests extends TestModule {
 				Constants.Ids.incrementFontSize, Constants.Ids.previewHeaderInput]);
 		});
 
+		test("When a pair of codependent buttons have conditional attributes, they both respond with the same behavior when clicked and have different values from each other", () => {
+			let mockClipperState = this.getMockAugmentationModeState();
+			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
+			MithrilUtils.mountToFixture(defaultComponent);
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.serif).click();
+			});
+			let selectedTags = [document.getElementById(Constants.Ids.serif).tabIndex];
+			let unselectedTags = [document.getElementById(Constants.Ids.sansSerif).tabIndex];
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.sansSerif).click();
+			});
+			selectedTags.push(document.getElementById(Constants.Ids.sansSerif).tabIndex);
+			unselectedTags.push(document.getElementById(Constants.Ids.serif).tabIndex);
+
+			strictEqual(selectedTags[0], selectedTags[1], "When the serif button is clicked the tabIndex should be the same as the tabIndex of the sansSerif button when clicked");
+			strictEqual(unselectedTags[0], unselectedTags[1], "When the serif button is not clicked the tabIndex should be the same as the tabIndex of the sansSerif button when not clicked");
+			notStrictEqual(selectedTags[0], unselectedTags[0], "The buttons should have different values when one is clicked");
+		});
+
 		test("The aria-posinset attribute should flow in order, assuming they are all available", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;

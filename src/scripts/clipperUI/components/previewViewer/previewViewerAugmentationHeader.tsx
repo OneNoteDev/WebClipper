@@ -47,7 +47,8 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 	}
 
 	private getSerifGroup(): ControlGroup {
-		let conditionalTabIndex = 100;
+		let tabIndexOn = 101;
+		let tabIndexOff = -1;
 		return {
 			id: Constants.Ids.serifControl,
 			role: "radiogroup",
@@ -57,7 +58,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif")}
 					aria-checked={!this.props.serif + ""}
 					id={Constants.Ids.sansSerif}
-					{...this.enableInvoke(this.props.changeFontFamily, !this.props.serif ? conditionalTabIndex : undefined, false, undefined, Constants.AriaSet.serifGroupSet) }
+					{...this.enableInvoke(this.props.changeFontFamily, !this.props.serif ? tabIndexOn : tabIndexOff, false, undefined, Constants.AriaSet.serifGroupSet) }
 					className={!this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
 					role="radio">
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SansSerifButtonLabel") }
@@ -66,7 +67,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif")}
 					aria-checked={this.props.serif + ""}
 					id={Constants.Ids.serif}
-					{...this.enableInvoke(this.props.changeFontFamily, this.props.serif ? conditionalTabIndex : undefined, true, undefined, Constants.AriaSet.serifGroupSet) }
+					{...this.enableInvoke(this.props.changeFontFamily, this.props.serif ? tabIndexOn : tabIndexOff, true, undefined, Constants.AriaSet.serifGroupSet) }
 					className={this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
 					role="radio">
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SerifButtonLabel") }
