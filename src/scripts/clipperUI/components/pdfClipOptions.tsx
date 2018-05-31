@@ -1,8 +1,6 @@
 import {Localization} from "../../localization/localization";
 import {Constants} from "../../constants";
-import {OperationResult} from "../../operationResult";
 import {PdfPreviewInfo} from "../../previewInfo";
-import {StringUtils} from "../../stringUtils";
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 import {ComponentBase} from "../componentBase";
 import {ClipperStateProp} from "../clipperState";
@@ -11,9 +9,7 @@ import {AnimationHelper} from "../animations/animationHelper";
 import {AnimationState} from "../animations/animationState";
 import {AnimationStrategy} from "../animations/animationStrategy";
 import {FadeInAnimationStrategy} from "../animations/fadeInAnimationStrategy";
-import {Popover} from "./popover";
 import {PdfPageSelectionRadioButton} from "./pdfPageSelectionRadioButton";
-import {RenderMe} from "./canIMakeThisRender";
 import * as _ from "lodash";
 
 interface PdfClipOptionsState {
@@ -21,16 +17,12 @@ interface PdfClipOptionsState {
 };
 
 class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStateProp> {
-	private static textAreaListenerAttached = false;
 
 	private hiddenOptionsAnimationStrategy: AnimationStrategy;
 
 	constructor(props: ClipperStateProp) {
 		super(props);
-		if (!PdfClipOptionsClass.textAreaListenerAttached) {
-			this.addTextAreaListener();
-			PdfClipOptionsClass.textAreaListenerAttached = true;
-		}
+
 		this.hiddenOptionsAnimationStrategy = new FadeInAnimationStrategy({
 			extShouldAnimateIn: () => { return this.state.moreOptionsOpened; },
 			extShouldAnimateOut: () => { return !this.state.moreOptionsOpened; }
@@ -41,16 +33,6 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		return {
 			moreOptionsOpened: false
 		};
-	}
-
-	private addTextAreaListener() {
-		document.addEventListener("input", (event) => {
-			let element = event.target;
-			let pageRangeField = document.getElementById(Constants.Ids.rangeInput) as HTMLTextAreaElement;
-			if (!!element && element === pageRangeField) {
-				this.onTextChange(pageRangeField.value);
-			}
-		});
 	}
 
 	onCheckboxChange(checked: boolean): void {
@@ -72,91 +54,10 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 	}
 
-	onSelectionChange(selection: boolean) {
-		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-			allPages: selection,
-			shouldShowPopover: false
-		} as PdfPreviewInfo), this.props.clipperState.setState);
-
-		if (!selection) {
-			document.getElementById(Constants.Ids.rangeInput).focus();
-		}
-	}
-
-	onTextChange(text: string) {
-		_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-			selectedPageRange: text
-		} as PdfPreviewInfo), this.props.clipperState.setState);
-	}
-
 	onMoreClicked(): void {
 		this.setState({
 			moreOptionsOpened: !this.state.moreOptionsOpened
 		});
-	}
-
-	onTextInputFocus(): void {
-		if (this.props.clipperState.pdfPreviewInfo.shouldShowPopover) {
-			_.assign(_.extend(this.props.clipperState.pdfPreviewInfo, {
-				shouldShowPopover: false
-			} as PdfPreviewInfo), this.props.clipperState.setState);
-		}
-	}
-
-	// TODO These radio elements are repeat code
-	getAllPagesRadioElement(): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-		return (
-			<div id={Constants.Ids.radioAllPagesLabel} role="radio" className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, true) }>
-				<div className={"pdf-indicator pdf-radio-indicator"}>
-					{pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
-				</div>
-				<div className="pdf-label-margin">
-					<span className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
-				</div>
-			</div>
-		);
-	}
-
-	getPageRangeRadioElement(): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-
-		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
-		return (
-			<div id={Constants.Ids.radioPageRangeLabel} role="radio" className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 62, false) }>
-				<div className={"pdf-indicator pdf-radio-indicator"}>
-					{!pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
-				</div>
-				<input
-					type="text"
-					id={Constants.Ids.rangeInput}
-					className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
-					placeholder="e.g. 1-5, 7, 9-12"
-					onfocus={this.onTextInputFocus.bind(this)}
-					value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 63, false) }>
-				</input>
-				{pdfPreviewInfo.shouldShowPopover ?
-					<Popover
-						referenceElementId={Constants.Ids.rangeInput}
-						placement="bottom"
-						parentId={Constants.Ids.mainController}
-						content={this.getErrorMessageForInvalidPageRange()}
-						classNames={[Constants.Classes.popover]}
-						arrowClassNames={[Constants.Classes.popoverArrow]}
-						modifiersIgnored={["flip"]}
-						removeOnDestroy={true} /> : undefined}
-			</div>
-		);
-	}
-
-	private getErrorMessageForInvalidPageRange(): string {
-		const pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-		let parsePageRangeOperation = StringUtils.parsePageRange(pdfPreviewInfo.selectedPageRange, this.props.clipperState.pdfResult.data.get().pdf.numPages());
-		if (parsePageRangeOperation.status === OperationResult.Succeeded) {
-			throw Error("Given that shouldShowPopover is true, parsing the pageRange should never succeed: PageRange: " + pdfPreviewInfo.selectedPageRange);
-		}
-
-		return Localization.getLocalizedString("WebClipper.Popover.PdfInvalidPageRange").replace("{0}", parsePageRangeOperation.result as string);
 	}
 
 	getDistributePagesCheckbox(): any {
@@ -185,7 +86,6 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 	}
 
 	getAttachmentIsTooLargeCheckbox(): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		const disabledClassName = " disabled";
 
 		return (
@@ -228,56 +128,6 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		}
 	}
 
-	getAllPagesRadioFooter(): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-
-		return (
-			<div className="pdf-label-margin">
-				<span className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
-			</div>
-		);
-	}
-
-	getPageRangeRadioFooter(): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-
-		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
-		return (
-			<div>
-				<input
-					type="text"
-					id={Constants.Ids.rangeInput}
-					className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
-					placeholder="e.g. 1-5, 7, 9-12"
-					onfocus={this.onTextInputFocus.bind(this)}
-					value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, 63, false)}>
-				</input>
-				{pdfPreviewInfo.shouldShowPopover ?
-					<Popover
-						referenceElementId={Constants.Ids.rangeInput}
-						placement="bottom"
-						parentId={Constants.Ids.mainController}
-						content={this.getErrorMessageForInvalidPageRange()}
-						classNames={[Constants.Classes.popover]}
-						arrowClassNames={[Constants.Classes.popoverArrow]}
-						modifiersIgnored={["flip"]}
-						removeOnDestroy={true}/> : undefined}
-			</div>
-		);
-	}
-
-	getRadioElement(id): any {
-		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-		return (
-			<div id={id} role="radio" className="pdf-control" {...this.enableInvoke(this.onSelectionChange, 61, true) }>
-				<div className={"pdf-indicator pdf-radio-indicator"}>
-					{pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
-				</div>
-				{id === Constants.Ids.radioAllPagesLabel ? this.getAllPagesRadioFooter() : this.getPageRangeRadioFooter() }
-			</div>
-		);
-	}
-
 	render() {
 		let expandOptionLabel = this.state.moreOptionsOpened ? Localization.getLocalizedString("WebClipper.Action.Less") : Localization.getLocalizedString("WebClipper.Action.More");
 		return (
@@ -289,9 +139,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 					</span>
 				</div>
 				<div role="radiogroup">
-					{this.getAllPagesRadioElement()}
-					{this.getPageRangeRadioElement()}
-					<RenderMe />
+					<PdfPageSelectionRadioButton clipperState={this.props.clipperState} />
 				</div>
 				<div className="hiddenOptionsAnimator" {...this.onElementDraw(this.onHiddenOptionsDraw)}>
 					{this.state.moreOptionsOpened ?

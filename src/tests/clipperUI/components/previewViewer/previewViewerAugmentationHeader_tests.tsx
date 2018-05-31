@@ -32,7 +32,7 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 				toggleHighlight={this.mockProp.toggleHighlight}
 				changeFontFamily={this.mockProp.changeFontFamily}
 				changeFontSize={this.mockProp.changeFontSize}
-				serif={this.mockProp.serif}
+				serif={this.mockProp.serif}pdf
 				textHighlighterEnabled={this.mockProp.textHighlighterEnabled} />;
 		Clipper.logger = new StubSessionLogger();
 	}

@@ -33,12 +33,14 @@ export abstract class PreviewViewerHeaderComponentBase<T, P> extends ComponentBa
 
 	render() {
 		let controlButtonGroup = "control-button-group";
+		console.log("in the preview header component base");
 
 		let renderables = [];
 		let buttonGroups = this.getControlGroups();
 
 		for (let i = 0; i < buttonGroups.length; i++) {
 			let id = buttonGroups[i].id;
+			console.log(id, "buttongroups[i].id");
 			let className = buttonGroups[i].className;
 			renderables.push(
 				<div id={id ? id : ""} className={className ? className : controlButtonGroup}>
