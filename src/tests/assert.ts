@@ -34,7 +34,8 @@ export module Assert {
 			return;
 		}
 		for (let i = 0; i < (elements.length - 1 ); i++) {
-			ok(elements[i].elem.getAttribute("aria-posinset") < elements[i + 1].elem.getAttribute("aria-posinset"), "Element " + elements[i].name + "should have a posInSet less than " + elements[i + 1].name );
+			let expected = (i + 1).toString();
+			strictEqual(elements[i].elem.getAttribute("aria-posinset"), expected, "Element" + elements[i].name + "has the wrong aria-posinset value");
 		}
 	}
 
