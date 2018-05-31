@@ -49,7 +49,6 @@ export class AugmentationPreviewTests extends TestModule {
 			MithrilUtils.mountToFixture(defaultComponent);
 
 			Assert.posInSetIsDecremental([Constants.Ids.sansSerif, Constants.Ids.serif]);
-			Assert.posInSetIsDecremental([Constants.Ids.decrementFontSize, Constants.Ids.incrementFontSize]);
 		});
 
 		test("The augmentation header and all related controls should be displayed in Augmentation mode", () => {
