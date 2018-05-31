@@ -38,21 +38,22 @@ export abstract class PreviewViewerHeaderComponentBase<T, P> extends ComponentBa
 		let buttonGroups = this.getControlGroups();
 
 		for (let i = 0; i < buttonGroups.length; i++) {
-			let id = buttonGroups[i].id;
-			let className = buttonGroups[i].className;
-			let role = buttonGroups[i].role;
-			let isAriaSet = buttonGroups[i].isAriaSet;
+			let currentButtonGroup = buttonGroups[i];
+			let id = currentButtonGroup.id;
+			let className = currentButtonGroup.className;
+			let role = currentButtonGroup.role;
+			let isAriaSet = currentButtonGroup.isAriaSet;
 			if (isAriaSet) {
-				let setsize = buttonGroups[i].innerElements.length;
-				for (let j = 0; j < setsize; j++) {
-					buttonGroups[i].innerElements[j].attrs["aria-posinset"] = j + 1;
-					buttonGroups[i].innerElements[j].attrs["aria-setsize"] = setsize;
+				let setSize = currentButtonGroup.innerElements.length;
+				for (let j = 0; j < setSize; j++) {
+					currentButtonGroup.innerElements[j].attrs["aria-posinset"] = j + 1;
+					currentButtonGroup.innerElements[j].attrs["aria-setsize"] = setSize;
 				}
 
 			}
 			renderables.push(
 				<div id={id ? id : ""} className={className ? className : controlButtonGroup} role={role ? role : ""}>
-					{buttonGroups[i].innerElements}
+					{currentButtonGroup.innerElements}
 				</div >);
 		}
 

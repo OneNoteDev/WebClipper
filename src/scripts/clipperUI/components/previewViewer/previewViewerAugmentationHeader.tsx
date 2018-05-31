@@ -85,13 +85,13 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			innerElements: [
 				<button className={HeaderClasses.Button.controlButton}
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.DecreaseFontSize")}
-					type="button" {...this.enableInvoke(this.props.changeFontSize, 103, false, undefined, Constants.AriaSet.fontSizeSet) }
+					type="button" {...this.enableInvoke(this.props.changeFontSize, 103, false) }
 					id={Constants.Ids.decrementFontSize}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_down.png") } />
 				</button>,
 				<button className={HeaderClasses.Button.controlButton}
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.IncreaseFontSize")}
-					type="button" {...this.enableInvoke(this.props.changeFontSize, undefined, true, undefined, Constants.AriaSet.fontSizeSet) }
+					type="button" {...this.enableInvoke(this.props.changeFontSize, 104, true) }
 					id={Constants.Ids.incrementFontSize}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_up.png") } />
 				</button>

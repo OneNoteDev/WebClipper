@@ -109,7 +109,7 @@ export abstract class ComponentBase<TState, TProps> {
 
 				if (!setNameForArrowKeyNav) {
 					return;
-				} else if (element.hasAttribute("data-" + Constants.AriaSet.setNameForArrowKeyNav)) {
+				} else if (element.hasAttribute("data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav)) {
 					let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
 					if (e.which === Constants.KeyCodes.up) {
 						if (posInSet === 1) {
@@ -137,7 +137,7 @@ export abstract class ComponentBase<TState, TProps> {
 	}
 
 	private static focusOnButton(setNameForArrowKeyNav: string, nextPosInSet: number) {
-		const buttons = document.querySelectorAll("[data-" + Constants.AriaSet.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
+		const buttons = document.querySelectorAll("[data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
 		for (let i = 0; i < buttons.length; i++) {
 			let selectable = buttons[i] as HTMLElement;
 			let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);

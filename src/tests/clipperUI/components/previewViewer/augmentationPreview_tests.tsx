@@ -1,13 +1,9 @@
 import {Constants} from "../../../../scripts/constants";
-
 import {ClipperState} from "../../../../scripts/clipperUI/clipperState";
 import {ClipMode} from "../../../../scripts/clipperUI/clipMode";
 import {Status} from "../../../../scripts/clipperUI/status";
-
 import {AugmentationModel} from "../../../../scripts/contentCapture/augmentationHelper";
-
 import {AugmentationPreview} from "../../../../scripts/clipperUI/components/previewViewer/augmentationPreview";
-
 import {Assert} from "../../../assert";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
@@ -34,7 +30,16 @@ export class AugmentationPreviewTests extends TestModule {
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 			MithrilUtils.mountToFixture(defaultComponent);
 
-			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.sansSerif, Constants.Ids.serif, Constants.Ids.decrementFontSize,
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.serif).click();
+			});
+			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.serif, Constants.Ids.decrementFontSize,
+				Constants.Ids.incrementFontSize, Constants.Ids.previewHeaderInput]);
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.sansSerif).click();
+			});
+			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.sansSerif, Constants.Ids.decrementFontSize,
 				Constants.Ids.incrementFontSize, Constants.Ids.previewHeaderInput]);
 		});
 
