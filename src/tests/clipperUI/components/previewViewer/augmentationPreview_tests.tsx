@@ -70,7 +70,7 @@ export class AugmentationPreviewTests extends TestModule {
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 			MithrilUtils.mountToFixture(defaultComponent);
 
-			Assert.posInSetIsDecremental([Constants.Ids.sansSerif, Constants.Ids.serif]);
+			Assert.posInSetIsIncremental([Constants.Ids.sansSerif, Constants.Ids.serif]);
 		});
 
 		test("The augmentation header and all related controls should be displayed in Augmentation mode", () => {

@@ -24,12 +24,12 @@ export module Assert {
 			}
 	}
 
-	export function posInSetIsDecremental(elementIds: string[]) {
+	export function posInSetIsIncremental(elementIds: string[]) {
 		let elementsInExpectedPosInSetOrder = elementIds.map(id => {return{name: id, elem: document.getElementById(id) }; });
-		Assert.posInSetIsDecrementalForElements(elementsInExpectedPosInSetOrder);
+		Assert.posInSetIsIncrementalForElements(elementsInExpectedPosInSetOrder);
 	}
 
-	export function posInSetIsDecrementalForElements(elements: {name: string, elem: HTMLElement}[]) {
+	export function posInSetIsIncrementalForElements(elements: {name: string, elem: HTMLElement}[]) {
 		if (elements.length < 2 ) {
 			return;
 		}

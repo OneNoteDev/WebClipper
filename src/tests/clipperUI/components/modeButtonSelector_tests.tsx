@@ -167,7 +167,7 @@ export class ModeButtonSelectorTests extends TestModule {
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
 
-			Assert.posInSetIsDecremental([TestConstants.Ids.fullPageButton,
+			Assert.posInSetIsIncremental([TestConstants.Ids.fullPageButton,
 				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
 		});
 
@@ -203,8 +203,6 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("Other modes' buttons should have the 'selected' class styling applied to it if they are clicked on", () => {
-			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
-
 			let fullPageButton = document.getElementById(TestConstants.Ids.fullPageButton);
 			let regionButton = document.getElementById(TestConstants.Ids.regionButton);
 			let augmentationButton = document.getElementById(TestConstants.Ids.augmentationButton);
@@ -232,8 +230,6 @@ export class ModeButtonSelectorTests extends TestModule {
 		});
 
 		test("The 'selected' class styling should not go away if the user clicks away from a previously clicked mode button", () => {
-			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
-
 			let fullPageButton = document.getElementById(TestConstants.Ids.fullPageButton);
 			let regionButton = document.getElementById(TestConstants.Ids.regionButton);
 			let augmentationButton = document.getElementById(TestConstants.Ids.augmentationButton);
