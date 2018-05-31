@@ -436,5 +436,6 @@ export module Constants {
 	export module AriaSet {
 		export var setNameForArrowKeyNav = "setnameforarrowkeynav";
 		export var modeButtonSet = "ariaModeButtonSet";
+		export var pdfPageSelection = "pdfPageSelection";
 	}
 }
