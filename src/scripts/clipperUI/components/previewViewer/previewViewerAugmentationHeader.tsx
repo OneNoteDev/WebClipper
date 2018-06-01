@@ -1,9 +1,6 @@
 ﻿import {Constants} from "../../../constants";
-
 import {ExtensionUtils} from "../../../extensions/extensionUtils";
-
 import {Localization} from "../../../localization/localization";
-
 import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
 
 export interface PreviewViewerAugmentationHeaderProp {
@@ -50,25 +47,29 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 	}
 
 	private getSerifGroup(): ControlGroup {
+		let tabIndexOn = 101;
+		let tabIndexOff = -1;
 		return {
 			id: Constants.Ids.serifControl,
+			role: "radiogroup",
+			isAriaSet: true,
 			innerElements: [
 				<button
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif")}
-					aria-pressed={!this.props.serif ? "true" : "false"}
+					aria-checked={!this.props.serif + ""}
 					id={Constants.Ids.sansSerif}
-					{...this.enableInvoke(this.props.changeFontFamily, 101, false) }
+					{...this.enableInvoke(this.props.changeFontFamily, !this.props.serif ? tabIndexOn : tabIndexOff, false, undefined, Constants.AriaSet.serifGroupSet) }
 					className={!this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
-					type="button">
+					role="radio">
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SansSerifButtonLabel") }
 				</button>,
 				<button
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif")}
-					aria-pressed={this.props.serif ? "true" : "false"}
+					aria-checked={this.props.serif + ""}
 					id={Constants.Ids.serif}
-					{...this.enableInvoke(this.props.changeFontFamily, 102, true) }
+					{...this.enableInvoke(this.props.changeFontFamily, this.props.serif ? tabIndexOn : tabIndexOff, true, undefined, Constants.AriaSet.serifGroupSet) }
 					className={this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
-					type="button">
+					role="radio">
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SerifButtonLabel") }
 				</button>
 			]
@@ -79,6 +80,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 		return {
 			id: Constants.Ids.fontSizeControl,
 			className: HeaderClasses.Button.relatedButtons,
+			isAriaSet: true,
 			innerElements: [
 				<button className={HeaderClasses.Button.controlButton}
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.DecreaseFontSize")}

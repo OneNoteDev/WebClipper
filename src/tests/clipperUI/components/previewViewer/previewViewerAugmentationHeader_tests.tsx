@@ -1,14 +1,10 @@
 ﻿import * as sinon from "sinon";
-
 import {Clipper} from "../../../../scripts/clipperUI/frontEndGlobals";
 import {PreviewViewerAugmentationHeader, PreviewViewerAugmentationHeaderProp} from "../../../../scripts/clipperUI/components/previewViewer/previewViewerAugmentationHeader";
-
 import {Constants} from "../../../../scripts/constants";
-
 import {Assert} from "../../../assert";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
-
 import {StubSessionLogger} from "../../../../scripts/logging/stubSessionLogger";
 
 export class PreviewViewerAugmentationHeaderTests extends TestModule {
@@ -67,7 +63,8 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 
 		test("The tabbing should flow from highlight to font family selectors to font size selectors", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
-			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.sansSerif, Constants.Ids.serif, Constants.Ids.decrementFontSize, Constants.Ids.incrementFontSize]);
+
+			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.sansSerif, Constants.Ids.decrementFontSize, Constants.Ids.incrementFontSize]);
 		});
 
 		test("The togglehighlight callback prop should be called exactly once whenever the highlight button is clicked", () => {

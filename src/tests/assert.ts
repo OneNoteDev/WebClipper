@@ -1,3 +1,4 @@
+///<reference path="../../node_modules/@types/qunit/index.d.ts"/>
 /**
  * A collection of commonly used QUnit assertions
  */
@@ -20,22 +21,22 @@ export module Assert {
 
 		// Assert tab index ordering
 		for (let i = 1; i < elements.length; i++) {
-			ok(elements[i].elem.tabIndex > elements[i - 1].elem.tabIndex,
-				"Element " + elements[i].name + " should have a greater tabIndex than element " + elements[i - 1].name);
+			ok(elements[i].elem.tabIndex > elements[i - 1].elem.tabIndex, "Element " + elements[i].name + " whose tabIndex is" + elements[i].elem.tabIndex + " should have a greater tabIndex than element " + elements[i - 1].name + " whose tabIndex is " + elements[i - 1].elem.tabIndex);
 		}
 	}
 
-	export function posInSetIsDecremental(elementIds: string[]) {
+	export function checkAriaSetAttributes(elementIds: string[]) {
 		let elementsInExpectedPosInSetOrder = elementIds.map(id => {return{name: id, elem: document.getElementById(id) }; });
-		Assert.posInSetIsDecrementalForElements(elementsInExpectedPosInSetOrder);
+		Assert.posInSetAndSetSizeAreCorrect(elementsInExpectedPosInSetOrder);
 	}
 
-	export function posInSetIsDecrementalForElements(elements: {name: string, elem: HTMLElement}[]) {
-		if (elements.length < 2 ) {
-			return;
-		}
-		for (let i = 0; i < (elements.length - 1 ); i++) {
-			ok(elements[i].elem.getAttribute("aria-posinset") < elements[i + 1].elem.getAttribute("aria-posinset"), "Element " + elements[i].name + "should have a posInSet less than " + elements[i + 1].name );
+	export function posInSetAndSetSizeAreCorrect(elements: {name: string, elem: HTMLElement}[]) {
+		let expectedSetSize = elements.length.toString();
+
+		for (let i = 0; i < elements.length; i++) {
+			let expectedPosition = (i + 1).toString();
+			strictEqual(elements[i].elem.getAttribute("aria-posinset"), expectedPosition, "Element " + elements[i].name + " has the wrong aria-posinset value");
+			strictEqual(elements[i].elem.getAttribute("aria-setsize"), expectedSetSize, "Element " + elements[i].name + " has the wrong aria-setsize value");
 		}
 	}
 

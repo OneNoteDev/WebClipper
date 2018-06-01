@@ -333,6 +333,7 @@ export module Constants {
 		export var c = 67;
 		export var down = 40;
 		export var up = 38;
+		export var space = 32;
 	}
 
 	export module StringKeyCodes {
@@ -433,9 +434,13 @@ export module Constants {
 		export var timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
 	}
 
-	export module AriaSet {
+	export module CustomHtmlAttributes {
 		export var setNameForArrowKeyNav = "setnameforarrowkeynav";
+	}
+
+	export module AriaSet {
 		export var modeButtonSet = "ariaModeButtonSet";
 		export var pdfPageSelection = "pdfPageSelection";
+		export var serifGroupSet = "serifGroupSet";
 	}
 }

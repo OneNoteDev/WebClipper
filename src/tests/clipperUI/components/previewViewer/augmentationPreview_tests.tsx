@@ -1,13 +1,9 @@
 import {Constants} from "../../../../scripts/constants";
-
 import {ClipperState} from "../../../../scripts/clipperUI/clipperState";
 import {ClipMode} from "../../../../scripts/clipperUI/clipMode";
 import {Status} from "../../../../scripts/clipperUI/status";
-
 import {AugmentationModel} from "../../../../scripts/contentCapture/augmentationHelper";
-
 import {AugmentationPreview} from "../../../../scripts/clipperUI/components/previewViewer/augmentationPreview";
-
 import {Assert} from "../../../assert";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {MockProps} from "../../../mockProps";
@@ -34,8 +30,49 @@ export class AugmentationPreviewTests extends TestModule {
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 			MithrilUtils.mountToFixture(defaultComponent);
 
-			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.sansSerif, Constants.Ids.serif, Constants.Ids.decrementFontSize,
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.serif).click();
+			});
+			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.serif, Constants.Ids.decrementFontSize,
 				Constants.Ids.incrementFontSize, Constants.Ids.previewHeaderInput]);
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.sansSerif).click();
+			});
+			Assert.tabOrderIsIncremental([Constants.Ids.highlightButton, Constants.Ids.sansSerif, Constants.Ids.decrementFontSize,
+				Constants.Ids.incrementFontSize, Constants.Ids.previewHeaderInput]);
+		});
+
+		test("When a pair of codependent buttons have conditional attributes, they both respond with the same behavior when clicked and have different values from each other", () => {
+			let mockClipperState = this.getMockAugmentationModeState();
+			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
+			MithrilUtils.mountToFixture(defaultComponent);
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.serif).click();
+			});
+			let selectedTabIndices = [document.getElementById(Constants.Ids.serif).tabIndex];
+			let unselectedTabIndices = [document.getElementById(Constants.Ids.sansSerif).tabIndex];
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.sansSerif).click();
+			});
+			selectedTabIndices.push(document.getElementById(Constants.Ids.sansSerif).tabIndex);
+			unselectedTabIndices.push(document.getElementById(Constants.Ids.serif).tabIndex);
+
+			strictEqual(selectedTabIndices[0], selectedTabIndices[1], "When the serif button is clicked the tabIndex should be the same as the tabIndex of the sansSerif button when clicked");
+			ok(selectedTabIndices[0] > 0, "Selected tabIndex should be greater than 0");
+
+			strictEqual(unselectedTabIndices[0], unselectedTabIndices[1], "When the serif button is not clicked the tabIndex should be the same as the tabIndex of the sansSerif button when not clicked");
+			strictEqual(unselectedTabIndices[0], -1, "The unselected tabsIndices should be -1");
+		});
+
+		test("The aria-posinset attribute should flow in order, assuming they are all available", () => {
+			let mockClipperState = this.getMockAugmentationModeState();
+			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
+			MithrilUtils.mountToFixture(defaultComponent);
+
+			Assert.checkAriaSetAttributes([Constants.Ids.sansSerif, Constants.Ids.serif]);
 		});
 
 		test("The augmentation header and all related controls should be displayed in Augmentation mode", () => {
