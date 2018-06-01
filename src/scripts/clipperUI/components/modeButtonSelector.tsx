@@ -138,9 +138,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			this.getPdfButtonProps(currentMode),
 		];
 
-		let visibleButtons = [
-			this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode),
-		];
+		let visibleButtons = [];
 
 		let propsForVisibleButtons = buttonProps.filter(attributes => !!attributes);
 		for (let i = 0; i < propsForVisibleButtons.length; i++) {
@@ -152,9 +150,14 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	public render() {
+		let currentMode = this.props.clipperState.currentMode.get();
+
 		return (
-			<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox">
-				{ this.getListOfButtons() }
+			<div>
+				{this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode)}
+				<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox">
+					{ this.getListOfButtons() }
+				</div>
 			</div>
 		);
 	}

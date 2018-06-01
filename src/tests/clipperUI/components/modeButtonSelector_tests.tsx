@@ -161,13 +161,33 @@ export class ModeButtonSelectorTests extends TestModule {
 			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
 		});
 
-		test("The aria-posinset attribute should flow in element order, assuming they are all available", () => {
+		test("The aria-posinset attribute should flow in element order, assuming they are all available if the user has selected an image in context image mode", () => {
 			let startingState = MockProps.getMockClipperState();
-			startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;
+
+			startingState.invokeOptions.invokeMode = InvokeMode.ContextImage;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
+			Assert.checkAriaSetAttributes([TestConstants.Ids.fullPageButton,
+				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
+		});
 
-			Assert.posInSetIsDecremental([TestConstants.Ids.fullPageButton,
+		test("The aria-posinset attribute should flow in element order, assuming they are all available if the user has selected text in context text mode", () => {
+			let startingState = MockProps.getMockClipperState();
+
+			startingState.invokeOptions.invokeMode = InvokeMode.Default;
+			MithrilUtils.mountToFixture(
+				<ModeButtonSelector clipperState={ startingState } />);
+			Assert.checkAriaSetAttributes([TestConstants.Ids.fullPageButton,
+				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
+		});
+
+		test("The aria-posinset attribute should flow in element order, assuming they are all available if the clipper is in default mode (no selected text or image)", () => {
+			let startingState = MockProps.getMockClipperState();
+
+			startingState.invokeOptions.invokeMode = InvokeMode.Default;
+			MithrilUtils.mountToFixture(
+				<ModeButtonSelector clipperState={ startingState } />);
+			Assert.checkAriaSetAttributes([TestConstants.Ids.fullPageButton,
 				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
 		});
 
@@ -204,7 +224,6 @@ export class ModeButtonSelectorTests extends TestModule {
 
 		test("Other modes' buttons should have the 'selected' class styling applied to it if they are clicked on", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
-
 			let fullPageButton = document.getElementById(TestConstants.Ids.fullPageButton);
 			let regionButton = document.getElementById(TestConstants.Ids.regionButton);
 			let augmentationButton = document.getElementById(TestConstants.Ids.augmentationButton);
@@ -233,7 +252,6 @@ export class ModeButtonSelectorTests extends TestModule {
 
 		test("The 'selected' class styling should not go away if the user clicks away from a previously clicked mode button", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
-
 			let fullPageButton = document.getElementById(TestConstants.Ids.fullPageButton);
 			let regionButton = document.getElementById(TestConstants.Ids.regionButton);
 			let augmentationButton = document.getElementById(TestConstants.Ids.augmentationButton);

@@ -434,8 +434,12 @@ export module Constants {
 		export var timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
 	}
 
-	export module AriaSet {
+	export module CustomHtmlAttributes {
 		export var setNameForArrowKeyNav = "setnameforarrowkeynav";
+	}
+
+	export module AriaSet {
 		export var modeButtonSet = "ariaModeButtonSet";
+		export var serifGroupSet = "serifGroupSet";
 	}
 }
