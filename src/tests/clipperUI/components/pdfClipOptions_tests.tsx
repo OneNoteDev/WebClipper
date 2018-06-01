@@ -97,7 +97,7 @@ export class PdfClipOptionsTests extends TestModule {
 			ok(document.getElementById(Constants.Ids.rangeInput), "The range input box should be present");
 		});
 
-		test("The tab order should flow linearly between pdf options", () => {
+		test("The tab order should flow linearly between pdf options with the page range radio button appearing only when selected", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
 
 			MithrilUtils.simulateAction(() => {
@@ -111,7 +111,8 @@ export class PdfClipOptionsTests extends TestModule {
 			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.radioPageRangeLabel).click();
 			});
-			Assert.tabOrderIsIncremental([Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf
+			Assert.tabOrderIsIncremental([
+				Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf
 			]);
 		});
 

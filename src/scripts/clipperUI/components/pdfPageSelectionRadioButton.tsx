@@ -64,10 +64,8 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 		return Localization.getLocalizedString("WebClipper.Popover.PdfInvalidPageRange").replace("{0}", parsePageRangeOperation.result as string);
 	}
 
-	getAllPagesButton(): any {
+	getAllPagesButton(selectedTabIndex, unselectedTabIndex): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
-		let selectedTabIndex = 60;
-		let unselectedTabIndex = -1;
 
 		return (
 			<div role="radio" id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, true, undefined, Constants.AriaSet.pdfPageSelection)}>
@@ -75,18 +73,15 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 					{pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
 				<div className="pdf-label-margin">
-					<span
-						className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
+					<span className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
 				</div>
 			</div>
 			);
 	}
 
-	getPageRangeButton(): any {
+	getPageRangeButton(selectedTabIndex, unselectedTabIndex): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
-		let selectedTabIndex = 60;
-		let unselectedTabIndex = -1;
 
 		return(
 			<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, !pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, false, undefined, Constants.AriaSet.pdfPageSelection)}>
@@ -117,10 +112,12 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 	}
 
 	render() {
+		let selectedTabIndex = 60;
+		let unselectedTabIndex = -1;
 		return (
 			<div role="radiogroup">
-				{this.getAllPagesButton()}
-				{this.getPageRangeButton()}
+				{this.getAllPagesButton(selectedTabIndex, unselectedTabIndex)}
+				{this.getPageRangeButton(selectedTabIndex, unselectedTabIndex)}
 			</div>
 		);
 	}

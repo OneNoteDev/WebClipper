@@ -72,12 +72,12 @@ export class MainControllerTests extends TestModule {
 			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
-		test("On the pdf clip options panel, the tab order is correct", () => {
+		test("On the pdf clip options panel, tab order should flow linearly between pdf options with the page range radio button appearing only when selected", () => {
 			this.mockMainControllerProps.clipperState.currentMode.set(ClipMode.Pdf);
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			MithrilUtils.simulateAction(() => {
-				document.getElementById(Constants.Ids.moreClipOptions).click();
+				controllerInstance.state.currentPanel = PanelType.ClipOptions;
 				document.getElementById(Constants.Ids.radioAllPagesLabel).click();
 			});
 
