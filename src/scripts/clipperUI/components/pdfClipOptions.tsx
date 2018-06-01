@@ -138,9 +138,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 						{expandOptionLabel}<img className="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					</span>
 				</div>
-				<div role="radiogroup">
-					<PdfPageSelectionRadioButton clipperState={this.props.clipperState} />
-				</div>
+				<PdfPageSelectionRadioButton clipperState={this.props.clipperState} />
 				<div className="hiddenOptionsAnimator" {...this.onElementDraw(this.onHiddenOptionsDraw)}>
 					{this.state.moreOptionsOpened ?
 						<div className="hiddenOptions">
