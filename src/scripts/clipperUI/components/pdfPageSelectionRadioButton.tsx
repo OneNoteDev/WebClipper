@@ -78,7 +78,7 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 					</span>
 				</div>
 			</div>
-			);
+		);
 	}
 
 	getPageRangeButton(selectedTabIndex, unselectedTabIndex): any {
