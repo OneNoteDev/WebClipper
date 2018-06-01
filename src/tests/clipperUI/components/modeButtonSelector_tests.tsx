@@ -161,25 +161,33 @@ export class ModeButtonSelectorTests extends TestModule {
 			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
 		});
 
-		test("The aria-posinset attribute should flow in element order, assuming they are all available", () => {
+		test("The aria-posinset attribute should flow in element order, assuming they are all available if the user has selected an image in context image mode", () => {
 			let startingState = MockProps.getMockClipperState();
 
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextImage;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
-			Assert.checkAriaGroupingAttributes([TestConstants.Ids.fullPageButton,
+			Assert.checkAriaSetAttributes([TestConstants.Ids.fullPageButton,
 				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
+		});
 
-			startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;
-			MithrilUtils.mountToFixture(
-				<ModeButtonSelector clipperState={ startingState } />);
-			Assert.checkAriaGroupingAttributes([TestConstants.Ids.fullPageButton,
-				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.selectionButton, TestConstants.Ids.bookmarkButton]);
+		test("The aria-posinset attribute should flow in element order, assuming they are all available if the user has selected text in context text mode", () => {
+			let startingState = MockProps.getMockClipperState();
 
 			startingState.invokeOptions.invokeMode = InvokeMode.Default;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
-			Assert.checkAriaGroupingAttributes([TestConstants.Ids.fullPageButton,
+			Assert.checkAriaSetAttributes([TestConstants.Ids.fullPageButton,
+				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
+		});
+
+		test("The aria-posinset attribute should flow in element order, assuming they are all available if the clipper is in default mode (no selected text or image)", () => {
+			let startingState = MockProps.getMockClipperState();
+
+			startingState.invokeOptions.invokeMode = InvokeMode.Default;
+			MithrilUtils.mountToFixture(
+				<ModeButtonSelector clipperState={ startingState } />);
+			Assert.checkAriaSetAttributes([TestConstants.Ids.fullPageButton,
 				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
 		});
 

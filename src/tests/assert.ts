@@ -25,7 +25,7 @@ export module Assert {
 		}
 	}
 
-	export function checkAriaGroupingAttributes(elementIds: string[]) {
+	export function checkAriaSetAttributes(elementIds: string[]) {
 		let elementsInExpectedPosInSetOrder = elementIds.map(id => {return{name: id, elem: document.getElementById(id) }; });
 		Assert.posInSetAndSetSizeAreCorrect(elementsInExpectedPosInSetOrder);
 	}
