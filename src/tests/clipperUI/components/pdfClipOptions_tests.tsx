@@ -99,11 +99,19 @@ export class PdfClipOptionsTests extends TestModule {
 
 		test("The tab order should flow linearly between pdf options", () => {
 			MithrilUtils.mountToFixture(this.defaultComponent);
+
 			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.moreClipOptions).click();
+				document.getElementById(Constants.Ids.radioAllPagesLabel).click();
 			});
 			Assert.tabOrderIsIncremental([
-				Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf
+				Constants.Ids.radioAllPagesLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf
+			]);
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.radioPageRangeLabel).click();
+			});
+			Assert.tabOrderIsIncremental([Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf
 			]);
 		});
 
@@ -115,7 +123,7 @@ export class PdfClipOptionsTests extends TestModule {
 				document.getElementById(Constants.Ids.moreClipOptions).click();
 			});
 			Assert.tabOrderIsIncremental([
-				Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.rangeInput, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf
+				Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf
 			]);
 		});
 
