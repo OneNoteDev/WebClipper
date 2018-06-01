@@ -163,11 +163,23 @@ export class ModeButtonSelectorTests extends TestModule {
 
 		test("The aria-posinset attribute should flow in element order, assuming they are all available", () => {
 			let startingState = MockProps.getMockClipperState();
+
+			startingState.invokeOptions.invokeMode = InvokeMode.ContextImage;
+			MithrilUtils.mountToFixture(
+				<ModeButtonSelector clipperState={ startingState } />);
+			Assert.checkAriaGroupingAttributes([TestConstants.Ids.fullPageButton,
+				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
+
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextTextSelection;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
+			Assert.checkAriaGroupingAttributes([TestConstants.Ids.fullPageButton,
+				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.selectionButton, TestConstants.Ids.bookmarkButton]);
 
-			Assert.posInSetIsIncremental([TestConstants.Ids.fullPageButton,
+			startingState.invokeOptions.invokeMode = InvokeMode.Default;
+			MithrilUtils.mountToFixture(
+				<ModeButtonSelector clipperState={ startingState } />);
+			Assert.checkAriaGroupingAttributes([TestConstants.Ids.fullPageButton,
 				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
 		});
 

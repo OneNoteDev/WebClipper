@@ -25,13 +25,6 @@ export class AugmentationPreviewTests extends TestModule {
 	}
 
 	protected tests() {
-		function isPositive(value: number): number {
-			if (value > 0) {
-				return 1;
-			} else {
-				return 0;
-			}
-		}
 		test("The tab order flow from the header to the preview title is correct in Augmentation mode", () => {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
@@ -54,7 +47,6 @@ export class AugmentationPreviewTests extends TestModule {
 			let mockClipperState = this.getMockAugmentationModeState();
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 			MithrilUtils.mountToFixture(defaultComponent);
-			let unSelectedTabShouldBeNegative = -1;
 
 			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.serif).click();
@@ -69,12 +61,10 @@ export class AugmentationPreviewTests extends TestModule {
 			unselectedTabIndices.push(document.getElementById(Constants.Ids.serif).tabIndex);
 
 			strictEqual(selectedTabIndices[0], selectedTabIndices[1], "When the serif button is clicked the tabIndex should be the same as the tabIndex of the sansSerif button when clicked");
-			ok(isPositive(selectedTabIndices[0]), "Selected tabIndex should be greater than 0");
+			ok(selectedTabIndices[0] > 0, "Selected tabIndex should be greater than 0");
 
 			strictEqual(unselectedTabIndices[0], unselectedTabIndices[1], "When the serif button is not clicked the tabIndex should be the same as the tabIndex of the sansSerif button when not clicked");
-			strictEqual(unselectedTabIndices[0], unSelectedTabShouldBeNegative, "The unselected tabsIndices should be -1");
-
-			notStrictEqual(selectedTabIndices[0], unselectedTabIndices[0], "The buttons should have different values when one is clicked");
+			strictEqual(unselectedTabIndices[0], -1, "The unselected tabsIndices should be -1");
 		});
 
 		test("The aria-posinset attribute should flow in order, assuming they are all available", () => {
@@ -82,7 +72,7 @@ export class AugmentationPreviewTests extends TestModule {
 			let defaultComponent = <AugmentationPreview clipperState={mockClipperState} />;
 			MithrilUtils.mountToFixture(defaultComponent);
 
-			Assert.posInSetIsIncremental([Constants.Ids.sansSerif, Constants.Ids.serif]);
+			Assert.checkAriaGroupingAttributes([Constants.Ids.sansSerif, Constants.Ids.serif]);
 		});
 
 		test("The augmentation header and all related controls should be displayed in Augmentation mode", () => {
