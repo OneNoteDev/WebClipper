@@ -4,7 +4,7 @@ import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
 import {Localization} from "../../../localization/localization";
 
-import {ControlGroup, HeaderClasses, ButtonGroupingsComponentBase} from "./previewViewerHeaderComponentBase";
+import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
 
 export interface PreviewViewerAugmentationHeaderProp {
 	toggleHighlight: () => void;
@@ -14,7 +14,7 @@ export interface PreviewViewerAugmentationHeaderProp {
 	textHighlighterEnabled: boolean;
 }
 
-class PreviewViewerAugmentationHeaderClass extends ButtonGroupingsComponentBase<{}, PreviewViewerAugmentationHeaderProp> {
+class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentBase<{}, PreviewViewerAugmentationHeaderProp> {
 	getControlGroups(): ControlGroup[] {
 		return [this.getScreenReaderTitleGroup(), this.getHighlightGroup(), this.getSerifGroup(), this.getFontSizeGroup()];
 	}

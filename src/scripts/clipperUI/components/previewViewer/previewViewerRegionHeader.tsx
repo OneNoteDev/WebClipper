@@ -7,9 +7,9 @@ import {Localization} from "../../../localization/localization";
 import {ClipperStateProp} from "../../clipperState";
 import {Status} from "../../status";
 
-import {ControlGroup, HeaderClasses, ButtonGroupingsComponentBase} from "./previewViewerHeaderComponentBase";
+import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
 
-class PreviewViewerRegionHeaderClass extends ButtonGroupingsComponentBase<{}, ClipperStateProp> {
+class PreviewViewerRegionHeaderClass extends PreviewViewerHeaderComponentBase<{}, ClipperStateProp> {
 	addAnotherRegion() {
 		this.props.clipperState.setState({
 			regionResult: {

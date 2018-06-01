@@ -15,8 +15,6 @@ export module HeaderClasses {
 export interface ControlGroup {
 	id?: string;
 	className?: string;
-	role?: string;
-	isAriaSet?: boolean;
 	innerElements: any[];
 }
 
@@ -25,7 +23,7 @@ export interface ControlGroup {
  * of buttons or similar header entities. Child classes need to simply declare each control's
  * buttons.
  */
-export abstract class ButtonGroupingsComponentBase<T, P> extends ComponentBase<T, P> {
+export abstract class PreviewViewerHeaderComponentBase<T, P> extends ComponentBase<T, P> {
 	/**
 	 * Gets the list of control groups to be rendered.
 	 */
@@ -38,22 +36,11 @@ export abstract class ButtonGroupingsComponentBase<T, P> extends ComponentBase<T
 		let buttonGroups = this.getControlGroups();
 
 		for (let i = 0; i < buttonGroups.length; i++) {
-			let currentButtonGroup = buttonGroups[i];
-			let id = currentButtonGroup.id;
-			let className = currentButtonGroup.className;
-			let role = currentButtonGroup.role;
-			let isAriaSet = currentButtonGroup.isAriaSet;
-			if (isAriaSet) {
-				let setSize = currentButtonGroup.innerElements.length;
-				for (let j = 0; j < setSize; j++) {
-					currentButtonGroup.innerElements[j].attrs["aria-posinset"] = j + 1;
-					currentButtonGroup.innerElements[j].attrs["aria-setsize"] = setSize;
-				}
-
-			}
+			let id = buttonGroups[i].id;
+			let className = buttonGroups[i].className;
 			renderables.push(
-				<div id={id ? id : ""} className={className ? className : controlButtonGroup} role={role ? role : ""}>
-					{currentButtonGroup.innerElements}
+				<div id={id ? id : ""} className={className ? className : controlButtonGroup}>
+					{buttonGroups[i].innerElements}
 				</div >);
 		}
 

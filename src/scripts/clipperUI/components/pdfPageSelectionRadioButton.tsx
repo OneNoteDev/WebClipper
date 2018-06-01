@@ -6,9 +6,9 @@ import {Popover} from "./popover";
 import * as _ from "lodash";
 import {StringUtils} from "../../stringUtils";
 import {OperationResult} from "../../operationResult";
-import {ButtonGroupingsComponentBase, ControlGroup} from "./previewViewer/previewViewerHeaderComponentBase";
+import {ComponentBase} from "../componentBase";
 
-class PdfPageSelectionRadioButton extends ButtonGroupingsComponentBase<{}, ClipperStateProp> {
+class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 	private static textAreaListenerAttached = false;
 
 	constructor(props: ClipperStateProp) {
@@ -17,10 +17,6 @@ class PdfPageSelectionRadioButton extends ButtonGroupingsComponentBase<{}, Clipp
 			this.addTextAreaListener();
 			PdfPageSelectionRadioButton.textAreaListenerAttached = true;
 		}
-	}
-
-	getControlGroups(): ControlGroup[] {
-		return [this.getRadioButtons()];
 	}
 
 	private addTextAreaListener() {
@@ -68,51 +64,65 @@ class PdfPageSelectionRadioButton extends ButtonGroupingsComponentBase<{}, Clipp
 		return Localization.getLocalizedString("WebClipper.Popover.PdfInvalidPageRange").replace("{0}", parsePageRangeOperation.result as string);
 	}
 
-	getRadioButtons(): any {
+	getAllPagesButton(): any {
+		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
+		let selectedTabIndex = 60;
+		let unselectedTabIndex = -1;
+
+		return (
+			<div role="radio" id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, true, undefined, Constants.AriaSet.pdfPageSelection)}>
+				<div className={"pdf-indicator pdf-radio-indicator"}>
+					{pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
+				</div>
+				<div className="pdf-label-margin">
+					<span
+						className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
+				</div>
+			</div>
+			);
+	}
+
+	getPageRangeButton(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
 		let selectedTabIndex = 60;
 		let unselectedTabIndex = -1;
 
-		return {
-			role: "radiogroup",
-			isAriaSet: true,
-			innerElements: [
-				<div role="radio" id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, true, undefined, Constants.AriaSet.pdfPageSelection)}>
-					<div className={"pdf-indicator pdf-radio-indicator"}>
-						{pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
-					</div>
-					<div className="pdf-label-margin">
-					<span
-						className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
-					</div>
-				</div>,
-				<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, !pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, false, undefined, Constants.AriaSet.pdfPageSelection)}>
-					<div className={"pdf-indicator pdf-radio-indicator"}>
-						{!pdfPreviewInfo.allPages ?
-							<div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
-					</div>
-					<input
-						type="text"
-						id={Constants.Ids.rangeInput}
-						className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
-						placeholder="e.g. 1-5, 7, 9-12"
-						onFocus={this.onTextInputFocus.bind(this)}
-						value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, undefined, false,)}>
-					</input>
-					{pdfPreviewInfo.shouldShowPopover ?
-						<Popover
-							referenceElementId={Constants.Ids.rangeInput}
-							placement="bottom"
-							parentId={Constants.Ids.mainController}
-							content={this.getErrorMessageForInvalidPageRange()}
-							classNames={[Constants.Classes.popover]}
-							arrowClassNames={[Constants.Classes.popoverArrow]}
-							modifiersIgnored={["flip"]}
-							removeOnDestroy={true}/> : undefined}
+		return(
+			<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableInvoke(this.onSelectionChange, !pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, false, undefined, Constants.AriaSet.pdfPageSelection)}>
+				<div className={"pdf-indicator pdf-radio-indicator"}>
+					{!pdfPreviewInfo.allPages ?
+						<div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
 				</div>
-			]
-		};
+				<input
+					type="text"
+					id={Constants.Ids.rangeInput}
+					className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
+					placeholder="e.g. 1-5, 7, 9-12"
+					onFocus={this.onTextInputFocus.bind(this)}
+					value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, undefined, false,)}>
+				</input>
+				{pdfPreviewInfo.shouldShowPopover ?
+					<Popover
+						referenceElementId={Constants.Ids.rangeInput}
+						placement="bottom"
+						parentId={Constants.Ids.mainController}
+						content={this.getErrorMessageForInvalidPageRange()}
+						classNames={[Constants.Classes.popover]}
+						arrowClassNames={[Constants.Classes.popoverArrow]}
+						modifiersIgnored={["flip"]}
+						removeOnDestroy={true}/> : undefined}
+			</div>
+		);
+	}
+
+	render() {
+		return (
+			<div role="radiogroup">
+				{this.getAllPagesButton()}
+				{this.getPageRangeButton()}
+			</div>
+		);
 	}
 }
 
