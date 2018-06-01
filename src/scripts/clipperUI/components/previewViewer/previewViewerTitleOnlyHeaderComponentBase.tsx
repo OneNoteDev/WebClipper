@@ -1,6 +1,3 @@
-import {Constants} from "../../../constants";
-import {Experiments} from "../../../experiments";
-
 import {Localization} from "../../../localization/localization";
 
 import {ClipperStateProp} from "../../clipperState";

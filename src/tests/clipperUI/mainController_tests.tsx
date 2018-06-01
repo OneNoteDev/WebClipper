@@ -72,16 +72,24 @@ export class MainControllerTests extends TestModule {
 			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
-		test("On the pdf clip options panel, the tab order is correct", () => {
+		test("On the pdf clip options panel, tab order should flow linearly between pdf options with the page range radio button appearing only when selected", () => {
 			this.mockMainControllerProps.clipperState.currentMode.set(ClipMode.Pdf);
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
 			MithrilUtils.simulateAction(() => {
 				controllerInstance.state.currentPanel = PanelType.ClipOptions;
+				document.getElementById(Constants.Ids.radioAllPagesLabel).click();
 			});
 
 			Assert.tabOrderIsIncremental([Constants.Ids.clipButton,
-				TestConstants.Ids.sectionLocationContainer, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.feedbackButton,
+				Constants.Ids.radioAllPagesLabel, TestConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton,
+				Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
+
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.radioPageRangeLabel).click();
+			});
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton,
+				Constants.Ids.radioPageRangeLabel, TestConstants.Ids.sectionLocationContainer, Constants.Ids.feedbackButton,
 				Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
@@ -96,8 +104,13 @@ export class MainControllerTests extends TestModule {
 			MithrilUtils.simulateAction(() => {
 				document.getElementById(Constants.Ids.moreClipOptions).click();
 			});
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, Constants.Ids.radioAllPagesLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
+				Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 
-			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, Constants.Ids.radioAllPagesLabel, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
+			MithrilUtils.simulateAction(() => {
+				document.getElementById(Constants.Ids.radioPageRangeLabel).click();
+			});
+			Assert.tabOrderIsIncremental([Constants.Ids.clipButton, Constants.Ids.radioPageRangeLabel, Constants.Ids.checkboxToDistributePages, Constants.Ids.checkboxToAttachPdf,
 				Constants.Ids.feedbackButton, Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 		});
 
