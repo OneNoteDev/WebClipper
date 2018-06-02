@@ -20,7 +20,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		stringToTellUserModeHasChanged = stringToTellUserModeHasChanged.replace("{0}", ClipMode[currentMode]);
 
 		return (
-			<div aria-live="polite" aria-relevant="text" className={Constants.Classes.srOnly}>{stringToTellUserModeHasChanged}</div>
+			<div aria-live="assertive" role="alert" aria-relevant="text" className={Constants.Classes.srOnly}>{stringToTellUserModeHasChanged}</div>
 		);
 	}
 
@@ -144,7 +144,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		for (let i = 0; i < propsForVisibleButtons.length; i++) {
 			let attributes = propsForVisibleButtons[i];
 			let ariaPos = i + 1;
-			visibleButtons.push(<ModeButton {...attributes} aria-setsize={propsForVisibleButtons.length} aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : undefined} />);
+			visibleButtons.push(<ModeButton {...attributes} aria-setsize={propsForVisibleButtons.length} aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : -1 } />);
 		}
 		return visibleButtons;
 	}

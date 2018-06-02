@@ -14,7 +14,7 @@ class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 				<div className="regionClipPadding">
 					<div className="messageLabelContainer">
 						<div
-							className={Constants.Classes.srOnly} aria-live="polite"
+							className={Constants.Classes.srOnly} aria-live="assertive"
 							aria-relevant="text">{Localization.getLocalizedString("WebClipper.Label.DragAndRelease")}</div>
 						<span className="informationLabelFont messageLabel" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
 							{Localization.getLocalizedString("WebClipper.Label.DragAndRelease")}
