@@ -104,12 +104,7 @@ export abstract class ComponentBase<TState, TProps> {
 					}
 				} else if (e.which === Constants.KeyCodes.tab) {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
-					console.log("In the component base");
-					console.log(element);
-					if (element.tabIndex > 0) {
-						console.log("the tabindex is greater than zero");
-						element.style.outlineStyle = "";
-					}
+					element.style.outlineStyle = "";
 				}
 
 				if (!setNameForArrowKeyNav) {

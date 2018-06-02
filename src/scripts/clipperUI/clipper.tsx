@@ -1,49 +1,34 @@
 import {AuthType, UpdateReason, UserInfo} from "../userInfo";
 import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
-import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
-
 import {PageInfo} from "../pageInfo";
 import {Polyfills} from "../polyfills";
-import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
-import {Settings} from "../settings";
+import {PreviewGlobalInfo} from "../previewInfo";
 import {TooltipType} from "./tooltipType";
 import {UrlUtils} from "../urlUtils";
-
 import {Communicator} from "../communicator/communicator";
 import {IFrameMessageHandler} from "../communicator/iframeMessageHandler";
 import {InlineMessageHandler} from "../communicator/inlineMessageHandler";
 import {SmartValue} from "../communicator/smartValue";
-
-import {AugmentationHelper, AugmentationModel} from "../contentCapture/augmentationHelper";
+import {AugmentationHelper} from "../contentCapture/augmentationHelper";
 import {BookmarkError, BookmarkHelper, BookmarkResult} from "../contentCapture/bookmarkHelper";
 import {FullPageScreenshotHelper} from "../contentCapture/fullPageScreenshotHelper";
 import {PdfScreenshotHelper, PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
-
 import {DomUtils} from "../domParsers/domUtils";
 import {VideoUtils} from "../domParsers/videoUtils";
-
 import {ClipperInjectOptions} from "../extensions/clipperInject";
-import {InvokeOptions, InvokeMode} from "../extensions/invokeOptions";
-
+import {InvokeMode, InvokeOptions} from "../extensions/invokeOptions";
 import {InlineExtension} from "../extensions/bookmarklet/inlineExtension";
-
 import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
-
 import {Localization} from "../localization/localization";
-
 import * as Log from "../logging/log";
 import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
-import {Logger} from "../logging/logger";
-
 import {OneNoteSaveableFactory} from "../saveToOneNote/oneNoteSaveableFactory";
 import {SaveToOneNote, SaveToOneNoteOptions} from "../saveToOneNote/saveToOneNote";
 import {SaveToOneNoteLogger} from "../saveToOneNote/saveToOneNoteLogger";
-
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
-
 import {ClipMode} from "./clipMode";
 import {Clipper} from "./frontEndGlobals";
 import {ClipperState} from "./clipperState";
@@ -55,7 +40,6 @@ import {PreviewViewer} from "./previewViewer";
 import {RatingsHelper} from "./ratingsHelper";
 import {RegionSelector} from "./regionSelector";
 import {Status} from "./status";
-
 import * as _ from "lodash";
 
 class ClipperClass extends ComponentBase<ClipperState, {}> {
@@ -152,7 +136,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				let hideClipperDueToSpaNavigateEvent = new Log.Event.BaseEvent(Log.Event.Label.HideClipperDueToSpaNavigate);
 				Clipper.logger.logEvent(hideClipperDueToSpaNavigateEvent);
 				this.state.setState({ uiExpanded: false });
-			};
+			}
 		});
 
 		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.setInvokeOptions, (options: InvokeOptions) => {
@@ -501,7 +485,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 							lowestTabIndexElement = tabbable;
 						}
 					}
-					console.log("THIS IS THE LOWEST TABINDEXED ELEMENT:", lowestTabIndexElement);
+
 					lowestTabIndexElement.focus();
 				}
 			});
