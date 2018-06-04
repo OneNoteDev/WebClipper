@@ -20,7 +20,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		stringToTellUserModeHasChanged = stringToTellUserModeHasChanged.replace("{0}", ClipMode[currentMode]);
 
 		return (
-			<div aria-live="assertive" aria-relevant="text" className={Constants.Classes.srOnly}>{stringToTellUserModeHasChanged}</div>
+			<div aria-live="polite" aria-relevant="text" className={Constants.Classes.srOnly}>{stringToTellUserModeHasChanged}</div>
 		);
 	}
 

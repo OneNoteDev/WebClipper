@@ -6,7 +6,7 @@ export interface radioButtonGroup {
 	innerElements: any[];
 }
 
-export abstract class pdfPageSelectionRadioButtonBase<T, P> extends ComponentBase<T, P> {
+export abstract class PdfPageSelectionRadioButtonBase<T, P> extends ComponentBase<T, P> {
 	abstract getRadioButtonGroups(): radioButtonGroup[];
 
 	render() {

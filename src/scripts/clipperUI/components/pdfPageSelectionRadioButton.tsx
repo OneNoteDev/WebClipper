@@ -6,9 +6,12 @@ import {Popover} from "./popover";
 import * as _ from "lodash";
 import {StringUtils} from "../../stringUtils";
 import {OperationResult} from "../../operationResult";
-import {pdfPageSelectionRadioButtonBase, radioButtonGroup} from "./pdfPageSelectionRadioButtonBase";
+import {
+	PdfPageSelectionRadioButtonBase,
+	radioButtonGroup
+} from "./pdfPageSelectionRadioButtonBase";
 
-class PdfPageSelectionRadioButton extends pdfPageSelectionRadioButtonBase<{}, ClipperStateProp> {
+class PdfPageSelectionRadioButton extends PdfPageSelectionRadioButtonBase<{}, ClipperStateProp> {
 	private static textAreaListenerAttached = false;
 
 	constructor(props: ClipperStateProp) {

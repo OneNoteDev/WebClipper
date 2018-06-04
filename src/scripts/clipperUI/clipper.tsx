@@ -494,8 +494,10 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				if (tabbables.length > 0) {
 					for (let i = 0; i < tabbables.length; i++) {
 						let tabbable = tabbables[i] as HTMLElement;
-						if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex && tabbable.tabIndex > 0) {
-							lowestTabIndexElement = tabbable;
+						if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
+							if (tabbable.tabIndex >= 0) {
+								lowestTabIndexElement = tabbable;
+							}
 						}
 					}
 
