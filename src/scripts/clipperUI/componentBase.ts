@@ -104,8 +104,6 @@ export abstract class ComponentBase<TState, TProps> {
 					}
 				} else if (e.which === Constants.KeyCodes.tab) {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
-					console.log("component base", element);
-					console.log("props", this.props);
 					element.style.outlineStyle = "";
 				}
 

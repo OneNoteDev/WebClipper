@@ -6,15 +6,7 @@ export interface radioButtonGroup {
 	innerElements: any[];
 }
 
-/**
- * Represents a preview header that can contain multiple control button groups, i.e., groups
- * of buttons or similar header entities. Child classes need to simply declare each control's
- * buttons.
- */
 export abstract class pdfPageSelectionRadioButtonBase<T, P> extends ComponentBase<T, P> {
-	/**
-	 * Gets the list of control groups to be rendered.
-	 */
 	abstract getRadioButtonGroups(): radioButtonGroup[];
 
 	render() {

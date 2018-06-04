@@ -489,7 +489,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 			// When tabbing from outside the iframe, we want to set focus to the lowest tabindex element in our iframe
 			Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.tabToLowestIndexedElement, () => {
-				console.log("in the inject communicator method");
 				let tabbables = document.querySelectorAll("[tabindex]");
 				let lowestTabIndexElement: HTMLElement;
 				if (tabbables.length > 0) {
@@ -499,7 +498,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 							lowestTabIndexElement = tabbable;
 						}
 					}
-					console.log("in clipper, lowesttabindex", lowestTabIndexElement);
 
 					lowestTabIndexElement.focus();
 				}
