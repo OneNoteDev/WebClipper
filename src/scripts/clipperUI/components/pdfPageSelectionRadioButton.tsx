@@ -93,23 +93,22 @@ class PdfPageSelectionRadioButton extends pdfPageSelectionRadioButtonBase<{}, Cl
 							<div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
 					</div>
 					<input
-						type="text"
-						id={Constants.Ids.rangeInput}
-						className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
-						placeholder="e.g. 1-5, 7, 9-12"
-						onFocus={this.onTextInputFocus.bind(this)}
-						value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, undefined, false,)}>
-					</input>
+					type="text"
+					id={Constants.Ids.rangeInput}
+					className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
+					placeholder="e.g. 1-5, 7, 9-12"
+					onFocus={this.onTextInputFocus.bind(this)}
+					value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke(this.onSelectionChange, undefined, false,)}/>
 					{pdfPreviewInfo.shouldShowPopover ?
 						<Popover
-							referenceElementId={Constants.Ids.rangeInput}
-							placement="bottom"
-							parentId={Constants.Ids.mainController}
-							content={this.getErrorMessageForInvalidPageRange()}
-							classNames={[Constants.Classes.popover]}
-							arrowClassNames={[Constants.Classes.popoverArrow]}
-							modifiersIgnored={["flip"]}
-							removeOnDestroy={true}/> : undefined}
+						referenceElementId={Constants.Ids.rangeInput}
+						placement="bottom"
+						parentId={Constants.Ids.mainController}
+						content={this.getErrorMessageForInvalidPageRange()}
+						classNames={[Constants.Classes.popover]}
+						arrowClassNames={[Constants.Classes.popoverArrow]}
+						modifiersIgnored={["flip"]}
+						removeOnDestroy={true}/> : undefined}
 				</div>
 			]
 		};
