@@ -6,12 +6,15 @@ import {Popover} from "./popover";
 import * as _ from "lodash";
 import {StringUtils} from "../../stringUtils";
 import {OperationResult} from "../../operationResult";
-import {
-	PdfPageSelectionRadioButtonBase,
-	radioButtonGroup
-} from "./pdfPageSelectionRadioButtonBase";
+import {ComponentBase} from "../componentBase";
 
-class PdfPageSelectionRadioButton extends PdfPageSelectionRadioButtonBase<{}, ClipperStateProp> {
+export interface radioButtonGroup {
+	role?: string;
+	isAriaSet?: boolean;
+	innerElements: any[];
+}
+
+class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 	private static textAreaListenerAttached = false;
 
 	constructor(props: ClipperStateProp) {
@@ -71,7 +74,7 @@ class PdfPageSelectionRadioButton extends PdfPageSelectionRadioButtonBase<{}, Cl
 		return Localization.getLocalizedString("WebClipper.Popover.PdfInvalidPageRange").replace("{0}", parsePageRangeOperation.result as string);
 	}
 
-	getRadioButtons(): any {
+	getRadioButtons(): radioButtonGroup {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
 		let selectedTabIndex = 60;
@@ -115,6 +118,35 @@ class PdfPageSelectionRadioButton extends PdfPageSelectionRadioButtonBase<{}, Cl
 				</div>
 			]
 		};
+	}
+
+	render() {
+		let renderables = [];
+		let buttonGroups = this.getRadioButtonGroups();
+
+		for (let i = 0; i < buttonGroups.length; i++) {
+			let currentButtonGroup = buttonGroups[i];
+			let role = currentButtonGroup.role;
+			let isAriaSet = currentButtonGroup.isAriaSet;
+			if (isAriaSet) {
+				let setSize = currentButtonGroup.innerElements.length;
+				for (let j = 0; j < setSize; j++) {
+					currentButtonGroup.innerElements[j].attrs["aria-posinset"] = j + 1;
+					currentButtonGroup.innerElements[j].attrs["aria-setsize"] = setSize;
+				}
+
+			}
+			renderables.push(
+				<div role={role ? role : ""}>
+					{currentButtonGroup.innerElements}
+				</div >);
+		}
+
+		return (
+			<div>
+				{renderables}
+			</div>
+		);
 	}
 }
 
