@@ -1,14 +1,12 @@
 import {AuthType, UpdateReason, UserInfo} from "../userInfo";
 import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
-import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
 
 import {PageInfo} from "../pageInfo";
 import {Polyfills} from "../polyfills";
-import {PreviewGlobalInfo, PreviewInfo} from "../previewInfo";
-import {Settings} from "../settings";
+import {PreviewGlobalInfo} from "../previewInfo";
 import {TooltipType} from "./tooltipType";
 import {UrlUtils} from "../urlUtils";
 
@@ -17,7 +15,7 @@ import {IFrameMessageHandler} from "../communicator/iframeMessageHandler";
 import {InlineMessageHandler} from "../communicator/inlineMessageHandler";
 import {SmartValue} from "../communicator/smartValue";
 
-import {AugmentationHelper, AugmentationModel} from "../contentCapture/augmentationHelper";
+import {AugmentationHelper} from "../contentCapture/augmentationHelper";
 import {BookmarkError, BookmarkHelper, BookmarkResult} from "../contentCapture/bookmarkHelper";
 import {FullPageScreenshotHelper} from "../contentCapture/fullPageScreenshotHelper";
 import {PdfScreenshotHelper, PdfScreenshotResult} from "../contentCapture/pdfScreenshotHelper";
@@ -36,7 +34,6 @@ import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
 import {CommunicatorLoggerPure} from "../logging/communicatorLoggerPure";
-import {Logger} from "../logging/logger";
 
 import {OneNoteSaveableFactory} from "../saveToOneNote/oneNoteSaveableFactory";
 import {SaveToOneNote, SaveToOneNoteOptions} from "../saveToOneNote/saveToOneNote";
@@ -152,7 +149,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				let hideClipperDueToSpaNavigateEvent = new Log.Event.BaseEvent(Log.Event.Label.HideClipperDueToSpaNavigate);
 				Clipper.logger.logEvent(hideClipperDueToSpaNavigateEvent);
 				this.state.setState({ uiExpanded: false });
-			};
+			}
 		});
 
 		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.setInvokeOptions, (options: InvokeOptions) => {
@@ -498,7 +495,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					for (let i = 0; i < tabbables.length; i++) {
 						let tabbable = tabbables[i] as HTMLElement;
 						if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
-							lowestTabIndexElement = tabbable;
+							if (tabbable.tabIndex >= 0) {
+								lowestTabIndexElement = tabbable;
+							}
 						}
 					}
 
