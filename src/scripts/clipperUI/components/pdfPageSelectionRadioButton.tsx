@@ -8,7 +8,7 @@ import {StringUtils} from "../../stringUtils";
 import {OperationResult} from "../../operationResult";
 import {ComponentBase} from "../componentBase";
 
-export interface radioButtonGroup {
+export interface RadioButtonGroup {
 	role?: string;
 	isAriaSet?: boolean;
 	innerElements: any[];
@@ -25,7 +25,7 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 		}
 	}
 
-	getRadioButtonGroups(): radioButtonGroup[] {
+	getRadioButtonGroups(): RadioButtonGroup[] {
 		return [this.getRadioButtons()];
 	}
 
@@ -74,7 +74,7 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 		return Localization.getLocalizedString("WebClipper.Popover.PdfInvalidPageRange").replace("{0}", parsePageRangeOperation.result as string);
 	}
 
-	getRadioButtons(): radioButtonGroup {
+	getRadioButtons(): RadioButtonGroup {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
 		let selectedTabIndex = 60;
