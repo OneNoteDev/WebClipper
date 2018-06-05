@@ -1,6 +1,14 @@
 import {Constants} from "../constants";
 import {Clipper} from "./frontEndGlobals";
 
+export interface EnableInvokeParams {
+	callback?: Function;
+	tabIndex?: number;
+	args?: any;
+	idOverride?: string;
+	setNameForArrowKeyNav?: string;
+}
+
 export abstract class ComponentBase<TState, TProps> {
 	public state: TState;
 	public props: TProps;
@@ -67,10 +75,10 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Example use:
 	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
 	 */
-	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, setNameForArrowKeyNav: string = undefined) {
+	public enableInvoke({callback = undefined, tabIndex = 0, args = undefined, idOverride = undefined, setNameForArrowKeyNav = undefined}: EnableInvokeParams) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
-		if (handleMethod) {
-			handleMethod = handleMethod.bind(this, args);
+		if (callback) {
+			callback = callback.bind(this, args);
 		}
 
 		return {
@@ -83,8 +91,8 @@ export abstract class ComponentBase<TState, TProps> {
 
 				Clipper.logger.logClickEvent(id);
 
-				if (handleMethod) {
-					handleMethod(e);
+				if (callback) {
+					callback(e);
 				}
 			},
 			onkeyup: (e: KeyboardEvent) => {
@@ -98,8 +106,8 @@ export abstract class ComponentBase<TState, TProps> {
 
 						Clipper.logger.logClickEvent(id);
 
-						if (handleMethod) {
-							handleMethod(e);
+						if (callback) {
+							callback(e);
 						}
 					}
 				} else if (e.which === Constants.KeyCodes.tab) {

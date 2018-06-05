@@ -2,7 +2,6 @@ import {BrowserUtils} from "../../browserUtils";
 import {ClientType} from "../../clientType";
 import {ClipperUrls} from "../../clipperUrls";
 import {Constants} from "../../constants";
-import {AuthType} from "../../userInfo";
 
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 
@@ -76,14 +75,14 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 				<div>
 					<div className="footerButtonsLeft confineText">
-						<a id={Constants.Ids.feedbackButton} {...this.enableInvoke(this.handleFeedbackButton, 80) }>
+						<a id={Constants.Ids.feedbackButton} {...this.enableInvoke({callback: this.handleFeedbackButton, tabIndex: 80})}>
 							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")}/>
 							<span>{Localization.getLocalizedString("WebClipper.Action.Feedback") }</span>
 						</a>
 					</div>
 					{showUserInfo
 						? (<div className="footerButtonsRight">
-							<a id={Constants.Ids.currentUserControl} {...this.enableInvoke(this.userControlHandler, 81)} aria-expanded={this.state.userSettingsOpened}>
+							<a id={Constants.Ids.currentUserControl} {...this.enableInvoke({callback: this.userControlHandler, tabIndex: 81})} aria-expanded={this.state.userSettingsOpened}>
 									<img id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 									<div id={Constants.Ids.currentUserDetails}>
 									{
@@ -109,7 +108,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 							<div className="userDetails confineText">
 								<label id={Constants.Ids.currentUserEmail}>{this.props.clipperState.userResult.data.user.emailAddress}</label>
 								<a id={Constants.Ids.signOutButton} className="userActionButton"
-									{...this.enableInvoke(this.handleSignOutButton, 82) }>
+									{...this.enableInvoke({callback: this.handleSignOutButton, tabIndex: 82})}>
 									{Localization.getLocalizedString("WebClipper.Action.SignOut")}
 								</a>
 							</div>

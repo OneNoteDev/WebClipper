@@ -7,11 +7,9 @@ import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
 
-import {ClipMode} from "../clipMode";
 import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {Clipper} from "../frontEndGlobals";
-import {Status} from "../status";
 
 import {SpriteAnimation} from "../components/spriteAnimation";
 
@@ -38,7 +36,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 						{Localization.getLocalizedString("WebClipper.Label.ClipSuccessful")}
 					</span>
 				</div>
-				<a id={Constants.Ids.launchOneNoteButton} {...this.enableInvoke(this.onLaunchOneNoteButton, 70) }>
+				<a id={Constants.Ids.launchOneNoteButton} {...this.enableInvoke({callback: this.onLaunchOneNoteButton, tabIndex: 70})}>
 					<div className="wideButtonContainer">
 						<span className="wideButtonFont wideActionButton"
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
