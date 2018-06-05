@@ -38,7 +38,7 @@ class PreviewViewerRegionHeaderClass extends PreviewViewerHeaderComponentBase<{}
 			innerElements: [
 				<button
 					id={Constants.Ids.addAnotherRegionButton}
-					{...this.enableInvoke({handleMethod: this.addAnotherRegion.bind(this), tabIndex: 100}) }
+					{...this.enableInvoke({handleMethod: this.addAnotherRegion.bind(this), tabIndex: 100})}
 					className={HeaderClasses.Button.controlButton}
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }
 					type="button">

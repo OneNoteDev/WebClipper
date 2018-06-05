@@ -49,7 +49,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 				<div id={Constants.Ids.previewTitleContainer}>
 					<pre className={Constants.Classes.textAreaInputMirror}><span>{contentTitle}</span><br/></pre>
 					<textarea
-						{...this.enableInvoke({tabIndex:200})}
+						{...this.enableInvoke({tabIndex: 200})}
 						rows="1"
 						id={Constants.Ids.previewHeaderInput}
 						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}

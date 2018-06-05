@@ -75,7 +75,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 				<div>
 					<div className="footerButtonsLeft confineText">
-						<a id={Constants.Ids.feedbackButton} {...this.enableInvoke({handleMethod: this.handleFeedbackButton, tabIndex: 80}) }>
+						<a id={Constants.Ids.feedbackButton} {...this.enableInvoke({handleMethod: this.handleFeedbackButton, tabIndex: 80})}>
 							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")}/>
 							<span>{Localization.getLocalizedString("WebClipper.Action.Feedback") }</span>
 						</a>
