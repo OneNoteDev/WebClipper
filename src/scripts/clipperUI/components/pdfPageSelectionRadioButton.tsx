@@ -86,30 +86,30 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 		let invalidClassName = pdfPreviewInfo.shouldShowPopover ? "invalid" : "";
 
 		return(
-		<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control"
-		{...this.enableInvoke({callback: this.onSelectionChange, tabIndex: !pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, args: false, setNameForArrowKeyNav: Constants.AriaSet.pdfPageSelection})}>
-				<div className={"pdf-indicator pdf-radio-indicator"}>
-					{!pdfPreviewInfo.allPages ?
-						<div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
-				</div>
-				<input
-					type="text"
-					id={Constants.Ids.rangeInput}
-					className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
-					placeholder="e.g. 1-5, 7, 9-12"
-					onFocus={this.onTextInputFocus.bind(this)}
-					value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke({callback: this.onSelectionChange, args: false})}>
-				</input>
-				{pdfPreviewInfo.shouldShowPopover ?
-					<Popover
-						referenceElementId={Constants.Ids.rangeInput}
-						placement="bottom"
-						parentId={Constants.Ids.mainController}
-						content={this.getErrorMessageForInvalidPageRange()}
-						classNames={[Constants.Classes.popover]}
-						arrowClassNames={[Constants.Classes.popoverArrow]}
-						modifiersIgnored={["flip"]}
-						removeOnDestroy={true}/> : undefined}
+			<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control"
+			{...this.enableInvoke({callback: this.onSelectionChange, tabIndex: !pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, args: false, setNameForArrowKeyNav: Constants.AriaSet.pdfPageSelection})}>
+					<div className={"pdf-indicator pdf-radio-indicator"}>
+						{!pdfPreviewInfo.allPages ?
+							<div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
+					</div>
+					<input
+						type="text"
+						id={Constants.Ids.rangeInput}
+						className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
+						placeholder="e.g. 1-5, 7, 9-12"
+						onFocus={this.onTextInputFocus.bind(this)}
+						value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke({callback: this.onSelectionChange, args: false})}>
+					</input>
+					{pdfPreviewInfo.shouldShowPopover ?
+						<Popover
+							referenceElementId={Constants.Ids.rangeInput}
+							placement="bottom"
+							parentId={Constants.Ids.mainController}
+							content={this.getErrorMessageForInvalidPageRange()}
+							classNames={[Constants.Classes.popover]}
+							arrowClassNames={[Constants.Classes.popoverArrow]}
+							modifiersIgnored={["flip"]}
+							removeOnDestroy={true}/> : undefined}
 			</div>
 		);
 	}
