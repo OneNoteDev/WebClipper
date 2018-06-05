@@ -334,6 +334,8 @@ export module Constants {
 		export var down = 40;
 		export var up = 38;
 		export var space = 32;
+		export var home = 36;
+		export var end = 35;
 	}
 
 	export module StringKeyCodes {
