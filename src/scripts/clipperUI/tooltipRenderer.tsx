@@ -3,10 +3,7 @@ import {Constants} from "../constants";
 import {ExtensionUtils} from "../extensions/extensionUtils";
 import {InvokeSource} from "../extensions/invokeSource";
 
-import {ChangeLog} from "../versioning/changeLog";
-
 import {Localization} from "../localization/localization";
-import {Rtl} from "../localization/rtl";
 
 import {Clipper} from "./frontEndGlobals";
 import {ComponentBase} from "./componentBase";
@@ -48,7 +45,7 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 			<div>
 				<ChangeLogPanel updates={whatsNewProps.updates} />
 				<div className="wideButtonContainer changelog-button">
-					<a id={Constants.Ids.proceedToWebClipperButton} {...this.enableInvoke(handleProceedToWebClipperButton, 10) }>
+					<a id={Constants.Ids.proceedToWebClipperButton} {...this.enableInvoke({callback: handleProceedToWebClipperButton, tabIndex: 10})}>
 						<span className="wideButtonFont wideActionButton"
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold) }>
 							{Localization.getLocalizedString("WebClipper.Label.ProceedToWebClipperFun") }
