@@ -14,7 +14,7 @@ import * as _ from "lodash";
 
 interface PdfClipOptionsState {
 	moreOptionsOpened?: boolean;
-};
+}
 
 class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStateProp> {
 
@@ -63,7 +63,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 	getDistributePagesCheckbox(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
-			<div className="pdf-control" id={Constants.Ids.checkboxToDistributePages} {...this.enableInvoke(this.onDistributionChange, 65, !pdfPreviewInfo.shouldDistributePages) }>
+			<div className="pdf-control" id={Constants.Ids.checkboxToDistributePages} {...this.enableInvoke({handleMethod: this.onDistributionChange, tabIndex: 65, args: !pdfPreviewInfo.shouldDistributePages}) }>
 				<div className="pdf-indicator pdf-checkbox-indicator"></div>
 				{pdfPreviewInfo.shouldDistributePages ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
 				<div className="pdf-label-margin">
@@ -103,7 +103,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		const disabledClassName = enabled ? "" : " disabled";
 
 		return (
-			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke(enabled ? this.onCheckboxChange : undefined, 66, !pdfPreviewInfo.shouldAttachPdf) }>
+			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke({handleMethod: enabled ? this.onCheckboxChange : undefined, tabIndex: 66, args: !pdfPreviewInfo.shouldAttachPdf}) }>
 				<div className={"pdf-indicator pdf-checkbox-indicator" + disabledClassName}></div>
 				{pdfPreviewInfo.shouldAttachPdf ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
 				<div className="pdf-label-margin">
@@ -134,7 +134,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 			<div className="clipOptionsContainer">
 				<div className="clipOptionsTitleContainer">
 					<span className="clipOptionsTitle">{Localization.getLocalizedString("WebClipper.Label.PdfOptions")}</span>
-					<span className="moreClipOptions" id={Constants.Ids.moreClipOptions} {...this.enableInvoke(this.onMoreClicked, 60) }>
+					<span className="moreClipOptions" id={Constants.Ids.moreClipOptions} {...this.enableInvoke({handleMethod: this.onMoreClicked, tabIndex: 60}) }>
 						{expandOptionLabel}<img className="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 					</span>
 				</div>

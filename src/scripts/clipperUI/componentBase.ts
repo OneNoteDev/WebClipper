@@ -1,6 +1,14 @@
 import {Constants} from "../constants";
 import {Clipper} from "./frontEndGlobals";
 
+export interface enableInvokeParams {
+	handleMethod?: Function;
+	tabIndex?: number;
+	args?: any;
+	idOverride?: string;
+	setNameForArrowKeyNav?: string;
+}
+
 export abstract class ComponentBase<TState, TProps> {
 	public state: TState;
 	public props: TProps;
@@ -67,7 +75,7 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Example use:
 	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
 	 */
-	public enableInvoke(handleMethod: Function, tabIndex = 0, args?: any, idOverride: string = undefined, setNameForArrowKeyNav: string = undefined) {
+	public enableInvoke({ handleMethod = undefined, tabIndex = 0, args = undefined, idOverride = undefined, setNameForArrowKeyNav = undefined}: enableInvokeParams) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (handleMethod) {
 			handleMethod = handleMethod.bind(this, args);
