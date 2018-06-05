@@ -2,7 +2,6 @@ import * as Log from "../../logging/log";
 
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 
-
 import {ComponentBase} from "../componentBase";
 
 export interface RegionSelectionProps {
@@ -23,7 +22,7 @@ class RegionSelectionClass extends ComponentBase<{}, RegionSelectionProps> {
 		return (
 			this.props.onRemove
 				? <a className="region-selection-remove-button"
-					{...this.enableInvoke({handleMethod: this.buttonHandler, tabIndex: 300, idOverride: Log.Click.Label.regionSelectionRemoveButton})}>
+					{...this.enableInvoke({callback: this.buttonHandler, tabIndex: 300, idOverride: Log.Click.Label.regionSelectionRemoveButton})}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/delete_button.png") } /></a>
 				: undefined
 		);

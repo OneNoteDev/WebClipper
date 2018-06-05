@@ -45,7 +45,7 @@ class TooltipRendererClass extends ComponentBase<TooltipRendererState, TooltipRe
 			<div>
 				<ChangeLogPanel updates={whatsNewProps.updates} />
 				<div className="wideButtonContainer changelog-button">
-					<a id={Constants.Ids.proceedToWebClipperButton} {...this.enableInvoke({handleMethod: handleProceedToWebClipperButton, tabIndex: 10})}>
+					<a id={Constants.Ids.proceedToWebClipperButton} {...this.enableInvoke({callback: handleProceedToWebClipperButton, tabIndex: 10})}>
 						<span className="wideButtonFont wideActionButton"
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold) }>
 							{Localization.getLocalizedString("WebClipper.Label.ProceedToWebClipperFun") }
