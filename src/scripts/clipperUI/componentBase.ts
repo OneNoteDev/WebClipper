@@ -142,12 +142,12 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	private static focusOnButton(setNameForArrowKeyNav: string, stoppingPoint: number) {
+	private static focusOnButton(setNameForArrowKeyNav: string, posInSet: number) {
 		const buttons = document.querySelectorAll("[data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
 		for (let i = 0; i < buttons.length; i++) {
 			let selectable = buttons[i] as HTMLElement;
 			let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
-			if (ariaIntForEach === stoppingPoint) {
+			if (ariaIntForEach === posInSet) {
 				selectable.style.outlineStyle = "";
 				selectable.focus();
 				return;
