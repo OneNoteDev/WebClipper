@@ -100,6 +100,8 @@ export abstract class ComponentBase<TState, TProps> {
 
 				ComponentBase.handleTabKey(e, element);
 
+				ComponentBase.handleHomeAndEndButtons(e, ariaSetName, element);
+
 				if (element.hasAttribute("data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav)) {
 					let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
 
@@ -136,8 +138,6 @@ export abstract class ComponentBase<TState, TProps> {
 							ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
 						}
 					}
-
-					ComponentBase.handleHomeAndEndButtons(e, ariaSetName, element);
 				}
 			}
 			,
