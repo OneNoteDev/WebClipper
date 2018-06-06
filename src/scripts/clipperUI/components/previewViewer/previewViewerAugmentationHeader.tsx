@@ -58,7 +58,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif")}
 					aria-checked={!this.props.serif + ""}
 					id={Constants.Ids.sansSerif}
-					{...this.enableInvoke({callback: this.props.changeFontFamily, tabIndex: !this.props.serif ? tabIndexOn : tabIndexOff, args: false, setNameForArrowKeyNav: Constants.AriaSet.serifGroupSet})}
+					{...this.enableInvoke({callback: this.props.changeFontFamily, tabIndex: !this.props.serif ? tabIndexOn : tabIndexOff, args: false, horizontalArrowKeyNavSet: Constants.AriaSet.serifGroupSet})}
 					className={!this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
 					role="radio">
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SansSerifButtonLabel") }
@@ -67,7 +67,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif")}
 					aria-checked={this.props.serif + ""}
 					id={Constants.Ids.serif}
-					{...this.enableInvoke({callback: this.props.changeFontFamily, tabIndex: this.props.serif ? tabIndexOn : tabIndexOff, args: true, setNameForArrowKeyNav: Constants.AriaSet.serifGroupSet})}
+					{...this.enableInvoke({callback: this.props.changeFontFamily, tabIndex: this.props.serif ? tabIndexOn : tabIndexOff, args: true, horizontalArrowKeyNavSet: Constants.AriaSet.serifGroupSet})}
 					className={this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
 					role="radio">
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SerifButtonLabel") }

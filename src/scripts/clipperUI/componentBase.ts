@@ -6,7 +6,8 @@ export interface EnableInvokeParams {
 	tabIndex?: number;
 	args?: any;
 	idOverride?: string;
-	setNameForArrowKeyNav?: string;
+	verticalArrowKeyNavSet?: string;
+	horizontalArrowKeyNavSet?: string;
 }
 
 export abstract class ComponentBase<TState, TProps> {
@@ -75,10 +76,18 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Example use:
 	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
 	 */
-	public enableInvoke({callback = undefined, tabIndex = 0, args = undefined, idOverride = undefined, setNameForArrowKeyNav = undefined}: EnableInvokeParams) {
+	public enableInvoke({callback = undefined, tabIndex = 0, args = undefined, idOverride = undefined, verticalArrowKeyNavSet = undefined, horizontalArrowKeyNavSet = undefined}: EnableInvokeParams) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (callback) {
 			callback = callback.bind(this, args);
+		}
+
+		let ariaSet = undefined;
+		if (verticalArrowKeyNavSet) {
+			ariaSet = verticalArrowKeyNavSet;
+		}
+		if (horizontalArrowKeyNavSet) {
+			ariaSet = horizontalArrowKeyNavSet;
 		}
 
 		return {
@@ -115,42 +124,67 @@ export abstract class ComponentBase<TState, TProps> {
 					element.style.outlineStyle = "";
 				}
 
-				if (!setNameForArrowKeyNav) {
+				if (!verticalArrowKeyNavSet && !horizontalArrowKeyNavSet) {
 					return;
-				} else if (element.hasAttribute("data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav)) {
-					let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
-					if (e.which === Constants.KeyCodes.up) {
-						if (posInSet === 1) {
-							return;
+				} else {
+					if (element.hasAttribute("data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav)) {
+						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
+						if (e.which === Constants.KeyCodes.home) {
+							let firstInSet = 1;
+							ComponentBase.focusOnButton(verticalArrowKeyNavSet, firstInSet, e);
+						} else if (e.which === Constants.KeyCodes.end) {
+							let lastInSet = parseInt(element.getAttribute("aria-setsize"), 10);
+							ComponentBase.focusOnButton(verticalArrowKeyNavSet, lastInSet, e);
 						}
-						let nextPosInSet = posInSet - 1;
-						ComponentBase.focusOnButton(setNameForArrowKeyNav, nextPosInSet);
-					} else if (e.which === Constants.KeyCodes.down) {
-						let setSize = parseInt(element.getAttribute("aria-setsize"), 10);
-						if (posInSet === setSize) {
-							return;
+
+						if (verticalArrowKeyNavSet) {
+							if (e.which === Constants.KeyCodes.up) {
+								if (posInSet === 1) {
+									return;
+								}
+								let nextPosInSet = posInSet - 1;
+								ComponentBase.focusOnButton(verticalArrowKeyNavSet, nextPosInSet, e);
+							} else if (e.which === Constants.KeyCodes.down) {
+								let setSize = parseInt(element.getAttribute("aria-setsize"), 10);
+								if (posInSet === setSize) {
+									return;
+								}
+								let nextPosInSet = posInSet + 1;
+								ComponentBase.focusOnButton(verticalArrowKeyNavSet, nextPosInSet, e);
+							}
 						}
-						let nextPosInSet = posInSet + 1;
-						ComponentBase.focusOnButton(setNameForArrowKeyNav, nextPosInSet);
-					} else if (e.which === Constants.KeyCodes.home) {
-						let firstInSet = 1;
-						ComponentBase.focusOnButton(setNameForArrowKeyNav, firstInSet);
-					} else if (e.which === Constants.KeyCodes.end) {
-						let lastInSet = parseInt(element.getAttribute("aria-setsize"), 10);
-						ComponentBase.focusOnButton(setNameForArrowKeyNav, lastInSet);
+
+						if (horizontalArrowKeyNavSet) {
+							if (e.which === Constants.KeyCodes.left) {
+								if (posInSet === 1) {
+									return;
+								}
+								let nextPosInSet = posInSet - 1;
+								ComponentBase.focusOnButton(horizontalArrowKeyNavSet, nextPosInSet, e);
+							} else if (e.which === Constants.KeyCodes.right) {
+								let setSize = parseInt(element.getAttribute("aria-setsize"), 10);
+								if (posInSet === setSize) {
+									return;
+								}
+								let nextPosInSet = posInSet + 1;
+								ComponentBase.focusOnButton(horizontalArrowKeyNavSet, nextPosInSet, e);
+							}
+						}
 					}
 				}
-			},
+			}
+			,
 			onmousedown: (e: MouseEvent) => {
 				let element = e.currentTarget as HTMLElement;
 				element.style.outlineStyle = "none";
 			},
 			tabIndex: tabIndex,
-			"data-setnameforarrowkeynav": setNameForArrowKeyNav
+			"data-setnameforarrowkeynav": ariaSet
 		};
 	}
 
-	private static focusOnButton(setNameForArrowKeyNav: string, posInSet: number) {
+	private static focusOnButton(setNameForArrowKeyNav: string, posInSet: number, e: KeyboardEvent) {
+		e.preventDefault();
 		const buttons = document.querySelectorAll("[data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
 		for (let i = 0; i < buttons.length; i++) {
 			let selectable = buttons[i] as HTMLElement;
