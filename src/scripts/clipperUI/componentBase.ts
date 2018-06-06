@@ -6,8 +6,12 @@ export interface EnableInvokeParams {
 	tabIndex?: number;
 	args?: any;
 	idOverride?: string;
-	verticalArrowKeyNavSet?: string;
-	horizontalArrowKeyNavSet?: string;
+	ariaNavigationSet?: AriaNavSet;
+}
+
+export interface AriaNavSet {
+	direction: string;
+	name: string;
 }
 
 export abstract class ComponentBase<TState, TProps> {
@@ -66,7 +70,6 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 		};
 	}
-
 	/*
 	 * Helper which handles tabIndex, clicks, and keyboard navigation.
 	 *
@@ -76,18 +79,15 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Example use:
 	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
 	 */
-	public enableInvoke({callback = undefined, tabIndex = 0, args = undefined, idOverride = undefined, verticalArrowKeyNavSet = undefined, horizontalArrowKeyNavSet = undefined}: EnableInvokeParams) {
+	public enableInvoke({callback = undefined, tabIndex = 0, args = undefined, idOverride = undefined, ariaNavigationSet = undefined}: EnableInvokeParams) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (callback) {
 			callback = callback.bind(this, args);
 		}
 
 		let ariaSet = undefined;
-		if (verticalArrowKeyNavSet) {
-			ariaSet = verticalArrowKeyNavSet;
-		}
-		if (horizontalArrowKeyNavSet) {
-			ariaSet = horizontalArrowKeyNavSet;
+		if (ariaNavigationSet) {
+			ariaSet = ariaNavigationSet.name;
 		}
 
 		return {
@@ -124,52 +124,49 @@ export abstract class ComponentBase<TState, TProps> {
 					element.style.outlineStyle = "";
 				}
 
-				if (!verticalArrowKeyNavSet && !horizontalArrowKeyNavSet) {
+				if (!ariaNavigationSet) {
 					return;
 				} else {
+					e.preventDefault();
+					let setName = ariaNavigationSet.name;
 					if (element.hasAttribute("data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav)) {
 						let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
-						if (e.which === Constants.KeyCodes.home) {
-							let firstInSet = 1;
-							ComponentBase.focusOnButton(verticalArrowKeyNavSet, firstInSet, e);
-						} else if (e.which === Constants.KeyCodes.end) {
-							let lastInSet = parseInt(element.getAttribute("aria-setsize"), 10);
-							ComponentBase.focusOnButton(verticalArrowKeyNavSet, lastInSet, e);
-						}
 
-						if (verticalArrowKeyNavSet) {
+						if (ariaNavigationSet.direction === Constants.AriaNavigation.vertical) {
 							if (e.which === Constants.KeyCodes.up) {
 								if (posInSet === 1) {
 									return;
 								}
 								let nextPosInSet = posInSet - 1;
-								ComponentBase.focusOnButton(verticalArrowKeyNavSet, nextPosInSet, e);
+								ComponentBase.focusOnButton(setName, nextPosInSet);
 							} else if (e.which === Constants.KeyCodes.down) {
 								let setSize = parseInt(element.getAttribute("aria-setsize"), 10);
 								if (posInSet === setSize) {
 									return;
 								}
 								let nextPosInSet = posInSet + 1;
-								ComponentBase.focusOnButton(verticalArrowKeyNavSet, nextPosInSet, e);
+								ComponentBase.focusOnButton(setName, nextPosInSet);
 							}
 						}
 
-						if (horizontalArrowKeyNavSet) {
+						if (ariaNavigationSet.direction === Constants.AriaNavigation.horizontal ) {
 							if (e.which === Constants.KeyCodes.left) {
 								if (posInSet === 1) {
 									return;
 								}
 								let nextPosInSet = posInSet - 1;
-								ComponentBase.focusOnButton(horizontalArrowKeyNavSet, nextPosInSet, e);
+								ComponentBase.focusOnButton(setName, nextPosInSet);
 							} else if (e.which === Constants.KeyCodes.right) {
 								let setSize = parseInt(element.getAttribute("aria-setsize"), 10);
 								if (posInSet === setSize) {
 									return;
 								}
 								let nextPosInSet = posInSet + 1;
-								ComponentBase.focusOnButton(horizontalArrowKeyNavSet, nextPosInSet, e);
+								ComponentBase.focusOnButton(setName, nextPosInSet);
 							}
 						}
+
+						this.handleHomeAndEndButtons(e, setName, element);
 					}
 				}
 			}
@@ -183,8 +180,17 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	private static focusOnButton(setNameForArrowKeyNav: string, posInSet: number, e: KeyboardEvent) {
-		e.preventDefault();
+	private handleHomeAndEndButtons(e: KeyboardEvent, setName, element) {
+		if (e.which === Constants.KeyCodes.home) {
+			let firstInSet = 1;
+			ComponentBase.focusOnButton(setName, firstInSet);
+		} else if (e.which === Constants.KeyCodes.end) {
+			let lastInSet = parseInt(element.getAttribute("aria-setsize"), 10);
+			ComponentBase.focusOnButton(setName, lastInSet);
+		}
+	}
+
+	private static focusOnButton(setNameForArrowKeyNav: string, posInSet: number) {
 		const buttons = document.querySelectorAll("[data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
 		for (let i = 0; i < buttons.length; i++) {
 			let selectable = buttons[i] as HTMLElement;

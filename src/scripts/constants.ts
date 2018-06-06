@@ -447,4 +447,9 @@ export module Constants {
 		export var pdfPageSelection = "pdfPageSelection";
 		export var serifGroupSet = "serifGroupSet";
 	}
+
+	export module AriaNavigation {
+		export var horizontal = "horizontal";
+		export var vertical = "vertical";
+	}
 }
