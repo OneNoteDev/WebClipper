@@ -96,23 +96,9 @@ export abstract class ComponentBase<TState, TProps> {
 				let element = e.currentTarget as HTMLElement;
 				e.preventDefault();
 
-				if (e.which === Constants.KeyCodes.enter || e.which === Constants.KeyCodes.space) {
-					// Hitting Enter on <a> tags that contains an href automatically fire the click event, so don't do it again
-					if (!(element.tagName === "A" && element.hasAttribute("href"))) {
-						// Intentionally sending click event before handling the method
-						// TODO replace this comment with a test that validates the call order is correct
-						let id = element.id;
+				ComponentBase.handleEnterAndSpaceKey(e, element, callback);
 
-						Clipper.logger.logClickEvent(id);
-
-						if (callback) {
-							callback(e);
-						}
-					}
-				} else if (e.which === Constants.KeyCodes.tab) {
-					// Since they are using the keyboard, revert to the default value of the outline so it is visible
-					element.style.outlineStyle = "";
-				}
+				ComponentBase.handleTabKey(e, element);
 
 				if (element.hasAttribute("data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav)) {
 					let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
@@ -165,14 +151,14 @@ export abstract class ComponentBase<TState, TProps> {
 	}
 
 	/*
-		 * Helper which handles tabIndex, clicks, and keyboard navigation.
-		 *
-		 * Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
-		 * (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
-		 *
-		 * Example use:
-		 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
-		 */
+				 * Helper which handles tabIndex, clicks, and keyboard navigation.
+				 *
+				 * Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
+				 * (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
+				 *
+				 * Example use:
+				 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
+				 */
 	public enableInvoke({callback = undefined, tabIndex = 0, args = undefined, idOverride = undefined}: EnableInvokeParams) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (callback) {
@@ -185,23 +171,10 @@ export abstract class ComponentBase<TState, TProps> {
 			},
 			onkeyup: (e: KeyboardEvent) => {
 				let element = e.currentTarget as HTMLElement;
-				if (e.which === Constants.KeyCodes.enter || e.which === Constants.KeyCodes.space) {
-					// Hitting Enter on <a> tags that contains an href automatically fire the click event, so don't do it again
-					if (!(element.tagName === "A" && element.hasAttribute("href"))) {
-						// Intentionally sending click event before handling the method
-						// TODO replace this comment with a test that validates the call order is correct
-						let id = element.id;
 
-						Clipper.logger.logClickEvent(id);
+				ComponentBase.handleEnterAndSpaceKey(e, element, callback);
 
-						if (callback) {
-							callback(e);
-						}
-					}
-				} else if (e.which === Constants.KeyCodes.tab) {
-					// Since they are using the keyboard, revert to the default value of the outline so it is visible
-					element.style.outlineStyle = "";
-				}
+				ComponentBase.handleTabKey(e, element);
 			}
 			,
 			onmousedown: (e: MouseEvent) => {
@@ -210,6 +183,30 @@ export abstract class ComponentBase<TState, TProps> {
 			},
 			tabIndex: tabIndex,
 		};
+	}
+
+	private static handleEnterAndSpaceKey(e: KeyboardEvent, element, callback: Function) {
+		if (e.which === Constants.KeyCodes.enter || e.which === Constants.KeyCodes.space) {
+			// Hitting Enter on <a> tags that contains an href automatically fire the click event, so don't do it again
+			if (!(element.tagName === "A" && element.hasAttribute("href"))) {
+				// Intentionally sending click event before handling the method
+				// TODO replace this comment with a test that validates the call order is correct
+				let id = element.id;
+
+				Clipper.logger.logClickEvent(id);
+
+				if (callback) {
+					callback(e);
+				}
+			}
+		}
+	}
+
+	private static handleTabKey(e: KeyboardEvent, element) {
+		if (e.which === Constants.KeyCodes.tab) {
+			// Since they are using the keyboard, revert to the default value of the outline so it is visible
+			element.style.outlineStyle = "";
+		}
 	}
 
 	private static handleOnClick(e: MouseEvent, idOverride: string, callback: Function) {
