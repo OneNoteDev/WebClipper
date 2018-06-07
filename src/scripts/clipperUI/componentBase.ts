@@ -99,26 +99,23 @@ export abstract class ComponentBase<TState, TProps> {
 				ComponentBase.focusOnButton(ariaSetName, lastInSet);
 			}
 
-			if (currentTargetElement.hasAttribute("data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav)) {
-				let posInSet = parseInt(currentTargetElement.getAttribute("aria-posinset"), 10);
-				let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
-				let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
+			let posInSet = parseInt(currentTargetElement.getAttribute("aria-posinset"), 10);
+			let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
+			let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
 
-				if (e.which === increaseButton) {
-					if (posInSet === 1) {
-						return;
-					}
-					let nextPosInSet = posInSet - 1;
-					ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
-				} else if (e.which === decreaseButton) {
-					console.log("in decreaseButton");
-					let setSize = parseInt(currentTargetElement.getAttribute("aria-setsize"), 10);
-					if (posInSet === setSize) {
-						return;
-					}
-					let nextPosInSet = posInSet + 1;
-					ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
+			if (e.which === increaseButton) {
+				if (posInSet === 1) {
+					return;
 				}
+				let nextPosInSet = posInSet - 1;
+				ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
+			} else if (e.which === decreaseButton) {
+				let setSize = parseInt(currentTargetElement.getAttribute("aria-setsize"), 10);
+				if (posInSet === setSize) {
+					return;
+				}
+				let nextPosInSet = posInSet + 1;
+				ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
 			}
 
 		};
@@ -159,8 +156,7 @@ export abstract class ComponentBase<TState, TProps> {
 					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
 				}
-			}
-			,
+			},
 			onmousedown: (e: MouseEvent) => {
 				let element = e.currentTarget as HTMLElement;
 				element.style.outlineStyle = "none";
@@ -170,15 +166,15 @@ export abstract class ComponentBase<TState, TProps> {
 	}
 
 	private static triggerSelection(element: HTMLElement, idOverride: string, callback: Function, e: Event) {
-			// Intentionally sending click event before handling the method
-			// TODO replace this comment with a test that validates the call order is correct
-			let id = idOverride ? idOverride : element.id;
+		// Intentionally sending click event before handling the method
+		// TODO replace this comment with a test that validates the call order is correct
+		let id = idOverride ? idOverride : element.id;
 
-			Clipper.logger.logClickEvent(id);
+		Clipper.logger.logClickEvent(id);
 
-			if (callback) {
-				callback(e);
-			}
+		if (callback) {
+			callback(e);
+		}
 	}
 
 	private static focusOnButton(setNameForArrowKeyNav: string, posInSet: number) {
