@@ -120,7 +120,7 @@ export abstract class ComponentBase<TState, TProps> {
 
 		};
 
-		invokeAttributes["data-setNameForArrowKeyNav"] = ariaSetName;
+		invokeAttributes["data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav] = ariaSetName;
 
 		return invokeAttributes;
 	}
