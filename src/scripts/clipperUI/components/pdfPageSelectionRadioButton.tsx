@@ -7,6 +7,7 @@ import * as _ from "lodash";
 import {StringUtils} from "../../stringUtils";
 import {OperationResult} from "../../operationResult";
 import {ComponentBase} from "../componentBase";
+import {AriaNavDirection} from "../AriaNavDirection";
 
 export interface RadioButtonGroup {
 	role?: string;
@@ -84,7 +85,7 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 			role: "radiogroup",
 			isAriaSet: true,
 			innerElements: [
-				<div role="radio" id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableAriaInvoke({callback: this.onSelectionChange, tabIndex: pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, args: true, ariaSetName: Constants.AriaSet.pdfPageSelection, ariaSetDirection: Constants.AriaNavigation.vertical})}>
+				<div role="radio" id={Constants.Ids.radioAllPagesLabel} className="pdf-control" {...this.enableAriaInvoke({callback: this.onSelectionChange, tabIndex: pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, args: true, ariaSetName: Constants.AriaSet.pdfPageSelection, ariaSetDirection: AriaNavDirection.Vertical})}>
 					<div className={"pdf-indicator pdf-radio-indicator"}>
 						{pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
 					</div>
@@ -93,7 +94,7 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 						className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
 					</div>
 				</div>,
-				<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableAriaInvoke({callback: this.onSelectionChange, tabIndex: !pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, args: false, ariaSetName: Constants.AriaSet.pdfPageSelection, ariaSetDirection: Constants.AriaNavigation.vertical})}>
+				<div id={Constants.Ids.radioPageRangeLabel} className="pdf-control" {...this.enableAriaInvoke({callback: this.onSelectionChange, tabIndex: !pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, args: false, ariaSetName: Constants.AriaSet.pdfPageSelection, ariaSetDirection: AriaNavDirection.Vertical})}>
 					<div className={"pdf-indicator pdf-radio-indicator"}>
 						{!pdfPreviewInfo.allPages ?
 							<div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
