@@ -4,7 +4,7 @@ import {AriaNavDirection} from "./AriaNavDirection";
 
 export interface EnableInvokeParams {
 	callback?: Function;
-	tabIndex?: number;
+	tabIndex: number;
 	args?: any;
 	idOverride?: string;
 }
@@ -77,59 +77,55 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
 	 * (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
 	 */
-	enableAriaInvoke({callback = undefined, tabIndex = 0, args = undefined, idOverride = undefined, ariaSetName = undefined, ariaSetDirection = undefined}: EnableAriaParams) {
+	enableAriaInvoke({callback, tabIndex, args, idOverride, ariaSetName, ariaSetDirection}: EnableAriaParams) {
 		if (callback) {
 			callback = callback.bind(this, args);
 		}
 
-		return {
-			onclick: (e: MouseEvent) => {
-				ComponentBase.handleOnClick(e, idOverride, callback);
-			},
-			onkeyup: (e: KeyboardEvent) => {
-				let element = e.currentTarget as HTMLElement;
-				e.preventDefault();
-				ComponentBase.handleEnterAndSpaceKey(e, element, callback);
-				ComponentBase.handleTabKey(e, element);
-				ComponentBase.handleHomeAndEndButtons(e, ariaSetName, element);
+		let invokeAttributes = this.enableInvoke({callback: callback, tabIndex: tabIndex, args: args, idOverride: idOverride});
+		let oldKeyUp = invokeAttributes.onkeyup;
 
-				if (element.hasAttribute("data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav)) {
-					let posInSet = parseInt(element.getAttribute("aria-posinset"), 10);
-					let increment = undefined;
-					let decrement = undefined;
+		invokeAttributes.onkeyup = (e: KeyboardEvent) => {
+			e.preventDefault();
+			let currentTargetElement = e.currentTarget as HTMLElement;
 
-					if (ariaSetDirection === AriaNavDirection.Vertical) {
-						increment = Constants.KeyCodes.up;
-						decrement = Constants.KeyCodes.down;
-					} else if (ariaSetDirection === AriaNavDirection.Horizontal) {
-						increment = Constants.KeyCodes.left;
-						decrement = Constants.KeyCodes.right;
+			oldKeyUp(e);
+
+			if (e.which === Constants.KeyCodes.home) {
+				let firstInSet = 1;
+				ComponentBase.focusOnButton(ariaSetName, firstInSet);
+			} else if (e.which === Constants.KeyCodes.end) {
+				let lastInSet = parseInt(currentTargetElement.getAttribute("aria-setsize"), 10);
+				ComponentBase.focusOnButton(ariaSetName, lastInSet);
+			}
+
+			if (currentTargetElement.hasAttribute("data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav)) {
+				let posInSet = parseInt(currentTargetElement.getAttribute("aria-posinset"), 10);
+				let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
+				let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
+
+				if (e.which === increaseButton) {
+					if (posInSet === 1) {
+						return;
 					}
-
-					if (e.which === increment) {
-						if (posInSet === 1) {
-							return;
-						}
-						let nextPosInSet = posInSet - 1;
-						ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
-					} else if (e.which === decrement) {
-						let setSize = parseInt(element.getAttribute("aria-setsize"), 10);
-						if (posInSet === setSize) {
-							return;
-						}
-						let nextPosInSet = posInSet + 1;
-						ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
+					let nextPosInSet = posInSet - 1;
+					ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
+				} else if (e.which === decreaseButton) {
+					console.log("in decreaseButton");
+					let setSize = parseInt(currentTargetElement.getAttribute("aria-setsize"), 10);
+					if (posInSet === setSize) {
+						return;
 					}
-
+					let nextPosInSet = posInSet + 1;
+					ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
 				}
-			},
-			onmousedown: (e: MouseEvent) => {
-				let element = e.currentTarget as HTMLElement;
-				element.style.outlineStyle = "none";
-			},
-			tabIndex: tabIndex,
-			"data-setnameforarrowkeynav": ariaSetName
+			}
+
 		};
+
+		invokeAttributes["data-setNameForArrowKeyNav"] = ariaSetName;
+
+		return invokeAttributes;
 	}
 
 	/*
@@ -141,7 +137,7 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Example use:
 	 *      <a id="myCoolButton" {...this.enableInvoke(this.myButtonHandler, 0)}>Click Me</a>
 	 */
-	public enableInvoke({callback = undefined, tabIndex = 0, args = undefined, idOverride = undefined}: EnableInvokeParams) {
+	public enableInvoke({callback, tabIndex, args, idOverride}: EnableInvokeParams) {
 		// Because of the way mithril does the callbacks, we need to rescope it so that "this" points to the class
 		if (callback) {
 			callback = callback.bind(this, args);
@@ -149,12 +145,20 @@ export abstract class ComponentBase<TState, TProps> {
 
 		return {
 			onclick: (e: MouseEvent) => {
-				ComponentBase.handleOnClick(e, idOverride, callback);
+				let element = e.currentTarget as HTMLElement;
+				ComponentBase.triggerSelection(element, idOverride, callback, e);
 			},
 			onkeyup: (e: KeyboardEvent) => {
 				let element = e.currentTarget as HTMLElement;
-				ComponentBase.handleEnterAndSpaceKey(e, element, callback);
-				ComponentBase.handleTabKey(e, element);
+				if (e.which === Constants.KeyCodes.enter || e.which === Constants.KeyCodes.space) {
+					// Hitting Enter on <a> tags that contains an href automatically fire the click event, so don't do it again
+					if (!(element.tagName === "A" && element.hasAttribute("href"))) {
+						ComponentBase.triggerSelection(element, undefined, callback, e);
+					}
+				} else if (e.which === Constants.KeyCodes.tab) {
+					// Since they are using the keyboard, revert to the default value of the outline so it is visible
+					element.style.outlineStyle = "";
+				}
 			}
 			,
 			onmousedown: (e: MouseEvent) => {
@@ -165,52 +169,16 @@ export abstract class ComponentBase<TState, TProps> {
 		};
 	}
 
-	private static handleEnterAndSpaceKey(e: KeyboardEvent, element: HTMLElement, callback: Function) {
-		if (e.which === Constants.KeyCodes.enter || e.which === Constants.KeyCodes.space) {
-			// Hitting Enter on <a> tags that contains an href automatically fire the click event, so don't do it again
-			if (!(element.tagName === "A" && element.hasAttribute("href"))) {
-				// Intentionally sending click event before handling the method
-				// TODO replace this comment with a test that validates the call order is correct
-				let id = element.id;
+	private static triggerSelection(element: HTMLElement, idOverride: string, callback: Function, e: Event) {
+			// Intentionally sending click event before handling the method
+			// TODO replace this comment with a test that validates the call order is correct
+			let id = idOverride ? idOverride : element.id;
 
-				Clipper.logger.logClickEvent(id);
+			Clipper.logger.logClickEvent(id);
 
-				if (callback) {
-					callback(e);
-				}
+			if (callback) {
+				callback(e);
 			}
-		}
-	}
-
-	private static handleTabKey(e: KeyboardEvent, element: HTMLElement) {
-		if (e.which === Constants.KeyCodes.tab) {
-			// Since they are using the keyboard, revert to the default value of the outline so it is visible
-			element.style.outlineStyle = "";
-		}
-	}
-
-	private static handleOnClick(e: MouseEvent, idOverride: string, callback: Function) {
-		let element = e.currentTarget as HTMLElement;
-
-		// Intentionally sending click event before handling the method
-		// TODO replace this comment with a test that validates the call order is correct
-		let id = idOverride ? idOverride : element.id;
-
-		Clipper.logger.logClickEvent(id);
-
-		if (callback) {
-			callback(e);
-		}
-	}
-
-	private static handleHomeAndEndButtons(e: KeyboardEvent, setName: string, element: HTMLElement) {
-		if (e.which === Constants.KeyCodes.home) {
-			let firstInSet = 1;
-			ComponentBase.focusOnButton(setName, firstInSet);
-		} else if (e.which === Constants.KeyCodes.end) {
-			let lastInSet = parseInt(element.getAttribute("aria-setsize"), 10);
-			ComponentBase.focusOnButton(setName, lastInSet);
-		}
 	}
 
 	private static focusOnButton(setNameForArrowKeyNav: string, posInSet: number) {

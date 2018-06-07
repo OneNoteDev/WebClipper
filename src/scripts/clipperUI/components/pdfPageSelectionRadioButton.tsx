@@ -105,7 +105,7 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 					className={invalidClassName + (!pdfPreviewInfo.allPages ? " focused" : "")}
 					placeholder="e.g. 1-5, 7, 9-12"
 					onFocus={this.onTextInputFocus.bind(this)}
-					value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke({callback: this.onSelectionChange, args: false})}/>
+					value={this.props.clipperState.pdfPreviewInfo.selectedPageRange} {...this.enableInvoke({callback: this.onSelectionChange, tabIndex: unselectedTabIndex, args: false})}/>
 					{pdfPreviewInfo.shouldShowPopover ?
 						<Popover
 						referenceElementId={Constants.Ids.rangeInput}
