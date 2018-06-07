@@ -100,24 +100,23 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 
 			let posInSet = parseInt(currentTargetElement.getAttribute("aria-posinset"), 10);
-			let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
-			let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
+			let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
+			let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
 
-			if (e.which === increaseButton) {
-				if (posInSet === 1) {
+			if (e.which === decreaseButton) {
+				if (posInSet <= 1) {
 					return;
 				}
 				let nextPosInSet = posInSet - 1;
 				ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
-			} else if (e.which === decreaseButton) {
+			} else if (e.which === increaseButton) {
 				let setSize = parseInt(currentTargetElement.getAttribute("aria-setsize"), 10);
-				if (posInSet === setSize) {
+				if (posInSet >= setSize) {
 					return;
 				}
 				let nextPosInSet = posInSet + 1;
 				ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
 			}
-
 		};
 
 		invokeAttributes["data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav] = ariaSetName;
