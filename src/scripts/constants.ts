@@ -333,6 +333,8 @@ export module Constants {
 		export var c = 67;
 		export var down = 40;
 		export var up = 38;
+		export var left = 37;
+		export var right = 39;
 		export var space = 32;
 		export var home = 36;
 		export var end = 35;
