@@ -442,12 +442,21 @@
 	width: 100%;
 }
 
+#clipButton {
+	&:focus {
+		outline: ActiveBorder solid 1px !important;
+		outline-offset: 2px;
+	}
+}
+
 .wideButtonContainer {
 	background: @WideButtonBackgroundColor;
 	border: 1px solid @WideButtonBackgroundColor;
 	border-radius: 4px;
 	text-align: center;
 	margin-bottom: 10px;
+	margin-left: 3px;
+	margin-right: 3px;
 
 	&:hover {
 		background: @WideButtonHoverColor;
