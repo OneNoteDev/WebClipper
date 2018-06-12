@@ -87,6 +87,7 @@ export abstract class ComponentBase<TState, TProps> {
 
 		invokeAttributes.onkeyup = (e: KeyboardEvent) => {
 			e.preventDefault();
+			e.stopImmediatePropagation();
 			let currentTargetElement = e.currentTarget as HTMLElement;
 
 			oldKeyUp(e);
