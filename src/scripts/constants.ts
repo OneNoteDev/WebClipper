@@ -122,7 +122,7 @@ export module Constants {
 		export var signOutButton = "signOutButton";
 		export var userDropdownArrow = "userDropdownArrow";
 		export var userSettingsContainer = "userSettingsContainer";
-		export var footerSpan = "footerSpan";
+		export var feedbackLabel = "feedbackLabel";
 		export var footerButtonsContainer = "footerButtonsContainer";
 
 		// loadingPanel
