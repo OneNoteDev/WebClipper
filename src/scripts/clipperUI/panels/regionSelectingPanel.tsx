@@ -21,11 +21,11 @@ class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 						</span>
 					</div>
 					<div className="wideButtonContainer">
-					<a id={Constants.Ids.regionClipCancelButton} {...this.enableInvoke({callback: this.handleCancelButton, tabIndex: 70})}>
+						<a id={Constants.Ids.regionClipCancelButton} {...this.enableInvoke({callback: this.handleCancelButton, tabIndex: 70})}>
 							<span className="wideButtonFont wideActionButton" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 								{Localization.getLocalizedString("WebClipper.Action.BackToHome")}
 							</span>
-					</a>
+						</a>
 					</div>
 				</div>
 			</div>
