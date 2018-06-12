@@ -155,7 +155,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		return (
 			<div>
 				{this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode)}
-				<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox">
+				<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox" className="modeButtonContainer">
 					{ this.getListOfButtons() }
 				</div>
 			</div>
