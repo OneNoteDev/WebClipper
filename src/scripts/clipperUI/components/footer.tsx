@@ -75,14 +75,14 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 				<div className={Constants.Ids.footerButtonsContainer}>
 					<div className="footerButtonsLeft confineText">
-						<a id={Constants.Ids.feedbackButton} {...this.enableInvoke({callback: this.handleFeedbackButton, tabIndex: 80})}>
+						<a id={Constants.Ids.feedbackButton} role="button" {...this.enableInvoke({callback: this.handleFeedbackButton, tabIndex: 80})}>
 							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")}/>
 							<span id={Constants.Ids.feedbackLabel}>{Localization.getLocalizedString("WebClipper.Action.Feedback") }</span>
 						</a>
 					</div>
 					{showUserInfo
 						? (<div className="footerButtonsRight">
-							<a id={Constants.Ids.currentUserControl} {...this.enableInvoke({callback: this.userControlHandler, tabIndex: 81})} aria-expanded={this.state.userSettingsOpened}>
+							<a id={Constants.Ids.currentUserControl} role="button" {...this.enableInvoke({callback: this.userControlHandler, tabIndex: 81})} aria-expanded={this.state.userSettingsOpened}>
 									<img id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 									<div id={Constants.Ids.currentUserDetails}>
 									{
@@ -107,7 +107,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 							<hr className="userDivider" />
 							<div className="userDetails confineText">
 								<label id={Constants.Ids.currentUserEmail}>{this.props.clipperState.userResult.data.user.emailAddress}</label>
-								<a id={Constants.Ids.signOutButton} className="userActionButton"
+								<a id={Constants.Ids.signOutButton} role="button" className="userActionButton"
 									{...this.enableInvoke({callback: this.handleSignOutButton, tabIndex: 82})}>
 									{Localization.getLocalizedString("WebClipper.Action.SignOut")}
 								</a>
