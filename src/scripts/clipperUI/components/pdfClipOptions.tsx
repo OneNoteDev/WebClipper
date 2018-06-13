@@ -63,7 +63,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 	getDistributePagesCheckbox(): any {
 		let pdfPreviewInfo = this.props.clipperState.pdfPreviewInfo;
 		return (
-			<div className="pdf-control" id={Constants.Ids.checkboxToDistributePages} {...this.enableInvoke({callback: this.onDistributionChange, tabIndex: 65, args: !pdfPreviewInfo.shouldDistributePages})}>
+			<div className="pdf-control" id={Constants.Ids.checkboxToDistributePages} aria-checked={pdfPreviewInfo.shouldDistributePages}  {...this.enableInvoke({callback: this.onDistributionChange, tabIndex: 65, args: !pdfPreviewInfo.shouldDistributePages})}>
 				<div className="pdf-indicator pdf-checkbox-indicator"></div>
 				{pdfPreviewInfo.shouldDistributePages ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
 				<div className="pdf-label-margin">
@@ -103,7 +103,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 		const disabledClassName = enabled ? "" : " disabled";
 
 		return (
-			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.checkboxToAttachPdf} {...this.enableInvoke({callback: enabled ? this.onCheckboxChange : undefined, tabIndex: 66, args: !pdfPreviewInfo.shouldAttachPdf})}>
+			<div className={"pdf-control" + disabledClassName} id={Constants.Ids.checkboxToAttachPdf} aria-checked={enabled} {...this.enableInvoke({callback: enabled ? this.onCheckboxChange : undefined, tabIndex: 66, args: !pdfPreviewInfo.shouldAttachPdf})}>
 				<div className={"pdf-indicator pdf-checkbox-indicator" + disabledClassName}></div>
 				{pdfPreviewInfo.shouldAttachPdf ? <div className={Constants.Classes.checkboxCheck}></div> : ""}
 				<div className="pdf-label-margin">

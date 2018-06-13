@@ -12,6 +12,7 @@ export interface EnableInvokeParams {
 export interface EnableAriaParams extends EnableInvokeParams {
 	ariaSetName: string;
 	ariaSetDirection: AriaNavDirection;
+	autoSelect?: boolean;
 }
 
 export abstract class ComponentBase<TState, TProps> {
@@ -77,7 +78,7 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
 	 * (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
 	 */
-	enableAriaInvoke({callback, tabIndex, args, idOverride, ariaSetName, ariaSetDirection}: EnableAriaParams) {
+	enableAriaInvoke({callback, tabIndex, args, idOverride, ariaSetName, ariaSetDirection, autoSelect = false}: EnableAriaParams) {
 		if (callback) {
 			callback = callback.bind(this, args);
 		}
@@ -94,10 +95,10 @@ export abstract class ComponentBase<TState, TProps> {
 
 			if (e.which === Constants.KeyCodes.home) {
 				let firstInSet = 1;
-				ComponentBase.focusOnButton(ariaSetName, firstInSet);
+				ComponentBase.focusOnButton(ariaSetName, firstInSet, autoSelect);
 			} else if (e.which === Constants.KeyCodes.end) {
 				let lastInSet = parseInt(currentTargetElement.getAttribute("aria-setsize"), 10);
-				ComponentBase.focusOnButton(ariaSetName, lastInSet);
+				ComponentBase.focusOnButton(ariaSetName, lastInSet, autoSelect);
 			}
 
 			let posInSet = parseInt(currentTargetElement.getAttribute("aria-posinset"), 10);
@@ -109,14 +110,14 @@ export abstract class ComponentBase<TState, TProps> {
 					return;
 				}
 				let nextPosInSet = posInSet - 1;
-				ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
+				ComponentBase.focusOnButton(ariaSetName, nextPosInSet, autoSelect);
 			} else if (e.which === increaseButton) {
 				let setSize = parseInt(currentTargetElement.getAttribute("aria-setsize"), 10);
 				if (posInSet >= setSize) {
 					return;
 				}
 				let nextPosInSet = posInSet + 1;
-				ComponentBase.focusOnButton(ariaSetName, nextPosInSet);
+				ComponentBase.focusOnButton(ariaSetName, nextPosInSet, autoSelect);
 			}
 		};
 
@@ -177,14 +178,14 @@ export abstract class ComponentBase<TState, TProps> {
 		}
 	}
 
-	private static focusOnButton(setNameForArrowKeyNav: string, posInSet: number) {
+	private static focusOnButton(setNameForArrowKeyNav: string, posInSet: number, autoSelect: boolean) {
 		const buttons = document.querySelectorAll("[data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav + "=" + setNameForArrowKeyNav + "]");
 		for (let i = 0; i < buttons.length; i++) {
 			let selectable = buttons[i] as HTMLElement;
 			let ariaIntForEach = parseInt(selectable.getAttribute("aria-posinset"), 10);
 			if (ariaIntForEach === posInSet) {
 				selectable.style.outlineStyle = "";
-				selectable.focus();
+				autoSelect ? selectable.click() : selectable.focus();
 				return;
 			}
 		}
