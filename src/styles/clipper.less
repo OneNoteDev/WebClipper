@@ -81,8 +81,12 @@
 	left: 100%;
 }
 
+
+#closeButton:focus {
+	margin-left: 6px
+}
+
 #currentUserDetails {
-	overflow: hidden;
 	text-align: right;
 }
 
@@ -147,6 +151,11 @@
 		// For the region mode button, the icon is a little fatter so we need to reduce padding with the same amount
 		padding-right: 8px; // 12px - 4px
 	}
+}
+
+#regionClipCancelButton:focus {
+	outline-offset: 4px;
+	outline: ActiveBorder solid 1px !important;
 }
 
 #regionSelectorContainer {

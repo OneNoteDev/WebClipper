@@ -21,7 +21,7 @@ class RegionSelectionClass extends ComponentBase<{}, RegionSelectionProps> {
 		// No remove button is rendered if there's no callback specified
 		return (
 			this.props.onRemove
-				? <a className="region-selection-remove-button"
+				? <a className="region-selection-remove-button" role="button"
 					{...this.enableInvoke({callback: this.buttonHandler, tabIndex: 300, idOverride: Log.Click.Label.regionSelectionRemoveButton})}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/delete_button.png") } /></a>
 				: undefined
