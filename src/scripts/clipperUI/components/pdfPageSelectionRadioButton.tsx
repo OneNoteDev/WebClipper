@@ -88,7 +88,7 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 						{pdfPreviewInfo.allPages ? <div className={Constants.Classes.radioIndicatorFill}></div> : undefined}
 					</div>
 					<div className="pdf-label-margin">
-					<span className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
+						<span className={"pdf-label" + (pdfPreviewInfo.allPages ? " focused" : "")}>{Localization.getLocalizedString("WebClipper.Label.PdfAllPagesRadioButton")}</span>
 					</div>
 				</div>,
 				<div id={Constants.Ids.radioPageRangeLabel} className={"pdf-control" + (!pdfPreviewInfo.allPages ? " focused" : "")} aria-selected={!pdfPreviewInfo.allPages} {...this.enableAriaInvoke({callback: this.onSelectionChange, tabIndex: !pdfPreviewInfo.allPages ? selectedTabIndex : unselectedTabIndex, args: false, ariaSetName: Constants.AriaSet.pdfPageSelection, ariaSetDirection: AriaNavDirection.Vertical, autoSelect: true})}>
