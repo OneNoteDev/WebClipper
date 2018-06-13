@@ -60,9 +60,7 @@ class PdfPageSelectionRadioButton extends ComponentBase<{}, ClipperStateProp> {
 			shouldShowPopover: false
 		} as PdfPreviewInfo), this.props.clipperState.setState);
 
-		if (!selection) {
-			document.getElementById(Constants.Ids.rangeInput).focus();
-		} else { document.getElementById(Constants.Ids.radioAllPagesLabel).focus(); }
+		selection ? document.getElementById(Constants.Ids.radioAllPagesLabel).focus() : document.getElementById(Constants.Ids.rangeInput).focus();
 	}
 
 	private getErrorMessageForInvalidPageRange(): string {

@@ -12,7 +12,7 @@ export interface EnableInvokeParams {
 export interface EnableAriaParams extends EnableInvokeParams {
 	ariaSetName: string;
 	ariaSetDirection: AriaNavDirection;
-	autoSelect: boolean;
+	autoSelect?: boolean;
 }
 
 export abstract class ComponentBase<TState, TProps> {
@@ -78,7 +78,7 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
 	 * (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
 	 */
-	enableAriaInvoke({callback, tabIndex, args, idOverride, ariaSetName, ariaSetDirection, autoSelect}: EnableAriaParams) {
+	enableAriaInvoke({callback, tabIndex, args, idOverride, ariaSetName, ariaSetDirection, autoSelect = false}: EnableAriaParams) {
 		if (callback) {
 			callback = callback.bind(this, args);
 		}
