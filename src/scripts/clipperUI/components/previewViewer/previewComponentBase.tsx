@@ -44,12 +44,13 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 	}
 
 	private getPreviewTitle(contentTitle: string, titleIsEditable: boolean, inProgressClassIfApplicable: string): any {
+		let previewTitleTextFromProps = this.props.clipperState.previewGlobalInfo.previewTitleText;
 		if (this.props.clipperState.currentMode.get() !== ClipMode.Bookmark) {
 			return (
 				<div id={Constants.Ids.previewTitleContainer}>
 					<pre className={Constants.Classes.textAreaInputMirror}><span>{contentTitle}</span><br/></pre>
 					<textarea
-						{...this.enableInvoke({tabIndex: 200})}
+						{...this.enableInvoke({tabIndex: contentTitle !== previewTitleTextFromProps ? -1 : 200})}
 						rows="1"
 						id={Constants.Ids.previewHeaderInput}
 						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}
