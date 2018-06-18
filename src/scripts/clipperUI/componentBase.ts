@@ -159,6 +159,7 @@ export abstract class ComponentBase<TState, TProps> {
 						ComponentBase.triggerSelection(element, undefined, callback, e);
 					}
 				} else if (e.which === Constants.KeyCodes.tab) {
+					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
 				}
 			},
