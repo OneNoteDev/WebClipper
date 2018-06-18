@@ -86,9 +86,10 @@ export abstract class ComponentBase<TState, TProps> {
 		let invokeAttributes = this.enableInvoke({callback: callback, tabIndex: tabIndex, args: args, idOverride: idOverride});
 		let oldKeyUp = invokeAttributes.onkeyup;
 
+		let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
+		let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
+
 		invokeAttributes.onkeyup = (e: KeyboardEvent) => {
-			e.preventDefault();
-			e.stopImmediatePropagation();
 			let currentTargetElement = e.currentTarget as HTMLElement;
 
 			oldKeyUp(e);
@@ -102,8 +103,6 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 
 			let posInSet = parseInt(currentTargetElement.getAttribute("aria-posinset"), 10);
-			let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
-			let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
 
 			if (e.which === decreaseButton) {
 				if (posInSet <= 1) {
@@ -118,6 +117,12 @@ export abstract class ComponentBase<TState, TProps> {
 				}
 				let nextPosInSet = posInSet + 1;
 				ComponentBase.focusOnButton(ariaSetName, nextPosInSet, autoSelect);
+			}
+		};
+
+		invokeAttributes.onkeydown = (e: KeyboardEvent) => {
+			if (e.which === decreaseButton || e.which === increaseButton) {
+				e.preventDefault();
 			}
 		};
 
@@ -154,13 +159,14 @@ export abstract class ComponentBase<TState, TProps> {
 						ComponentBase.triggerSelection(element, undefined, callback, e);
 					}
 				} else if (e.which === Constants.KeyCodes.tab) {
-					// Since they are using the keyboard, revert to the default value of the outline so it is visible
 					element.style.outlineStyle = "";
 				}
 			},
 			onmousedown: (e: MouseEvent) => {
 				let element = e.currentTarget as HTMLElement;
 				element.style.outlineStyle = "none";
+			},
+			onkeydown: (e: KeyboardEvent) => {
 			},
 			tabIndex: tabIndex,
 		};
