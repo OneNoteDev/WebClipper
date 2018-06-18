@@ -120,15 +120,17 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 		};
 
-		invokeAttributes.onkeydown = (e: KeyboardEvent) => {
-			if (e.which === decreaseButton || e.which === increaseButton) {
-				e.preventDefault();
+		let ariaInvokeAttributes = {...invokeAttributes,
+			onkeydown: (e: KeyboardEvent) => {
+				if (e.which === decreaseButton || e.which === increaseButton) {
+					e.preventDefault();
+				}
 			}
 		};
 
-		invokeAttributes["data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav] = ariaSetName;
+		ariaInvokeAttributes["data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav] = ariaSetName;
 
-		return invokeAttributes;
+		return ariaInvokeAttributes;
 	}
 
 	/*
@@ -166,8 +168,6 @@ export abstract class ComponentBase<TState, TProps> {
 			onmousedown: (e: MouseEvent) => {
 				let element = e.currentTarget as HTMLElement;
 				element.style.outlineStyle = "none";
-			},
-			onkeydown: (e: KeyboardEvent) => {
 			},
 			tabIndex: tabIndex,
 		};
