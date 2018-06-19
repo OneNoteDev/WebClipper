@@ -120,7 +120,8 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 		};
 
-		let ariaInvokeAttributes = {...invokeAttributes,
+		let ariaInvokeAttributes = {
+			...invokeAttributes,
 			onkeydown: (e: KeyboardEvent) => {
 				if (e.which === decreaseButton || e.which === increaseButton) {
 					e.preventDefault();
