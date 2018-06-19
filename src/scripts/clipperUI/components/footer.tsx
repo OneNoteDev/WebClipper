@@ -74,7 +74,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 			<div id={Constants.Ids.clipperFooterContainer} className="footerFont"
 				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 				<div className={Constants.Ids.footerButtonsContainer}>
-					<div className="footerButtonsLeft confineText">
+					<div className="footerButtonsLeft">
 						<a id={Constants.Ids.feedbackButton} role="button" {...this.enableInvoke({callback: this.handleFeedbackButton, tabIndex: 80})}>
 							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")}/>
 							<span id={Constants.Ids.feedbackLabel}>{Localization.getLocalizedString("WebClipper.Action.Feedback") }</span>
@@ -87,12 +87,12 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 									<div id={Constants.Ids.currentUserDetails}>
 									{
 										this.props.clipperState.userResult.data.user.fullName
-										? <div id={Constants.Ids.currentUserName} className="confineText">{this.props.clipperState.userResult.data.user.fullName}</div>
-										: <div id={Constants.Ids.currentUserName} className="confineText">{Localization.getLocalizedString("WebClipper.Label.SignedIn")}</div>
+										? <div id={Constants.Ids.currentUserName}>{this.props.clipperState.userResult.data.user.fullName}</div>
+										: <div id={Constants.Ids.currentUserName}>{Localization.getLocalizedString("WebClipper.Label.SignedIn")}</div>
 									}
 									{
 										this.props.clipperState.userResult.data.user.emailAddress
-										? <div id={Constants.Ids.currentUserId} className="confineText currentUserIdFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>{this.props.clipperState.userResult.data.user.emailAddress}</div>
+										? <div id={Constants.Ids.currentUserId} className="currentUserIdFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>{this.props.clipperState.userResult.data.user.emailAddress}</div>
 										: ""
 									}
 									</div>
@@ -105,7 +105,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 					? (<div id={Constants.Ids.userSettingsContainer} className="userSettingsFont"
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							<hr className="userDivider" />
-							<div className="userDetails confineText">
+							<div className="userDetails">
 								<label id={Constants.Ids.currentUserEmail}>{this.props.clipperState.userResult.data.user.emailAddress}</label>
 								<a id={Constants.Ids.signOutButton} role="button" className="userActionButton"
 									{...this.enableInvoke({callback: this.handleSignOutButton, tabIndex: 82})}>
