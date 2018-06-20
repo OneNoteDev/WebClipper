@@ -244,8 +244,6 @@
 		}
 	}
 
-
-
 	.pdf-control {
 		cursor: pointer; 
 		position: relative; 
@@ -255,13 +253,6 @@
 
 		&.disabled {
 			cursor: default;
-		}
-
-		&.focused {
-			margin-left: 1px;
-			outline: @FocusOnPurpleBackground auto 1px !important;
-			height: 29px;
-			margin-right: 1px
 		}
 	}
 
@@ -296,6 +287,11 @@
 				border-radius: 100%;
 			}
 		}
+	}
+
+	.pdf-label:focus{
+		outline: @FocusOnPurpleBackground 1px solid;
+		outline-offset: 2px;
 	}
 
 	.checkboxCheck {
@@ -337,6 +333,11 @@
 			color: #fff;
 			border-color: #fff;
 		};
+
+		&.selected {
+			outline: @FocusOnPurpleBackground 1px solid !important;
+			outline-offset: 2px;
+		}
 
 		&.invalid {
 			border: #e81123 1px solid;

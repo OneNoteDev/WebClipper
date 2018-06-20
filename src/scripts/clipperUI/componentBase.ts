@@ -158,7 +158,6 @@ export abstract class ComponentBase<TState, TProps> {
 				|| e.which === Constants.KeyCodes.right || e.which === Constants.KeyCodes.home
 				|| e.which === Constants.KeyCodes.end) {
 					e.preventDefault();
-					e.stopImmediatePropagation();
 				}
 			},
 			onmousedown: (e: MouseEvent) => {
