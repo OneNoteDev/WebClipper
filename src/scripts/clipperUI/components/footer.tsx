@@ -83,8 +83,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 					{showUserInfo
 						? (<div className="footerButtonsRight">
 							<a id={Constants.Ids.currentUserControl} role="button" {...this.enableInvoke({callback: this.userControlHandler, tabIndex: 81})} aria-expanded={this.state.userSettingsOpened}>
-									<img id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
-									<div id={Constants.Ids.currentUserDetails}>
+								<div id={Constants.Ids.currentUserDetails}>
 									{
 										this.props.clipperState.userResult.data.user.fullName
 										? <div id={Constants.Ids.currentUserName}>{this.props.clipperState.userResult.data.user.fullName}</div>
@@ -95,8 +94,9 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 										? <div id={Constants.Ids.currentUserId} className="currentUserIdFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>{this.props.clipperState.userResult.data.user.emailAddress}</div>
 										: ""
 									}
-									</div>
-								</a>
+								</div>
+								<img id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+							</a>
 							</div>)
 						: undefined
 					}
