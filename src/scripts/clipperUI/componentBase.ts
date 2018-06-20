@@ -87,8 +87,6 @@ export abstract class ComponentBase<TState, TProps> {
 		let oldKeyUp = invokeAttributes.onkeyup;
 
 		invokeAttributes.onkeyup = (e: KeyboardEvent) => {
-			e.preventDefault();
-			e.stopImmediatePropagation();
 			let currentTargetElement = e.currentTarget as HTMLElement;
 
 			oldKeyUp(e);
@@ -159,7 +157,10 @@ export abstract class ComponentBase<TState, TProps> {
 				}
 			},
 			onkeydown: (e: KeyboardEvent) => {
-				if (e.which === Constants.KeyCodes.space) {
+				if (e.which === Constants.KeyCodes.space || e.which === Constants.KeyCodes.up
+				|| e.which === Constants.KeyCodes.down || e.which === Constants.KeyCodes.left
+				|| e.which === Constants.KeyCodes.right || e.which === Constants.KeyCodes.home
+				|| e.which === Constants.KeyCodes.end) {
 					e.preventDefault();
 					e.stopImmediatePropagation();
 				}
