@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.8.0 (June 20, 2018)
+* Improvement: Added a11y improvements for navigation
+
 ## 3.7.3 (April 28, 2017)
 * Bug: Ignore large binary files that may be injected by some extensions
 
