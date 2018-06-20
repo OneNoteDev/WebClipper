@@ -140,6 +140,10 @@
 	-o-user-select: none;
 	user-select: none;
 
+	#optionLabel {
+		margin: 5px;
+	}
+
 	.panelContent {
 		padding-top: @ClipperUIInnerPadding;
 		padding-left: @ClipperUIInnerPadding;
@@ -185,6 +189,15 @@
 		height: 0;
 		position: fixed;
 	}
+}
+
+#saveToLocationContainer{
+	margin:5px;
+}
+
+#sectionLocationContainer:focus{
+	outline: @FocusOnPurpleBackground 1px solid !important;
+	outline-offset: 2px !important;
 }
 
 #signInLogo {
