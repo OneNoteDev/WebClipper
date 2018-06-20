@@ -2,7 +2,6 @@
 import {ExtensionUtils} from "../../../extensions/extensionUtils";
 import {Localization} from "../../../localization/localization";
 import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
-import {AriaNavDirection} from "../../AriaNavDirection";
 
 export interface PreviewViewerAugmentationHeaderProp {
 	toggleHighlight: () => void;
@@ -59,7 +58,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif")}
 					aria-checked={!this.props.serif + ""}
 					id={Constants.Ids.sansSerif}
-					{...this.enableAriaInvoke({callback: this.props.changeFontFamily, tabIndex: !this.props.serif ? tabIndexOn : tabIndexOff, args: false, ariaSetName: Constants.AriaSet.serifGroupSet, ariaSetDirection: AriaNavDirection.Horizontal})}
+					{...this.enableAriaInvoke({callback: this.props.changeFontFamily, tabIndex: !this.props.serif ? tabIndexOn : tabIndexOff, args: false, ariaSetName: Constants.AriaSet.serifGroupSet})}
 					className={!this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
 					role="radio">
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SansSerifButtonLabel") }
@@ -68,7 +67,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif")}
 					aria-checked={this.props.serif + ""}
 					id={Constants.Ids.serif}
-					{...this.enableAriaInvoke({callback: this.props.changeFontFamily, tabIndex: this.props.serif ? tabIndexOn : tabIndexOff, args: true, ariaSetName: Constants.AriaSet.serifGroupSet, ariaSetDirection: AriaNavDirection.Horizontal})}
+					{...this.enableAriaInvoke({callback: this.props.changeFontFamily, tabIndex: this.props.serif ? tabIndexOn : tabIndexOff, args: true, ariaSetName: Constants.AriaSet.serifGroupSet})}
 					className={this.props.serif ? HeaderClasses.Button.activeControlButton : HeaderClasses.Button.controlButton}
 					role="radio">
 					{Localization.getLocalizedString("WebClipper.Preview.Header.SerifButtonLabel") }
