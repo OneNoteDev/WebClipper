@@ -76,14 +76,13 @@
 }
 
 #closeButtonContainer {
-	position: absolute;
+	float: right;
 	margin-left: -30px;
 	left: 100%;
 }
 
-
 #closeButton:focus {
-	margin-left: 6px
+	outline: @FocusOnPurpleBackground 1px solid;
 }
 
 #currentUserDetails {
@@ -96,6 +95,11 @@
 	padding-right: 5px;
 	padding-top: 2px;
 	float: left;
+}
+
+#highlightButton:focus {
+	outline: @FocusOnPurpleBackground 1px solid;
+	outline-offset: 2px;
 }
 
 #unsupportedBrowserContainer {
@@ -135,6 +139,10 @@
 	-ms-user-select: none;
 	-o-user-select: none;
 	user-select: none;
+
+	#optionLabel {
+		margin: 5px;
+	}
 
 	.panelContent {
 		padding-top: @ClipperUIInnerPadding;
@@ -181,6 +189,15 @@
 		height: 0;
 		position: fixed;
 	}
+}
+
+#saveToLocationContainer{
+	margin:5px;
+}
+
+#sectionLocationContainer:focus{
+	outline: @FocusOnPurpleBackground 1px solid !important;
+	outline-offset: 2px !important;
 }
 
 #signInLogo {

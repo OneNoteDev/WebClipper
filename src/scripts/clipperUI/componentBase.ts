@@ -166,6 +166,15 @@ export abstract class ComponentBase<TState, TProps> {
 					element.style.outlineStyle = "";
 				}
 			},
+			onkeydown: (e: KeyboardEvent) => {
+				if (e.which === Constants.KeyCodes.space || e.which === Constants.KeyCodes.up
+				|| e.which === Constants.KeyCodes.down || e.which === Constants.KeyCodes.left
+				|| e.which === Constants.KeyCodes.right || e.which === Constants.KeyCodes.home
+				|| e.which === Constants.KeyCodes.end) {
+					e.preventDefault();
+					e.stopImmediatePropagation();
+				}
+			},
 			onmousedown: (e: MouseEvent) => {
 				let element = e.currentTarget as HTMLElement;
 				element.style.outlineStyle = "none";
