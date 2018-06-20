@@ -11,6 +11,11 @@
 	width: auto;
 }
 
+#sectionLocationContainer:focus{
+	outline: @FocusOnPurpleBackground solid 1px !important;
+	outline-offset: 2px !important;
+}
+
 // Section Picker UI (we do not localize these as we cannot reliably predict the language used)
 @FontFamilyFallback: 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
 @SegoeUi: 'Segoe UI', 'Segoe', 'Segoe WP', @FontFamilyFallback;
@@ -21,6 +26,8 @@
 	border: 1px white solid;
 	font-family: @SegoeUi;
 	line-height: 30px;
+	margin-right: 3px;
+	margin-left: 3px;
 }
 
 .SectionPickerContainer {

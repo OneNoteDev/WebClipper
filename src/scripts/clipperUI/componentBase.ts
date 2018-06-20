@@ -86,6 +86,9 @@ export abstract class ComponentBase<TState, TProps> {
 		let invokeAttributes = this.enableInvoke({callback: callback, tabIndex: tabIndex, args: args, idOverride: idOverride});
 		let oldKeyUp = invokeAttributes.onkeyup;
 
+		let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
+		let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
+
 		invokeAttributes.onkeyup = (e: KeyboardEvent) => {
 			let currentTargetElement = e.currentTarget as HTMLElement;
 
@@ -100,8 +103,6 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 
 			let posInSet = parseInt(currentTargetElement.getAttribute("aria-posinset"), 10);
-			let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
-			let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
 
 			if (e.which === decreaseButton) {
 				if (posInSet <= 1) {
@@ -119,9 +120,18 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 		};
 
-		invokeAttributes["data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav] = ariaSetName;
+		let ariaInvokeAttributes = {
+			...invokeAttributes,
+			onkeydown: (e: KeyboardEvent) => {
+				if (e.which === decreaseButton || e.which === increaseButton) {
+					e.preventDefault();
+				}
+			}
+		};
 
-		return invokeAttributes;
+		ariaInvokeAttributes["data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav] = ariaSetName;
+
+		return ariaInvokeAttributes;
 	}
 
 	/*
