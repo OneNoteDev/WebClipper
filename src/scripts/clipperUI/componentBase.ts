@@ -1,6 +1,5 @@
 import {Constants} from "../constants";
 import {Clipper} from "./frontEndGlobals";
-import {AriaNavDirection} from "./AriaNavDirection";
 
 export interface EnableInvokeParams {
 	callback?: Function;
@@ -11,7 +10,6 @@ export interface EnableInvokeParams {
 
 export interface EnableAriaParams extends EnableInvokeParams {
 	ariaSetName: string;
-	ariaSetDirection: AriaNavDirection;
 	autoSelect?: boolean;
 }
 
@@ -78,16 +76,13 @@ export abstract class ComponentBase<TState, TProps> {
 	 * Also hides the outline if they are using a mouse, but shows it if they are using the keyboard
 	 * (idea from http://www.paciellogroup.com/blog/2012/04/how-to-remove-css-outlines-in-an-accessible-manner/)
 	 */
-	enableAriaInvoke({callback, tabIndex, args, idOverride, ariaSetName, ariaSetDirection, autoSelect = false}: EnableAriaParams) {
+	enableAriaInvoke({callback, tabIndex, args, idOverride, ariaSetName, autoSelect = false}: EnableAriaParams) {
 		if (callback) {
 			callback = callback.bind(this, args);
 		}
 
 		let invokeAttributes = this.enableInvoke({callback: callback, tabIndex: tabIndex, args: args, idOverride: idOverride});
 		let oldKeyUp = invokeAttributes.onkeyup;
-
-		let decreaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.up : Constants.KeyCodes.left;
-		let increaseButton = ariaSetDirection === AriaNavDirection.Vertical ? Constants.KeyCodes.down : Constants.KeyCodes.right;
 
 		invokeAttributes.onkeyup = (e: KeyboardEvent) => {
 			let currentTargetElement = e.currentTarget as HTMLElement;
@@ -104,13 +99,13 @@ export abstract class ComponentBase<TState, TProps> {
 
 			let posInSet = parseInt(currentTargetElement.getAttribute("aria-posinset"), 10);
 
-			if (e.which === decreaseButton) {
+			if (e.which === Constants.KeyCodes.up || e.which === Constants.KeyCodes.left) {
 				if (posInSet <= 1) {
 					return;
 				}
 				let nextPosInSet = posInSet - 1;
 				ComponentBase.focusOnButton(ariaSetName, nextPosInSet, autoSelect);
-			} else if (e.which === increaseButton) {
+			} else if (e.which === Constants.KeyCodes.down || e.which === Constants.KeyCodes.right) {
 				let setSize = parseInt(currentTargetElement.getAttribute("aria-setsize"), 10);
 				if (posInSet >= setSize) {
 					return;
@@ -120,18 +115,9 @@ export abstract class ComponentBase<TState, TProps> {
 			}
 		};
 
-		let ariaInvokeAttributes = {
-			...invokeAttributes,
-			onkeydown: (e: KeyboardEvent) => {
-				if (e.which === decreaseButton || e.which === increaseButton) {
-					e.preventDefault();
-				}
-			}
-		};
+		invokeAttributes["data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav] = ariaSetName;
 
-		ariaInvokeAttributes["data-" + Constants.CustomHtmlAttributes.setNameForArrowKeyNav] = ariaSetName;
-
-		return ariaInvokeAttributes;
+		return invokeAttributes;
 	}
 
 	/*

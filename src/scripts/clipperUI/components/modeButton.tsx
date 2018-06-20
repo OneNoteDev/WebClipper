@@ -3,7 +3,6 @@ import {Localization} from "../../localization/localization";
 import {ClipMode} from "../clipMode";
 import {ComponentBase} from "../componentBase";
 import {AriaSetProps} from "./ariaSetProps";
-import {AriaNavDirection} from "../AriaNavDirection";
 
 export interface PropsForModeElementNoAriaGrouping {
 	imgSrc: string;
@@ -35,7 +34,7 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 			<a className={className} role="option" aria-selected={this.props.selected}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
-				{...this.enableAriaInvoke({callback: this.buttonHandler, tabIndex: this.props.tabIndex, ariaSetName: Constants.AriaSet.modeButtonSet, ariaSetDirection: AriaNavDirection.Vertical})}>
+				{...this.enableAriaInvoke({callback: this.buttonHandler, tabIndex: this.props.tabIndex, ariaSetName: Constants.AriaSet.modeButtonSet})}>
 				<img className="icon" src={this.props.imgSrc}/>
 				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 					{this.props.label}
