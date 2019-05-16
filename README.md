@@ -28,6 +28,9 @@ $ npm run build -- --<arg>
 2. Enable developer more (upper right toggle)
 3. Click on "load unpacked" and select the target/chrome folder
 
+### 5. Looking at console output
+Set the "enable_console_logging" local storage entry to true
+
 ## Congratulations!
 At this point you should see the tests passing, and see the packaged code in the `target` folder
 
