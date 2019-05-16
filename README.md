@@ -22,6 +22,12 @@ $ npm run build -- --<arg>
  - Bundles the JavaScript modules together into /build/bundles
  - Exports all the needed files to /target
 
+### 4. Running in chrome
+[Google instructions](https://support.google.com/chrome/a/answer/2714278?hl=en)
+1. In chrome, open chrome://extensions/
+2. Enable developer more (upper right toggle)
+3. Click on "load unpacked" and select the target/chrome folder
+
 ## Congratulations!
 At this point you should see the tests passing, and see the packaged code in the `target` folder
 
@@ -32,9 +38,3 @@ At this point you should see the tests passing, and see the packaged code in the
 $ npm run clean
 ```
 Removes all of the generated files from `build`
-
-#### Watch
-```sh
-$ npm run watch
-```
-Automatically rebuilds the project when files are saved

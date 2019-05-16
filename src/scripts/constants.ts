@@ -375,7 +375,6 @@ export module Constants {
 		export var clipperInstallPageUrl = serviceDomain + "/clipper/installed";
 		export var fullPageScreenshotUrl = serviceDomain + "/onaugmentation/clipperDomEnhancer/v1.0/";
 		export var localizedStringsUrlBase = serviceDomain + "/strings?ids=WebClipper.";
-		export var userFlightingEndpoint = serviceDomain + "/webclipper/userflight";
 
 		export var msaDomain = "https://login.live.com";
 		export var orgIdDomain = "https://login.microsoftonline.com";
