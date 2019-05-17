@@ -172,22 +172,18 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 						</span>
 					</div>
 					{this.errorInformationDescription()}
-					<a id={Constants.Ids.signInButtonMsa} role="button" {...this.enableInvoke({callback: this.onSignInMsa, tabIndex: 11, args: AuthType.Msa})}>
-						<div className="wideButtonContainer">
-							<span className="wideButtonFont wideActionButton"
-								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
-								{Localization.getLocalizedString("WebClipper.Action.SigninMsa")}
-							</span>
-						</div>
-					</a>
-					<a id={Constants.Ids.signInButtonOrgId} role="button" {...this.enableInvoke({callback: this.onSignInOrgId, tabIndex: 12, args: AuthType.OrgId})}>
-						<div className="wideButtonContainer">
-							<span className="wideButtonFont wideActionButton"
-								style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }>
-								{Localization.getLocalizedString("WebClipper.Action.SigninOrgId") }
-							</span>
-						</div>
-					</a>
+					<div className="wideButtonContainer" id={Constants.Ids.signInButtonMsa} role="button" {...this.enableInvoke({callback: this.onSignInMsa, tabIndex: 11, args: AuthType.Msa})}>
+						<a className="wideButtonFont wideActionButton"
+							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+							{Localization.getLocalizedString("WebClipper.Action.SigninMsa")}
+						</a>
+					</div>
+					<div className="wideButtonContainer" id={Constants.Ids.signInButtonOrgId} role="button" {...this.enableInvoke({callback: this.onSignInOrgId, tabIndex: 12, args: AuthType.OrgId})}>
+						<a className="wideButtonFont wideActionButton"
+							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+							{Localization.getLocalizedString("WebClipper.Action.SigninOrgId") }
+						</a>
+					</div>
 				</div>
 			</div>
 		);
