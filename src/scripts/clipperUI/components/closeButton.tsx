@@ -18,7 +18,11 @@ class CloseButtonClass extends ComponentBase<{}, CloseButtonProps> {
 	render() {
 		return (
 			<div id={Constants.Ids.closeButtonContainer}>
-				<a id={Constants.Ids.closeButton} role="button" aria-label={Localization.getLocalizedString("WebClipper.Action.CloseTheClipper")} {...this.enableInvoke({callback:this.props.onClickHandler, tabIndex: 300, args: this.props.onClickHandlerParams })}>
+				<a id={ Constants.Ids.closeButton }
+					role="button"
+					aria-label={ Localization.getLocalizedString("WebClipper.Action.CloseTheClipper") }
+					title={ Localization.getLocalizedString("WebClipper.Action.CloseTheClipper") }
+					{ ...this.enableInvoke({ callback: this.props.onClickHandler, tabIndex: 300, args: this.props.onClickHandlerParams }) }>
 					<img className="closeButtonIcon" src={ExtensionUtils.getImageResourceUrl("close.png")} />
 				</a>
 			</div>
