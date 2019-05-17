@@ -36,6 +36,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 				<img
 					role="button"
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ToggleHighlighterForArticleMode")}
+					title={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ToggleHighlighterForArticleMode")}
 					aria-pressed={highlighterEnabled ? "true" : "false"}
 					id={Constants.Ids.highlightButton}
 					{...this.enableInvoke({callback: this.props.toggleHighlight, tabIndex: 100})}
@@ -56,6 +57,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			innerElements: [
 				<button
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif")}
+					title={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif")}
 					aria-checked={!this.props.serif + ""}
 					id={Constants.Ids.sansSerif}
 					{...this.enableAriaInvoke({callback: this.props.changeFontFamily, tabIndex: !this.props.serif ? tabIndexOn : tabIndexOff, args: false, ariaSetName: Constants.AriaSet.serifGroupSet})}
@@ -65,6 +67,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 				</button>,
 				<button
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif")}
+					title={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif")}
 					aria-checked={this.props.serif + ""}
 					id={Constants.Ids.serif}
 					{...this.enableAriaInvoke({callback: this.props.changeFontFamily, tabIndex: this.props.serif ? tabIndexOn : tabIndexOff, args: true, ariaSetName: Constants.AriaSet.serifGroupSet})}
@@ -84,12 +87,14 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			innerElements: [
 				<button className={HeaderClasses.Button.controlButton}
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.DecreaseFontSize")}
+					title={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.DecreaseFontSize")}
 					type="button" {...this.enableInvoke({callback: this.props.changeFontSize, tabIndex: 103, args: false})}
 					id={Constants.Ids.decrementFontSize}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_down.png") } />
 				</button>,
 				<button className={HeaderClasses.Button.controlButton}
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.IncreaseFontSize")}
+					title={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.IncreaseFontSize")}
 					type="button" {...this.enableInvoke({callback: this.props.changeFontSize, tabIndex: 104, args: true})}
 					id={Constants.Ids.incrementFontSize}>
 					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_up.png") } />
