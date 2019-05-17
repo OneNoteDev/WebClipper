@@ -106,7 +106,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							<hr className="userDivider" />
 							<div className="userDetails">
-								<label id={Constants.Ids.currentUserEmail}>{this.props.clipperState.userResult.data.user.emailAddress}</label>
+								<label for={Constants.Ids.signOutButton} id={Constants.Ids.currentUserEmail}>{this.props.clipperState.userResult.data.user.emailAddress}</label>
 								<a id={Constants.Ids.signOutButton} role="button" className="userActionButton"
 									{...this.enableInvoke({callback: this.handleSignOutButton, tabIndex: 82})}>
 									{Localization.getLocalizedString("WebClipper.Action.SignOut")}
