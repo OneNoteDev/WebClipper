@@ -24,8 +24,10 @@ class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 							{Localization.getLocalizedString("WebClipper.Label.DragAndRelease")}
 						</span>
 					</div>
-					<div className="wideButtonContainer" {...this.onElementFirstDraw(this.initiallySetFocusToBackButton)} {...this.enableInvoke({callback: this.handleCancelButton, tabIndex: 0})}>
-						<a id={Constants.Ids.regionClipCancelButton} role="button">
+					<div className="wideButtonContainer">
+						<a id={ Constants.Ids.regionClipCancelButton } role="button"
+							{...this.onElementFirstDraw(this.initiallySetFocusToBackButton)}
+							{...this.enableInvoke({callback: this.handleCancelButton, tabIndex: 0})} >
 							<span className="wideButtonFont wideActionButton" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 								{Localization.getLocalizedString("WebClipper.Action.BackToHome")}
 							</span>
