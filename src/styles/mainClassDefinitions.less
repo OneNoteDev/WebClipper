@@ -426,6 +426,7 @@
 
 .userDetails {
 	text-align: left;
+	margin: 2px;
 }
 
 .userDivider {
@@ -434,7 +435,7 @@
 	color: @ClipperDividerColor;
 	height: 1px;
 	margin-top: 12px;
-	margin-bottom: 16px;
+	margin-bottom: 14px;
 	opacity: 0.3;
 }
 
@@ -477,6 +478,11 @@
 		a {
 			cursor: default;
 		}
+	}
+
+	&:focus {
+		outline: solid 1px @FocusOnPurpleBackground !important;
+		outline-offset: 2px;
 	}
 }
 
