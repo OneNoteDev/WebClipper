@@ -25,8 +25,16 @@ $ npm run build -- --<arg>
 ### 4. Running in chrome
 [Google instructions](https://support.google.com/chrome/a/answer/2714278?hl=en)
 1. In chrome, open chrome://extensions/
-2. Enable developer more (upper right toggle)
+2. Enable developer mode (upper right toggle)
 3. Click on "load unpacked" and select the target/chrome folder
+
+### 4. Running in edge
+[Microsoft instructions](https://docs.microsoft.com/en-us/microsoft-edge/extensions/guides/adding-and-removing-extensions)
+1. In edge, go to about://flags
+2. Enable developer mode
+3. Restart edge
+4. Click on top right "...", then Extensions
+5. Click on load extension and select the target\edge\OneNoteWebClipper\edgeextension\manifest\extension
 
 ### 5. Looking at console output
 Set the "enable_console_logging" local storage entry to true

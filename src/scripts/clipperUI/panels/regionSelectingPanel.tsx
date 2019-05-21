@@ -8,6 +8,10 @@ class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 		this.props.clipperState.reset();
 	}
 
+	initiallySetFocusToBackButton(element: HTMLElement) {
+		element.focus();
+	}
+
 	render() {
 		return (
 			<div id={Constants.Ids.regionInstructionsContainer}>
@@ -21,7 +25,9 @@ class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 						</span>
 					</div>
 					<div className="wideButtonContainer">
-						<a id={Constants.Ids.regionClipCancelButton} role="button" {...this.enableInvoke({callback: this.handleCancelButton, tabIndex: 70})}>
+						<a id={ Constants.Ids.regionClipCancelButton } role="button"
+							{...this.onElementFirstDraw(this.initiallySetFocusToBackButton)}
+							{...this.enableInvoke({callback: this.handleCancelButton, tabIndex: 0})} >
 							<span className="wideButtonFont wideActionButton" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 								{Localization.getLocalizedString("WebClipper.Action.BackToHome")}
 							</span>
