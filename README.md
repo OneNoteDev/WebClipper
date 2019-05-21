@@ -27,6 +27,7 @@ $ npm run build -- --<arg>
 1. In chrome, open chrome://extensions/
 2. Enable developer mode (upper right toggle)
 3. Click on "load unpacked" and select the target/chrome folder
+4. On subsequent builds, you don't have to go through this flow again. Simply refreshing the page should update the add-in
 
 ### 4. Running in edge
 [Microsoft instructions](https://docs.microsoft.com/en-us/microsoft-edge/extensions/guides/adding-and-removing-extensions)
@@ -35,6 +36,7 @@ $ npm run build -- --<arg>
 3. Restart edge
 4. Click on top right "...", then Extensions
 5. Click on load extension and select the target\edge\OneNoteWebClipper\edgeextension\manifest\extension
+6. On subsequent builds, you need to go through steps (4) and (5) again
 
 ### 5. Looking at console output
 Set the "enable_console_logging" local storage entry to true

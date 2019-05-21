@@ -55,7 +55,8 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}
 						className={!titleIsEditable ? Constants.Classes.textAreaInput + inProgressClassIfApplicable : Constants.Classes.textAreaInput}
 						value={contentTitle}
-						readOnly={!titleIsEditable}>
+						readOnly={!titleIsEditable}
+						placeholder={Localization.getLocalizedString("WebClipper.Label.PageTitlePlaceholder")} >
 					</textarea>
 				</div>
 			);
