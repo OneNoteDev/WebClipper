@@ -103,7 +103,7 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}
 						value={!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
 						onblur={this.onDoneEditing.bind(this) } { ...this.onElementFirstDraw(this.setFocus)}
-						placeholder="Jorge was here 2!" >
+						placeholder={Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")} >
 					</textarea>
 				</div>
 			);
