@@ -126,10 +126,6 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		};
 	}
 
-	initiallySetFocusToBackButton(element: HTMLElement) {
-		element.focus();
-	}
-
 	private getListOfButtons(): HTMLElement[] {
 		let currentMode = this.props.clipperState.currentMode.get();
 
@@ -159,7 +155,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		return (
 			<div>
 				{this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode)}
-				<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox" className="modeButtonContainer" {...this.onElementFirstDraw(this.initiallySetFocusToBackButton)}>
+				<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox" className="modeButtonContainer">
 					{ this.getListOfButtons() }
 				</div>
 			</div>
