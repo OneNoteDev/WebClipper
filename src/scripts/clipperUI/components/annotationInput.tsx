@@ -102,7 +102,8 @@ class AnnotationInputClass extends ComponentBase<AnnotationInputState, ClipperSt
 						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage")}
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}
 						value={!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
-						onblur={this.onDoneEditing.bind(this)} {...this.onElementFirstDraw(this.setFocus)}>
+						onblur={this.onDoneEditing.bind(this) } { ...this.onElementFirstDraw(this.setFocus)}
+						placeholder={Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")} >
 					</textarea>
 				</div>
 			);

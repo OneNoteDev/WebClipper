@@ -77,6 +77,7 @@
 	"WebClipper.FromCitation": "Clipped from: {0}",
 	"WebClipper.Label.Annotation": "Note",
 	"WebClipper.Label.AnnotationPlaceholder": "Add a note...",
+	"WebClipper.Label.PageTitlePlaceholder": "Add a page title...",
 	"WebClipper.Label.AttachPdfFile": "Attach PDF file",
 	"WebClipper.Label.AttachPdfFileSubText": "(all pages)",
 	"WebClipper.Label.ClipImageToOneNote": "Clip Image to OneNote",
