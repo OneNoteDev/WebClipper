@@ -87,7 +87,7 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 			secondColumnTdStyle += "padding-left:16px;";
 		}
 
-		let urlTdStyle = "white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
+		let urlTdStyle = "white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px;";
 		if (!ObjectUtils.isNullOrUndefined(result.description)) {
 			urlTdStyle += "padding-bottom:13px;";
 		}
@@ -101,7 +101,7 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 							{ this.renderTitleIfExists(result.title) }
 							<tr>
 								<td style={urlTdStyle}>
-									<a tabIndex={-1} href={url} target="_blank" title={url}>{url}</a>
+									<a class="tabbableLink" tabIndex={250} href={url} target="_blank" title={url}>{url}</a>
 								</td>
 							</tr>
 							{ this.renderDescriptionIfExists(result.description) }
