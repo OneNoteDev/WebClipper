@@ -61,6 +61,25 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 				if (ev.altKey && ev.which === Constants.KeyCodes.c) {
 					this.checkOptionsBeforeStartClip();
 				}
+
+				// Prevent focus on Edge+Narrator from going into the background page by looping focus on our page
+				if (ev.shiftKey && ev.keyCode === Constants.KeyCodes.tab) {
+					const targetAsAny = ev.target as any
+					if (targetAsAny && targetAsAny.id) {
+						const idsThatShouldLoopFocus = [
+							"fullPageButton",
+							"bookmarkButton",
+							"regionButton",
+							"augmentationButton"
+						]
+						if (idsThatShouldLoopFocus.indexOf(targetAsAny.id) != -1) {
+							document.getElementById('closeButton').focus()
+							ev.preventDefault();
+							ev.stopImmediatePropagation();
+							return;
+						}
+					}
+				}
 				if (oldOnKeyDown) {
 					oldOnKeyDown.call(document, ev);
 				}
