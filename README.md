@@ -48,7 +48,7 @@ Every store is different and you'll have to look at our internal guide to unders
 [Instructions here](https://docs.microsoft.com/en-us/microsoft-edge/extensions/guides/packaging/using-manifoldjs-to-package-extensions)
 1. Build locally `npm run build`
 2. Run `npm run pack-edge`. The results will be in /OneNoteWebClipper/EdgeExtension
-3. Now log into the [developer site](https://developer.microsoft.com/en-us/dashboard/apps/9NBLGGH4R01N) and update the package
+3. Now follow our internal instructions to update the package
 
 ## Congratulations!
 At this point you should see the tests passing, and see the packaged code in the `target` folder
