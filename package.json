@@ -11,8 +11,7 @@
     "watch": "gulp watch",
     "build": "gulp build",
     "full": "gulp full",
-    "clean": "gulp clean",
-    "pack-edge": "manifoldjs -l debug -p edgeextension -f edgeextension -m ./target/edge/OneNoteWebClipper/edgeextension/manifest/extension/manifest.json"
+    "clean": "gulp clean"
   },
   "repository": {
     "type": "git",
@@ -57,7 +56,6 @@
     "gulp-zip": "4.0.0",
     "json3": "3.3.2",
     "lodash": "4.17.4",
-    "manifoldjs": "^0.7.6",
     "merge-stream": "1.0.1",
     "mithril": "0.2.5",
     "node-qunit-phantomjs": "1.5.0",
