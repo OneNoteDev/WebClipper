@@ -1,0 +1,1424 @@
+/*---------------------------------------------------------*
+	Constant Sizes
+*---------------------------------------------------------*/
+/*---------------------------------------------------------*
+	Constant Colors
+*---------------------------------------------------------*/
+/*---------------------------------------------------------*
+	Fonts
+*---------------------------------------------------------*/
+@font-face {
+  font-family: 'Segoe UI';
+  src: url('segoeui.eot');
+  src: local("Segoe UI"), local("Segoe"), local("Segoe WP"), url('https://www.onenote.com/styles/segoeui.eot?#iefix') format('embedded-opentype'), url('https://www.onenote.com/styles/segoeui.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Segoe UI Light';
+  src: url('segoeuil.eot');
+  src: local("Segoe UI Light"), local("Segoe WP Light"), url('https://www.onenote.com/styles/segoeuil.eot?#iefix') format('embedded-opentype'), url('https://www.onenote.com/styles/segoeuil.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+/*---------------------------------------------------------*
+	Global Overrides
+*---------------------------------------------------------*/
+html ::-webkit-scrollbar,
+html ::-webkit-scrollbar-thumb:vertical,
+html ::-webkit-scrollbar-thumb:horizontal {
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+}
+html ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html ::-webkit-scrollbar-thumb:vertical,
+html ::-webkit-scrollbar-thumb:horizontal {
+  background: rgba(0, 0, 0, 0.5);
+  -moz-background-clip: padding-box;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  border: 2px solid rgba(0, 0, 0, 0);
+  min-height: 10px;
+}
+body {
+  font-size: 100%;
+  margin: 0;
+}
+a {
+  text-decoration: none;
+  cursor: pointer;
+}
+@keyframes loading {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+:focus {
+  outline: solid 1px #f8f8f8;
+}
+/*---------------------------------------------------------*
+	Styles used to manage the shared textArea input boxes.
+*---------------------------------------------------------*/
+.textAreaInput,
+.textAreaInputMirror {
+  font-family: Calibri, 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+  font-size: inherit;
+  line-height: inherit;
+  background-color: #f4f4f4;
+  border: 1px solid transparent;
+  margin: 0px;
+  outline: 0px;
+  padding: 2px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.textAreaInput:hover,
+.textAreaInputMirror:hover {
+  border: 1px solid gray;
+}
+.textAreaInput:focus,
+.textAreaInputMirror:focus {
+  border: 1px solid gray;
+}
+.tabbableLink:focus {
+  border: 1px solid gray;
+}
+.textAreaInput {
+  position: absolute;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  top: 0px;
+  right: 0px;
+  resize: none;
+}
+.textAreaInputMirror {
+  display: block;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  visibility: hidden;
+}
+/*---------------------------------------------------------*
+	Styles used in the <annotationInput> control.
+*---------------------------------------------------------*/
+#annotationContainer {
+  margin-top: 8px;
+  position: relative;
+}
+#annotationField {
+  font-size: 16px;
+}
+#annotationPlaceholder {
+  cursor: pointer;
+  color: #7321a6;
+  display: block;
+  border: 1px solid transparent;
+  margin: 0px;
+  padding: 2px;
+}
+#annotationPlaceholder:hover {
+  border: 1px solid gray;
+}
+#annotationPlaceholder:focus {
+  border: 1px solid gray;
+}
+#annotationPlaceholder > img {
+  padding-left: 8px;
+}
+/*---------------------------------------------------------*
+	Main clipper UI class defines
+*---------------------------------------------------------*/
+.popover-arrow {
+  content: " ";
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: absolute;
+  border-width: 0px 10px 10px 10px;
+  border-color: #e81123 transparent #e81123 transparent;
+  top: -5px;
+  right: calc(50%, -5px);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.popover {
+  font-family: 'Segoe UI', 'Segoe', 'Segoe WP', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+  box-shadow: -2px 2px 6px rgba(0, 0, 0, 0.28);
+  position: absolute;
+  background: #e81123;
+  font-size: 15px;
+  line-height: 20px;
+  pointer-events: none;
+  word-wrap: break-word;
+  color: white;
+  max-width: 160px;
+  border-radius: 3px;
+  padding: 4px;
+  text-align: center;
+  margin-top: 5px;
+}
+.actionLabelFont {
+  font-weight: normal;
+  font-size: 24px;
+  color: white;
+}
+.buttonLabelFont {
+  font-weight: normal;
+  font-size: 15px;
+  color: white;
+}
+.changeDescriptionFont {
+  font-weight: normal;
+  font-size: 13px;
+  color: #e5d5ed;
+}
+.changeTitleFont {
+  font-weight: normal;
+  font-size: 13px;
+  color: white;
+}
+.closeButtonIcon {
+  height: 10px;
+  width: 10px;
+  padding: 7px;
+}
+.control-button:focus {
+  outline: solid 1px #f8f8f8 !important;
+  outline-offset: 1px;
+}
+.currentUserIdFont {
+  font-weight: normal;
+  font-size: 9px;
+  color: #e5d6ec;
+}
+.dialogMessageFont {
+  font-weight: normal;
+  font-size: 18px;
+  color: white;
+}
+#dialogDebugMessageContainer {
+  font-size: 10px;
+  color: white;
+  padding-top: 20px;
+  -webkit-touch-callout: text;
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  -o-user-select: text;
+  user-select: text;
+}
+.failureMessageFont {
+  font-weight: normal;
+  font-size: 18px;
+  color: white;
+}
+.footerButtonsContainer {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flex;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: flex-start;
+}
+.footerButtonsLeft {
+  text-align: right;
+  -webkit-flex: 2;
+  -ms-flex: 2;
+  flex: 2;
+  margin-right: 1px;
+  margin-bottom: 1px;
+}
+.footerButtonsLeft #feedbackButton {
+  position: absolute;
+}
+.footerButtonsLeft #feedbackButton #feedbackImage {
+  position: relative;
+  float: right;
+}
+.footerButtonsLeft #feedbackButton #feedbackLabel {
+  position: relative;
+  float: left;
+}
+.footerButtonsRight {
+  margin-left: 1px;
+  margin-bottom: 1px;
+  display: flex;
+  flex-direction: row;
+}
+.footerFont {
+  font-weight: normal;
+  font-size: 11px;
+  color: #e5d6ec;
+}
+.informationLabelFont {
+  font-weight: normal;
+  font-size: 24px;
+  color: white;
+}
+.modeButton {
+  direction: rtl;
+  display: -webkit-flex;
+  display: -ms-flex;
+  display: inline-flex;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  width: 99%;
+}
+.modeButton:first-child {
+  margin-top: 1px;
+}
+.modeButton:hover {
+  background: #8f4db8;
+}
+.modeButton.selected {
+  background: #56197c;
+}
+.modeButton .icon {
+  height: 24px;
+  padding: 12px;
+  margin: auto;
+}
+.modeButton .label {
+  display: flex;
+  align-items: center;
+  -webkit-flex: 2;
+  -ms-flex: 2;
+  flex: 2;
+  padding-right: 8px;
+  text-align: right;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.clipOptionsContainer {
+  text-align: right;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.clipOptionsContainer .clipOptionsTitleContainer {
+  margin-bottom: 3px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  color: white;
+  font-family: 'Segoe UI', 'Segoe', 'Segoe WP', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+}
+.clipOptionsContainer .clipOptionsTitleContainer .moreClipOptions {
+  cursor: pointer;
+}
+.clipOptionsContainer .clipOptionsTitleContainer .moreClipOptions .arrow {
+  height: 6px;
+  margin-right: 5px;
+  margin-bottom: 1px;
+}
+.clipOptionsContainer .pdf-label-margin {
+  margin-right: 26px;
+}
+.clipOptionsContainer .pdf-label-margin .pdf-label {
+  font-size: 15px;
+  font-family: 'Segoe UI', 'Segoe', 'Segoe WP', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+  color: #E1B1FF;
+  cursor: pointer;
+  position: relative;
+  line-height: 20px;
+}
+.clipOptionsContainer .pdf-label-margin .pdf-label.disabled {
+  color: #E1B1FF;
+  cursor: default;
+}
+.clipOptionsContainer .pdf-label-margin .pdf-label.focused {
+  color: #fff;
+}
+.clipOptionsContainer .pdf-label-margin .pdf-label .sub-label {
+  color: #E1B1FF;
+}
+.clipOptionsContainer .pdf-control {
+  cursor: pointer;
+  position: relative;
+  line-height: 28px;
+  margin-left: auto;
+  margin-bottom: 4px;
+}
+.clipOptionsContainer .pdf-control.disabled {
+  cursor: default;
+}
+.clipOptionsContainer .pdf-indicator {
+  position: absolute;
+  top: 7px;
+  right: 0px;
+  width: 14px;
+  height: 14px;
+}
+.clipOptionsContainer .pdf-indicator.pdf-checkbox-indicator {
+  border: 1px solid white;
+  border-radius: 2px;
+  background-color: rgba(128, 46, 179, 0.95);
+}
+.clipOptionsContainer .pdf-indicator.pdf-checkbox-indicator.disabled {
+  border: 1px solid #E1B1FF;
+}
+.clipOptionsContainer .pdf-indicator.pdf-radio-indicator {
+  border: 1px solid #fff;
+  border-radius: 100%;
+}
+.clipOptionsContainer .pdf-indicator.pdf-radio-indicator .radio-indicator-fill {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  background-color: white;
+  border-radius: 100%;
+}
+.clipOptionsContainer .pdf-label:focus {
+  outline: solid 1px #f8f8f8;
+  outline-offset: 2px;
+}
+.clipOptionsContainer .checkboxCheck {
+  position: absolute;
+  top: 7px;
+  right: 6px;
+  width: 4px;
+  height: 11px;
+  transform: rotate(-45deg);
+  border: 1px solid white;
+  background: transparent;
+  border-width: 0 0 1px 1px;
+}
+.clipOptionsContainer .warning-image {
+  position: absolute;
+  top: 7px;
+  width: 16px;
+  height: 16px;
+}
+.clipOptionsContainer #rangeInput {
+  margin-right: 22px;
+  border-radius: 2px;
+  background-color: rgba(128, 46, 179, 0.95);
+  height: 24px;
+  line-height: 20px;
+  padding-right: 6px;
+  width: 128px;
+  border: 1px solid #e1b1ff;
+  font-family: 'Segoe UI', 'Segoe', 'Segoe WP', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+  font-size: 14px;
+  color: #e1b1ff;
+  outline: none;
+  user-select: auto;
+  float: right;
+}
+.clipOptionsContainer #rangeInput.focused {
+  color: #fff;
+  border-color: #fff;
+}
+.clipOptionsContainer #rangeInput.selected {
+  outline: solid 1px #f8f8f8 !important;
+  outline-offset: 2px;
+}
+.clipOptionsContainer #rangeInput.invalid {
+  border: #e81123 1px solid;
+  height: 24px;
+}
+.clipOptionsContainer #rangeInput::-webkit-input-placeholder {
+  font-style: italic;
+  color: #e5d6ec;
+}
+.clipOptionsContainer #rangeInput:-moz-placeholder {
+  font-style: italic;
+  color: #e5d6ec;
+}
+.clipOptionsContainer #rangeInput::-moz-placeholder {
+  font-style: italic;
+  color: #e5d6ec;
+}
+.clipOptionsContainer #rangeInput:-ms-input-placeholder {
+  font-style: italic;
+  color: #e5d6ec;
+}
+.messageLabel {
+  white-space: normal;
+}
+.messageLabelContainer {
+  padding-bottom: 20px;
+}
+.optionLabel {
+  margin-bottom: 10px;
+  text-align: right;
+}
+.panelContent {
+  direction: rtl;
+}
+.progressPadding {
+  padding-top: 25px;
+  padding-bottom: 31px;
+}
+#clipProgressDelayedMessage,
+#clipProgressIndicatorMessage {
+  font-size: 16px;
+  color: #e5d6ec;
+}
+.regionClipPadding {
+  padding-bottom: 6px;
+}
+.resultPagePadding {
+  padding-top: 25px;
+  padding-bottom: 15px;
+}
+.spinner {
+  height: 32px;
+  width: 32px;
+  margin-bottom: -6px;
+  display: inline-block;
+}
+.spinnerText {
+  font-size: 16px;
+}
+.successPagePadding {
+  padding-top: 16px;
+  padding-bottom: 24px;
+}
+.userActionButton {
+  float: left;
+}
+.userDetails {
+  text-align: right;
+  margin: 2px;
+}
+.userDivider {
+  border: none;
+  background-color: #e6b3cf;
+  color: #e6b3cf;
+  height: 1px;
+  margin-top: 12px;
+  margin-bottom: 14px;
+  opacity: 0.3;
+}
+.userSettingsFont {
+  font-weight: normal;
+  font-size: 12px;
+  color: #e5d6ec;
+}
+.wideActionButton {
+  display: inline-block;
+  line-height: 30px;
+  vertical-align: middle;
+  width: 100%;
+}
+.wideActionButton:focus {
+  outline: solid 1px #f8f8f8 !important;
+  outline-offset: 2px;
+}
+.wideButtonContainer {
+  background: #ffffff;
+  border: 1px solid #ffffff;
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+.wideButtonContainer:hover {
+  background: #e5d6ec;
+  border-color: #e5d6ec;
+}
+.wideButtonContainer.disabled {
+  background: gray;
+  border-color: gray;
+}
+.wideButtonContainer.disabled a {
+  cursor: default;
+}
+.wideButtonContainer:focus {
+  outline: solid 1px #f8f8f8 !important;
+  outline-offset: 2px;
+}
+.wideButtonFont {
+  font-family: 'Segoe UI', 'Segoe', 'Segoe WP', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+  font-weight: normal;
+  font-size: 11pt;
+  color: #7e2ea6;
+}
+.loadingContainer {
+  animation: loading 4s linear infinite alternate;
+}
+.loadingContainer img {
+  display: block;
+}
+#ratingsPromptContainer {
+  overflow: hidden;
+  padding-right: 24px;
+  padding-left: 24px;
+  margin: 30px -24px -20px;
+  padding-bottom: 30px;
+}
+#ratingsPromptContainer .resultPagePadding {
+  padding-top: 0px;
+}
+#ratingsPromptContainer .messageLabelContainer {
+  padding-bottom: 0px;
+}
+#ratingsPromptContainer .messageLabelContainer .dialogMessageFont {
+  font-size: 15px;
+}
+#ratingsPromptContainer .messageLabelContainer .messageLabel {
+  position: relative;
+}
+#ratingsPromptContainer .dialogButton .wideButtonContainer {
+  position: relative;
+  background: transparent;
+}
+#ratingsPromptContainer .dialogButton .wideButtonContainer .wideButtonFont {
+  color: #ffffff;
+  font-size: 15px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 0px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+/*---------------------------------------------------------*
+	Styles for the SignIn Panel
+*---------------------------------------------------------*/
+.signInDescription {
+  color: white;
+  font-size: 16px;
+  padding-bottom: 28px;
+}
+.signInErrorCookieInformation {
+  padding-bottom: 10px;
+}
+#signInErrorDescription {
+  color: white;
+  font-size: 13px;
+  text-align: right;
+  -moz-user-select: text;
+  -khtml-user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+#signInErrorDebugInformationContainer {
+  color: white;
+  font-size: 13px;
+  text-align: right;
+}
+#signInErrorDebugInformationList {
+  list-style: none;
+  padding-right: 0;
+  font-size: 12px;
+}
+#signInErrorToggleInformation {
+  text-align: right;
+  padding-bottom: 15px;
+  padding-top: 15px;
+  font-size: 13px;
+}
+#signInToggleErrorDropdownArrow {
+  float: right;
+  width: 10px;
+  padding-top: 7px;
+}
+#signInToggleErrorInformationText {
+  color: white;
+  padding-right: 4px;
+}
+.signInPadding {
+  padding-bottom: 6px;
+}
+/*---------------------------------------------------------*
+	Styles associated with the preview window
+*---------------------------------------------------------*/
+#previewOuterContainer {
+  background-color: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  bottom: 0px;
+  right: 0px;
+}
+#previewOuterContainer #previewInnerWrapper {
+  position: fixed;
+  width: 664px;
+  top: 20px;
+  bottom: 20px;
+  left: 362px;
+  right: initial;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer {
+  display: -webkit-flex;
+  display: -ms-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  background-color: rgba(128, 46, 179, 0.95);
+  overflow: hidden;
+  max-width: 664px;
+  min-width: 340px;
+  margin: auto;
+  height: 100%;
+  position: relative;
+  border: 1px;
+  border-style: solid;
+  border-color: #7321a6;
+  border-radius: 8px;
+  box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.5);
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer.bookmarkPreviewInnerContainer {
+  height: auto;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer h1,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer h2,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer h3,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer h4,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer h5,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer h6 {
+  font-family: Calibri, 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+  font-weight: normal;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer {
+  height: 52px;
+  display: inline-block;
+  background: rgba(128, 46, 179, 0.95);
+  margin-bottom: 0px;
+  direction: rtl;
+  /*#pageRangeControl {
+					// Temporary workaround that fixes styling issues with the PDF Preview Header
+					// in Safari as of 10/21/2016
+					width: 300px;
+				}*/
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer * {
+  user-select: none;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #localPdfFileTitle {
+  line-height: 32px;
+  font-size: 16px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #fullPageControl,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #bookmarkControl,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #regionControl,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #pdfControl,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #augmentationHeaderControlGroupId {
+  height: 32px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #fullPageControl #fullPageHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #bookmarkControl #fullPageHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #regionControl #fullPageHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #pdfControl #fullPageHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #augmentationHeaderControlGroupId #fullPageHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #fullPageControl #bookmarkHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #bookmarkControl #bookmarkHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #regionControl #bookmarkHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #pdfControl #bookmarkHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #augmentationHeaderControlGroupId #bookmarkHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #fullPageControl #regionHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #bookmarkControl #regionHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #regionControl #regionHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #pdfControl #regionHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #augmentationHeaderControlGroupId #regionHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #fullPageControl #pdfHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #bookmarkControl #pdfHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #regionControl #pdfHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #pdfControl #pdfHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #augmentationHeaderControlGroupId #pdfHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #fullPageControl #augmentationHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #bookmarkControl #augmentationHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #regionControl #augmentationHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #pdfControl #augmentationHeaderTitle,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #augmentationHeaderControlGroupId #augmentationHeaderTitle {
+  font-size: 16px;
+  cursor: default;
+  line-height: 32px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #radioPageRangeControl {
+  margin-right: 6px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #addRegionControl #addAnotherRegionButton {
+  font-size: 14px;
+  min-width: 91px;
+  padding: 0;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #addRegionControl #addAnotherRegionButton > * {
+  padding-right: 8px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #addRegionControl #addAnotherRegionButton > *:last-child {
+  padding-left: 8px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #highlightControl {
+  height: 28px;
+  vertical-align: middle;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #highlightControl #highlightButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #highlightControl #highlightButton:hover {
+  background-color: #8f4db8;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #highlightControl #highlightButton.active {
+  background-color: #fff;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #incrementFontSize img,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #decrementFontSize img {
+  width: 18px;
+  height: 18px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #incrementFontSize {
+  margin-right: 6px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #serifControl #sansSerif {
+  font-family: Verdana;
+  font-size: 14px;
+  min-width: 91px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer #serifControl #serif {
+  font-family: Georgia;
+  letter-spacing: 1px;
+  font-size: 14px;
+  min-width: 91px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer .control-button {
+  text-align: center;
+  vertical-align: middle;
+  background-color: rgba(128, 46, 179, 0.95);
+  border: 1px solid white;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  height: 28px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer .control-button.active {
+  background: #fff;
+  color: #7321a6;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer .control-button:hover:not(.active) {
+  background: #8f4db8;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer .control-button :focus {
+  outline: 0;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer .control-button img {
+  vertical-align: middle;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer .related-buttons {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  margin-right: 24px;
+  display: inline-block;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer .control-button-group {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  margin-right: 24px;
+  display: inline-block;
+  position: relative;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer .control-button-group > .control-button:first-child:not(:last-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewOptionsContainer .control-button-group > .control-button:last-child:not(:first-child) {
+  border-top-right-radius: 0;
+  margin-right: -1px;
+  border-bottom-right-radius: 0;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer {
+  background-color: white;
+  overflow: auto;
+  -webkit-flex: 2;
+  -ms-flex: 2;
+  flex: 2;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer.in-progress {
+  display: -webkit-flex;
+  display: -ms-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer.bookmarkPreviewContentContainer {
+  background-color: #f4f4f4;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer.bookmarkPreviewContentContainer.in-progress {
+  background-color: #f4f4f4;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer.local-pdf-file-content-container {
+  background-color: rgba(128, 46, 179, 0.95);
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer .local-pdf-panel-title {
+  font-size: 24px;
+  text-align: center;
+  color: white;
+  padding: 60px 40px 20px 40px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer .local-pdf-panel-subtitle {
+  font-size: 16px;
+  text-align: center;
+  color: white;
+  padding: 40px 40px 60px 40px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewHeaderContainer {
+  direction: rtl;
+  background-color: #f4f4f4;
+  padding: 15px 20px 15px 20px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewHeaderContainer #previewTitleContainer {
+  border-bottom: solid 1px #7321a6;
+  margin-bottom: 4px;
+  padding-bottom: 2px;
+  position: relative;
+  font-size: 20px;
+  line-height: 32px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewHeaderContainer #previewTitleContainer #previewHeaderInput:not(.in-progress):hover {
+  border: 1px solid gray;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewHeaderContainer #previewTitleContainer #previewHeaderInput:not(.in-progress):focus {
+  border: 1px solid gray;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewHeaderContainer #previewNotesContainer {
+  color: #7321a6;
+  font-size: 15px;
+  padding: 10px 0 10px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewHeaderContainer #previewUrlContainer {
+  margin-top: 6px;
+  padding: 2px;
+  padding-right: 3px;
+  color: #7321a6;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody {
+  direction: rtl;
+  vertical-align: baseline;
+  padding: 0px 20px 0px 20px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody.in-progress {
+  display: -webkit-flex;
+  display: -ms-flex;
+  display: flex;
+  -webkit-flex: 2;
+  -ms-flex: 2;
+  flex: 2;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  text-align: center;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody a {
+  text-decoration: underline;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody figure {
+  margin-right: 0px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody h3,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody h4,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody h5,
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody h6 {
+  color: #5b9bd5;
+  margin-top: 14pt;
+  margin-bottom: 14pt;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody h2 {
+  font-size: 18px;
+  color: #2e75b5;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody h3 {
+  font-size: 16px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody h4 {
+  font-size: 16px;
+  font-style: italic;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody h5 {
+  font-size: 15px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody h6 {
+  font-size: 15px;
+  font-style: italic;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody img:not(.delete-highlight) {
+  display: block !important;
+  height: auto !important;
+  max-width: 100% !important;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody img.delete-highlight {
+  position: absolute;
+  display: inline;
+  cursor: pointer;
+  padding: 3px;
+  margin: 0;
+  line-height: 0;
+  left: -12px;
+  top: -7px;
+  height: 14px;
+  width: 14px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody pre {
+  white-space: pre-wrap;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody table {
+  table-layout: fixed;
+  width: 100%;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .centered-in-preview {
+  margin: 0;
+  top: 40%;
+  right: 52%;
+  position: absolute;
+  width: 100%;
+  transform: translate(50%, -50%);
+  word-wrap: break-word;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .centered-in-preview > * {
+  vertical-align: middle;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody #spinnerText {
+  max-width: 500px;
+  margin-right: auto;
+  margin-left: auto;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody span.highlighted {
+  position: relative;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody #highlightablePreviewBody.highlightable {
+  cursor: url('images/editoroptions/highlight_cursor.cur'), text;
+  cursor: url('images/editoroptions/highlight_cursor.cur') 16 16, text;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody #highlightablePreviewBody.highlightable * ::selection {
+  background: #fefe56;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .region-selection {
+  position: relative;
+  display: inline-block;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .region-selection .region-selection-remove-button {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .pdf-preview-image-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .pdf-preview-image-container .pdf-preview-image-canvas {
+  width: 100%;
+  margin-top: 24px;
+  box-shadow: 0px 0px 10px lightgray;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .pdf-preview-image-container .pdf-preview-image-canvas.unselected {
+  opacity: 0.3;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .pdf-preview-image-container .pdf-preview-image-canvas .centered-in-canvas {
+  top: 50%;
+  right: 50%;
+  position: absolute;
+  transform: translate(50%, -50%);
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .pdf-preview-image-container:last-child {
+  margin-bottom: 24px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .pdf-preview-image-container .overlay {
+  min-width: 36px;
+  height: 36px;
+  background-color: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin-top: 24px;
+  transition: opacity 0.167s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .pdf-preview-image-container .overlay.overlay-hidden {
+  -webkit-transition: opacity 0.267s ease-in-out;
+  -moz-transition: opacity 0.267s ease-in-out;
+  -o-transition: opacity 0.267s ease-in-out;
+  transition: opacity 0.267s ease-in-out;
+  opacity: 0;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .pdf-preview-image-container .overlay .overlay-number {
+  font-size: 15px;
+  font-family: 'Segoe UI', 'Segoe', 'Segoe WP', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+  color: white;
+  margin-bottom: 2px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .attachment-overlay {
+  width: 84px;
+  height: 96px;
+  margin: 0px;
+  padding: 0px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .attachment-overlay img {
+  margin: 5px 18px 5px 18px;
+  width: 48px;
+  height: 48px;
+}
+#previewOuterContainer #previewInnerWrapper #previewInnerContainer #previewContentContainer #previewBody .attachment-overlay .file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 84px;
+  padding: 0px;
+  font-size: 13px;
+  text-align: center;
+  word-wrap: normal;
+  line-height: 1.5em;
+}
+@media (max-width: 1026px) {
+  #previewOuterContainer #previewInnerWrapper {
+    left: initial;
+    right: 0px;
+  }
+}
+/*---------------------------------------------------------*
+	Styles we need to override/define for the section picker.
+*---------------------------------------------------------*/
+#locationPickerContainer {
+  margin-top: 15px;
+  text-align: right;
+}
+#saveToLocationContainer {
+  width: auto;
+}
+#sectionLocationContainer:focus {
+  outline: solid 1px #f8f8f8 !important;
+  outline-offset: 2px !important;
+}
+.SaveToLocationContainer {
+  border: 1px white solid;
+  font-family: 'Segoe UI', 'Segoe', 'Segoe WP', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+  line-height: 30px;
+  margin-left: 3px;
+  margin-right: 3px;
+}
+.SectionPickerContainer {
+  font-family: 'Segoe UI Semibold', 'Segoe UI', 'Segoe', 'Segoe WP', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+  color: #604a60;
+}
+.SectionPickerPopup * {
+  font-size: 14px;
+  line-height: 20px;
+}
+.OpenSectionPickerArrow {
+  padding-left: 12px;
+}
+.height-animator {
+  position: relative;
+  overflow: hidden;
+}
+.clearfix:before,
+.clearfix:after {
+  content: ".";
+  display: block;
+  height: 0;
+  overflow: hidden;
+}
+.clearfix:after {
+  clear: both;
+}
+.clearfix {
+  zoom: 1;
+}
+.panel-animator {
+  position: relative;
+}
+.hiddenOptionsAnimator {
+  opacity: 0;
+}
+#pageNavAnimatedTooltip {
+  width: 100px;
+}
+.tooltip {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: #7321a6;
+  background: rgba(128, 46, 179, 0.95);
+  border-radius: 8px;
+  box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.5);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.tooltip .tooltip-title {
+  position: absolute;
+  right: 50%;
+  padding: 5px;
+  transform: translate(50%);
+  color: #ffffff;
+  font-size: 15px;
+}
+.tooltip .tooltip-corner-branding {
+  position: absolute;
+  left: 100%;
+  margin-left: -125px;
+  font-size: 12px;
+  color: white;
+  font-family: 'Segoe UI Light', Tahoma, Geneva, Verdana, sans-serif;
+}
+.tooltip .tooltip-image {
+  margin-bottom: 20px;
+}
+.tooltip .tooltip-content {
+  direction: rtl;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-left: 24px;
+  padding-bottom: 24px;
+  text-align: center;
+  width: 274px;
+}
+.tooltip .tooltip-content.changelog-content {
+  width: 294px;
+  padding-left: 4px;
+}
+.tooltip .tooltip-content.tooltip-upsell .dialogMessageFont {
+  font-size: 22px;
+  font-family: 'Segoe UI Light', 'Segoe UI', 'Segoe', 'Segoe WP', 'Helvetica Neue', 'Roboto', 'Helvetica', 'Arial', 'Tahoma', 'Verdana', 'sans-serif';
+}
+.tooltip ::-webkit-scrollbar-thumb:vertical,
+.tooltip ::-webkit-scrollbar-thumb:horizontal {
+  background: rgba(255, 255, 255, 0.5);
+  -moz-background-clip: padding-box;
+  -webkit-background-clip: padding-box;
+  background-clip: padding-box;
+  border: 2px solid rgba(0, 0, 0, 0);
+  min-height: 10px;
+}
+.changes {
+  text-align: right;
+  max-height: 300px;
+  overflow: auto;
+  padding-left: 20px;
+  margin-top: 28px;
+  margin-bottom: 20px;
+}
+.changes .change {
+  display: -webkit-flex;
+  display: -ms-flex;
+  display: flex;
+  padding-bottom: 20px;
+}
+.changes .change:not(:first-child) {
+  padding-top: 20px;
+}
+.changes .change:not(:last-child) {
+  border-bottom: 1px solid #9e62bc;
+}
+.changes .change .change-image {
+  vertical-align: top;
+  margin-top: 3px;
+  margin-left: 16px;
+}
+.changes .change .change-image img {
+  width: 24px;
+}
+.changes .change .change-body {
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+.changes .change .change-body .change-image {
+  width: 150px;
+  margin-left: 20px;
+}
+.changes .change .change-body .change-title span {
+  vertical-align: top;
+}
+.changes .change:not(:last-child) > .change-content > .change-description {
+  padding-bottom: 20px;
+  border-bottom: solid 1px white;
+}
+.changelog-button {
+  width: auto;
+  margin-left: 20px;
+}
+/*---------------------------------------------------------*
+	Constant Sizes
+*---------------------------------------------------------*/
+/*---------------------------------------------------------*
+	Constant Colors
+*---------------------------------------------------------*/
+/*---------------------------------------------------------*
+	Fonts
+*---------------------------------------------------------*/
+@font-face {
+  font-family: 'Segoe UI';
+  src: url('segoeui.eot');
+  src: local("Segoe UI"), local("Segoe"), local("Segoe WP"), url('https://www.onenote.com/styles/segoeui.eot?#iefix') format('embedded-opentype'), url('https://www.onenote.com/styles/segoeui.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Segoe UI Light';
+  src: url('segoeuil.eot');
+  src: local("Segoe UI Light"), local("Segoe WP Light"), url('https://www.onenote.com/styles/segoeuil.eot?#iefix') format('embedded-opentype'), url('https://www.onenote.com/styles/segoeuil.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+/*---------------------------------------------------------*
+	ID Styles
+*---------------------------------------------------------*/
+#clipButtonContainer {
+  margin-top: 15px;
+}
+#clipperFooterContainer {
+  padding-top: 12px;
+  white-space: nowrap;
+}
+#closeButtonContainer {
+  float: left;
+  margin-right: -30px;
+  right: 100%;
+}
+#closeButton:focus {
+  outline: solid 1px #f8f8f8;
+}
+#currentUserDetails {
+  text-align: left;
+}
+#currentUserControl {
+  display: flex;
+  flex-direction: row;
+}
+#feedbackImage {
+  height: 13px;
+  width: 13px;
+  padding-left: 5px;
+  padding-top: 2px;
+}
+#highlightButton:focus {
+  outline: solid 1px #f8f8f8;
+  outline-offset: 2px;
+}
+#unsupportedBrowserContainer {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  height: 225px;
+  width: 322px;
+  background: #7321a6;
+  border-radius: 8px;
+  box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  color: white;
+}
+#unsupportedBrowserContainer #unsupportedBrowserPanel {
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-left: 24px;
+  padding-bottom: 18px;
+}
+#mainController {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 100px;
+  background: rgba(128, 46, 179, 0.95);
+  border-radius: 8px;
+  box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.5);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+#mainController #optionLabel {
+  margin: 5px;
+}
+#mainController .panelContent {
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-left: 24px;
+  padding-bottom: 18px;
+  text-align: center;
+  width: 274px;
+}
+#regionButton .icon {
+  padding-left: 8px;
+}
+#regionClipCancelButton:focus {
+  outline-offset: 4px;
+  outline: solid 1px #f8f8f8 !important;
+}
+#regionSelectorContainer {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  cursor: crosshair;
+  overflow: hidden;
+}
+#regionSelectorContainer #outerFrame {
+  opacity: 0.6;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: -1;
+}
+#regionSelectorContainer #innerFrame {
+  border: solid white 1px;
+  opacity: 1;
+  width: 0;
+  height: 0;
+  position: fixed;
+}
+#saveToLocationContainer {
+  margin: 5px;
+}
+#sectionLocationContainer:focus {
+  outline: solid 1px #f8f8f8 !important;
+  outline-offset: 2px !important;
+}
+#signInLogo {
+  display: block;
+  margin: auto;
+  height: 60px;
+  width: 60px;
+}
+#signInMessageLabelContainer {
+  color: white;
+  font-size: 34px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+#userDropdownArrow {
+  height: 5px;
+  width: 10px;
+  padding-top: 7px;
+  padding-right: 5px;
+}
