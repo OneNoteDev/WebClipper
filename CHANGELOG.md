@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.8.1 (May 30, 2019)
+* Improvement: Added a11y improvements
+
 ## 3.8.0 (June 20, 2018)
 * Improvement: Added a11y improvements for navigation
 
