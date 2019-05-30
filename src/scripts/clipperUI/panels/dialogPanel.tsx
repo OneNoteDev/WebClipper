@@ -55,8 +55,8 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 					<div id={Constants.Ids.dialogButtonContainer}>
 						{this.props.buttons.map((button, i) => {
 							return (
-								<div id={button.id} className="wideButtonContainer dialogButton">
-									<a { ...this.enableInvoke({ callback: button.handler, tabIndex: 70 }) }
+								<div className="wideButtonContainer dialogButton">
+									<a id={button.id} { ...this.enableInvoke({ callback: button.handler, tabIndex: 70 }) }
 										className="wideButtonFont wideActionButton"
 										role="button"
 										style={Localization.getFontFamilyAsStyle(buttonFontFamily)}>
