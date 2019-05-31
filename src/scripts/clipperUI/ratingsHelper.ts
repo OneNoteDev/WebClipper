@@ -270,7 +270,7 @@ export class RatingsHelper {
 		let numClipsAnchor: number = parseInt(numClipsAnchorAsStr, 10);
 
 		/* tslint:disable:no-null-keyword */
-			// null is the value storage gives back; also, setting to undefined will keep this kvp from being logged at all
+		// null is the value storage gives back; also, setting to undefined will keep this kvp from being logged at all
 		logEventInfo.lastBadRatingDate = lastBadRatingDate ? new Date(lastBadRatingDate).toString() : null;
 		/* tslint:enable:no-null-keyword */
 		logEventInfo.lastBadRatingVersion = lastBadRatingVersion;

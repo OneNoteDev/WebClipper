@@ -172,15 +172,15 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 						</span>
 					</div>
 					{this.errorInformationDescription()}
-					<div className="wideButtonContainer" id={Constants.Ids.signInButtonMsa}>
-						<a className="wideButtonFont wideActionButton" role="button"
+					<div className="wideButtonContainer">
+						<a id={Constants.Ids.signInButtonMsa} className="wideButtonFont wideActionButton" role="button"
 							{ ...this.enableInvoke({ callback: this.onSignInMsa, tabIndex: 11, args: AuthType.Msa }) }
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							{Localization.getLocalizedString("WebClipper.Action.SigninMsa")}
 						</a>
 					</div>
-					<div className="wideButtonContainer" id={Constants.Ids.signInButtonOrgId}>
-						<a className="wideButtonFont wideActionButton" role="button"
+					<div className="wideButtonContainer">
+						<a id={Constants.Ids.signInButtonOrgId} className="wideButtonFont wideActionButton" role="button"
 							{...this.enableInvoke({callback: this.onSignInOrgId, tabIndex: 12, args: AuthType.OrgId})}
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							{Localization.getLocalizedString("WebClipper.Action.SigninOrgId") }

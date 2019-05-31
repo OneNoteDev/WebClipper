@@ -144,7 +144,12 @@ export class MainControllerTests extends TestModule {
 
 			Assert.tabOrderIsIncremental([Constants.Ids.currentUserControl, Constants.Ids.closeButton]);
 
-			let dialogButtons = document.getElementsByClassName("dialogButton");
+			let dialogButtonContainers = document.getElementsByClassName("dialogButton");
+			const dialogButtons = [];
+			for (let i = 0; i < dialogButtonContainers.length; i++) {
+				const dialogButtonContainer = dialogButtonContainers[i] as HTMLElement;
+				dialogButtons.push(dialogButtonContainer.firstChild);
+			}
 			Assert.equalTabIndexes(dialogButtons);
 		});
 

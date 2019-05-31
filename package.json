@@ -1,5 +1,5 @@
 {
-  "version": "3.8.0",
+  "version": "3.8.1",
   "name": "webclipper",
   "private": true,
   "description": "The core of the OneNote Web Clipper found at https://www.onenote.com/clipper",
@@ -10,8 +10,10 @@
     "build-only": "gulp buildOnly",
     "watch": "gulp watch",
     "build": "gulp build",
+    "build:prod": "gulp --production",
     "full": "gulp full",
     "clean": "gulp clean",
+    "lint": "gulp tslint",
     "pack-edge": "manifoldjs -l debug -p edgeextension -f edgeextension -m ./target/edge/OneNoteWebClipper/edgeextension/manifest/extension/manifest.json"
   },
   "repository": {
