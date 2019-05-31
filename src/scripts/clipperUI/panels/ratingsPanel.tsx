@@ -71,7 +71,7 @@ class RatingsPanelClass extends ComponentBase<RatingsPanelState, RatingsPanelPro
 				}
 			},
 			{
-				cssSelector: ".dialogButton .wideButtonContainer",
+				cssSelector: ".dialogButton.wideButtonContainer",
 				animateInOptions: {
 					slideDownDeltas: [48, 48],
 					delaysInMs: [50, 0]
