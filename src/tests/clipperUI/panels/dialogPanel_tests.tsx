@@ -37,7 +37,7 @@ export class DialogPanelTests extends TestModule {
 			let dialogButtonContainer = document.getElementById(Constants.Ids.dialogButtonContainer);
 			let renderedButtons = dialogButtonContainer.getElementsByTagName("a");
 			strictEqual(renderedButtons.length, 1, "Only one button should render");
-			strictEqual(renderedButtons[0].getElementsByTagName("span")[0].innerText, buttons[0].label,
+			strictEqual(renderedButtons[0].innerText, buttons[0].label,
 				"The button label should be the same as the one passed in");
 
 			strictEqual(count, 0, "The button callback should have not been called yet");
@@ -73,7 +73,7 @@ export class DialogPanelTests extends TestModule {
 			let renderedButtons = dialogButtonContainer.getElementsByTagName("a");
 			strictEqual(renderedButtons.length, 2, "Two buttons should render");
 			for (let i = 0; i < buttons.length; i++) {
-				strictEqual(renderedButtons[i].getElementsByTagName("span")[0].innerText, buttons[i].label,
+				strictEqual(renderedButtons[i].innerText, buttons[i].label,
 					"The button label should be the same as the one passed in");
 			}
 
