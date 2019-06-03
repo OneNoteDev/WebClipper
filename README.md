@@ -49,7 +49,7 @@ Every store is different and you'll have to look at our internal guide to unders
 1. Build locally `npm run build:prod`
 2. Run `npm run pack-edge`. The results will be in /OneNoteWebClipper/EdgeExtension
 3. The file you will upload is the `target/edge/OneNoteWebClipper/edgeextension/package/edgeExtension.appx` file. You can also test by uploading the `target/edge/onenotewebclipper/edgeextension/manifest/extension` folder locally in edge
-3. Now follow our internal instructions to update the package.
+4. Now follow our internal instructions to update the package.
 
 ## Congratulations!
 At this point you should see the tests passing, and see the packaged code in the `target` folder
