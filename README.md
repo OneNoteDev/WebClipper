@@ -42,13 +42,14 @@ $ npm run build -- --<arg>
 Set the "enable_console_logging" local storage entry to true
 
 ### 6. Shipping an update to the store
-Every store is different and you'll have to look at our internal guide to understand how to ship an update. In general, shipping in chrome/edge is easy and shipping in FF/Safari is hard. We don't ship any updates to IE anymore. [Guide is here](https://microsoft.sharepoint-df.com/teams/remember/_layouts/OneNote.aspx?id=%2Fteams%2Fremember%2FShared%20Documents%2FAll%20Microsoft%2FNotes%20Services%2FNotebooks%2FOneNote%20Services%20Team%20%28Moved%29&wd=target%28Content%20Capture%2FWeb%20Clipper.one%7CFC39B47B-3332-4BAA-B0BB-A8AF57D0BEAC%2FShip%20Checklist%7CFD94AA9C-2CD7-A142-AADF-B99949DF14B0%2F%29)
+Every store is different and you'll have to look at our internal guide to understand how to ship an update. In general, shipping in chrome/edge is easy and shipping in FF/Safari is hard. We don't ship any updates to IE anymore.
 
 #### Edge
 [Instructions here](https://docs.microsoft.com/en-us/microsoft-edge/extensions/guides/packaging/using-manifoldjs-to-package-extensions)
-1. Build locally `npm run build`
+1. Build locally `npm run build:prod`
 2. Run `npm run pack-edge`. The results will be in /OneNoteWebClipper/EdgeExtension
-3. Now follow our internal instructions to update the package
+3. The file you will upload is the `target/edge/OneNoteWebClipper/edgeextension/package/edgeExtension.appx` file. You can also test by uploading the `target/edge/onenotewebclipper/edgeextension/manifest/extension` folder locally in edge
+4. Now follow our internal instructions to update the package.
 
 ## Congratulations!
 At this point you should see the tests passing, and see the packaged code in the `target` folder

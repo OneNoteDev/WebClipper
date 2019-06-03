@@ -10,11 +10,11 @@
     "build-only": "gulp buildOnly",
     "watch": "gulp watch",
     "build": "gulp build",
-    "build:prod": "gulp --production",
+    "build:prod": "gulp full --production",
     "full": "gulp full",
     "clean": "gulp clean",
     "lint": "gulp tslint",
-    "pack-edge": "manifoldjs -l debug -p edgeextension -f edgeextension -m ./target/edge/OneNoteWebClipper/edgeextension/manifest/extension/manifest.json"
+    "pack-edge": "manifoldjs -l debug -p edgeextension -f edgeextension package ./target/edge/OneNoteWebClipper/edgeextension/manifest"
   },
   "repository": {
     "type": "git",
