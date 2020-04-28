@@ -355,7 +355,11 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		let footerToRender = this.getCurrentFooter();
 
 		return (
-			<div id={Constants.Ids.mainController} {...this.onElementDraw(this.onMainControllerDraw)}>
+			<div
+				id={Constants.Ids.mainController}
+				{...this.onElementDraw(this.onMainControllerDraw)}
+				role="main"
+				aria-label={Localization.getLocalizedString("WebClipper.Label.OneNoteWebClipper")} >
 				{closeButtonToRender}
 				<div className="panelContent">
 					<div className={Constants.Classes.heightAnimator} {...this.onElementDraw(this.onHeightAnimatorDraw)}>

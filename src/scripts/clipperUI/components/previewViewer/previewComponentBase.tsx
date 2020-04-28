@@ -143,7 +143,11 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 				id={Constants.Ids.previewOuterContainer}
 				style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 				<div id={Constants.Ids.previewInnerWrapper}>
-					<div id={Constants.Ids.previewInnerContainer} className={previewInnerContainerClass}>
+					<div
+						id={Constants.Ids.previewInnerContainer}
+						className={previewInnerContainerClass}
+						role="region"
+						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.FullPagePreview")}>
 						<div id={Constants.Ids.previewOptionsContainer}>
 							{this.getHeader()}
 						</div>
