@@ -35,7 +35,7 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
 				{...this.enableAriaInvoke({callback: this.buttonHandler, tabIndex: this.props.tabIndex, ariaSetName: Constants.AriaSet.modeButtonSet})}>
-				<img className="icon" src={this.props.imgSrc}/>
+				<img className="icon" src={this.props.imgSrc} aria-hidden="true" />
 				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 					{this.props.label}
 				</span>

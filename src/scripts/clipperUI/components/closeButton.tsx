@@ -23,7 +23,7 @@ class CloseButtonClass extends ComponentBase<{}, CloseButtonProps> {
 					aria-label={ Localization.getLocalizedString("WebClipper.Action.CloseTheClipper") }
 					title={ Localization.getLocalizedString("WebClipper.Action.CloseTheClipper") }
 					{ ...this.enableInvoke({ callback: this.props.onClickHandler, tabIndex: 300, args: this.props.onClickHandlerParams }) }>
-					<img className="closeButtonIcon" src={ExtensionUtils.getImageResourceUrl("close.png")} />
+					<img className="closeButtonIcon" src={ExtensionUtils.getImageResourceUrl("close.png")} aria-hidden="true" />
 				</a>
 			</div>
 		);
