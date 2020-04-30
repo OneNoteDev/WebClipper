@@ -10,6 +10,7 @@
 	"WebClipper.Accessibility.ScreenReader.InputBoxToChangeNotesToAddToPage": "Text input to edit the notes to save along with this page",
 	"WebClipper.Accessibility.ScreenReader.FullPagePreview": "Full Page Preview",
 	"WebClipper.Accessibility.ScreenReader.Footer": "User details",
+	"WebClipper.Accessibility.ScreenReader.Loading": "Loading...",
 	"WebClipper.Action.BackToHome": "Back",
 	"WebClipper.Action.Cancel": "Cancel",
 	"WebClipper.Action.Clip": "Clip",

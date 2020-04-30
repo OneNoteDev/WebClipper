@@ -99,6 +99,7 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 			imageWidth={45}
 			totalFrameCount={21}
 			loop={true}
+			messageToDisplay={Localization.getLocalizedString("WebClipper.Preview.LoadingMessage")}
 			shouldDisplayMessage={false} />;
 		return <div className={Constants.Classes.centeredInPreview}>{spinner}</div>;
 	}

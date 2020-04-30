@@ -95,7 +95,6 @@
 					line-height: 32px;
 					font-size: @OneNoteH3Size;
 				}
-
 				// TODO: Remove when this is replaced with full page features
 				#fullPageControl, #bookmarkControl, #regionControl, #pdfControl, #augmentationHeaderControlGroupId {
 					height: 32px;
@@ -110,13 +109,11 @@
 				#radioPageRangeControl {
 					margin-left: 6px;
 				}
-
 				/*#pageRangeControl {
 					// Temporary workaround that fixes styling issues with the PDF Preview Header
 					// in Safari as of 10/21/2016
 					width: 300px;
 				}*/
-
 				#addRegionControl {
 					#addAnotherRegionButton {
 						font-size: 14px;
@@ -130,7 +127,6 @@
 								padding-right: 8px;
 							}
 						}
-
 					}
 				}
 
@@ -144,7 +140,7 @@
 						border-radius: 4px;
 						cursor: pointer;
 
-						&:hover{
+						&:hover {
 							background-color: @DarkHoverColor;
 						}
 
@@ -179,7 +175,6 @@
 						min-width: @ControlButtonMinWidth;
 					}
 				}
-
 				// Generic
 				.control-button {
 					text-align: center;
@@ -214,7 +209,7 @@
 					margin-bottom: 12px;
 					margin-left: 24px;
 					display: inline-block;
-				 }
+				}
 
 				.control-button-group {
 					margin-top: 12px;
@@ -374,7 +369,6 @@
 						font-size: @OneNoteH6Size;
 						font-style: italic;
 					}
-
 					// Image tags sent to Augmentation Api do not have the inline css styling removed. We need this to override any conflicting inline css.
 					img {
 						&:not(.delete-highlight) {
@@ -382,7 +376,6 @@
 							height: auto !important;
 							max-width: 100% !important;
 						}
-
 						// Highlight delete element
 						&.delete-highlight {
 							/*rtl:begin:ignore*/
@@ -399,12 +392,15 @@
 							/*rtl:end:ignore*/
 						}
 					}
-
 					// By nature, pre tags preserve spacing and line breaks, so we need to enforce wrapping
 					pre {
 						white-space: pre-wrap;
 					}
 
+					.spinner:focus {
+						border: 1px solid @PreviewHeaderInputFocusColor;
+						outline-offset: 2px;
+					}
 					// Prevent large-width content from stretching the table in IE
 					table {
 						table-layout: fixed;
@@ -441,7 +437,6 @@
 							// We need to adjust the 'hotspot' of the cursor to be aligned to middle of the "I" symbol
 							cursor: url('./images/editoroptions/highlight_cursor.cur'), text; // Hotspots are built into cur files, which IE/Edge interprets
 							cursor: url('./images/editoroptions/highlight_cursor.cur') 16 16, text; // Other browsers need you to specify the hotspot in the css file
-
 							* ::selection {
 								background: @OneNoteHighlightColor;
 							}
@@ -458,7 +453,6 @@
 							left: -5px;
 						}
 					}
-
 					// PDF Preview Content
 					.pdf-preview-image-container {
 						position: relative;
@@ -495,7 +489,6 @@
 							top: 0;
 							margin-top: 24px;
 							transition: opacity 0.167s ease-in-out;
-							
 							display: flex;
 							align-items: center;
 							justify-content: center;
@@ -518,7 +511,6 @@
 							}
 						}
 					}
-
 					// Allows the same attachment styling as the WAC
 					.attachment-overlay {
 						width: @OneNotePdfAttachmentWidth;

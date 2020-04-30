@@ -1,13 +1,5 @@
-import {Constants} from "../../../constants";
-
-import {AugmentationModel, AugmentationResult} from "../../../contentCapture/augmentationHelper";
-
-import {Localization} from "../../../localization/localization";
-
-import {ClipperStateProp, DataResult} from "../../clipperState";
+import {ClipperStateProp} from "../../clipperState";
 import {Status} from "../../status";
-
-import {SpriteAnimation} from "../../components/spriteAnimation";
 
 import {EditorPreviewComponentBase, EditorPreviewState} from "./editorPreviewComponentBase";
 
