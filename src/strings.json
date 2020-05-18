@@ -8,7 +8,7 @@
 	"WebClipper.Accessibility.ScreenReader.ToggleHighlighterForArticleMode": "Toggle Highlighter Mode For Article",
 	"WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage": "Text input to edit the title of the page you want to save",
 	"WebClipper.Accessibility.ScreenReader.InputBoxToChangeNotesToAddToPage": "Text input to edit the notes to save along with this page",
-	"WebClipper.Accessibility.ScreenReader.FullPagePreview": "Full Page Preview",
+	"WebClipper.Accessibility.ScreenReader.PagePreview": "Page Preview",
 	"WebClipper.Accessibility.ScreenReader.Footer": "User details",
 	"WebClipper.Accessibility.ScreenReader.Loading": "Loading...",
 	"WebClipper.Action.BackToHome": "Back",
