@@ -106,16 +106,8 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							<hr className="userDivider" />
 							<div className="userDetails">
-<<<<<<< HEAD
 								<label for={Constants.Ids.signOutButton} id={Constants.Ids.currentUserEmail}>{this.props.clipperState.userResult.data.user.emailAddress}</label>
-								<a id={Constants.Ids.signOutButton} role="button" className="userActionButton"
-=======
-								<label for={Constants.Ids.signOutButton} id={Constants.Ids.currentUserEmail} aria-hidden="true">
-									{this.props.clipperState.userResult.data.user.emailAddress}
-								</label>
-								<a id={Constants.Ids.signOutButton} role="button" className="buttonTextInHighContrast userActionButton"
-									aria-label={Localization.getLocalizedString("WebClipper.Action.SignOut") + " " + this.props.clipperState.userResult.data.user.emailAddress}
->>>>>>> 3cbf171... Fixed button-text color for high contrast mode
+								<a id={Constants.Ids.signOutButton} role="button" className="userActionButton buttonTextInHighContrast"
 									{...this.enableInvoke({callback: this.handleSignOutButton, tabIndex: 82})}>
 									{Localization.getLocalizedString("WebClipper.Action.SignOut")}
 								</a>
