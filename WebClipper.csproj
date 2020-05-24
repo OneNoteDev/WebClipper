@@ -6,6 +6,7 @@
     <OutputType>Library</OutputType>
     <OutputPath>target\</OutputPath>
     <IntermediateOutputPath>build\</IntermediateOutputPath>
+    <TypeScriptToolsVersion>3.8</TypeScriptToolsVersion>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="*.json" />

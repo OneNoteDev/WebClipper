@@ -1,4 +1,5 @@
 /// <reference path="../../../../node_modules/onenotepicker/target/oneNotePicker.d.ts"/>
+/// <reference path="../../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
 
 import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
@@ -10,7 +11,7 @@ import {ClipperStateUtilities} from "../clipperStateUtilities";
 import {ComponentBase} from "../componentBase";
 import {Clipper} from "../frontEndGlobals";
 import {OneNoteApiUtils} from "../oneNoteApiUtils";
-import {Status} from "../status";
+import { Status } from "../status";
 
 export interface SectionPickerState {
 	notebooks?: OneNoteApi.Notebook[];
@@ -278,14 +279,17 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			localizedStrings.notebookLoadFailureMessage = OneNoteApiUtils.getLocalizedErrorMessageForGetNotebooks(this.state.apiResponseCode);
 		}
 
+		let locationString = Localization.getLocalizedString("WebClipper.Label.ClipLocation");
+
 		return (
 			<div id={Constants.Ids.locationPickerContainer}>
 				<div id={Constants.Ids.optionLabel} className="optionLabel">
-					<label for="sectionLocationContainer" className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
-						{Localization.getLocalizedString("WebClipper.Label.ClipLocation")}
+					<label htmlFor="sectionLocationContainer" aria-label={locationString} className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+						<span aria-hidden="true">{locationString}</span>
 					</label>
 				</div>
 				<OneNotePicker.OneNotePickerComponent
+					id="sectionLocationContainer"
 					tabIndex={70}
 					notebooks={this.state.notebooks}
 					status={Status[this.state.status]}

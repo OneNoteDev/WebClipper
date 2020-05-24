@@ -1,16 +1,19 @@
 ﻿import {ComponentBase} from "../componentBase";
 import {Constants} from "../../constants";
+import {Localization} from "../../localization/localization";
 
 /**
  * Sequences images into an animation from a vertical sprite sheet
  */
 
 export interface SpriteAnimationProps {
+	shouldTakeFocus?: boolean;
 	spriteUrl: string;
 	imageHeight: number;
 	imageWidth?: number;
 	totalFrameCount: number;
 	loop?: boolean;
+	ariaLabel?: string;
 }
 
 export interface SpriteAnimationState {
@@ -21,6 +24,12 @@ class SpriteAnimationClass extends ComponentBase<SpriteAnimationState, SpriteAni
 	private currentFrame = 0;
 	private currentTime = this.rightNow();
 	private spinnerElement: HTMLDivElement;
+
+	initiallySetFocus(element: HTMLElement) {
+		if (this.props.shouldTakeFocus) {
+			element.focus();
+		}
+	}
 
 	getInitialState(): SpriteAnimationState {
 		requestAnimationFrame(() => {
@@ -91,8 +100,11 @@ class SpriteAnimationClass extends ComponentBase<SpriteAnimationState, SpriteAni
 		}
 	}
 
-	configForSpinner(element: HTMLDivElement, isInit: boolean, context: any) {
+	configForSpinner(element: HTMLDivElement, isInitialized: boolean, context: any) {
 		this.spinnerElement = element;
+		if (!isInitialized) {
+			this.initiallySetFocus(element);
+		}
 		context.onunload = () => {
 			this.stop();
 		};
@@ -100,6 +112,8 @@ class SpriteAnimationClass extends ComponentBase<SpriteAnimationState, SpriteAni
 
 	render() {
 		let imageWidth = this.props.imageWidth ? this.props.imageWidth : 32;
+
+		let ariaLabel = this.props.ariaLabel ? this.props.ariaLabel : Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Loading");
 
 		let style = {
 			backgroundImage: "url(" + this.props.spriteUrl + ")",
@@ -109,8 +123,15 @@ class SpriteAnimationClass extends ComponentBase<SpriteAnimationState, SpriteAni
 		};
 
 		return (
-			<div className={Constants.Classes.spinner} config={this.configForSpinner.bind(this)} style={style}>
-			</div>
+			<div
+				className={Constants.Classes.spinner}
+				config={this.configForSpinner.bind(this)}
+				style={style}
+				tabIndex="290"
+				aria-label={ariaLabel}
+				role="progressbar"
+				aria-valuemin="0"
+				aria-valuemax="100" />
 		);
 	}
 }

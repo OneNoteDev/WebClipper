@@ -76,7 +76,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 				<div className={Constants.Ids.footerButtonsContainer}>
 					<div className="footerButtonsLeft">
 						<a id={Constants.Ids.feedbackButton} role="button" {...this.enableInvoke({callback: this.handleFeedbackButton, tabIndex: 80})}>
-							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")}/>
+							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")} aria-hidden="true"/>
 							<span id={Constants.Ids.feedbackLabel} class="buttonTextInHighContrast">{Localization.getLocalizedString("WebClipper.Action.Feedback") }</span>
 						</a>
 					</div>
@@ -95,19 +95,22 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 										: ""
 									}
 								</div>
-								<img id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+								<img aria-hidden="true" id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
 							</a>
 							</div>)
 						: undefined
 					}
 				</div>
 				{this.state.userSettingsOpened
-					? (<div id={Constants.Ids.userSettingsContainer} className="userSettingsFont"
+					? (<div id={Constants.Ids.userSettingsContainer} className="userSettingsFont" role="complementary" aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Footer")}
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
-							<hr className="userDivider" />
+							<hr className="userDivider" aria-hidden="true"/>
 							<div className="userDetails">
-								<label for={Constants.Ids.signOutButton} id={Constants.Ids.currentUserEmail}>{this.props.clipperState.userResult.data.user.emailAddress}</label>
+								<label for={Constants.Ids.signOutButton} id={Constants.Ids.currentUserEmail} aria-hidden="true">
+									{this.props.clipperState.userResult.data.user.emailAddress}
+								</label>
 								<a id={Constants.Ids.signOutButton} role="button" className="userActionButton buttonTextInHighContrast"
+									aria-label={Localization.getLocalizedString("WebClipper.Action.SignOut") + " " + this.props.clipperState.userResult.data.user.emailAddress}
 									{...this.enableInvoke({callback: this.handleSignOutButton, tabIndex: 82})}>
 									{Localization.getLocalizedString("WebClipper.Action.SignOut")}
 								</a>

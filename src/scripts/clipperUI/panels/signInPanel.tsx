@@ -19,6 +19,10 @@ interface SignInPanelProps extends ClipperStateProp {
 }
 
 class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps> {
+	initiallySetFocus(element: HTMLElement) {
+		element.focus();
+	}
+
 	getInitialState() {
 		return { debugInformationShowing: false };
 	}
@@ -158,7 +162,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 		return (
 			<div id={Constants.Ids.signInContainer}>
 				<div className="signInPadding">
-					<img id={Constants.Ids.signInLogo} src={ExtensionUtils.getImageResourceUrl("onenote_logo_clipper.png")} />
+					<img id={Constants.Ids.signInLogo} src={ExtensionUtils.getImageResourceUrl("onenote_logo_clipper.png")} aria-hidden="true" />
 					<div id={Constants.Ids.signInMessageLabelContainer} className="messageLabelContainer">
 						<span className="messageLabel"
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
@@ -174,6 +178,7 @@ class SignInPanelClass extends ComponentBase<SignInPanelState, SignInPanelProps>
 					{this.errorInformationDescription()}
 					<div className="wideButtonContainer">
 						<a id={Constants.Ids.signInButtonMsa} className="wideButtonFont wideActionButton buttonTextInHighContrast" role="button"
+							{ ...this.onElementFirstDraw(this.initiallySetFocus) }
 							{ ...this.enableInvoke({ callback: this.onSignInMsa, tabIndex: 11, args: AuthType.Msa }) }
 							style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 							{Localization.getLocalizedString("WebClipper.Action.SigninMsa")}

@@ -17,6 +17,12 @@ export interface PropsForModeElementNoAriaGrouping {
 export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, AriaSetProps { }
 
 class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
+	initiallySetFocus(element: HTMLElement) {
+		if (this.props.selected) {
+			element.focus();
+		}
+	}
+
 	buttonHandler() {
 		this.props.onModeSelected(this.props.myMode);
 	}
@@ -34,8 +40,9 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 			<a className={className} role="option" aria-selected={this.props.selected}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
+				{...this.onElementFirstDraw(this.initiallySetFocus)}
 				{...this.enableAriaInvoke({callback: this.buttonHandler, tabIndex: this.props.tabIndex, ariaSetName: Constants.AriaSet.modeButtonSet})}>
-				<img className="icon" src={this.props.imgSrc}/>
+				<img className="icon" src={this.props.imgSrc} aria-hidden="true" />
 				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 					{this.props.label}
 				</span>

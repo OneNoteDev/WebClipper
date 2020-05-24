@@ -4,7 +4,7 @@ import {WebExtensionContentMessageHandler} from "../webExtensionBase/webExtensio
 
 declare var browser;
 declare var frameUrl: string;
-WebExtension.browser = browser;
+WebExtension.browser = ("browser" in window) ? browser : chrome;
 
 invoke({
 	frameUrl: frameUrl,
