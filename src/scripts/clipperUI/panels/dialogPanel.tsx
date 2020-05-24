@@ -57,7 +57,7 @@ export abstract class DialogPanelClass extends ComponentBase<{}, DialogPanelProp
 							return (
 								<div className="wideButtonContainer dialogButton">
 									<a id={button.id} { ...this.enableInvoke({ callback: button.handler, tabIndex: 70 }) }
-										className="wideButtonFont wideActionButton"
+										className="buttonTextInHighContrast wideButtonFont wideActionButton"
 										role="button"
 										style={Localization.getFontFamilyAsStyle(buttonFontFamily)}>
 										{ button.label }
