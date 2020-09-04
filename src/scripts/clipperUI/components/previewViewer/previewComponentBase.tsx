@@ -148,6 +148,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 						className={previewInnerContainerClass}
 						role="region"
 						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.PagePreview")}>
+						<div id={Constants.Ids.previewAriaLiveDiv} aria-live="polite" aria-relevant="additions text" className={Constants.Classes.srOnly}></div>
 						<div id={Constants.Ids.previewOptionsContainer}>
 							{this.getHeader()}
 						</div>

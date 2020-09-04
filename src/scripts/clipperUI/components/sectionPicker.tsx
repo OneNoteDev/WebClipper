@@ -235,6 +235,19 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		};
 	}
 
+	addSrOnlyLocationDiv(element: HTMLElement) {
+		const pickerLinkElement = document.getElementById("sectionLocationContainer");
+		if (!pickerLinkElement) {
+			throw new Error("Unable to add screen reader only text: No element with id 'sectionLocationContainer' found");
+			// TODO Log properly
+		}
+		const srDiv = document.createElement("div");
+		srDiv.textContent = Localization.getLocalizedString("WebClipper.Label.ClipLocation") + ": ";
+		srDiv.setAttribute("class", Constants.Classes.srOnly);
+		// Make srDiv the first child of pickerLinkElement
+		pickerLinkElement.insertBefore(srDiv, pickerLinkElement.firstChild);
+	}
+
 	render() {
 		if (this.dataSourceUninitialized()) {
 			// This logic gets executed on app launch (if already signed in) and whenever the user signs in or out ...
@@ -282,7 +295,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		let locationString = Localization.getLocalizedString("WebClipper.Label.ClipLocation");
 
 		return (
-			<div id={Constants.Ids.locationPickerContainer}>
+			<div id={Constants.Ids.locationPickerContainer} {...this.onElementFirstDraw(this.addSrOnlyLocationDiv)}>
 				<div id={Constants.Ids.optionLabel} className="optionLabel">
 					<label htmlFor="sectionLocationContainer" aria-label={locationString} className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 						<span aria-hidden="true">{locationString}</span>
