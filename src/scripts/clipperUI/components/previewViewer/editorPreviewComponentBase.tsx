@@ -14,6 +14,8 @@ import {PreviewViewerAugmentationHeader} from "./previewViewerAugmentationHeader
 
 import * as _ from "lodash";
 import { Localization } from "../../../localization/localization";
+import { Clipper } from "../../frontEndGlobals";
+import * as Log from "../../../logging/log";
 
 export interface EditorPreviewState {
 	textHighlighter?: any;
@@ -84,8 +86,8 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	private announceWithAriaLive(announcement: string) {
 		const ariaLiveDiv = document.getElementById(Constants.Ids.previewAriaLiveDiv);
 		if (!ariaLiveDiv) {
-			throw new Error("announceWithAriaLive: AriaLive div not found");
-			// TODO Log properly
+			Clipper.logger.logTrace(Log.Trace.Label.General, Log.Trace.Level.Warning, `Aria-live div with id ${Constants.Ids.sectionLocationContainer} not found`);
+			return
 		}
 		// To make duplicate text announcement work. See https://core.trac.wordpress.org/ticket/36853
 		if (ariaLiveDiv.textContent === announcement) {

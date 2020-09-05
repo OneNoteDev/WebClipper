@@ -224,6 +224,7 @@ export module Constants {
 
 		// sectionPicker
 		export var locationPickerContainer = "locationPickerContainer";
+		export var sectionLocationContainer = "sectionLocationContainer";
 
 		// signInPanel
 		export var signInButtonMsa = "signInButtonMsa";

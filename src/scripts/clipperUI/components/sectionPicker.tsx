@@ -236,10 +236,10 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 	}
 
 	addSrOnlyLocationDiv(element: HTMLElement) {
-		const pickerLinkElement = document.getElementById("sectionLocationContainer");
+		const pickerLinkElement = document.getElementById(Constants.Ids.sectionLocationContainer);
 		if (!pickerLinkElement) {
-			throw new Error("Unable to add screen reader only text: No element with id 'sectionLocationContainer' found");
-			// TODO Log properly
+			Clipper.logger.logTrace(Log.Trace.Label.General, Log.Trace.Level.Warning, `Unable to add sr-only div: Parent element with id ${Constants.Ids.sectionLocationContainer} not found`);
+			return
 		}
 		const srDiv = document.createElement("div");
 		srDiv.textContent = Localization.getLocalizedString("WebClipper.Label.ClipLocation") + ": ";
@@ -297,12 +297,12 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		return (
 			<div id={Constants.Ids.locationPickerContainer} {...this.onElementFirstDraw(this.addSrOnlyLocationDiv)}>
 				<div id={Constants.Ids.optionLabel} className="optionLabel">
-					<label htmlFor="sectionLocationContainer" aria-label={locationString} className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
+					<label htmlFor={Constants.Ids.sectionLocationContainer} aria-label={locationString} className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 						<span aria-hidden="true">{locationString}</span>
 					</label>
 				</div>
 				<OneNotePicker.OneNotePickerComponent
-					id="sectionLocationContainer"
+					id={Constants.Ids.sectionLocationContainer}
 					tabIndex={70}
 					notebooks={this.state.notebooks}
 					status={Status[this.state.status]}
