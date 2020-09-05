@@ -239,7 +239,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		const pickerLinkElement = document.getElementById(Constants.Ids.sectionLocationContainer);
 		if (!pickerLinkElement) {
 			Clipper.logger.logTrace(Log.Trace.Label.General, Log.Trace.Level.Warning, `Unable to add sr-only div: Parent element with id ${Constants.Ids.sectionLocationContainer} not found`);
-			return
+			return;
 		}
 		const srDiv = document.createElement("div");
 		srDiv.textContent = Localization.getLocalizedString("WebClipper.Label.ClipLocation") + ": ";

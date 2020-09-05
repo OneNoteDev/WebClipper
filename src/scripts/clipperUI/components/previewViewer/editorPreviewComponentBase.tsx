@@ -87,7 +87,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 		const ariaLiveDiv = document.getElementById(Constants.Ids.previewAriaLiveDiv);
 		if (!ariaLiveDiv) {
 			Clipper.logger.logTrace(Log.Trace.Label.General, Log.Trace.Level.Warning, `Aria-live div with id ${Constants.Ids.sectionLocationContainer} not found`);
-			return
+			return;
 		}
 		// To make duplicate text announcement work. See https://core.trac.wordpress.org/ticket/36853
 		if (ariaLiveDiv.textContent === announcement) {
