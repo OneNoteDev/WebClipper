@@ -3,6 +3,7 @@ import * as Log from "../../logging/log";
 import {ExtensionUtils} from "../../extensions/extensionUtils";
 
 import {ComponentBase} from "../componentBase";
+import { Localization } from "../../localization/localization";
 
 export interface RegionSelectionProps {
 	imageSrc: string;
@@ -23,7 +24,7 @@ class RegionSelectionClass extends ComponentBase<{}, RegionSelectionProps> {
 			this.props.onRemove
 				? <a className="region-selection-remove-button" role="button"
 					{...this.enableInvoke({callback: this.buttonHandler, tabIndex: 300, idOverride: Log.Click.Label.regionSelectionRemoveButton})}>
-					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/delete_button.png") } /></a>
+					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/delete_button.png")} alt={Localization.getLocalizedString("WebClipper.Preview.RemoveSelectedRegion")} /></a>
 				: undefined
 		);
 	}
@@ -34,7 +35,7 @@ class RegionSelectionClass extends ComponentBase<{}, RegionSelectionProps> {
 				<p className="region-selection">
 					{this.getRemoveButton()}
 					<img className="region-selection-image"
-						src={this.props.imageSrc} />
+						src={this.props.imageSrc} alt={Localization.getLocalizedString("WebClipper.Preview.SelectedRegion")}/>
 				</p>
 			</div>
 		);
