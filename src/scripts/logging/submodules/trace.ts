@@ -4,7 +4,8 @@ export module Trace {
 	export enum Label {
 		DefaultingToConsoleLogger,
 		DebugMode,
-		RequestForClipperInstalledPageUrl
+		RequestForClipperInstalledPageUrl,
+		General
 	}
 
 	export enum Level {

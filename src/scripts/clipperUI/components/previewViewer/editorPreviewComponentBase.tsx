@@ -13,6 +13,9 @@ import {PreviewComponentBase} from "./previewComponentBase";
 import {PreviewViewerAugmentationHeader} from "./previewViewerAugmentationHeader";
 
 import * as _ from "lodash";
+import { Localization } from "../../../localization/localization";
+import { Clipper } from "../../frontEndGlobals";
+import * as Log from "../../../logging/log";
 
 export interface EditorPreviewState {
 	textHighlighter?: any;
@@ -80,10 +83,29 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 		return this.state.textHighlighter && this.state.textHighlighter.isEnabled() ? Constants.Classes.highlightable : "";
 	}
 
+	private announceWithAriaLive(announcement: string) {
+		const ariaLiveDiv = document.getElementById(Constants.Ids.previewAriaLiveDiv);
+		if (!ariaLiveDiv) {
+			Clipper.logger.logTrace(Log.Trace.Label.General, Log.Trace.Level.Warning, `Aria-live div with id ${Constants.Ids.sectionLocationContainer} not found`);
+			return;
+		}
+		// To make duplicate text announcement work. See https://core.trac.wordpress.org/ticket/36853
+		if (ariaLiveDiv.textContent === announcement) {
+			announcement += " \u00A0";
+		}
+		ariaLiveDiv.textContent = announcement;
+	}
+
 	private changeFontFamily(serif: boolean) {
 		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			serif: serif
 		} as PreviewGlobalInfo), this.props.clipperState.setState);
+
+		if (serif) {
+			this.announceWithAriaLive(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif"));
+		} else {
+			this.announceWithAriaLive(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif"));
+		}
 	}
 
 	private changeFontSize(increase: boolean) {
@@ -97,6 +119,12 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			fontSize: newFontSize
 		} as PreviewGlobalInfo), this.props.clipperState.setState);
+
+		if (increase) {
+			this.announceWithAriaLive(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.IncreaseFontSize"));
+		} else {
+			this.announceWithAriaLive(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.DecreaseFontSize"));
+		}
 	}
 
 	private deleteHighlight(timestamp: number) {

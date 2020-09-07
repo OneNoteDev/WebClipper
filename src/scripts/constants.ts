@@ -156,6 +156,7 @@ export module Constants {
 		export var previewTitleContainer = "previewTitleContainer";
 		export var previewSubtitleContainer = "previewSubtitleContainer";
 		export var previewInnerContainer = "previewInnerContainer";
+		export var previewAriaLiveDiv = "previewAriaLiveDiv";
 		export var previewOptionsContainer = "previewOptionsContainer";
 		export var previewInnerWrapper = "previewInnerWrapper";
 		export var previewOuterContainer = "previewOuterContainer";
@@ -223,6 +224,7 @@ export module Constants {
 
 		// sectionPicker
 		export var locationPickerContainer = "locationPickerContainer";
+		export var sectionLocationContainer = "sectionLocationContainer";
 
 		// signInPanel
 		export var signInButtonMsa = "signInButtonMsa";

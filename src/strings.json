@@ -130,6 +130,8 @@
 	"WebClipper.Preview.NoFullPageScreenshotFound": "No content found. Try another clipping mode.",
 	"WebClipper.Preview.NoContentFound": "No article found. Try another clipping mode.",
 	"WebClipper.Preview.UnableToClipLocalFile": "Local files can only be clipped using Region mode.",
+	"WebClipper.Preview.RemoveSelectedRegion": "Remove selected region",
+	"WebClipper.Preview.SelectedRegion": "Selected region",
 	"WebClipper.Preview.Header.AddAnotherRegionButtonLabel": "Add another region",
 	"WebClipper.Preview.Header.SansSerifButtonLabel": "Sans-serif",
 	"WebClipper.Preview.Header.SerifButtonLabel": "Serif",
