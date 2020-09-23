@@ -26,7 +26,6 @@
 		"contextMenus",
 		"tabs",
 		"webRequest",
-		"webRequestBlocking",
 		"storage",
 		"webNavigation"
 	],

@@ -30,7 +30,6 @@
 		"cookies",
 		"tabs",
 		"webRequest",
-		"webRequestBlocking",
 		"storage",
 		"webNavigation"
 	],
