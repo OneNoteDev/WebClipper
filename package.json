@@ -61,7 +61,7 @@
     "lodash": "4.17.19",
     "manifoldjs": "^0.7.6",
     "merge-stream": "1.0.1",
-    "mithril": "1.1.7",
+    "mithril": "0.2.5",
     "node-qunit-phantomjs": "1.5.0",
     "node-static": "0.7.9",
     "onenoteapi": "1.1.0",
