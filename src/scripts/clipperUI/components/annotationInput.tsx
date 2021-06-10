@@ -63,4 +63,4 @@ class AnnotationInputClass extends ComponentBase<{}, ClipperStateProp> {
 }
 
 let component = AnnotationInputClass.componentize();
-export {component as AnnotationInput};
+export { component as AnnotationInput };
