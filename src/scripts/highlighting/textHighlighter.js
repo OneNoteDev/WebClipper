@@ -504,15 +504,19 @@ THE SOFTWARE.
     };
 
     TextHighlighter.prototype.bindEvents = function (el) {
+        el.addEventListener('keydown', this.boundStartDragHandler);
         el.addEventListener('mousedown', this.boundStartDragHandler);
         el.addEventListener('touchstart', this.boundStartDragHandler);
+        window.addEventListener('keyup', this.boundHighlightHandler);
         window.addEventListener('mouseup', this.boundHighlightHandler);
         window.addEventListener('touchend', this.boundHighlightHandler);
     }
 
     TextHighlighter.prototype.unbindEvents = function (el) {
+        el.removeEventListener('keydown', this.boundStartDragHandler);
         el.removeEventListener('mousedown', this.boundStartDragHandler);
         el.removeEventListener('touchstart', this.boundStartDragHandler);
+        window.removeEventListener('keyup', this.boundHighlightHandler);
         window.removeEventListener('mouseup', this.boundHighlightHandler);
         window.removeEventListener('touchend', this.boundHighlightHandler);
     }

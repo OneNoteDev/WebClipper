@@ -53,7 +53,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	// Override
 	protected getContentBodyForCurrentStatus() {
 		return [
-			<div id={Constants.Ids.highlightablePreviewBody}>{this.getHighlightableContentBodyForCurrentStatus()}</div>
+			<div id={Constants.Ids.highlightablePreviewBody} tabindex="0">{this.getHighlightableContentBodyForCurrentStatus()}</div>
 		];
 	}
 
@@ -184,6 +184,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 					deleteHighlight.src = ExtensionUtils.getImageResourceUrl("editoroptions/delete_button.png");
 					deleteHighlight.className = Constants.Classes.deleteHighlightButton;
 					deleteHighlight.setAttribute("data-timestamp", "" + timestamp);
+					deleteHighlight.setAttribute("tabindex", "0");
 					firstHighlighted.insertBefore(deleteHighlight, firstHighlighted.childNodes[0]);
 				}
 
