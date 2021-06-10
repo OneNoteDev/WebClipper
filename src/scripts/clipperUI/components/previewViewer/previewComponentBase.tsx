@@ -48,7 +48,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 			return (
 				<div id={Constants.Ids.previewTitleContainer}>
 					<pre className={Constants.Classes.textAreaInputMirror}><span>{contentTitle}</span><br/></pre>
-					<input
+					<textarea
 						rows="1"
 						id={Constants.Ids.previewHeaderInput}
 						tabIndex={this.getStatus() === Status.Succeeded ? 200 : -1}
@@ -57,7 +57,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 						value={contentTitle}
 						readOnly={!titleIsEditable}
 						placeholder={Localization.getLocalizedString("WebClipper.Label.PageTitlePlaceholder")} >
-					</input>
+					</textarea>
 				</div>
 			);
 		}

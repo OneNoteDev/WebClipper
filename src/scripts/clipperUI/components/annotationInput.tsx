@@ -47,7 +47,7 @@ class AnnotationInputClass extends ComponentBase<{}, ClipperStateProp> {
 					</span>
 					<br/>
 				</pre>
-				<input
+				<textarea
 					id={Constants.Ids.annotationField}
 					className={Constants.Classes.textAreaInput}
 					role="textbox"
@@ -56,7 +56,7 @@ class AnnotationInputClass extends ComponentBase<{}, ClipperStateProp> {
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}
 					value={!!this.props.clipperState.previewGlobalInfo.annotation ? this.props.clipperState.previewGlobalInfo.annotation : ""}
 					placeholder={Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder")} >
-				</input>
+				</textarea>
 			</div>
 		);
 	}
