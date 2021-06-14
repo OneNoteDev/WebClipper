@@ -44,8 +44,8 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 			innerElements: [
 				<img
 					role="button"
-					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ToggleHighlighterForArticleMode")}
-					title={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ToggleHighlighterForArticleMode")}
+					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ToggleHighlighterModeForArticle")}
+					title={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.ToggleHighlighterModeForArticle")}
 					aria-pressed={highlighterEnabled ? "true" : "false"}
 					id={Constants.Ids.highlightButton}
 					{...this.enableInvoke({callback: this.props.toggleHighlight, tabIndex: 100})}
