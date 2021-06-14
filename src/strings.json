@@ -5,7 +5,7 @@
 	"WebClipper.Accessibility.ScreenReader.ChangeFontToSerif": "Change font to Serif",
 	"WebClipper.Accessibility.ScreenReader.DecreaseFontSize": "Decrease font size",
 	"WebClipper.Accessibility.ScreenReader.IncreaseFontSize": "Increase font size",
-	"WebClipper.Accessibility.ScreenReader.ToggleHighlighterForArticleMode": "Toggle Highlighter Mode For Article",
+	"WebClipper.Accessibility.ScreenReader.ToggleHighlighterModeForArticle": "Toggle Highlighter Mode For Article. To highlight using keyboard, enter Caret Mode using F7",
 	"WebClipper.Accessibility.ScreenReader.InputBoxToChangeTitleOfOneNotePage": "Text input to edit the title of the page you want to save",
 	"WebClipper.Accessibility.ScreenReader.InputBoxToChangeNotesToAddToPage": "Text input to edit the notes to save along with this page",
 	"WebClipper.Accessibility.ScreenReader.PagePreview": "Page Preview",
