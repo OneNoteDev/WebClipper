@@ -42,7 +42,7 @@ class PreviewViewerRegionHeaderClass extends PreviewViewerHeaderComponentBase<{}
 					className={HeaderClasses.Button.controlButton}
 					style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular) }
 					type="button">
-					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon.png")} />
+					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/add_icon.svg")} />
 					<span>{Localization.getLocalizedString("WebClipper.Preview.Header.AddAnotherRegionButtonLabel")}</span>
 				</button>
 			]

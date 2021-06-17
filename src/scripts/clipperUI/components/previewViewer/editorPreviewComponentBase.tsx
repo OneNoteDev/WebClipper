@@ -181,7 +181,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 				let firstHighlighted = highlightablePreviewBody.querySelector("span.highlighted[data-timestamp='" + timestamp + "']");
 				if (firstHighlighted) {
 					let deleteHighlight = document.createElement("img") as HTMLImageElement;
-					deleteHighlight.src = ExtensionUtils.getImageResourceUrl("editoroptions/delete_button.png");
+					deleteHighlight.src = ExtensionUtils.getImageResourceUrl("editoroptions/delete_button.svg");
 					deleteHighlight.className = Constants.Classes.deleteHighlightButton;
 					deleteHighlight.setAttribute("data-timestamp", "" + timestamp);
 					deleteHighlight.setAttribute("tabindex", "0");

@@ -37,7 +37,7 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 	private getHighlightGroup(): ControlGroup {
 		let highlighterEnabled = this.props.textHighlighterEnabled;
 		let classForHighlighter = highlighterEnabled ? HeaderClasses.Button.active : "";
-		let imgSrc = highlighterEnabled ? "editorOptions/highlight_tool_on.png" : "editorOptions/highlight_tool_off.png";
+		let imgSrc = highlighterEnabled ? "editorOptions/highlight_tool_on.svg" : "editorOptions/highlight_tool_off.svg";
 
 		return {
 			id: Constants.Ids.highlightControl,
@@ -99,14 +99,14 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 					title={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.DecreaseFontSize")}
 					type="button" {...this.enableInvoke({callback: this.props.changeFontSize, tabIndex: 103, args: false})}
 					id={Constants.Ids.decrementFontSize}>
-					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_down.png") } aria-hidden="true" />
+					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_down.svg") } aria-hidden="true" />
 				</button>,
 				<button className={HeaderClasses.Button.controlButton}
 					aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.IncreaseFontSize")}
 					title={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.IncreaseFontSize")}
 					type="button" {...this.enableInvoke({callback: this.props.changeFontSize, tabIndex: 104, args: true})}
 					id={Constants.Ids.incrementFontSize}>
-					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_up.png") } aria-hidden="true" />
+					<img src={ExtensionUtils.getImageResourceUrl("editorOptions/font_up.svg") } aria-hidden="true" />
 				</button>
 			]
 		};

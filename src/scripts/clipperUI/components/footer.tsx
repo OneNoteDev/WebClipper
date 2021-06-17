@@ -76,7 +76,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 				<div className={Constants.Ids.footerButtonsContainer}>
 					<div className="footerButtonsLeft">
 						<a id={Constants.Ids.feedbackButton} role="button" {...this.enableInvoke({callback: this.handleFeedbackButton, tabIndex: 80})}>
-							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.png")} aria-hidden="true"/>
+							<img id={Constants.Ids.feedbackImage} src={ExtensionUtils.getImageResourceUrl("feedback_smiley.svg")} aria-hidden="true"/>
 							<span id={Constants.Ids.feedbackLabel} class="buttonTextInHighContrast">{Localization.getLocalizedString("WebClipper.Action.Feedback") }</span>
 						</a>
 					</div>
@@ -95,7 +95,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 										: ""
 									}
 								</div>
-								<img aria-hidden="true" id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+								<img aria-hidden="true" id={Constants.Ids.userDropdownArrow} src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.svg")} />
 							</a>
 							</div>)
 						: undefined
