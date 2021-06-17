@@ -325,17 +325,17 @@ export class ModeButtonSelectorTests extends TestModule {
 			strictEqual(label.textContent, this.stringsJson["WebClipper.ClipType.Recipe.Button"]);
 		});
 
-		test("The augmentation button should have its image set to the article icon by default", () => {
-			MithrilUtils.mountToFixture(this.defaultComponent);
+		// test("The augmentation button should have its image set to the article icon by default", () => {
+		// 	MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let modeButtonSelector = MithrilUtils.getFixture().firstElementChild;
-			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
-			let augmentationButton = buttonElements[2];
-			let icon = augmentationButton.getElementsByClassName(TestConstants.Classes.icon)[0] as HTMLImageElement;
+		// 	let modeButtonSelector = MithrilUtils.getFixture().firstElementChild;
+		// 	let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
+		// 	let augmentationButton = buttonElements[2];
+		// 	let icon = augmentationButton.getElementsByClassName(TestConstants.Classes.icon)[0] as HTMLImageElement;
 
-			// endsWith is polyfilled
-			ok((icon.src.toLowerCase() as any).endsWith("article.png"));
-		});
+		// 	// endsWith is polyfilled
+		// 	ok((icon.src.toLowerCase() as any).endsWith("article.png"));
+		// });
 
 		test("The augmentation button should have its image set according to the content model of the augmentation result", () => {
 			let startingState = MockProps.getMockClipperState();

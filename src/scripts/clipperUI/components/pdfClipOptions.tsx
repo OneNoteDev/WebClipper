@@ -135,7 +135,7 @@ class PdfClipOptionsClass extends ComponentBase<PdfClipOptionsState, ClipperStat
 				<div className="clipOptionsTitleContainer">
 					<span className="clipOptionsTitle">{Localization.getLocalizedString("WebClipper.Label.PdfOptions")}</span>
 					<span className="moreClipOptions" id={Constants.Ids.moreClipOptions} {...this.enableInvoke({callback: this.onMoreClicked, tabIndex: 60})}>
-						{expandOptionLabel}<img className="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.png")} />
+						{expandOptionLabel}<img className="arrow" src={ExtensionUtils.getImageResourceUrl("dropdown_arrow.svg")} />
 					</span>
 				</div>
 				<PdfPageSelectionRadioButton clipperState={this.props.clipperState} />
