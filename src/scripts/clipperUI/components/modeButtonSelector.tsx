@@ -48,9 +48,8 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		let augmentationLabel: string = Localization.getLocalizedString("WebClipper.ClipType." + augmentationType + ".Button");
 		let augmentationTooltip = Localization.getLocalizedString("WebClipper.ClipType.Button.Tooltip").replace("{0}", augmentationLabel);
 		let buttonSelected: boolean = currentMode === ClipMode.Augmentation;
-
 		return {
-			imgSrc: ExtensionUtils.getImageResourceUrl(augmentationType + ".png"),
+			imgSrc: (augmentationType === "Article") ? ExtensionUtils.getImageResourceUrl("article.svg") : ExtensionUtils.getImageResourceUrl(augmentationType + ".png"),
 			label: augmentationLabel,
 			myMode: ClipMode.Augmentation,
 			selected: buttonSelected,

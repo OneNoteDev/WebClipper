@@ -1,5 +1,5 @@
 {
-  "version": "3.8.2",
+  "version": "3.8.3",
   "name": "webclipper",
   "private": true,
   "description": "The core of the OneNote Web Clipper found at https://www.onenote.com/clipper",
@@ -81,5 +81,8 @@
     "velocity-animate": "1.4.2",
     "vinyl-source-stream": "1.1.0",
     "yargs": "6.6.0"
+  },
+  "dependencies": {
+    "natives": "^1.1.6"
   }
 }
