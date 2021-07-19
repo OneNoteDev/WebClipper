@@ -9,6 +9,8 @@ import {Status} from "./status";
 import {ClipperStateProp} from "./clipperState";
 import {ComponentBase} from "./componentBase";
 import {Clipper} from "./frontEndGlobals";
+import {ExtensionUtils} from "../extensions/extensionUtils";
+import {Localization} from "../localization/localization";
 
 export interface Point {
 	x: number;
@@ -18,21 +20,29 @@ export interface Point {
 interface RegionSelectorState {
 	firstPoint?: Point;
 	secondPoint?: Point;
+	mousePosition?: Point;
 	selectionInProgress?: boolean;
+	keyboardSelectionInProgress?: boolean;
 	winWidth?: number;
 	winHeight?: number;
 }
 
 class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStateProp> {
 	private devicePixelRatio: number = 1;
+	private cursorSpeed: number = 1;
 
 	private resizeHandler = this.handleResize.bind(this);
+	private mouseMovementHandler = this.globalMouseMoveHandler.bind(this);
+	private mouseOverHandler = this.globalMouseOverHandler.bind(this);
+	private keyDownDict: { [key: number]: boolean } = {};
 
 	getInitialState(): RegionSelectorState {
 		return {
 			selectionInProgress: false,
+			keyboardSelectionInProgress: false,
 			winHeight: window.innerHeight,
-			winWidth: window.innerWidth
+			winWidth: window.innerWidth,
+			mousePosition: {x: window.innerWidth / 2, y: window.innerHeight / 2}
 		};
 	}
 
@@ -41,26 +51,29 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		this.resetState();
 
 		window.addEventListener("resize", this.resizeHandler);
+		window.addEventListener("mousemove", this.mouseMovementHandler);
+		window.addEventListener("mouseover", this.mouseOverHandler);
 	}
 
 	private onunload() {
 		window.removeEventListener("resize", this.resizeHandler);
+		window.removeEventListener("mousemove", this.mouseMovementHandler);
 	}
 
 	/**
 	 * Start the selection process over
 	 */
 	private resetState() {
-		this.setState({ firstPoint: undefined, secondPoint: undefined, selectionInProgress: false });
+		this.setState({ firstPoint: undefined, secondPoint: undefined, selectionInProgress: false, keyboardSelectionInProgress: false});
 		this.props.clipperState.setState({ regionResult: { status: Status.NotStarted, data: this.props.clipperState.regionResult.data } });
 	}
 
 	/**
 	 * Define the starting point for the selection
 	 */
-	private startSelection(point: Point) {
+	private startSelection(point: Point, fromKeyboard = false) {
 		if (this.props.clipperState.regionResult.status !== Status.InProgress) {
-			this.setState({ firstPoint: point, secondPoint: undefined, selectionInProgress: true });
+			this.setState({ firstPoint: point, secondPoint: undefined, selectionInProgress: true, keyboardSelectionInProgress: fromKeyboard });
 			this.props.clipperState.setState({ regionResult: { status: Status.InProgress, data: this.props.clipperState.regionResult.data } });
 		}
 	}
@@ -85,6 +98,13 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	}
 
 	/**
+	 * Update Mouse Position for custom cursor
+	 */
+	private setMousePosition(point: Point) {
+		this.setState({ mousePosition: point});
+	}
+
+	/**
 	 * Define the ending point, and notify the main UI
 	 */
 	private stopSelection(point: Point) {
@@ -93,7 +113,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				// Nothing to clip, start over
 				this.resetState();
 			} else {
-				this.setState({ secondPoint: point, selectionInProgress: false });
+				this.setState({ secondPoint: point, selectionInProgress: false, keyboardSelectionInProgress: false });
 				// Get the image immediately
 				this.startRegionClip();
 			}
@@ -106,9 +126,77 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		this.startSelection({ x: e.pageX, y: e.pageY });
 	}
 
+	private keyDownHandler(e: KeyboardEvent) {
+		this.keyDownDict[e.which] = true;
+
+		if (e.which === Constants.KeyCodes.enter ) {
+			if (!this.state.selectionInProgress) {
+				this.startSelection({ x: this.state.mousePosition.x, y: this.state.mousePosition.y }, true /* fromKeyboard */);
+			} else {
+				this.stopSelection({ x: this.state.mousePosition.x, y: this.state.mousePosition.y });
+			}
+			e.preventDefault();
+		} else if (e.which === Constants.KeyCodes.up
+				|| e.which === Constants.KeyCodes.down
+				|| e.which === Constants.KeyCodes.left
+				|| e.which === Constants.KeyCodes.right) {
+
+			let delta: Point = {x: 0, y: 0};
+
+			if (this.keyDownDict[Constants.KeyCodes.up]) {
+				delta.y -= this.cursorSpeed;
+			}
+
+			if (this.keyDownDict[Constants.KeyCodes.down]) {
+				delta.y += this.cursorSpeed;
+			}
+
+			if (this.keyDownDict[Constants.KeyCodes.left]) {
+				delta.x -= this.cursorSpeed;
+			}
+
+			if (this.keyDownDict[Constants.KeyCodes.right]) {
+				delta.x += this.cursorSpeed;
+			}
+
+			let newPosition: Point = {x: Math.max(Math.min(this.state.mousePosition.x + delta.x, this.state.winWidth), 0), y: Math.max(Math.min(this.state.mousePosition.y + delta.y, this.state.winHeight), 0)};
+
+			this.setMousePosition(newPosition);
+
+			if (this.state.selectionInProgress) {
+				this.moveSelection(newPosition);
+			}
+
+			if (this.cursorSpeed < 5) {
+				this.cursorSpeed++;
+			}
+
+			e.preventDefault();
+		}
+	}
+
+	private keyUpHandler(e: KeyboardEvent) {
+		this.keyDownDict[e.which] = false;
+		if (e.which === Constants.KeyCodes.up
+			|| e.which === Constants.KeyCodes.down
+			|| e.which === Constants.KeyCodes.left
+			|| e.which === Constants.KeyCodes.right) {
+			this.cursorSpeed = 1;
+		}
+	}
+
+	private globalMouseMoveHandler(e: MouseEvent) {
+		this.setMousePosition({ x: e.pageX, y: e.pageY });
+	}
+
+	private globalMouseOverHandler(e: MouseEvent) {
+		window.removeEventListener("mouseover", this.mouseOverHandler);
+		this.setMousePosition({ x: e.pageX, y: e.pageY });
+	}
+
 	private mouseMoveHandler(e: MouseEvent) {
 		if (this.state.selectionInProgress) {
-			if (e.buttons === 0) {
+			if (e.buttons === 0 && !this.state.keyboardSelectionInProgress) {
 				// They let go of the mouse while outside the window, stop the selection where they went out
 				this.stopSelection(this.state.secondPoint);
 				return;
@@ -147,10 +235,16 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	/**
 	 * Update all of the frames and elements according to the selection
 	 */
-	private updateVisualElements() {
+	private updateVisualElements(element: HTMLElement, isInitialized: boolean) {
 		let outerFrame: HTMLCanvasElement = this.refs.outerFrame as HTMLCanvasElement;
 		if (!outerFrame) {
 			return;
+		}
+
+		let cursor: HTMLImageElement = this.refs.cursor as HTMLImageElement;
+		if (cursor) {
+			cursor.style.left = this.state.mousePosition.x + "px";
+			cursor.style.top = this.state.mousePosition.y + "px";
 		}
 
 		let xMin: number;
@@ -193,6 +287,10 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		context.fillRect(xMin, 0, xMax - xMin, yMin);
 		context.fillRect(xMax, 0, winWidth - xMax, winHeight);
 		context.fillRect(xMin, yMax, xMax - xMin, winHeight - yMax);
+
+		if (!isInitialized) {
+			element.focus();
+		}
 	}
 
 	/**
@@ -326,10 +424,14 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		let innerFrameElement = this.getInnerFrame();
 
 		return (
-			<div config={this.updateVisualElements.bind(this)} id={Constants.Ids.regionSelectorContainer}
+			<div tabindex="1" config={this.updateVisualElements.bind(this)} id={Constants.Ids.regionSelectorContainer}
+				aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.RegionSelectionCanvas")} role="application"
 				onmousedown={this.mouseDownHandler.bind(this)} onmousemove={this.mouseMoveHandler.bind(this)}
 				onmouseup={this.mouseUpHandler.bind(this)} ontouchstart={this.touchStartHandler.bind(this)}
-				ontouchmove={this.touchMoveHandler.bind(this)} ontouchend={this.touchEndHandler.bind(this)}>
+				ontouchmove={this.touchMoveHandler.bind(this)} ontouchend={this.touchEndHandler.bind(this)}
+				onkeydown={this.keyDownHandler.bind(this)} onkeyup={this.keyUpHandler.bind(this)}>
+				<img id="cursor"  {...this.ref("cursor")} src={ExtensionUtils.getImageResourceUrl("crosshair_cursor.svg")}
+					width={Constants.Styles.customCursorSize + "px"} height={Constants.Styles.customCursorSize + "px"} />
 				<canvas id={Constants.Ids.outerFrame} {...this.ref(Constants.Ids.outerFrame)}></canvas>
 				{innerFrameElement}
 			</div>

@@ -359,6 +359,7 @@ export module Constants {
 	export module Styles {
 		export var sectionPickerContainerHeight = 280;
 		export var clipperUiWidth = 322;
+		export var customCursorSize = 20;
 		export var clipperUiTopRightOffset = 20;
 		export var clipperUiDropShadowBuffer = 7;
 		export var clipperUiInnerPadding = 30;
