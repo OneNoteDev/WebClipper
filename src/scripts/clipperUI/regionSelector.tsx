@@ -58,6 +58,7 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	private onunload() {
 		window.removeEventListener("resize", this.resizeHandler);
 		window.removeEventListener("mousemove", this.mouseMovementHandler);
+		window.removeEventListener("mouseover", this.mouseOverHandler);
 	}
 
 	/**
