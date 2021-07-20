@@ -8,25 +8,23 @@ class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 		this.props.clipperState.reset();
 	}
 
-	initiallySetFocusToBackButton(element: HTMLElement) {
-		element.focus();
-	}
-
 	render() {
 		return (
 			<div id={Constants.Ids.regionInstructionsContainer}>
 				<div className="regionClipPadding">
-					<div className="messageLabelContainer">
+					<div className="messageLabelContainer regionSelectionContainer">
 						<div className={Constants.Classes.srOnly} role="alert">
-							{Localization.getLocalizedString("WebClipper.Label.DragAndRelease")}
+							{Localization.getLocalizedString("WebClipper.Label.RegionSelectionMouseInstruction")}
+							{Localization.getLocalizedString("WebClipper.Label.RegionSelectionKeyboardInstruction")}
 						</div>
 						<span className="informationLabelFont messageLabel" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Light)}>
-							{Localization.getLocalizedString("WebClipper.Label.DragAndRelease")}
+							{Localization.getLocalizedString("WebClipper.Label.RegionSelectionMouseInstruction")}
+							<br/>
+							{Localization.getLocalizedString("WebClipper.Label.RegionSelectionKeyboardInstruction")}
 						</span>
 					</div>
 					<div className="wideButtonContainer">
 						<a id={ Constants.Ids.regionClipCancelButton } role="button"
-							{...this.onElementFirstDraw(this.initiallySetFocusToBackButton)}
 							{...this.enableInvoke({callback: this.handleCancelButton, tabIndex: 0})} >
 							<span className="wideButtonFont wideActionButton buttonTextInHighContrast" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semibold)}>
 								{Localization.getLocalizedString("WebClipper.Action.BackToHome")}

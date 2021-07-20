@@ -175,7 +175,8 @@
 	margin: 0;
 	height: 100%;
 	width: 100%;
-	cursor: crosshair;
+	cursor: none;
+	position: absolute;
 	overflow: hidden;
 
 	#outerFrame {
@@ -184,6 +185,12 @@
 		height: 100%;
 		width: 100%;
 		z-index: -1;
+	}
+
+	#cursor {
+	  pointer-events: none;
+	  transform: translate(-50%, -50%);
+	  position: absolute;
 	}
 
 	#innerFrame {
