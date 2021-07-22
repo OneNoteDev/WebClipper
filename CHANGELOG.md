@@ -1,4 +1,7 @@
 # Change Log
+## 3.8.4 (July 22, 2021)
+* Improvement: Added a11y improvements
+
 ## 3.8.3 (June 20, 2021)
 * Improvement: Added a11y improvements
 * Improvement: Updated icons from PNG to SVG
