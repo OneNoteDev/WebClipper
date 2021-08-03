@@ -16,7 +16,7 @@ export class YoutubeVideoExtractor extends VideoExtractor {
 
 		let divContainer = document.createElement("div") as HTMLDivElement;
 		divContainer.innerHTML = html;
-		let allIframes = divContainer.getElementsByTagName("iframe") as HTMLCollectionOf<HTMLIFrameElement>;
+		let allIframes = divContainer.getElementsByTagName("iframe");
 
 		let videoEmbeds: HTMLIFrameElement[] = [];
 		for (let i = 0; i < allIframes.length; i++) {

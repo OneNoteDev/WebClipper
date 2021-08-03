@@ -20,7 +20,7 @@ var plumber = require("gulp-plumber");
 var qunit = require("node-qunit-phantomjs");
 var rename = require("gulp-rename");
 var rtlcss = require("gulp-rtlcss");
-var runSequence = require("run-sequence");
+var runSequence = require("gulp4-run-sequence");
 var shell = require("gulp-shell");
 var source = require("vinyl-source-stream");
 var ts = require("gulp-typescript");
@@ -71,13 +71,21 @@ function printGlobResults(glob) {
 ////////////////////////////////////////
 // CLEAN
 ////////////////////////////////////////
-gulp.task("clean", ["cleanInternal"], function(callback) {
+gulp.task("cleanInternal", function () {
+    return del([
+        PATHS.SRC.ROOT + "scripts/**/*_internal.*",
+        PATHS.BUILDROOT + "scripts/**/*_internal.*",
+        PATHS.BUILDROOT + "bundles/**/*_internal.*"
+    ]);
+});
+
+gulp.task('clean', gulp.series('cleanInternal', function(callback) {
     return del([
         PATHS.BUILDROOT,
         PATHS.BUNDLEROOT,
         PATHS.TARGET.ROOT
     ], callback);
-});
+}));
 
 ////////////////////////////////////////
 // COMPILE CSS
@@ -134,14 +142,6 @@ gulp.task("mergeSettings", function() {
         .pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
-gulp.task("cleanInternal", function () {
-    return del([
-        PATHS.SRC.ROOT + "scripts/**/*_internal.*",
-        PATHS.BUILDROOT + "scripts/**/*_internal.*",
-        PATHS.BUILDROOT + "bundles/**/*_internal.*"
-    ]);
-});
-
 gulp.task("copyInternal", function () {
     if (fileExists(PATHS.INTERNAL.SRC.SCRIPTS + "logging/logManager.ts") && !argv.nointernal) {
         return gulp.src(PATHS.INTERNAL.SRC.SCRIPTS + "**/*.+(ts|tsx|d.ts)")
@@ -162,7 +162,7 @@ gulp.task("preCompileInternal", function (callback) {
         callback);
 });
 
-gulp.task("compileTypeScript", ["copyStrings", "mergeSettings", "preCompileInternal"], function () {
+gulp.task("compileTypeScript", gulp.series(gulp.parallel("copyStrings", "mergeSettings", "preCompileInternal"), function () {
     var tsProject = ts.createProject("./tsconfig.json", {
         typescript: require('typescript'),
         noEmitOnError: true
@@ -171,7 +171,7 @@ gulp.task("compileTypeScript", ["copyStrings", "mergeSettings", "preCompileInter
     return gulp.src([PATHS.SRC.ROOT + "**/*.+(ts|tsx)"])
         .pipe(tsProject())
         .pipe(gulp.dest(PATHS.BUILDROOT));
-});
+}));
 
 gulp.task("mithrilify", function() {
     return gulp.src(PATHS.BUILDROOT + "**/*.jsx")
@@ -467,7 +467,7 @@ function exportBookmarkletCSS(targetDir) {
 function exportBookmarkletSrcFiles(targetDir) {
     var srcCommonTask = exportCommonSrcFiles(targetDir);
 
-    var authHtmlTask = gulp.src(PATHS.SRC.ROOT + "auth.html")
+    var authHtmlTask = gulp.src(PATHS.SRC.ROOT + "auth.html", {allowEmpty: true})
         .pipe(rename("index.html"))
         .pipe(gulp.dest(targetDir + "auth/"));
 
@@ -992,8 +992,9 @@ gulp.task("minify", function(callback) {
 ////////////////////////////////////////
 // RUN
 ////////////////////////////////////////
-gulp.task("runTests", function() {
-    return qunit(PATHS.TARGET.TESTS + "index.html", {timeout: 10});
+gulp.task("runTests", function(done) {
+    return qunit(PATHS.TARGET.TESTS + "index.html", { timeout: 10 });
+    done();
 });
 
 ////////////////////////////////////////
@@ -1094,4 +1095,4 @@ gulp.task("full", function(callback) {
         callback);
 });
 
-gulp.task("default", ["build"]);
+gulp.task("default", gulp.series("build"));

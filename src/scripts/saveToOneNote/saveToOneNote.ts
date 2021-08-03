@@ -80,7 +80,7 @@ export class SaveToOneNote {
 		// We start the range at 1 since we have already included the first page
 		return _.range(1, end).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {
-				return new Promise((resolve, reject) => {
+				return new Promise<void>((resolve, reject) => {
 					// Parallelize the POST request intervals with the fetching of current dataUrl
 					let getPagePromise = this.getPageWithLogging(saveable, i);
 					let timeoutPromise = PromiseUtils.wait(SaveToOneNote.timeBetweenPostRequests);
@@ -144,7 +144,7 @@ export class SaveToOneNote {
 		let timeBetweenBatchRequests = SaveToOneNote.timeBeforeFirstBatch;
 		return _.range(saveable.getNumBatches()).reduce((chainedPromise, i) => {
 			return chainedPromise = chainedPromise.then(() => {
-				return new Promise((resolve, reject) => {
+				return new Promise<void>((resolve, reject) => {
 					// Parallelize the BATCH request intervals with the fetching of the next set of dataUrls
 					let getRevisionsPromise = this.getBatchWithLogging(saveable, i);
 					let timeoutPromise = PromiseUtils.wait(timeBetweenBatchRequests);

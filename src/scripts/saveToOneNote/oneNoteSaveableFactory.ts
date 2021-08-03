@@ -154,8 +154,9 @@ export class OneNoteSaveableFactory {
 		let pdf = this.clipperState.pdfResult.data.get().pdf;
 		return pdf.getData().then((buffer) => {
 			if (buffer) {
+				let ab: ArrayBuffer = buffer.buffer;
 				let attachmentName = UrlUtils.getFileNameFromUrl(this.clipperState.pageInfo.rawUrl, "Original.pdf");
-				page.addAttachment(buffer, attachmentName);
+				page.addAttachment(ab, attachmentName);
 			}
 
 			return Promise.resolve();

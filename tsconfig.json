@@ -15,6 +15,7 @@
 			"urijs",
 			"velocity-animate"
 		],
-		"outDir": "./build"
+		"outDir": "./build",
+		"target": "es6"
 	}
 }

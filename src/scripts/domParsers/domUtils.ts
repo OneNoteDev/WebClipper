@@ -369,7 +369,7 @@ export class DomUtils {
 	/**
 	 * Add embedded videos to the article preview where supported
 	 */
-	public static addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<EmbeddedVideoIFrameSrcs[]> {
+	public static addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<any> {
 		let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
 		if (!supportedDomain) {
 			return Promise.resolve();
