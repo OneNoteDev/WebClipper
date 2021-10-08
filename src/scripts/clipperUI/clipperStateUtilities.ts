@@ -10,6 +10,10 @@ export module ClipperStateUtilities {
 		return (state.userResult && state.userResult.status && state.userResult.data && !!state.userResult.data.user);
 	}
 
+	export function isMsaUser(state: ClipperState): boolean {
+		return state.userResult && state.userResult.data && state.userResult.data.user && state.userResult.data.user.authType && (state.userResult.data.user.authType.toLowerCase() === "msa");
+	}
+
 	export function clipButtonEnabled(clipperState: ClipperState): boolean {
 		let currentMode = clipperState.currentMode.get();
 		switch (currentMode) {

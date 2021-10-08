@@ -38,6 +38,7 @@ export module MockProps {
 						emailAddress: "mockEmail@hotmail.com",
 						fullName: "Mock Johnson",
 						accessToken: "mockToken",
+						authType: "OrgId",
 						accessTokenExpiration: 3000
 					},
 					lastUpdated: 10000000,
