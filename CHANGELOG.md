@@ -1,4 +1,8 @@
 # Change Log
+
+## 3.8.5 (October, 2021)
+* Improvement: Removing feedback button for MSA accounts
+
 ## 3.8.4 (July 22, 2021)
 * Improvement: Added a11y improvements
 
