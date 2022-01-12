@@ -146,13 +146,10 @@ export class AugmentationHelper {
 
 	private static addSupportedVideosToElement(previewElement: HTMLElement, pageContent: string, url: string) {
 		let addEmbeddedVideoEvent = new Log.Event.PromiseEvent(Log.Event.Label.AddEmbeddedVideo); // start event timer, just in case it gets logged
-		addEmbeddedVideoEvent.setCustomProperty(Log.PropertyName.Custom.Url, url);
 
 		DomUtils.addEmbeddedVideosWhereSupported(previewElement, pageContent, url).then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 			// only log when supported video is found on page
 			if (!ObjectUtils.isNullOrUndefined(videoSrcUrls)) {
-				addEmbeddedVideoEvent.setCustomProperty(Log.PropertyName.Custom.VideoSrcUrl, JSON.stringify(videoSrcUrls.map(function (v) { return v.srcAttribute; })));
-				addEmbeddedVideoEvent.setCustomProperty(Log.PropertyName.Custom.VideoDataOriginalSrcUrl, JSON.stringify(videoSrcUrls.map(function (v) { return v.dataOriginalSrcAttribute; })));
 				Clipper.logger.logEvent(addEmbeddedVideoEvent);
 			}
 		}, (error: OneNoteApi.GenericError) => {

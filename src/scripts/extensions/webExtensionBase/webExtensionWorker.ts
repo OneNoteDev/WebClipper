@@ -93,7 +93,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						label: Log.Failure.Label.UnclippablePage,
 						properties: {
 							failureType: Log.Failure.Type.Expected,
-							failureInfo: { error: JSON.stringify({ error: WebExtension.browser.runtime.lastError.message, url: this.tab.url }) },
+							failureInfo: { error: WebExtension.browser.runtime.lastError.message },
 							stackTrace: Log.Failure.getStackTrace()
 						},
 						clientInfo: this.clientInfo

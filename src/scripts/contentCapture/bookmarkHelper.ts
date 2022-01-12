@@ -68,7 +68,7 @@ export class BookmarkHelper {
 		let bookmarkPageEvent = new Log.Event.PromiseEvent(Log.Event.Label.BookmarkPage);
 
 		if (ObjectUtils.isNullOrUndefined(url) || url === "") {
-			let error: BookmarkError = { error: "Page url is null, undefined, or empty", url: url };
+			let error: OneNoteApi.GenericError = { error: "Page url is null, undefined, or empty" };
 			bookmarkPageEvent.setStatus(Log.Status.Failed);
 			bookmarkPageEvent.setFailureInfo(error);
 
@@ -95,8 +95,6 @@ export class BookmarkHelper {
 
 		if (ObjectUtils.isNullOrUndefined(metadataElements) || metadataElements.length === 0) {
 			bookmarkLoggingInfo.metadataElementsExist = false;
-			bookmarkPageEvent.setCustomProperty(Log.PropertyName.Custom.BookmarkInfo, JSON.stringify(bookmarkLoggingInfo));
-
 			Clipper.logger.logEvent(bookmarkPageEvent);
 			return Promise.resolve(result);
 		}
@@ -145,14 +143,10 @@ export class BookmarkHelper {
 			}).catch((error: OneNoteApi.GenericError) => {
 				bookmarkLoggingInfo.thumbnailSrcToDataUrlFailure = error.error;
 			}).then(() => {
-				bookmarkPageEvent.setCustomProperty(Log.PropertyName.Custom.BookmarkInfo, JSON.stringify(bookmarkLoggingInfo));
-
 				Clipper.logger.logEvent(bookmarkPageEvent);
 				return Promise.resolve(result);
 			});
 		} else {
-			bookmarkPageEvent.setCustomProperty(Log.PropertyName.Custom.BookmarkInfo, JSON.stringify(bookmarkLoggingInfo));
-
 			Clipper.logger.logEvent(bookmarkPageEvent);
 			return Promise.resolve(result);
 		}

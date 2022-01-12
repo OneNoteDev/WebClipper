@@ -3,7 +3,6 @@ export module PropertyName {
 		AnnotationAdded,
 		AugmentationModel,
 		AverageProcessingDurationPerPage,
-		BookmarkInfo,
 		ByteLength,
 		BytesPerPdfPage,
 		BytesTrimmed,
@@ -56,10 +55,7 @@ export module PropertyName {
 		UserInformationReturned,
 		UserInformationStored,
 		UserUpdateReason,
-		Url,
 		Value,
-		VideoDataOriginalSrcUrl,
-		VideoSrcUrl,
 		Width,
 		WriteableCookies
 	}
