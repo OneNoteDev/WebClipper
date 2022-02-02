@@ -57,7 +57,7 @@ export class DebugLoggingInject extends InjectBase<InjectOptions> {
 			label: Log.Failure.Label.UnhandledExceptionThrown,
 			properties: {
 				failureType: Log.Failure.Type.Unexpected,
-				failureInfo: { error: JSON.stringify({ error: e.toString(), url: window.location.href }) },
+				failureInfo: { error: e.toString() },
 				failureId: "PageNavInject",
 				stackTrace: Log.Failure.getStackTrace(e)
 			}

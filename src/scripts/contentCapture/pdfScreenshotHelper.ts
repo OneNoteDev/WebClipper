@@ -36,6 +36,7 @@ export class PdfScreenshotHelper {
 
 			let errorCallback = (failureInfo: OneNoteApi.RequestError) => {
 				getBinaryEvent.setStatus(Log.Status.Failed);
+				failureInfo.response = failureInfo.responseHeaders = undefined;
 				getBinaryEvent.setFailureInfo(failureInfo);
 				Clipper.logger.logEvent(getBinaryEvent);
 				reject();

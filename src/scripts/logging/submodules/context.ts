@@ -13,7 +13,6 @@ export module Context {
 		ContentType: "ContentType",
 		FlightInfo: "FlightInfo",
 		InPrivateBrowsing: "InPrivateBrowsing",
-		InvokeHostname: "InvokeHostname",
 		PageLanguage: "PageLanguage"
 	};
 
@@ -31,7 +30,6 @@ export module Context {
 		ContentType,
 		FlightInfo,
 		InPrivateBrowsing,
-		InvokeHostname,
 		PageLanguage
 	}
 

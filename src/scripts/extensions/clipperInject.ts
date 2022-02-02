@@ -192,7 +192,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			label: Log.Failure.Label.UnhandledExceptionThrown,
 			properties: {
 				failureType: Log.Failure.Type.Unexpected,
-				failureInfo: { error: JSON.stringify({ error: e.toString(), url: window.location.href }) },
+				failureInfo: { error: e.toString() },
 				failureId: "InjectBase",
 				stackTrace: Log.Failure.getStackTrace(e)
 			},

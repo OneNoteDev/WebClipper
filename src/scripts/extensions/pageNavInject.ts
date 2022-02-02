@@ -60,7 +60,7 @@ export class PageNavInject extends FrameInjectBase<FrameInjectOptions> {
 			label: Log.Failure.Label.UnhandledExceptionThrown,
 			properties: {
 				failureType: Log.Failure.Type.Unexpected,
-				failureInfo: { error: JSON.stringify({ error: e.toString(), url: window.location.href }) },
+				failureInfo: { error: e.toString() },
 				failureId: "PageNavInject",
 				stackTrace: Log.Failure.getStackTrace(e)
 			}
@@ -107,7 +107,5 @@ export class PageNavInject extends FrameInjectBase<FrameInjectOptions> {
 	 */
 	private setPageInfoContextProperties(): void {
 		this.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[DomUtils.getPageContentType(document)]);
-		this.logger.setContextProperty(Log.Context.Custom.InvokeHostname, UrlUtils.getHostname(document.URL));
-		this.logger.setContextProperty(Log.Context.Custom.PageLanguage, DomUtils.getLocale(document));
 	}
 }
