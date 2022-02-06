@@ -123,7 +123,6 @@ export module ErrorUtils {
 		let propsObject: { [key: string]: string } = {};
 
 		propsObject[Constants.Urls.QueryParams.channel] = props.channel;
-		propsObject[Constants.Urls.QueryParams.url] = encodeURIComponent(props.url);
 		propsObject[Constants.Urls.QueryParams.timeoutInMs] = Constants.Settings.noOpTrackerTimeoutDuration.toString();
 
 		let clientInfo: SmartValue<ClientInfo> = props.clientInfo as SmartValue<ClientInfo>;
