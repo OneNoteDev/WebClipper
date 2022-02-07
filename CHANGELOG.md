@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.8.6 (February, 2022)
+* Improvement: Removed EUII/customer data from being logged
+
 ## 3.8.5 (October, 2021)
 * Improvement: Removing feedback button for MSA accounts
 
