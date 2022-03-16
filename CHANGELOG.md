@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.8.7 (March, 2022)
+* Empty release
+
 ## 3.8.6 (February, 2022)
 * Improvement: Removed EUII/customer data from being logged
 

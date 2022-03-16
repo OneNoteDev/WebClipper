@@ -42,7 +42,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
-	protected static version = "3.8.6";
+	protected static version = "3.8.7";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
