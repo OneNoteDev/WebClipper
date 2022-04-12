@@ -406,6 +406,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 				this.state.setState({ userResult: { status: Status.Succeeded, data: updatedUser } });
 				Clipper.logger.setContextProperty(Log.Context.Custom.AuthType, updatedUser.user.authType);
+				Clipper.logger.setContextProperty(Log.Context.Custom.UserInfoId, updatedUser.user.cid);
 			} else {
 				this.state.setState({ userResult: { status: Status.Failed, data: updatedUser } });
 			}
