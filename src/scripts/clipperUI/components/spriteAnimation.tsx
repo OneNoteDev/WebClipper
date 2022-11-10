@@ -14,6 +14,7 @@ export interface SpriteAnimationProps {
 	totalFrameCount: number;
 	loop?: boolean;
 	ariaLabel?: string;
+	tabIndex?: number;
 }
 
 export interface SpriteAnimationState {
@@ -115,6 +116,8 @@ class SpriteAnimationClass extends ComponentBase<SpriteAnimationState, SpriteAni
 
 		let ariaLabel = this.props.ariaLabel ? this.props.ariaLabel : Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Loading");
 
+		let tabIndex = this.props.tabIndex ? this.props.tabIndex : 290;
+
 		let style = {
 			backgroundImage: "url(" + this.props.spriteUrl + ")",
 			backgroundRepeat: "no-repeat",
@@ -127,7 +130,7 @@ class SpriteAnimationClass extends ComponentBase<SpriteAnimationState, SpriteAni
 				className={Constants.Classes.spinner}
 				config={this.configForSpinner.bind(this)}
 				style={style}
-				tabIndex="290"
+				tabIndex={tabIndex}
 				aria-label={ariaLabel}
 				role="progressbar"
 				aria-valuemin="0"
