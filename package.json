@@ -81,5 +81,8 @@
         "velocity-animate": "1.4.2",
         "vinyl-source-stream": "1.1.0",
         "yargs": "6.6.0"
+    },
+    "overrides": {
+        "graceful-fs": "4.2.2"
     }
 }
