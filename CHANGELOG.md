@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.8.9 (November, 2022)
+* Improvement: Added a11y improvements
+
 ## 3.8.8 (April, 2022)
 * Add UserInfo.Id tag back for telemetry
 
