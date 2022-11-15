@@ -7,7 +7,7 @@
 	<Identity 
 		Name="Microsoft.OneNoteWebClipper" 
 		Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" 
-		Version="3.8.8.0" />
+		Version="3.8.9.0" />
 
 	<Properties> 
 		<DisplayName>OneNote Web Clipper</DisplayName> 
