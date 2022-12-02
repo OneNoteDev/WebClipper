@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.9.0 (December, 2022)
+* Empty release
+
 ## 3.8.9 (November, 2022)
 * Improvement: Added a11y improvements
 
