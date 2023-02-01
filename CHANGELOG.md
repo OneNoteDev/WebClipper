@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.9.1 (Februrary, 2023)
+* Improvement : aria logging lib version update for compliance
+
 ## 3.9.0 (December, 2022)
 * Empty release
 

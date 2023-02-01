@@ -4,7 +4,7 @@
     "name": "OneNote Web Clipper",
     "description": "__MSG_appDesc__",
     "default_locale": "en",
-    "version": "3.9.0",
+    "version": "3.9.1",
     "background": {
         "scripts": ["edgeExtension.js"],
         "persistent": true
