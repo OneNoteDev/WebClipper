@@ -57,7 +57,8 @@ export module PropertyName {
 		UserUpdateReason,
 		Value,
 		Width,
-		WriteableCookies
+		WriteableCookies,
+		dataBoundary
 	}
 
 	/* tslint:disable:variable-name */
