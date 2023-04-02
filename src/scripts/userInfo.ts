@@ -19,6 +19,7 @@ export interface UserInfoData {
 	cookieInRequest?: boolean;
 	emailAddress?: string;
 	fullName?: string;
+	dataBoundary?: string;
 }
 
 export enum UpdateReason {
