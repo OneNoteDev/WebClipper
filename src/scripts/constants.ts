@@ -381,6 +381,7 @@ export module Constants {
 
 		export var msaDomain = "https://login.live.com";
 		export var orgIdDomain = "https://login.microsoftonline.com";
+		export var userDataBoundaryDomain = "https://odc.officeapps.live.com/odc/v2.1/federationprovider";
 
 		export module Authentication {
 			export var authRedirectUrl = serviceDomain + "/webclipper/auth";
@@ -413,6 +414,7 @@ export module Constants {
 			export var url = "url";
 			export var userSessionId = "userSessionId";
 			export var wdFromClipper = "wdfromclipper"; // This naming convention is standard in OneNote Online
+			export var domain = "domain";
 		}
 	}
 

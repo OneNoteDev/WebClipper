@@ -15,7 +15,9 @@ import {ObjectUtils} from "../objectUtils";
 import {ResponsePackage} from "../responsePackage";
 import {StringUtils} from "../stringUtils";
 import {UserInfoData} from "../userInfo";
-import {UrlUtils} from "../urlUtils";
+import { UrlUtils } from "../urlUtils";
+import { DataBoundary } from "./DataBoundary";
+import * as fetch from "node-fetch";
 
 declare var browser;
 
@@ -58,7 +60,7 @@ export class AuthenticationHelper {
 
 			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
 			getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
-			this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
+			this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then(async (response: TimeStampedData) => {
 				let isValidUser = this.isValidUserInformation(response.data);
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, isValidUser);
 
@@ -68,6 +70,9 @@ export class AuthenticationHelper {
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserUpdateReason, UpdateReason[updateReason]);
 
 				if (isValidUser) {
+					let userDataBoundary: string = await this.getUserDataBoundary(response.data);
+					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.DataBoundary, userDataBoundary);
+					response.data.dataBoundary = userDataBoundary;
 					this.user.set({ user: response.data, lastUpdated: response.lastUpdated, updateReason: updateReason, writeableCookies: writeableCookies });
 				} else {
 					this.user.set({ updateReason: updateReason, writeableCookies: writeableCookies });
@@ -76,7 +81,6 @@ export class AuthenticationHelper {
 			}, (error: OneNoteApi.GenericError) => {
 				getInfoEvent.setStatus(Log.Status.Failed);
 				getInfoEvent.setFailureInfo(error);
-
 				this.user.set({ updateReason: updateReason });
 			}).then(() => {
 				this.logger.logEvent(getInfoEvent);
@@ -138,5 +142,44 @@ export class AuthenticationHelper {
 	protected isThirdPartyCookiesEnabled(userInfo: UserInfoData): boolean {
 		// Note that we are returning true by default to ensure the N-1 scenario.
 		return userInfo.cookieInRequest !== undefined ? userInfo.cookieInRequest : true;
+	}
+
+	/**
+	 * fetch the user data bounday from the emailAddress
+	 * @param userInfo 
+	 * @returns user data boudary
+	 */
+	private async getUserDataBoundary(userInfo: UserInfoData): Promise<string | undefined> {
+		try {
+			if (!userInfo) {
+				return undefined;
+			}
+			if (userInfo.authType === AuthType[AuthType.Msa]) {
+				return DataBoundary[DataBoundary.GLOBAL];
+			}
+			let domainValue;
+			if (!userInfo.emailAddress) {
+				return undefined;
+			} else {
+				domainValue = userInfo.emailAddress.substring(
+					userInfo.emailAddress.indexOf("@") + 1
+				);
+			}
+			const urlDataBoundaryDomain: string = UrlUtils.addUrlQueryValue(Constants.Urls.userDataBoundaryDomain, Constants.Urls.QueryParams.domain, domainValue);
+			let response = await fetch(urlDataBoundaryDomain, {
+				method: "GET",
+				headers: {
+					Accept: "application/json",
+				},
+			});
+			if (!response.ok) {
+				return undefined;
+			}
+			const result = await response.json();
+			let telemetryRegion = result.telemetryRegion;
+			return telemetryRegion;
+		} catch (error) {
+			return error.message;
+		}
 	}
 }

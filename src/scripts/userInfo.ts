@@ -19,6 +19,7 @@ export interface UserInfoData {
 	cookieInRequest?: boolean;
 	emailAddress?: string;
 	fullName?: string;
+	dataBoundary?: string;
 }
 
 export enum UpdateReason {
@@ -27,4 +28,13 @@ export enum UpdateReason {
 	SignInCancel,
 	SignOutAction,
 	TokenRefreshForPendingClip
+}
+
+export interface JwtAcessTokenInfo {
+	name: string;
+	upn: string;
+	exp: number;
+	tid: string;
+	oid: string;
+	puid: string;
 }
