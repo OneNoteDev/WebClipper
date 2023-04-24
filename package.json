@@ -86,7 +86,6 @@
         "graceful-fs": "4.2.2"
     },
     "dependencies": {
-        "jwt-decode": "^2.2.0",
-        "node-fetch": "^2.6.1"
+        "jwt-decode": "^2.2.0"
     }
 }

@@ -16,8 +16,7 @@ import {ResponsePackage} from "../responsePackage";
 import {StringUtils} from "../stringUtils";
 import {UserInfoData} from "../userInfo";
 import { UrlUtils } from "../urlUtils";
-import { DataBoundary } from "./DataBoundary";
-import * as fetch from "node-fetch";
+import { UserDataBoundaryHelper } from "./userDataBoundaryHelper";
 
 declare var browser;
 
@@ -70,7 +69,8 @@ export class AuthenticationHelper {
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserUpdateReason, UpdateReason[updateReason]);
 
 				if (isValidUser) {
-					let userDataBoundary: string = await this.getUserDataBoundary(response.data);
+					const dataBoundaryHelper = new UserDataBoundaryHelper();
+					let userDataBoundary: string = await dataBoundaryHelper.getUserDataBoundary(response.data);
 					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.DataBoundary, userDataBoundary);
 					response.data.dataBoundary = userDataBoundary;
 					this.user.set({ user: response.data, lastUpdated: response.lastUpdated, updateReason: updateReason, writeableCookies: writeableCookies });
@@ -142,44 +142,5 @@ export class AuthenticationHelper {
 	protected isThirdPartyCookiesEnabled(userInfo: UserInfoData): boolean {
 		// Note that we are returning true by default to ensure the N-1 scenario.
 		return userInfo.cookieInRequest !== undefined ? userInfo.cookieInRequest : true;
-	}
-
-	/**
-	 * fetch the user data bounday from the emailAddress
-	 * @param userInfo 
-	 * @returns user data boudary
-	 */
-	private async getUserDataBoundary(userInfo: UserInfoData): Promise<string | undefined> {
-		try {
-			if (!userInfo) {
-				return undefined;
-			}
-			if (userInfo.authType === AuthType[AuthType.Msa]) {
-				return DataBoundary[DataBoundary.GLOBAL];
-			}
-			let domainValue;
-			if (!userInfo.emailAddress) {
-				return undefined;
-			} else {
-				domainValue = userInfo.emailAddress.substring(
-					userInfo.emailAddress.indexOf("@") + 1
-				);
-			}
-			const urlDataBoundaryDomain: string = UrlUtils.addUrlQueryValue(Constants.Urls.userDataBoundaryDomain, Constants.Urls.QueryParams.domain, domainValue);
-			let response = await fetch(urlDataBoundaryDomain, {
-				method: "GET",
-				headers: {
-					Accept: "application/json",
-				},
-			});
-			if (!response.ok) {
-				return undefined;
-			}
-			const result = await response.json();
-			let telemetryRegion = result.telemetryRegion;
-			return telemetryRegion;
-		} catch (error) {
-			return error.message;
-		}
 	}
 }
