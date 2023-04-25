@@ -6,6 +6,8 @@ import {Assert} from "../../../assert";
 import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";
 import {StubSessionLogger} from "../../../../scripts/logging/stubSessionLogger";
+import { ClipMode } from "../../../../scripts/clipperUI/clipMode";
+import { SmartValue } from "../../../../scripts/communicator/smartValue";
 
 export class PreviewViewerAugmentationHeaderTests extends TestModule {
 	private defaultComponent;
@@ -21,15 +23,17 @@ export class PreviewViewerAugmentationHeaderTests extends TestModule {
 			changeFontFamily: sinon.spy((serif: boolean) => { }),
 			changeFontSize: sinon.spy((increase: boolean) => { }),
 			serif: false,
-			textHighlighterEnabled: false
+			textHighlighterEnabled: false,
+			currentMode: new SmartValue<ClipMode>(ClipMode.Augmentation)
 		} as PreviewViewerAugmentationHeaderProp;
 		this.defaultComponent =
 			<PreviewViewerAugmentationHeader
-				toggleHighlight={this.mockProp.toggleHighlight}
-				changeFontFamily={this.mockProp.changeFontFamily}
-				changeFontSize={this.mockProp.changeFontSize}
-				serif={this.mockProp.serif}
-				textHighlighterEnabled={this.mockProp.textHighlighterEnabled} />;
+			toggleHighlight={this.mockProp.toggleHighlight}
+			changeFontFamily={this.mockProp.changeFontFamily}
+			changeFontSize={this.mockProp.changeFontSize}
+			serif={this.mockProp.serif}
+			textHighlighterEnabled={this.mockProp.textHighlighterEnabled}
+			currentMode={this.mockProp.currentMode} />;
 		Clipper.logger = new StubSessionLogger();
 	}
 

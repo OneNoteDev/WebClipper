@@ -75,7 +75,8 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 			changeFontFamily={this.changeFontFamily.bind(this)}
 			changeFontSize={this.changeFontSize.bind(this)}
 			serif={this.props.clipperState.previewGlobalInfo.serif}
-			textHighlighterEnabled={this.props.clipperState.previewGlobalInfo.highlighterEnabled} />;
+			textHighlighterEnabled={this.props.clipperState.previewGlobalInfo.highlighterEnabled}
+			currentMode={this.props.clipperState.currentMode} />;
 	}
 
 	// Override

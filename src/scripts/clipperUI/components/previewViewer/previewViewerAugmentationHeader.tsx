@@ -1,6 +1,8 @@
-﻿import {Constants} from "../../../constants";
+﻿import { SmartValue } from "../../../communicator/smartValue";
+import {Constants} from "../../../constants";
 import {ExtensionUtils} from "../../../extensions/extensionUtils";
 import {Localization} from "../../../localization/localization";
+import { ClipMode } from "../../clipMode";
 import {ControlGroup, HeaderClasses, PreviewViewerHeaderComponentBase} from "./previewViewerHeaderComponentBase";
 
 export interface PreviewViewerAugmentationHeaderProp {
@@ -9,6 +11,7 @@ export interface PreviewViewerAugmentationHeaderProp {
 	changeFontSize: (increase: boolean) => void;
 	serif: boolean;
 	textHighlighterEnabled: boolean;
+	currentMode?: SmartValue<ClipMode>;
 }
 
 class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentBase<{}, PreviewViewerAugmentationHeaderProp> {
@@ -31,7 +34,10 @@ class PreviewViewerAugmentationHeaderClass extends PreviewViewerHeaderComponentB
 	}
 
 	private getTitleGroup() {
-		return this.getTitleGroupPrivate("augmentationHeaderControlGroupId", Localization.getLocalizedString("WebClipper.ClipType.Article.Button"), "augmentationHeaderTitle");
+		let headerTitle: string = this.props.currentMode.get() === ClipMode.Selection ?
+			Localization.getLocalizedString("WebClipper.ClipType.Selection.Button") :
+			Localization.getLocalizedString("WebClipper.ClipType.Article.Button");
+		return this.getTitleGroupPrivate("augmentationHeaderControlGroupId", headerTitle, "augmentationHeaderTitle");
 	}
 
 	private getHighlightGroup(): ControlGroup {
