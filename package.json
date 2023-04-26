@@ -84,5 +84,8 @@
     },
     "overrides": {
         "graceful-fs": "4.2.2"
+    },
+    "dependencies": {
+        "jwt-decode": "^2.2.0"
     }
 }

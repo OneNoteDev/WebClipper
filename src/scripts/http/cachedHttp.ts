@@ -1,6 +1,8 @@
 import {ResponsePackage} from "../responsePackage";
 
-import {Storage} from "../storage/storage";
+import { Storage } from "../storage/storage";
+import { AuthType, JwtAcessTokenInfo } from "../userInfo";
+import * as jwt_decode from "jwt-decode";
 
 export interface TimeStampedData {
 	data: any;
@@ -102,6 +104,19 @@ export class CachedHttp {
 			valueAsJson = JSON.parse(value);
 		} catch (e) {
 			return undefined;
+		}
+
+		const userAuthType: string = valueAsJson.authType;
+		if (userAuthType === AuthType[AuthType.OrgId]) {
+			const token: string = valueAsJson.accessToken;
+			try {
+				const decodedToken: JwtAcessTokenInfo = jwt_decode(token);
+				if (decodedToken) {
+					valueAsJson.emailAddress = decodedToken.upn;
+				}
+			} catch (e) {
+				return undefined;
+			}
 		}
 
 		let timeStampedValue: TimeStampedData = { data: valueAsJson, lastUpdated: Date.now() };

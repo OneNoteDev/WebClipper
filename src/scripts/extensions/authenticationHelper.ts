@@ -15,7 +15,8 @@ import {ObjectUtils} from "../objectUtils";
 import {ResponsePackage} from "../responsePackage";
 import {StringUtils} from "../stringUtils";
 import {UserInfoData} from "../userInfo";
-import {UrlUtils} from "../urlUtils";
+import { UrlUtils } from "../urlUtils";
+import { UserDataBoundaryHelper } from "./userDataBoundaryHelper";
 
 declare var browser;
 
@@ -58,7 +59,7 @@ export class AuthenticationHelper {
 
 			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
 			getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
-			this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then((response: TimeStampedData) => {
+			this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then(async (response: TimeStampedData) => {
 				let isValidUser = this.isValidUserInformation(response.data);
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, isValidUser);
 
@@ -68,6 +69,10 @@ export class AuthenticationHelper {
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserUpdateReason, UpdateReason[updateReason]);
 
 				if (isValidUser) {
+					const dataBoundaryHelper = new UserDataBoundaryHelper();
+					let userDataBoundary: string = await dataBoundaryHelper.getUserDataBoundary(response.data);
+					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.DataBoundary, userDataBoundary);
+					response.data.dataBoundary = userDataBoundary;
 					this.user.set({ user: response.data, lastUpdated: response.lastUpdated, updateReason: updateReason, writeableCookies: writeableCookies });
 				} else {
 					this.user.set({ updateReason: updateReason, writeableCookies: writeableCookies });
@@ -76,7 +81,6 @@ export class AuthenticationHelper {
 			}, (error: OneNoteApi.GenericError) => {
 				getInfoEvent.setStatus(Log.Status.Failed);
 				getInfoEvent.setFailureInfo(error);
-
 				this.user.set({ updateReason: updateReason });
 			}).then(() => {
 				this.logger.logEvent(getInfoEvent);
