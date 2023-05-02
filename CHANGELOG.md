@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.9.2 (May, 2023)
+* Improvement : Client Side changes to determine data boundary on user info.
+
 ## 3.9.1 (Februrary, 2023)
 * Improvement : aria logging lib version update for compliance
 
