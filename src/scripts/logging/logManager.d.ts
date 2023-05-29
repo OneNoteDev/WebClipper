@@ -8,6 +8,4 @@ declare module LogManager {
 		category: string;
 		properties: { [key: string]: string };
 	}
-
-	export function reInitLoggerForDataBoundaryChange();
 }
