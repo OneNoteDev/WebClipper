@@ -75,7 +75,7 @@ export class AuthenticationHelper {
 					// The default logging has been configured to EU Pipeline. Once we find the
 					// userdataboundary and if it is different from EUDB , reinit the logger with WW Pipeline
 					if (userDataBoundary === DataBoundary[DataBoundary.GLOBAL] || userDataBoundary === DataBoundary[DataBoundary.PUBLIC]) {
-						LogManager.reInitLoggerForDataBoundaryChange();
+						LogManager.reInitLoggerForDataBoundaryChange(userDataBoundary);
 					}
 					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.DataBoundary, userDataBoundary);
 					response.data.dataBoundary = userDataBoundary;

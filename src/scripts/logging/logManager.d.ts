@@ -9,5 +9,5 @@ declare module LogManager {
 		properties: { [key: string]: string };
 	}
 
-	export function reInitLoggerForDataBoundaryChange();
+	export function reInitLoggerForDataBoundaryChange(userDataBoundary: string);
 }
