@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.9.3 (June, 2023)
+* Improvement : Client Side changes to Reinit logging based on data boundary.
+
 ## 3.9.2 (May, 2023)
 * Improvement : Client Side changes to determine data boundary on user info.
 
