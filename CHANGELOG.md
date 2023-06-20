@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.9.4 (June 2023)
+* Improvement : Client side changes to flush logs before reinitializing logger.
+
 ## 3.9.3 (June, 2023)
 * Improvement : Client Side changes to Reinit logging based on data boundary.
 
