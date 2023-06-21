@@ -105,13 +105,17 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					}
 					resolve(false);
 				} else {
-					WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.webClipperInjectUrl });
+					if (this.clientInfo.get().clipperType === ClientType.FirefoxExtension) {
+						WebExtension.browser.management.uninstallSelf();
+					} else {
+						WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.webClipperInjectUrl });
 
-					if (!this.noOpTrackerInvoked) {
-						this.setUpNoOpTrackers(this.tab.url);
-						this.noOpTrackerInvoked = true;
+						if (!this.noOpTrackerInvoked) {
+							this.setUpNoOpTrackers(this.tab.url);
+							this.noOpTrackerInvoked = true;
+						}
+						resolve(true);
 					}
-					resolve(true);
 				}
 			});
 		});
