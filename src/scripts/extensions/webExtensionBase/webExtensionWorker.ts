@@ -107,6 +107,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				} else {
 					if (this.clientInfo.get().clipperType === ClientType.FirefoxExtension) {
 						WebExtension.browser.management.uninstallSelf();
+						resolve(true);
 					} else {
 						WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.webClipperInjectUrl });
 
