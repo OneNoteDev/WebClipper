@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.9.5 (June 2023)
+* Improvement : Deprecating the extension in Firefox.
+
 ## 3.9.4 (June 2023)
 * Improvement : Client side changes to flush logs before reinitializing logger.
 
