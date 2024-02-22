@@ -15,13 +15,11 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		});
 	};
 
-	private getScreenReaderThatAnnouncesCurrentModeProps(currentMode: ClipMode) {
+	private getScreenReaderThatAnnouncesCurrentModeProps(currentMode: ClipMode): string {
 		let stringToTellUserModeHasChanged = Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.CurrentModeHasChanged");
 		stringToTellUserModeHasChanged = stringToTellUserModeHasChanged.replace("{0}", ClipMode[currentMode]);
 
-		return (
-			<div aria-live="polite" aria-relevant="text" className={Constants.Classes.srOnly}>{stringToTellUserModeHasChanged}</div>
-		);
+		return stringToTellUserModeHasChanged;
 	}
 
 	private getPdfButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
@@ -143,7 +141,8 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		for (let i = 0; i < propsForVisibleButtons.length; i++) {
 			let attributes = propsForVisibleButtons[i];
 			let ariaPos = i + 1;
-			visibleButtons.push(<ModeButton {...attributes} aria-setsize={propsForVisibleButtons.length} aria-posinset={ariaPos} tabIndex={attributes.selected ? 40 : -1 } />);
+			visibleButtons.push(<ModeButton {...attributes} aria-setsize={propsForVisibleButtons.length}
+				aria-posinset={ariaPos} aria-selected={attributes.selected} />);
 		}
 		return visibleButtons;
 	}
@@ -152,9 +151,10 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		let currentMode = this.props.clipperState.currentMode.get();
 
 		return (
-			<div>
-				{this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode)}
-				<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)} role="listbox" className="modeButtonContainer">
+			<div aria-live="polite" aria-relevant="text" role="group"
+				aria-label={ this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode) }>
+				<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}
+					role="listbox" className="modeButtonContainer" aria-hidden="true">
 					{ this.getListOfButtons() }
 				</div>
 			</div>
