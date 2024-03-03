@@ -38,8 +38,7 @@ export class ExpandFromRightAnimationStrategy extends TransitioningAnimationStra
 
 			Velocity.animate(el, {
 				opacity: 1,
-				right: 20,
-				width: Constants.Styles.clipperUiWidth
+				right: 20
 			}, {
 				complete: () => {
 					// The first transition is reversed; once it is done, do the normal transitions
@@ -58,8 +57,7 @@ export class ExpandFromRightAnimationStrategy extends TransitioningAnimationStra
 			this.animationTimeoutId = setTimeout(() => {
 				Velocity.animate(el, {
 					opacity: 0,
-					right: 0,
-					width: 0
+					right: 0
 				}, {
 					complete: () => {
 						resolve();
