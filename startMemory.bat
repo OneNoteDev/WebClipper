@@ -1,0 +1,1 @@
+start onenote.exe /memoryWindow
