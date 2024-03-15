@@ -1,9 +1,9 @@
 {
 	"name": "com.microsoft.onenote.stickynotes",
 	"description": "Native host for OneNote Extension",
-	"path": "D:\\WebClipper\\startMemory.bat",
+	"path": "C:\\Program Files\\Microsoft Office\\root\\Office16\\onenote.exe",
 	"type": "stdio",
 	"allowed_origins": [
-	  "chrome-extension://kdnabjiachpmkglfekldaoanlbhnlgbi/"
+	  "chrome-extension://gopaeppdaekmbdnampgofgnfdcfojdbn/"
 	]
   }

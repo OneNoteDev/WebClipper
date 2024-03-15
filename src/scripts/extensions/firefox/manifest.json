@@ -27,8 +27,7 @@
         "tabs",
         "webRequest",
         "storage",
-        "webNavigation",
-        "nativeMessaging"
+        "webNavigation"
     ],
 
     "applications": {
