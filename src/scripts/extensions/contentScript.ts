@@ -1,5 +1,7 @@
 console.log("Content script loaded");
 
+/****** START CODE TO COMMUNICATE BETWEEN BACKGROUND AND CONTENT SCRIPTS ******/
+
 // Listen for a message from the background script
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
@@ -21,6 +23,8 @@ chrome.runtime.onMessage.addListener(
         sendResponse({ cMessage: "Invalid message received by content script" });
     }
   });
+
+/****** END CODE TO COMMUNICATE BETWEEN BACKGROUND AND CONTENT SCRIPTS ******/
 
 function getStreamPlayer() {
   return document.getElementsByClassName("video-stream")[0];
