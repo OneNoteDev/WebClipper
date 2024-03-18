@@ -10,8 +10,8 @@ chrome.runtime.onMessage.addListener(
       sendResponse({ cMessage: "Invalid request received by content script" });
     }
     switch (request.bMessage) {
-      case "GET_WINDOW_LOCATION_HREF":
-        sendResponse({ cMessage: window.location.href });
+      case "GET_YOUTUBE_URL":
+        sendResponse({ cMessage: getYoutubeURL() });
         break;
       case "GET_VIDEO_ID":
         sendResponse({ cMessage: getVideoId() });
@@ -52,6 +52,15 @@ function getVideoId() {
   } else {
     return null;
   }
+}
+
+function getYoutubeURL() {
+  var player = getStreamPlayer() as HTMLVideoElement;
+  var time = player.currentTime;
+  var path = document.location.href;
+  path = path.split("?")[0];
+  path += "?v=" + getVideoId() + "&t=" + Math.floor(time) + "s";
+  return path;
 }
 
 console.log("Content script finished executing");

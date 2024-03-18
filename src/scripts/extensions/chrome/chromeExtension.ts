@@ -24,8 +24,8 @@ port.onMessage.addListener((response) => {
 	 * content script.
 	 */
 	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-		console.log('Getting window.location.href from content script...');
-		sendMessageToContentScript(tabs, "GET_WINDOW_LOCATION_HREF");
+		console.log('Getting youtube url from content script...');
+		sendMessageToContentScript(tabs, "GET_YOUTUBE_URL");
 		console.log('Getting video id from content script...');
 		sendMessageToContentScript(tabs, "GET_VIDEO_ID");
 		console.log('Getting stream player from content script...');
