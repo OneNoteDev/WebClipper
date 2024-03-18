@@ -5,14 +5,23 @@ import {WebExtension} from "../webExtensionBase/webExtension";
 function sendMessageToContentScript(tabs, msg) {
 	if (tabs.length > 0) {
 		chrome.tabs.sendMessage(tabs[0].id, { bMessage: msg }, function (response) {
-			console.log(response.cMessage);
+			if (msg === "GET_ALL") {
+				sendMessageToNativeApplication(response);
+			} else {
+				console.log(response.cMessage);
+			}
 		});
 	}
 }
 
 /****** START CODE TO COMMUNICATE BETWEEN EXTENSION AND NATIVE APPLICATION ******/
 
-let port = chrome.runtime.connectNative('com.microsoft.onenote.stickynotes');
+let hostName = 'com.microsoft.onenote.stickynotes';
+let port = chrome.runtime.connectNative(hostName);
+
+function sendMessageToNativeApplication(msg) {
+	port.postMessage(msg);
+}
 
 port.onMessage.addListener((response) => {
 	console.log('Received from native application: ' + JSON.stringify(response));
@@ -30,6 +39,8 @@ port.onMessage.addListener((response) => {
 		sendMessageToContentScript(tabs, "GET_VIDEO_ID");
 		console.log('Getting stream player from content script...');
 		sendMessageToContentScript(tabs, "GET_STREAM_PLAYER");
+		console.log('Getting all details from content script and sending back to native application...');
+		sendMessageToContentScript(tabs, "GET_ALL");
 	});
 	/****** END CODE TO COMMUNICATE BETWEEN BACKGROUND AND CONTENT SCRIPTS ******/
 });
@@ -37,9 +48,6 @@ port.onMessage.addListener((response) => {
 port.onDisconnect.addListener(() => {
   console.log('Disconnected');
 });
-
-// let message = { text: 'Hello from the extension!' };
-// port.postMessage(message);
 
 /****** END CODE TO COMMUNICATE BETWEEN EXTENSION AND NATIVE APPLICATION ******/
 

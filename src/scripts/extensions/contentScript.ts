@@ -19,6 +19,13 @@ chrome.runtime.onMessage.addListener(
       case "GET_STREAM_PLAYER":
         sendResponse({ cMessage: (getStreamPlayer() as HTMLElement).outerHTML });
         break;
+      case "GET_ALL":
+        sendResponse({
+          youtubeURL: getYoutubeURL(),
+          videoId: getVideoId(),
+          streamPlayer: (getStreamPlayer() as HTMLElement).outerHTML
+        });
+        break;
       default:
         sendResponse({ cMessage: "Invalid message received by content script" });
     }
