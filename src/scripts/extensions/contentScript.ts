@@ -4,26 +4,30 @@ console.log("Content script loaded");
 
 // Listen for a message from the background script
 chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
+  function (request, sender, sendResponse) {
+    if (window.self !== window.top) {
+      // We're in an iframe, ignore the message
+      return;
+    }
     console.log(JSON.stringify(request));
     if (request === undefined) {
       sendResponse({ cMessage: "Invalid request received by content script" });
     }
     switch (request.bMessage) {
       case "GET_YOUTUBE_URL":
-        sendResponse({ cMessage: getYoutubeURL() });
+        sendResponse({ cMessage: !isYoutube() ? "NOT_YOUTUBE" : getYoutubeURL() });
         break;
       case "GET_VIDEO_ID":
-        sendResponse({ cMessage: getVideoId() });
+        sendResponse({ cMessage: !isYoutube() ? "NOT_YOUTUBE" : getVideoId() });
         break;
       case "GET_STREAM_PLAYER":
-        sendResponse({ cMessage: (getStreamPlayer() as HTMLElement).outerHTML });
+        sendResponse({ cMessage: !isYoutube() ? "NOT_YOUTUBE" : (getStreamPlayer() as HTMLElement).outerHTML });
         break;
-      case "GET_ALL":
+      case "GET_ALL_YOUTUBE_DETAILS":
         sendResponse({
-          youtubeURL: getYoutubeURL(),
-          videoId: getVideoId(),
-          streamPlayer: (getStreamPlayer() as HTMLElement).outerHTML
+          youtubeURL: !isYoutube() ? "NOT_YOUTUBE" : getYoutubeURL(),
+          videoId: !isYoutube() ? "NOT_YOUTUBE" : getVideoId(),
+          streamPlayer: !isYoutube() ? "NOT_YOUTUBE" : (getStreamPlayer() as HTMLElement).outerHTML
         });
         break;
       default:
@@ -32,6 +36,10 @@ chrome.runtime.onMessage.addListener(
   });
 
 /****** END CODE TO COMMUNICATE BETWEEN BACKGROUND AND CONTENT SCRIPTS ******/
+
+function isYoutube() {
+  return document.location.href.indexOf("youtube.com") !== -1;
+}
 
 function getStreamPlayer() {
   return document.getElementsByClassName("video-stream")[0];

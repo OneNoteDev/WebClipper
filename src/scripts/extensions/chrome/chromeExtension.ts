@@ -5,7 +5,7 @@ import {WebExtension} from "../webExtensionBase/webExtension";
 function sendMessageToContentScript(tabs, msg) {
 	if (tabs.length > 0) {
 		chrome.tabs.sendMessage(tabs[0].id, { bMessage: msg }, function (response) {
-			if (msg === "GET_ALL") {
+			if (msg === "GET_ALL_YOUTUBE_DETAILS") {
 				sendMessageToNativeApplication(response);
 			} else {
 				console.log(response.cMessage);
@@ -40,7 +40,7 @@ port.onMessage.addListener((response) => {
 		console.log('Getting stream player from content script...');
 		sendMessageToContentScript(tabs, "GET_STREAM_PLAYER");
 		console.log('Getting all details from content script and sending back to native application...');
-		sendMessageToContentScript(tabs, "GET_ALL");
+		sendMessageToContentScript(tabs, "GET_ALL_YOUTUBE_DETAILS");
 	});
 	/****** END CODE TO COMMUNICATE BETWEEN BACKGROUND AND CONTENT SCRIPTS ******/
 });

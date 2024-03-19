@@ -14,7 +14,7 @@
         "run_at": "document_start",
         "all_frames": true
     }, {
-        "matches": ["https://www.youtube.com/*", "https://youtube.com/*"],
+        "matches": ["<all_urls>"],
         "js": ["contentScript.js"],
         "run_at": "document_end",
         "all_frames": true
