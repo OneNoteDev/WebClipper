@@ -26,6 +26,7 @@ chrome.runtime.onMessage.addListener(
       case "GET_ALL_YOUTUBE_DETAILS":
         sendResponse({
           youtubeURL: !isYoutube() ? "NOT_YOUTUBE" : getYoutubeURL(),
+          documentTitle: getDocumentTitle(),
           videoId: !isYoutube() ? "NOT_YOUTUBE" : getVideoId(),
           streamPlayer: !isYoutube() ? "NOT_YOUTUBE" : (getStreamPlayer() as HTMLElement).outerHTML
         });
@@ -39,6 +40,10 @@ chrome.runtime.onMessage.addListener(
 
 function isYoutube() {
   return document.location.href.indexOf("youtube.com") !== -1;
+}
+
+function getDocumentTitle() {
+  return document.title;
 }
 
 function getStreamPlayer() {
