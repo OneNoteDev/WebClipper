@@ -229,6 +229,13 @@ gulp.task("bundleAppendIsInstalledMarker", function () {
     return merge(tasks);
 });
 
+gulp.task("bundleContentScript", function () {
+    var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/";
+    var files = ["contentScript.js"];
+    var tasks = generateBrowserifyTasks(extensionRoot, files);
+    return merge(tasks);
+});
+
 gulp.task("bundleClipperUI", function () {
     var extensionRoot = PATHS.BUILDROOT + "scripts/clipperUI/";
     var files = ["clipper.js", "pageNav.js", "localeSpecificTasks.js", "unsupportedBrowser.js"];
@@ -299,6 +306,7 @@ gulp.task("bundleTests", function () {
 gulp.task("bundle", function(callback) {
     runSequence(
         "bundleAppendIsInstalledMarker",
+        "bundleContentScript",
         "bundleClipperUI",
         "bundleLogManager",
         "bundleBookmarklet",
@@ -512,6 +520,10 @@ function exportChromeJS() {
         PATHS.BUNDLEROOT + "appendIsInstalledMarker.js"
     ]).pipe(concat("appendIsInstalledMarker.js")).pipe(gulp.dest(targetDir));
 
+    var contentScriptTask = gulp.src([
+        PATHS.BUNDLEROOT + "contentScript.js"
+    ]).pipe(concat("contentScript.js")).pipe(gulp.dest(targetDir));
+
     var chromeExtensionTask = gulp.src([
         targetDir + "logManager.js",
         targetDir + "oneNoteApi.min.js",
@@ -537,9 +549,9 @@ function exportChromeJS() {
     ]).pipe(concat("chromePageNavInject.js")).pipe(gulp.dest(targetDir));
 
     if (commonTask) {
-        return merge(commonTask, appendIsInstalledMarkerTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
+        return merge(commonTask, appendIsInstalledMarkerTask, contentScriptTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
     }
-    return merge(chromeExtensionTask, appendIsInstalledMarkerTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
+    return merge(chromeExtensionTask, appendIsInstalledMarkerTask, contentScriptTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
 }
 
 function exportChromeCSS() {
