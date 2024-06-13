@@ -19,6 +19,11 @@ steps:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
 
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@3
+  inputs:
+    debugMode: false
+  displayName: Run Credential Scanner
+
 - script: |
     npm install
     npm run build:prod
