@@ -13,6 +13,11 @@
         "js": ["appendIsInstalledMarker.js"],
         "run_at": "document_start",
         "all_frames": true
+    }, {
+        "matches": ["<all_urls>"],
+        "js": ["contentScript.js"],
+        "run_at": "document_end",
+        "all_frames": true
     }],
 
     "web_accessible_resources": [
@@ -27,7 +32,8 @@
         "tabs",
         "webRequest",
         "storage",
-        "webNavigation"
+        "webNavigation",
+        "nativeMessaging"
     ],
 
     "content_security_policy": "script-src 'self'; object-src 'self'",
