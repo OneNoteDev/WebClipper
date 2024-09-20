@@ -186,7 +186,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
 			let changelogUrl = UrlUtils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
-			HttpWithRetries.get(changelogUrl).then((request: XMLHttpRequest) => {
+			/* HttpWithRetries.get(changelogUrl).then((request: XMLHttpRequest) => {
 				try {
 					let schemas: ChangeLog.Schema[] = JSON.parse(request.responseText);
 					let allUpdates: ChangeLog.Update[];
@@ -208,7 +208,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				}
 			}, (error) => {
 				reject(error);
-			});
+			}); */
 		});
 	}
 
@@ -356,8 +356,8 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	private setUnhandledExceptionLogging() {
-		let oldOnError = window.onerror;
-		window.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?: Error) => {
+		let oldOnError = self.onerror;
+		self.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?: Error) => {
 			let callStack = error ? Log.Failure.getStackTrace(error) : "[unknown stacktrace]";
 
 			Log.ErrorUtils.sendFailureLogRequest({

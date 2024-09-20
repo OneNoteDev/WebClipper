@@ -1,4 +1,4 @@
-import {ObjectUtils} from "../objectUtils";
+import { ObjectUtils } from "../objectUtils";
 
 interface ResponsePackage {
 	parsedResponse: string;
@@ -14,54 +14,45 @@ interface ResponsePackage {
 export class Http {
 	protected static defaultTimeout = 30000;
 
-	public static get(url: string, headers?: any, timeout = Http.defaultTimeout, expectedCodes = [200]): Promise<XMLHttpRequest> {
+	public static get(url: string, headers?: any, timeout = Http.defaultTimeout, expectedCodes = [200]): Promise<void> {
 		return Http.createAndSendRequest("GET", url, headers, expectedCodes, timeout);
 	}
 
-	public static post(url: string, data: any, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout): Promise<XMLHttpRequest> {
+	public static post(url: string, data: any, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout): Promise<void> {
 		if (ObjectUtils.isNullOrUndefined(data)) {
 			throw new Error("data must be a non-undefined object, but was: " + data);
 		}
 		return Http.createAndSendRequest("POST", url, headers, expectedCodes, timeout, data);
 	}
 
-	protected static createAndSendRequest(method: string, url: string, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, data?: any): Promise<XMLHttpRequest> {
+	protected static createAndSendRequest(method: string, url: string, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, data?: any): Promise<void> {
 		if (!url) {
 			throw new Error("url must be a non-empty string, but was: " + url);
 		}
 
-		return new Promise<XMLHttpRequest>((resolve, reject) => {
-			let request = new XMLHttpRequest();
-			request.open(method, url);
+		return new Promise<void>(() => {});
 
-			request.onload = () => {
-				if (expectedCodes.indexOf(request.status) > -1) {
-					resolve(request);
+		/* return new Promise<string>((resolve, reject) => {
+			fetch(url, {
+				method: method,
+				headers: headers,
+				body: data
+			}).then((response: any) => {
+				if (expectedCodes.indexOf(response.status) > -1) {
+					resolve(JSON.parse(response) as string);
 				} else {
-					reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
+					reject(OneNoteApi.ErrorUtils.createRequestErrorObject(Response, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
+					reject(OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS);
 				}
-			};
+			}).catch(() => {
+				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.NETWORK_ERROR));
+				reject(OneNoteApi.RequestErrorType.NETWORK_ERROR);
+			});
 
-			request.onerror = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.NETWORK_ERROR));
-			};
-
-			request.ontimeout = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT));
-			};
-
-			Http.setHeaders(request, headers);
-			request.timeout = timeout;
-
-			request.send(data);
-		});
-	}
-
-	private static setHeaders(request: XMLHttpRequest, headers: any): void {
-		if (headers) {
-			for (let key in headers) {
-				request.setRequestHeader(key, headers[key]);
-			}
-		}
+			setTimeout(() => {
+				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT));
+				reject(OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT);
+			}, timeout);
+		}); */
 	}
 }

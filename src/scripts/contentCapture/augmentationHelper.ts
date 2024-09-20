@@ -112,7 +112,9 @@ export class AugmentationHelper {
 			headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
 			headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-			return HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
+			return Promise.resolve();
+
+			/* return HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
 				let parsedResponse: any;
 				try {
 					parsedResponse = JSON.parse(request.response);
@@ -126,7 +128,7 @@ export class AugmentationHelper {
 					request: request
 				};
 				return Promise.resolve(responsePackage);
-			});
+			}); */
 		});
 	}
 

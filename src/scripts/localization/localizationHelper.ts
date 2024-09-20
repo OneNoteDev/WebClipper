@@ -9,10 +9,11 @@ export class LocalizationHelper {
 		let url = UrlUtils.addUrlQueryValue(Constants.Urls.localizedStringsUrlBase, "locale", locale);
 
 		return HttpWithRetries.get(url).then((request) => {
-			return Promise.resolve({
+			return Promise.resolve();
+			/* return Promise.resolve({
 				request: request,
 				parsedResponse: request.responseText
-			});
+			}); */
 		});
 	}
 }

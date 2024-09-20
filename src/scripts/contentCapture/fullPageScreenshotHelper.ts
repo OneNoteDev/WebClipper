@@ -42,7 +42,9 @@ export class FullPageScreenshotHelper {
 					OneNoteApiUtils.logOneNoteApiRequestError(fullPageScreenshotEvent, error);
 				};
 
-				HttpWithRetries.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((request: XMLHttpRequest) => {
+				return Promise.resolve();
+
+				/* HttpWithRetries.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((request: XMLHttpRequest) => {
 					if (request.status === 200) {
 						try {
 							resolve(JSON.parse(request.response) as FullPageScreenshotResult);
@@ -60,7 +62,7 @@ export class FullPageScreenshotHelper {
 					reject();
 				}).then(() => {
 					Clipper.logger.logEvent(fullPageScreenshotEvent);
-				});
+				}); */
 			});
 		});
 	}

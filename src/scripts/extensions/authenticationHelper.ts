@@ -117,7 +117,7 @@ export class AuthenticationHelper {
 				postData = cookie.replace(/\+/g, "%2B");
 			}
 
-			HttpWithRetries.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
+			/* HttpWithRetries.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
 				let response = request.response;
 
 				resolve({ parsedResponse: response, request: request });
@@ -127,7 +127,7 @@ export class AuthenticationHelper {
 				reject(error);
 			}).then(() => {
 				this.logger.logEvent(retrieveUserInformationEvent);
-			});
+			}); */
 		});
 	}
 

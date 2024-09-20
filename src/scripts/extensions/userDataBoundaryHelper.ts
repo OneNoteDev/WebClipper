@@ -39,7 +39,7 @@ export class UserDataBoundaryHelper {
 			let domainValue = userInfo.emailAddress.substring(
 				userInfo.emailAddress.indexOf("@") + 1);
 			const urlDataBoundaryDomain: string = UrlUtils.addUrlQueryValue(Constants.Urls.userDataBoundaryDomain, Constants.Urls.QueryParams.domain, domainValue);
-			HttpWithRetries.get(urlDataBoundaryDomain).then((request: XMLHttpRequest) => {
+			/* HttpWithRetries.get(urlDataBoundaryDomain).then((request: XMLHttpRequest) => {
 				let expectedCodes = [200];
 				if (expectedCodes.indexOf(request.status) > -1) {
 					let parsedResponse: any;
@@ -59,7 +59,7 @@ export class UserDataBoundaryHelper {
 				}
 			}, (error) => {
 				reject(error);
-			});
+			}); */
 		});
 	}
 }

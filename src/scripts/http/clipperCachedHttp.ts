@@ -59,9 +59,9 @@ export class ClipperCachedHttp extends CachedHttp {
 
 			return new Promise<ResponsePackage<string>>((resolve, reject) => {
 				getResponseAsync().then((responsePackage) => {
-					if (responsePackage.request) {
+					/* if (responsePackage.request) {
 						ClipperCachedHttp.addCorrelationIdToLogEvent(fetchNonLocalDataEvent, responsePackage.request);
-					}
+					} */
 					resolve(responsePackage);
 				}, (error) => {
 					fetchNonLocalDataEvent.setStatus(Log.Status.Failed);
