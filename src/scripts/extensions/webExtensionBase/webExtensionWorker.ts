@@ -6,22 +6,17 @@ import {ClipperUrls} from "../../clipperUrls";
 import {Constants} from "../../constants";
 import {UrlUtils} from "../../urlUtils";
 
-import {Communicator} from "../../communicator/communicator";
 import {SmartValue} from "../../communicator/smartValue";
-
-import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
 
 import {ClipperData} from "../../storage/clipperData";
-import {LocalStorage} from "../../storage/LocalStorage";
+import {LocalStorage} from "../../storage/localStorage";
 
 import {ChangeLog} from "../../versioning/changeLog";
 
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
-import {InjectHelper} from "../injectHelper";
-import {InvokeSource} from "../invokeSource";
 
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
@@ -85,7 +80,12 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 */
 	protected invokeClipperBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.tabs.executeScript(this.tab.id, {
+			chrome.scripting.executeScript({
+				target: { tabId: this.tab.id },
+				files: [this.injectUrls.webClipperInjectUrl]
+			});
+			resolve(true);
+			/* WebExtension.browser.tabs.executeScript(this.tab.id, {
 				code: 'var frameUrl = "' + WebExtension.browser.extension.getURL("clipper.html") + '";'
 			}, () => {
 				if (WebExtension.browser.runtime.lastError) {
@@ -118,7 +118,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						resolve(true);
 					}
 				}
-			});
+			}); */
 		});
 	}
 

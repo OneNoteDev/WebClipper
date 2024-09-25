@@ -1,13 +1,9 @@
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
-import {Status} from "../clipperUI/status";
-
-import {HttpWithRetries} from "../http/httpWithRetries";
 
 import * as Log from "../logging/log";
 
 import {Constants} from "../constants";
-import {PageInfo} from "../pageInfo";
 import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
 

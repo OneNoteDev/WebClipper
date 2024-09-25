@@ -1,6 +1,6 @@
 import {Constants} from "../../../../scripts/constants";
 
-import {PdfPageViewport} from "../../../../scripts/clipperUI/components/previewViewer/pdfPageViewport";
+import {PdfPageViewport} from "../../../../scripts/clipperUI/components/previewViewer/PdfPageViewport";
 
 import {MithrilUtils} from "../../../mithrilUtils";
 import {TestModule} from "../../../testModule";

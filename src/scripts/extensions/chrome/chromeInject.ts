@@ -5,6 +5,8 @@ import {WebExtensionContentMessageHandler} from "../webExtensionBase/webExtensio
 declare var frameUrl: string;
 WebExtension.browser = chrome;
 
+var frameUrl = chrome.runtime.getURL("clipper.html");
+
 invoke({
 	frameUrl: frameUrl,
 	enableAddANote: true,

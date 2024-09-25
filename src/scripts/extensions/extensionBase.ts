@@ -1,16 +1,12 @@
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
-import {Experiments} from "../experiments";
-import {ResponsePackage} from "../responsePackage";
 import {StringUtils} from "../stringUtils";
 import {UrlUtils} from "../urlUtils";
 
 import {TooltipType} from "../clipperUI/tooltipType";
 
 import {SmartValue} from "../communicator/smartValue";
-
-import {HttpWithRetries} from "../http/HttpWithRetries";
 
 import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
@@ -22,7 +18,7 @@ import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ChangeLog} from "../versioning/changeLog";
-import {ChangeLogHelper} from "../versioning/changeLogHelper";
+import {ChangeLogHelper} from "../versioning/changelogHelper";
 import {Version} from "../versioning/version";
 
 import {AuthenticationHelper} from "./authenticationHelper";

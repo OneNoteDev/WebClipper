@@ -7,7 +7,6 @@ import {ClipperInject, ClipperInjectOptions} from "../../extensions/clipperInjec
 import {DebugLoggingInject} from "../../extensions/debugLoggingInject";
 import {UnsupportedBrowserInject} from "../../extensions/unsupportedBrowserInject";
 import {BrowserUtils} from "../../browserUtils";
-import {Constants} from "../../Constants";
 
 import {InjectHelper} from "../injectHelper";
 

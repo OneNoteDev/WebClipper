@@ -27,20 +27,15 @@ export module UrlUtils {
 	}
 
 	export function getHostname(url: string): string {
-		/* let l = document.createElement("a");
-		l.href = url;
-		return l.protocol + "//" + l.host + "/"; */
+		// return await sendToOffscreenDocument("get-hostname", { url });
 		return url.split("/")[2];
 	}
 
 	export function getPathname(url: string): string {
-		/* let l = document.createElement("a");
-		l.href = url;
-
-		let urlPathName = l.pathname; */
+		// let urlPathName = await sendToOffscreenDocument("get-pathname", { url });
 		let urlPathName = url.split("/").slice(3).join("/");
 
-		// We need to ensure the leading forward slash to make it consistant across all browsers.
+		// We need to ensure the leading forward slash to make it consistent across all browsers.
 		return ensureLeadingForwardSlash(urlPathName);
 	}
 

@@ -81,12 +81,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.auth = auth;
 		this.clientInfo = clientInfo;
 
-		// TODO Remove this function after ~some~ amount of time has passed
-		// This is a temporary event shipping with v3.2.0 that is needed to map
-		// the "accidental" device ids we were logging (that came from a cookie)
-		// to the "real" device ids (ON-xxx) found in local storage that we weren't logging
-		this.logDeviceIdMapEvent();
-
 		this.initializeCommunicators();
 		this.initializeContextProperties();
 	}
@@ -624,18 +618,5 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.pageNavUiCommunicator.tearDown();
 		this.injectCommunicator.tearDown();
 		this.pageNavInjectCommunicator.tearDown();
-	}
-
-	// TODO Temporary workaround introduced in v3.2.0
-	// Remove after some time...
-	private logDeviceIdMapEvent() {
-		let deviceIdInStorage = this.clientInfo.get().clipperId;
-		let deviceIdInCookie = CookieUtils.readCookie("MicrosoftApplicationsTelemetryDeviceId");
-		if (deviceIdInCookie !== deviceIdInStorage) {
-			let deviceIdMapEvent = new Log.Event.BaseEvent(Log.Event.Label.DeviceIdMap);
-			deviceIdMapEvent.setCustomProperty(Log.PropertyName.Custom.DeviceIdInStorage, deviceIdInStorage);
-			deviceIdMapEvent.setCustomProperty(Log.PropertyName.Custom.DeviceIdInCookie, deviceIdInCookie);
-			this.logger.logEvent(deviceIdMapEvent);
-		}
 	}
 }

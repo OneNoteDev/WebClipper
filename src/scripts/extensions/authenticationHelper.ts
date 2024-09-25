@@ -3,13 +3,12 @@ import {SmartValue} from "../communicator/smartValue";
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
-import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
-import {HttpWithRetries} from "../http/HttpWithRetries";
+import {TimeStampedData} from "../http/cachedHttp";
 
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
-import {AuthType, UserInfo, UpdateReason} from "../userInfo";
+import {UserInfo, UpdateReason} from "../userInfo";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
 import {ResponsePackage} from "../responsePackage";
@@ -17,7 +16,8 @@ import {StringUtils} from "../stringUtils";
 import {UserInfoData} from "../userInfo";
 import { UrlUtils } from "../urlUtils";
 import { UserDataBoundaryHelper } from "./userDataBoundaryHelper";
-import { DataBoundary } from "./DataBoundary";
+import { DataBoundary } from "./dataBoundary";
+import { HttpWithRetries } from "../http/httpWithRetries";
 
 declare var browser;
 
@@ -117,17 +117,17 @@ export class AuthenticationHelper {
 				postData = cookie.replace(/\+/g, "%2B");
 			}
 
-			/* HttpWithRetries.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
-				let response = request.response;
-
-				resolve({ parsedResponse: response, request: request });
+			HttpWithRetries.post(userInfoUrl, postData, headers).then((response: Response) => {
+				response.text().then((responseText: string) => {
+					resolve({ parsedResponse: responseText });
+				});
 			}, (error: OneNoteApi.RequestError) => {
 				retrieveUserInformationEvent.setStatus(Log.Status.Failed);
 				retrieveUserInformationEvent.setFailureInfo(error);
 				reject(error);
 			}).then(() => {
 				this.logger.logEvent(retrieveUserInformationEvent);
-			}); */
+			});
 		});
 	}
 

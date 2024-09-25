@@ -36,11 +36,13 @@
     ],
     "permissions": [
       "activeTab",
+      "scripting",
       "contextMenus",
       "tabs",
       "webRequest",
       "storage",
-      "webNavigation"
+      "webNavigation",
+      "offscreen"
     ],
     "host_permissions": [
       "<all_urls>"

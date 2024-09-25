@@ -114,9 +114,9 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	private registerBrowserButton() {
-		/* WebExtension.browser.browserAction.onClicked.addListener((tab: W3CTab) => {
+		chrome.action.onClicked.addListener((tab: W3CTab) => {
 			this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ExtensionButton }, { invokeMode: InvokeMode.Default });
-		}); */
+		});
 	}
 
 	private registerContextMenuItems() {
@@ -124,15 +124,17 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		this.fetchAndStoreLocStrings().then(() => {
 			WebExtension.browser.contextMenus.removeAll(() => {
 				let menus: chrome.contextMenus.CreateProperties[] = [{
+					id: "WebClipper.Label.OneNoteWebClipper",
 					title: Localization.getLocalizedString("WebClipper.Label.OneNoteWebClipper"),
 					contexts: ["page"],
-					onclick: (info, tab: W3CTab) => {
+					/* onclick: (info, tab: W3CTab) => {
 						this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
-					}
+					} */
 				}, {
+					id: "WebClipper.Label.ClipFullPageToOneNote",
 					title: Localization.getLocalizedString("WebClipper.Label.ClipSelectionToOneNote"),
 					contexts: ["selection"],
-					onclick: (info, tab: W3CTab) => {
+					/* onclick: (info, tab: W3CTab) => {
 						let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
 
 						// If the tab index is negative, chances are the user is using some sort of PDF plugin,
@@ -148,17 +150,18 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 						} else {
 							this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
 						}
-					}
-				}, {
+					} */
+					}, {
+					id: "WebClipper.Label.ClipImageToOneNote",
 					title: Localization.getLocalizedString("WebClipper.Label.ClipImageToOneNote"),
 					contexts: ["image"],
-					onclick: (info, tab: W3CTab) => {
+					/* onclick: (info, tab: W3CTab) => {
 						// Even though we know the user right-clicked an image, srcUrl is only present if the src attr exists
 						this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, info.srcUrl ? {
 							// srcUrl will always be the full url, not relative
 							invokeDataForMode: info.srcUrl, invokeMode: InvokeMode.ContextImage
 						} : undefined);
-					}
+					} */
 				}];
 
 				let documentUrlPatternList: string[];
