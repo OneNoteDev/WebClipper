@@ -200,8 +200,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		return new Promise<boolean>((resolve, reject) => {
 			let popupWidth = 1000;
 			let popupHeight = 700;
-			let leftPosition: number = (screen && screen.width) ? Math.round((screen.width - popupWidth) / 2) : 0;
-			let topPosition: number = (screen && screen.height) ? Math.round((screen.height - popupHeight) / 2) : 0;
+			let leftPosition: number = (typeof screen !== "undefined" && screen.width) ? Math.round((screen.width - popupWidth) / 2) : 0;
+			let topPosition: number = (typeof screen !== "undefined" && screen.height) ? Math.round((screen.height - popupHeight) / 2) : 0;
 
 			try {
 				/* As of 7/19/2016, Firefox does not yet supported the "focused" key for windows.create in the WebExtensions API */
@@ -244,13 +244,13 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 							errorObject = { error: error, errorDescription: errorDescription, correlationId: correlationId };
 						}
 
-						WebExtension.browser.webRequest.onCompleted.removeListener(redirectListener);
-						WebExtension.browser.tabs.remove(details.tabId);
+						/* WebExtension.browser.webRequest.onCompleted.removeListener(redirectListener);
+						WebExtension.browser.tabs.remove(details.tabId); */
 					};
 
-					WebExtension.browser.webRequest.onCompleted.addListener(redirectListener, {
+					/* WebExtension.browser.webRequest.onCompleted.addListener(redirectListener, {
 						windowId: newWindow.id, urls: [autoCloseDestinationUrl + "*"]
-					}, ["responseHeaders"]);
+					}, ["responseHeaders"]); */
 
 					let closeListener = (tabId: number, tabRemoveInfo: TabRemoveInfo) => {
 						if (tabRemoveInfo.windowId === newWindow.id) {
@@ -259,7 +259,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						}
 					};
 
-					WebExtension.browser.tabs.onRemoved.addListener(closeListener);
+					// WebExtension.browser.tabs.onRemoved.addListener(closeListener);
 				});
 			} catch (e) {
 				// In the event that there was an exception thrown during the creation of the popup, fallback to using window.open with a monitor
