@@ -12,6 +12,8 @@ import {DomUtils, EmbeddedVideoIFrameSrcs} from "../domParsers/domUtils";
 import * as Log from "../logging/log";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
+import { HttpWithRetries } from "../http/httpWithRetries";
+import { ResponsePackage } from "../responsePackage";
 
 export enum AugmentationModel {
 	None,
@@ -39,11 +41,11 @@ export class AugmentationHelper {
 			let correlationId = StringUtils.generateGuid();
 			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
-			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[], request: XMLHttpRequest }) => {
+			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[] }) => {
 				let parsedResponse = responsePackage.parsedResponse;
 				let result: AugmentationResult = { ContentModel: AugmentationModel.None, ContentObjects: []	};
 
-				augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
+				// augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
 
 				if (parsedResponse && parsedResponse.length > 0 && parsedResponse[0].ContentInHtml) {
 					result = parsedResponse[0];
@@ -97,33 +99,34 @@ export class AugmentationHelper {
 	/*
 	 * Returns the augmented preview text.
 	 */
-	public static makeAugmentationRequest(url: string, locale: string, pageContent: string, requestCorrelationId: string): Promise<OneNoteApi.ResponsePackage<any>> {
-		return Clipper.getUserSessionIdWhenDefined().then((sessionId) => {
-			let augmentationApiUrl = Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + url + "&lang=" + locale;
+	public static makeAugmentationRequest(url: string, locale: string, pageContent: string, requestCorrelationId: string): Promise<ResponsePackage<any>> {
+		return new Promise<ResponsePackage<any>>((resolve, reject) => {
+			Clipper.getUserSessionIdWhenDefined().then((sessionId) => {
+				let augmentationApiUrl = Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + url + "&lang=" + locale;
 
-			let headers = {};
-			headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-			headers[Constants.HeaderValues.noAuthKey] = "true";
-			headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
-			headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
+				let headers = {};
+				headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
+				headers[Constants.HeaderValues.noAuthKey] = "true";
+				headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
+				headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
-			return Promise.resolve();
+				HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((response: Response) => {
+					response.text().then((responseText: string) => {
+						let parsedResponse: any;
+						try {
+							parsedResponse = JSON.parse(responseText);
+						} catch (e) {
+							Clipper.logger.logJsonParseUnexpected(responseText);
+							reject(OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE);
+						}
 
-			/* return HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((request: XMLHttpRequest) => {
-				let parsedResponse: any;
-				try {
-					parsedResponse = JSON.parse(request.response);
-				} catch (e) {
-					Clipper.logger.logJsonParseUnexpected(request.response);
-					return Promise.reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
-				}
-
-				let responsePackage = {
-					parsedResponse: parsedResponse,
-					request: request
-				};
-				return Promise.resolve(responsePackage);
-			}); */
+						let responsePackage = {
+							parsedResponse: parsedResponse
+						};
+						resolve(responsePackage);
+					});
+				});
+			});
 		});
 	}
 

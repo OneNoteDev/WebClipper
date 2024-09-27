@@ -131,7 +131,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 						this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
 					} */
 				}, {
-					id: "WebClipper.Label.ClipFullPageToOneNote",
+					id: "WebClipper.Label.ClipSelectionToOneNote",
 					title: Localization.getLocalizedString("WebClipper.Label.ClipSelectionToOneNote"),
 					contexts: ["selection"],
 					/* onclick: (info, tab: W3CTab) => {

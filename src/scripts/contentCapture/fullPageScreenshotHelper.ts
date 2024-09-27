@@ -8,6 +8,7 @@ import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
+import { HttpWithRetries } from "../http/httpWithRetries";
 
 export interface FullPageScreenshotResult extends CaptureFailureInfo {
 	ImageEncoding?: string;
@@ -38,27 +39,27 @@ export class FullPageScreenshotHelper {
 					OneNoteApiUtils.logOneNoteApiRequestError(fullPageScreenshotEvent, error);
 				};
 
-				return Promise.resolve();
-
-				/* HttpWithRetries.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((request: XMLHttpRequest) => {
-					if (request.status === 200) {
-						try {
-							resolve(JSON.parse(request.response) as FullPageScreenshotResult);
-							fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, true);
-						} catch (e) {
-							errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
-							reject();
-						}
+				HttpWithRetries.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((response: Response) => {
+					if (response.status === 200) {
+						response.text().then((responseText: string) => {
+							try {
+								resolve(JSON.parse(responseText) as FullPageScreenshotResult);
+								fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, true);
+							} catch (e) {
+								// errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
+								reject(OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE);
+							}
+						});
 					} else {
 						fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, false);
 						reject();
 					}
-				}, (error: OneNoteApi.RequestError) => {
+				} , (error: OneNoteApi.RequestError) => {
 					errorCallback(error);
 					reject();
 				}).then(() => {
 					Clipper.logger.logEvent(fullPageScreenshotEvent);
-				}); */
+				});
 			});
 		});
 	}
