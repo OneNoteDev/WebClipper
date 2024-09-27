@@ -126,43 +126,51 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 				let menus: chrome.contextMenus.CreateProperties[] = [{
 					id: "WebClipper.Label.OneNoteWebClipper",
 					title: Localization.getLocalizedString("WebClipper.Label.OneNoteWebClipper"),
-					contexts: ["page"],
-					/* onclick: (info, tab: W3CTab) => {
-						this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
-					} */
+					contexts: ["page"]
 				}, {
 					id: "WebClipper.Label.ClipSelectionToOneNote",
 					title: Localization.getLocalizedString("WebClipper.Label.ClipSelectionToOneNote"),
-					contexts: ["selection"],
-					/* onclick: (info, tab: W3CTab) => {
-						let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
-
-						// If the tab index is negative, chances are the user is using some sort of PDF plugin,
-						// and the tab object will be invalid. We need to get the parent tab in this scenario.
-						if (tab.index < 0) {
-							// Since we are in a PDF plugin, Rangy won't work, so we rely on WebExtension API to grab pure text
-							invokeOptions.invokeDataForMode = info.selectionText;
-							WebExtension.browser.tabs.query({ active: true, currentWindow: true }, (tabs: W3CTab[]) => {
-								// There will only be one tab that meets this criteria
-								let parentTab = tabs[0];
-								this.invokeClipperInTab(parentTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
-							});
-						} else {
-							this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
-						}
-					} */
+					contexts: ["selection"]
 					}, {
 					id: "WebClipper.Label.ClipImageToOneNote",
 					title: Localization.getLocalizedString("WebClipper.Label.ClipImageToOneNote"),
-					contexts: ["image"],
-					/* onclick: (info, tab: W3CTab) => {
-						// Even though we know the user right-clicked an image, srcUrl is only present if the src attr exists
-						this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, info.srcUrl ? {
-							// srcUrl will always be the full url, not relative
-							invokeDataForMode: info.srcUrl, invokeMode: InvokeMode.ContextImage
-						} : undefined);
-					} */
-				}];
+					contexts: ["image"]
+					}];
+
+					let menusOnClicked: chrome.contextMenus.CreateProperties[] = [{
+						id: "WebClipper.Label.OneNoteWebClipper",
+						onclick: (info, tab: W3CTab) => {
+							this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
+						}
+					}, {
+						id: "WebClipper.Label.ClipSelectionToOneNote",
+						onclick: (info, tab: W3CTab) => {
+							let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
+
+							// If the tab index is negative, chances are the user is using some sort of PDF plugin,
+							// and the tab object will be invalid. We need to get the parent tab in this scenario.
+							// if (tab.index < 0) {
+								// Since we are in a PDF plugin, Rangy won't work, so we rely on WebExtension API to grab pure text
+								invokeOptions.invokeDataForMode = info.selectionText;
+								WebExtension.browser.tabs.query({ active: true, currentWindow: true }, (tabs: W3CTab[]) => {
+									// There will only be one tab that meets this criteria
+									let parentTab = tabs[0];
+									this.invokeClipperInTab(parentTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+								});
+							/* } else {
+								this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+							} */
+						}
+						}, {
+						id: "WebClipper.Label.ClipImageToOneNote",
+						onclick: (info, tab: W3CTab) => {
+							// Even though we know the user right-clicked an image, srcUrl is only present if the src attr exists
+							this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, info.srcUrl ? {
+								// srcUrl will always be the full url, not relative
+								invokeDataForMode: info.srcUrl, invokeMode: InvokeMode.ContextImage
+							} : undefined);
+						}
+					}];
 
 				let documentUrlPatternList: string[];
 
@@ -197,6 +205,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 						menus[i].documentUrlPatterns = documentUrlPatternList;
 					}
 					WebExtension.browser.contextMenus.create(menus[i]);
+					WebExtension.browser.contextMenus.onClicked.addListener(menusOnClicked[i].onclick);
 				}
 			});
 		});
