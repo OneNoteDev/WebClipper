@@ -17,7 +17,7 @@ import {StringUtils} from "../stringUtils";
 import {UserInfoData} from "../userInfo";
 import { UrlUtils } from "../urlUtils";
 import { UserDataBoundaryHelper } from "./userDataBoundaryHelper";
-import { DataBoundary } from "./DataBoundary";
+import { DataBoundary } from "./dataBoundary";
 
 declare var browser;
 
@@ -117,10 +117,10 @@ export class AuthenticationHelper {
 				postData = cookie.replace(/\+/g, "%2B");
 			}
 
-			HttpWithRetries.post(userInfoUrl, postData, headers).then((request: XMLHttpRequest) => {
-				let response = request.response;
-
-				resolve({ parsedResponse: response, request: request });
+			HttpWithRetries.post(userInfoUrl, postData, headers).then((response: Response) => {
+				response.text().then((responseText: string) => {
+					resolve({ parsedResponse: responseText });
+				});
 			}, (error: OneNoteApi.RequestError) => {
 				retrieveUserInformationEvent.setStatus(Log.Status.Failed);
 				retrieveUserInformationEvent.setFailureInfo(error);

@@ -3,7 +3,7 @@ import { Constants } from "../constants";
 import { HttpWithRetries } from "../http/HttpWithRetries";
 import { UrlUtils } from "../urlUtils";
 import { UserInfoData, AuthType } from "../userInfo";
-import { DataBoundary } from "./DataBoundary";
+import { DataBoundary } from "./dataBoundary";
 
 export class UserDataBoundaryHelper {
 	/**
@@ -39,21 +39,23 @@ export class UserDataBoundaryHelper {
 			let domainValue = userInfo.emailAddress.substring(
 				userInfo.emailAddress.indexOf("@") + 1);
 			const urlDataBoundaryDomain: string = UrlUtils.addUrlQueryValue(Constants.Urls.userDataBoundaryDomain, Constants.Urls.QueryParams.domain, domainValue);
-			HttpWithRetries.get(urlDataBoundaryDomain).then((request: XMLHttpRequest) => {
+			HttpWithRetries.get(urlDataBoundaryDomain).then((response: Response) => {
 				let expectedCodes = [200];
-				if (expectedCodes.indexOf(request.status) > -1) {
-					let parsedResponse: any;
-					try {
-						parsedResponse = JSON.parse(request.responseText);
-					} catch (error) {
-						Clipper.logger.logJsonParseUnexpected(request.response);
-						reject(error);
-					}
-					if (parsedResponse && parsedResponse.telemetryRegion) {
-						resolve(parsedResponse.telemetryRegion);
-					} else {
-						resolve(DataBoundary[DataBoundary.UNKNOWN]);
-					}
+				if (expectedCodes.indexOf(response.status) > -1) {
+					response.text().then((responseText: string) => {
+						let parsedResponse: any;
+						try {
+							parsedResponse = JSON.parse(responseText);
+						} catch (error) {
+							Clipper.logger.logJsonParseUnexpected(responseText);
+							reject(error);
+						}
+						if (parsedResponse && parsedResponse.telemetryRegion) {
+							resolve(parsedResponse.telemetryRegion);
+						} else {
+							resolve(DataBoundary[DataBoundary.UNKNOWN]);
+						}
+					});
 				} else {
 					resolve(DataBoundary[DataBoundary.UNKNOWN]);
 				}

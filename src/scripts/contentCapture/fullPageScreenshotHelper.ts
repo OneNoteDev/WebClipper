@@ -42,15 +42,16 @@ export class FullPageScreenshotHelper {
 					OneNoteApiUtils.logOneNoteApiRequestError(fullPageScreenshotEvent, error);
 				};
 
-				HttpWithRetries.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((request: XMLHttpRequest) => {
-					if (request.status === 200) {
-						try {
-							resolve(JSON.parse(request.response) as FullPageScreenshotResult);
-							fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, true);
-						} catch (e) {
-							errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
-							reject();
-						}
+				HttpWithRetries.post(Constants.Urls.fullPageScreenshotUrl, pageInfoContentData, headers, [200, 204], FullPageScreenshotHelper.timeout).then((response: Response) => {
+					if (response.status === 200) {
+						response.text().then((responseText: string) => {
+							try {
+								resolve(JSON.parse(responseText) as FullPageScreenshotResult);
+								fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, true);
+							} catch (e) {
+								reject(OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE);
+							}
+						});
 					} else {
 						fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, false);
 						reject();

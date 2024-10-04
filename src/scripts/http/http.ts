@@ -1,10 +1,5 @@
 import {ObjectUtils} from "../objectUtils";
 
-interface ResponsePackage {
-	parsedResponse: string;
-	request: XMLHttpRequest;
-}
-
 /**
  * Helper class for performing http requests. For each of the http methods, resolve(request) is only
  * called if the status code is an unexpected one, defined by the caller (defaulting to 200 only).
@@ -14,54 +9,41 @@ interface ResponsePackage {
 export class Http {
 	protected static defaultTimeout = 30000;
 
-	public static get(url: string, headers?: any, timeout = Http.defaultTimeout, expectedCodes = [200]): Promise<XMLHttpRequest> {
+	public static get(url: string, headers?: any, timeout = Http.defaultTimeout, expectedCodes = [200]): Promise<Response> {
 		return Http.createAndSendRequest("GET", url, headers, expectedCodes, timeout);
 	}
 
-	public static post(url: string, data: any, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout): Promise<XMLHttpRequest> {
+	public static post(url: string, data: any, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout): Promise<Response> {
 		if (ObjectUtils.isNullOrUndefined(data)) {
 			throw new Error("data must be a non-undefined object, but was: " + data);
 		}
 		return Http.createAndSendRequest("POST", url, headers, expectedCodes, timeout, data);
 	}
 
-	protected static createAndSendRequest(method: string, url: string, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, data?: any): Promise<XMLHttpRequest> {
+	protected static createAndSendRequest(method: string, url: string, headers?: any, expectedCodes = [200], timeout = Http.defaultTimeout, data?: any): Promise<Response> {
 		if (!url) {
 			throw new Error("url must be a non-empty string, but was: " + url);
 		}
 
-		return new Promise<XMLHttpRequest>((resolve, reject) => {
-			let request = new XMLHttpRequest();
-			request.open(method, url);
-
-			request.onload = () => {
-				if (expectedCodes.indexOf(request.status) > -1) {
-					resolve(request);
+		return new Promise<Response>((resolve, reject) => {
+			fetch(url, {
+				method: method,
+				headers: headers,
+				body: data
+			}).then((response) => {
+				if (expectedCodes.indexOf(response.status) > -1) {
+					resolve(response);
 				} else {
-					reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
+					reject(OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS);
 				}
-			};
+			}).catch(() => {
+				reject(OneNoteApi.RequestErrorType.NETWORK_ERROR);
+			});
 
-			request.onerror = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.NETWORK_ERROR));
-			};
+			setTimeout(() => {
+				reject(OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT);
+			}, timeout);
 
-			request.ontimeout = () => {
-				reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT));
-			};
-
-			Http.setHeaders(request, headers);
-			request.timeout = timeout;
-
-			request.send(data);
 		});
-	}
-
-	private static setHeaders(request: XMLHttpRequest, headers: any): void {
-		if (headers) {
-			for (let key in headers) {
-				request.setRequestHeader(key, headers[key]);
-			}
-		}
 	}
 }
