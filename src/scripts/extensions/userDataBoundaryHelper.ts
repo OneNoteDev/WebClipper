@@ -1,6 +1,6 @@
 import { Clipper } from "../clipperUI/frontEndGlobals";
 import { Constants } from "../constants";
-import { HttpWithRetries } from "../http/HttpWithRetries";
+import { HttpWithRetries } from "../http/httpWithRetries";
 import { UrlUtils } from "../urlUtils";
 import { UserInfoData, AuthType } from "../userInfo";
 import { DataBoundary } from "./dataBoundary";

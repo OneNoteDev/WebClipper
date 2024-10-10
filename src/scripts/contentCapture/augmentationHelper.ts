@@ -45,12 +45,12 @@ export class AugmentationHelper {
 			let correlationId = StringUtils.generateGuid();
 			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
-			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[] }) => {
+			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[], response: Response }) => {
 				let parsedResponse = responsePackage.parsedResponse;
 				let result: AugmentationResult = { ContentModel: AugmentationModel.None, ContentObjects: []	};
 
 				// TODO: Check if the following line is necessary
-				/* augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId)); */
+				augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, responsePackage.response.headers.get(Constants.HeaderValues.correlationId));
 
 				if (parsedResponse && parsedResponse.length > 0 && parsedResponse[0].ContentInHtml) {
 					result = parsedResponse[0];
@@ -126,7 +126,8 @@ export class AugmentationHelper {
 						}
 
 						let responsePackage = {
-							parsedResponse: parsedResponse
+							parsedResponse: parsedResponse,
+							response: response
 						};
 						resolve(responsePackage);
 					});

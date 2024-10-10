@@ -8,7 +8,7 @@ export class MockStorage implements Storage {
 	public static localData = { myKey: "local" };
 	public static fetchNonLocalData: () => Promise<ResponsePackage<string>> = () => {
 		return new Promise<ResponsePackage<string>>((resolve, reject) => {
-			resolve({ parsedResponse: JSON.stringify(MockStorage.nonLocalData) });
+			resolve({ parsedResponse: JSON.stringify(MockStorage.nonLocalData), response: undefined });
 		});
 	};
 

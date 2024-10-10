@@ -2,7 +2,7 @@ import {Constants} from "../constants";
 import {ResponsePackage} from "../responsePackage";
 import {UrlUtils} from "../urlUtils";
 
-import {HttpWithRetries} from "../http/HttpWithRetries";
+import {HttpWithRetries} from "../http/httpWithRetries";
 
 export class LocalizationHelper {
 	public static makeLocStringsFetchRequest(locale: string): Promise<ResponsePackage<string>> {
@@ -12,7 +12,8 @@ export class LocalizationHelper {
 			return new Promise<ResponsePackage<string>>(resolve => {
 				response.text().then((responseText: string) => {
 					resolve({
-						parsedResponse: responseText
+						parsedResponse: responseText,
+						response: response
 					});
 				});
 			});

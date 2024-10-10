@@ -26,7 +26,7 @@ export class ClipperDataTests extends TestModule {
 			let parsedResponse = {};
 			let expectedTimeStampedData = {
 				parsedResponse: JSON.stringify(parsedResponse),
-				request: undefined
+				response: undefined
 			};
 			let getRemoteValue = () => {
 				return Promise.resolve(expectedTimeStampedData);
@@ -50,7 +50,7 @@ export class ClipperDataTests extends TestModule {
 			let parsedResponse = {};
 			let expectedTimeStampedData = {
 				parsedResponse: JSON.stringify(parsedResponse),
-				request: undefined
+				response: undefined
 			};
 			let getRemoteValue = () => {
 				return Promise.resolve(expectedTimeStampedData);
@@ -74,7 +74,7 @@ export class ClipperDataTests extends TestModule {
 			let key = ClipperStorageKeys.cachedNotebooks;
 			let expectedTimeStampedData = JSON.stringify({
 				parsedResponse: "{ notebooks: {} }",
-				request: undefined
+				response: undefined
 			});
 
 			let clipperData = new ClipperData(this.mockStorage);
@@ -87,7 +87,7 @@ export class ClipperDataTests extends TestModule {
 			let key = ClipperStorageKeys.cachedNotebooks;
 			let expectedTimeStampedData = JSON.stringify({
 				parsedResponse: "{ notebooks: {} }",
-				request: undefined
+				response: undefined
 			});
 
 			this.mockStorage.setValue(ClipperStorageKeys.userInformation, "{ name: Leeeeeroy }");
@@ -102,7 +102,7 @@ export class ClipperDataTests extends TestModule {
 			let key = ClipperStorageKeys.currentSelectedSection;
 			let expectedTimeStampedData = JSON.stringify({
 				parsedResponse: "{ section: {} }",
-				request: undefined
+				response: undefined
 			});
 
 			let clipperData = new ClipperData(this.mockStorage);
@@ -115,7 +115,7 @@ export class ClipperDataTests extends TestModule {
 			let key = ClipperStorageKeys.currentSelectedSection;
 			let expectedTimeStampedData = JSON.stringify({
 				parsedResponse: "{ section: {} }",
-				request: undefined
+				response: undefined
 			});
 
 			this.mockStorage.setValue(ClipperStorageKeys.userInformation, "{ name: Leeeeeroy }");

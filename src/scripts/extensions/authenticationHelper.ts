@@ -4,7 +4,7 @@ import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
 import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
-import {HttpWithRetries} from "../http/HttpWithRetries";
+import {HttpWithRetries} from "../http/httpWithRetries";
 
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
@@ -119,7 +119,7 @@ export class AuthenticationHelper {
 
 			HttpWithRetries.post(userInfoUrl, postData, headers).then((response: Response) => {
 				response.text().then((responseText: string) => {
-					resolve({ parsedResponse: responseText });
+					resolve({ parsedResponse: responseText, response: response });
 				});
 			}, (error: OneNoteApi.RequestError) => {
 				retrieveUserInformationEvent.setStatus(Log.Status.Failed);

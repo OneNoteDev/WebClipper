@@ -54,6 +54,7 @@ export class AugmentationHelperTests extends TestModule {
 
 			AugmentationHelper.makeAugmentationRequest(pageInfo.canonicalUrl, pageInfo.contentLocale, pageInfo.contentData, "abc123").then((responsePackage) => {
 				deepEqual(responsePackage.parsedResponse, responseJson, "The parsedResponse field should be the response in json form");
+				ok(responsePackage.response, "The response field should be defined");
 			}).catch((error) => {
 				ok(false, "reject should not be called");
 			}).then(() => {

@@ -1,5 +1,5 @@
 import {ClientInfo} from "../../clientInfo";
-import {ClientType} from "../../clientType";
+import {ClientType} from "../../ClientType";
 import {Constants} from "../../constants";
 import {ObjectUtils} from "../../objectUtils";
 import {Settings} from "../../settings";
