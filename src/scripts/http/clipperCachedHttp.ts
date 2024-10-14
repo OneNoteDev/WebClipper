@@ -59,9 +59,10 @@ export class ClipperCachedHttp extends CachedHttp {
 
 			return new Promise<ResponsePackage<string>>((resolve, reject) => {
 				getResponseAsync().then((responsePackage) => {
-					/* if (responsePackage.request) {
-						ClipperCachedHttp.addCorrelationIdToLogEvent(fetchNonLocalDataEvent, responsePackage.request);
-					} */
+					// TODO: Check if the following piece of code is necessary
+					if (responsePackage.response) {
+						ClipperCachedHttp.addCorrelationIdToLogEvent(fetchNonLocalDataEvent, responsePackage.response);
+					}
 					resolve(responsePackage);
 				}, (error) => {
 					fetchNonLocalDataEvent.setStatus(Log.Status.Failed);
@@ -74,8 +75,8 @@ export class ClipperCachedHttp extends CachedHttp {
 		};
 	}
 
-	private static addCorrelationIdToLogEvent(logEvent: Log.Event.PromiseEvent, request: XMLHttpRequest) {
-		let correlationId = request.getResponseHeader(Constants.HeaderValues.correlationId);
+	private static addCorrelationIdToLogEvent(logEvent: Log.Event.PromiseEvent, response: Response) {
+		let correlationId = response.headers.get(Constants.HeaderValues.correlationId);
 		if (correlationId) {
 			logEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 		}

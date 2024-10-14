@@ -42,7 +42,7 @@ export class UserDataBoundaryHelper {
 			HttpWithRetries.get(urlDataBoundaryDomain).then((response: Response) => {
 				let expectedCodes = [200];
 				if (expectedCodes.indexOf(response.status) > -1) {
-					response.text().then((responseText) => {
+					response.text().then((responseText: string) => {
 						let parsedResponse: any;
 						try {
 							parsedResponse = JSON.parse(responseText);

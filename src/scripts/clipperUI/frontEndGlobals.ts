@@ -4,7 +4,7 @@ import {Logger} from "../logging/logger";
 import {Constants} from "../constants";
 
 import {RemoteStorage} from "../storage/remoteStorage";
-import {StorageAsync} from "../storage/storageAsync";
+import { StorageAsync } from "../storage/storageAsync";
 import { StringUtils } from "../stringUtils";
 
 export class Clipper {
@@ -29,6 +29,7 @@ export class Clipper {
 				sessionId = StringUtils.generateGuid();
 				Clipper.sessionId.set(sessionId);
 				resolve(sessionId);
+				// TODO: Check if we still need to use the following code
 				/* Clipper.sessionId.subscribe((definedSessionId: string) => {
 					resolve(definedSessionId);
 				}, { times: 1, callOnSubscribe: false }); */

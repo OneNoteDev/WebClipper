@@ -1,6 +1,6 @@
 import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
-import {ClientType} from "../clientType";
+import {ClientType} from "../ClientType";
 import {ClipperUrls} from "../clipperUrls";
 import {CookieUtils} from "../cookieUtils";
 import {Constants} from "../constants";

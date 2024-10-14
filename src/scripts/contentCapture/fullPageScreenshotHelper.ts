@@ -46,7 +46,6 @@ export class FullPageScreenshotHelper {
 								resolve(JSON.parse(responseText) as FullPageScreenshotResult);
 								fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, true);
 							} catch (e) {
-								// errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE));
 								reject(OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE);
 							}
 						});

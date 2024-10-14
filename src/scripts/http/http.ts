@@ -1,9 +1,4 @@
-import { ObjectUtils } from "../objectUtils";
-
-interface ResponsePackage {
-	parsedResponse: string;
-	request: XMLHttpRequest;
-}
+import {ObjectUtils} from "../objectUtils";
 
 /**
  * Helper class for performing http requests. For each of the http methods, resolve(request) is only
@@ -35,22 +30,20 @@ export class Http {
 				method: method,
 				headers: headers,
 				body: data
-			}).then((response: any) => {
+			}).then((response) => {
 				if (expectedCodes.indexOf(response.status) > -1) {
 					resolve(response);
 				} else {
-					// reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
 					reject(OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS);
 				}
 			}).catch(() => {
-				// reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.NETWORK_ERROR));
 				reject(OneNoteApi.RequestErrorType.NETWORK_ERROR);
 			});
 
 			setTimeout(() => {
-				// reject(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT));
 				reject(OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT);
 			}, timeout);
+
 		});
 	}
 }

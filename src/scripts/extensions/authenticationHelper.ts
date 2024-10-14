@@ -3,7 +3,8 @@ import {SmartValue} from "../communicator/smartValue";
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
-import {TimeStampedData} from "../http/cachedHttp";
+import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
+import {HttpWithRetries} from "../http/httpWithRetries";
 
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
@@ -17,7 +18,6 @@ import {UserInfoData} from "../userInfo";
 import { UrlUtils } from "../urlUtils";
 import { UserDataBoundaryHelper } from "./userDataBoundaryHelper";
 import { DataBoundary } from "./dataBoundary";
-import { HttpWithRetries } from "../http/httpWithRetries";
 
 declare var browser;
 
@@ -119,7 +119,7 @@ export class AuthenticationHelper {
 
 			HttpWithRetries.post(userInfoUrl, postData, headers).then((response: Response) => {
 				response.text().then((responseText: string) => {
-					resolve({ parsedResponse: responseText });
+					resolve({ parsedResponse: responseText, response: response });
 				});
 			}, (error: OneNoteApi.RequestError) => {
 				retrieveUserInformationEvent.setStatus(Log.Status.Failed);

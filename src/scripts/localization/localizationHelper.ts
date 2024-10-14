@@ -12,7 +12,8 @@ export class LocalizationHelper {
 			return new Promise<ResponsePackage<string>>(resolve => {
 				response.text().then((responseText: string) => {
 					resolve({
-						parsedResponse: responseText
+						parsedResponse: responseText,
+						response: response
 					});
 				});
 			});

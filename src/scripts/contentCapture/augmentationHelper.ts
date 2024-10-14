@@ -9,10 +9,13 @@ import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
 
 import {DomUtils, EmbeddedVideoIFrameSrcs} from "../domParsers/domUtils";
 
+import {HttpWithRetries} from "../http/httpWithRetries";
+
+import {Localization} from "../localization/localization";
+
 import * as Log from "../logging/log";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
-import { HttpWithRetries } from "../http/httpWithRetries";
 import { ResponsePackage } from "../responsePackage";
 
 export enum AugmentationModel {
@@ -41,11 +44,12 @@ export class AugmentationHelper {
 			let correlationId = StringUtils.generateGuid();
 			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
-			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[] }) => {
+			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[], response: Response }) => {
 				let parsedResponse = responsePackage.parsedResponse;
 				let result: AugmentationResult = { ContentModel: AugmentationModel.None, ContentObjects: []	};
 
-				// augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId));
+				// TODO: Check if the following line is necessary
+				augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, responsePackage.response.headers.get(Constants.HeaderValues.correlationId));
 
 				if (parsedResponse && parsedResponse.length > 0 && parsedResponse[0].ContentInHtml) {
 					result = parsedResponse[0];
@@ -121,7 +125,8 @@ export class AugmentationHelper {
 						}
 
 						let responsePackage = {
-							parsedResponse: parsedResponse
+							parsedResponse: parsedResponse,
+							response: response
 						};
 						resolve(responsePackage);
 					});
