@@ -49,7 +49,6 @@ export class AugmentationHelper {
 				let parsedResponse = responsePackage.parsedResponse;
 				let result: AugmentationResult = { ContentModel: AugmentationModel.None, ContentObjects: []	};
 
-				// TODO: Check if the following line is necessary
 				augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, responsePackage.response.headers.get(Constants.HeaderValues.correlationId));
 
 				if (parsedResponse && parsedResponse.length > 0 && parsedResponse[0].ContentInHtml) {
