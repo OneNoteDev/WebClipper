@@ -4,7 +4,6 @@ import {Logger} from "../logging/logger";
 
 import {RemoteStorage} from "../storage/remoteStorage";
 import { StorageAsync } from "../storage/storageAsync";
-import { StringUtils } from "../stringUtils";
 
 export class Clipper {
 	private static injectCommunicator: Communicator;
