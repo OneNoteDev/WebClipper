@@ -14,7 +14,7 @@ import {HttpWithRetries} from "../http/httpWithRetries";
 import * as Log from "../logging/log";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
-import { ResponsePackage } from "../responsePackage";
+import { ErrorUtils, ResponsePackage } from "../responsePackage";
 
 export enum AugmentationModel {
 	None,
@@ -118,7 +118,9 @@ export class AugmentationHelper {
 							parsedResponse = JSON.parse(responseText);
 						} catch (e) {
 							Clipper.logger.logJsonParseUnexpected(responseText);
-							reject(OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE);
+							ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE).then((error) => {
+								reject(error);
+							});
 						}
 
 						let responsePackage = {

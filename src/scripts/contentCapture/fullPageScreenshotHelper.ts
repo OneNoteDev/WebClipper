@@ -12,6 +12,7 @@ import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
+import { ErrorUtils } from "../responsePackage";
 
 export interface FullPageScreenshotResult extends CaptureFailureInfo {
 	ImageEncoding?: string;
@@ -49,7 +50,9 @@ export class FullPageScreenshotHelper {
 								resolve(JSON.parse(responseText) as FullPageScreenshotResult);
 								fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, true);
 							} catch (e) {
-								reject(OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE);
+								ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE).then((error) => {
+									reject(error);
+								});
 							}
 						});
 					} else {
