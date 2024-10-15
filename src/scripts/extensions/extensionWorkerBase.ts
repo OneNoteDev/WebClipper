@@ -1,6 +1,6 @@
 import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
-import {ClientType} from "../ClientType";
+import {ClientType} from "../clientType";
 import {ClipperUrls} from "../clipperUrls";
 import {CookieUtils} from "../cookieUtils";
 import {Constants} from "../constants";
@@ -17,7 +17,6 @@ import {SmartValue} from "../communicator/smartValue";
 
 import {ClipperCachedHttp} from "../http/clipperCachedHttp";
 
-import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
 
 import * as Log from "../logging/log";

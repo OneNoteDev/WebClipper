@@ -1,4 +1,4 @@
-import {ClientType} from "./ClientType";
+import {ClientType} from "./clientType";
 
 export interface ClientInfo {
 	clipperId: string;

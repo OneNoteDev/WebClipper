@@ -6,13 +6,10 @@ import {ObjectUtils} from "../objectUtils";
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {ClipperState} from "../clipperUI/clipperState";
 import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
-import {Status} from "../clipperUI/status";
 
 import {DomUtils, EmbeddedVideoIFrameSrcs} from "../domParsers/domUtils";
 
 import {HttpWithRetries} from "../http/httpWithRetries";
-
-import {Localization} from "../localization/localization";
 
 import * as Log from "../logging/log";
 

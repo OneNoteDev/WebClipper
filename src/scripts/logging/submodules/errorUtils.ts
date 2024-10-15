@@ -1,14 +1,13 @@
 import {ClientInfo} from "../../clientInfo";
-import {ClientType} from "../../ClientType";
+import {ClientType} from "../../clientType";
 import {Constants} from "../../constants";
 import {ObjectUtils} from "../../objectUtils";
-import {Settings} from "../../settings";
 
 import {SmartValue} from "../../communicator/smartValue";
 
 import {Localization} from "../../localization/localization";
 
-import {Failure, LogDataPackage, LogMethods, NoOp, PropertyName, reportData, unknownValue} from "../log";
+import {Failure, NoOp, unknownValue} from "../log";
 
 export module ErrorUtils {
 	enum ErrorPropertyName {

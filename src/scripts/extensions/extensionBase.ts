@@ -1,8 +1,6 @@
 import {ClientInfo} from "../clientInfo";
-import {ClientType} from "../ClientType";
+import {ClientType} from "../clientType";
 import {Constants} from "../constants";
-import {Experiments} from "../experiments";
-import {ResponsePackage} from "../responsePackage";
 import {StringUtils} from "../stringUtils";
 import {UrlUtils} from "../urlUtils";
 
