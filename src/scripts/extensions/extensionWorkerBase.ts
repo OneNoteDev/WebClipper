@@ -17,7 +17,6 @@ import {SmartValue} from "../communicator/smartValue";
 
 import {ClipperCachedHttp} from "../http/clipperCachedHttp";
 
-import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
 
 import * as Log from "../logging/log";

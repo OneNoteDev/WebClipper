@@ -1,8 +1,6 @@
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {Constants} from "../constants";
-import {Experiments} from "../experiments";
-import {ResponsePackage} from "../responsePackage";
 import {StringUtils} from "../stringUtils";
 import {UrlUtils} from "../urlUtils";
 
@@ -10,7 +8,7 @@ import {TooltipType} from "../clipperUI/tooltipType";
 
 import {SmartValue} from "../communicator/smartValue";
 
-import {HttpWithRetries} from "../http/HttpWithRetries";
+import {HttpWithRetries} from "../http/httpWithRetries";
 
 import {Localization} from "../localization/localization";
 import {LocalizationHelper} from "../localization/localizationHelper";
@@ -22,7 +20,7 @@ import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ChangeLog} from "../versioning/changeLog";
-import {ChangeLogHelper} from "../versioning/changeLogHelper";
+import {ChangeLogHelper} from "../versioning/changelogHelper";
 import {Version} from "../versioning/version";
 
 import {AuthenticationHelper} from "./authenticationHelper";
@@ -186,26 +184,28 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
 			let changelogUrl = UrlUtils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
-			HttpWithRetries.get(changelogUrl).then((request: XMLHttpRequest) => {
-				try {
-					let schemas: ChangeLog.Schema[] = JSON.parse(request.responseText);
-					let allUpdates: ChangeLog.Update[];
-					for (let i = 0; i < schemas.length; i++) {
-						if (schemas[i].schemaVersion === ChangeLog.schemaVersionSupported) {
-							allUpdates = schemas[i].updates;
-							break;
+			HttpWithRetries.get(changelogUrl).then((response: Response) => {
+				response.text().then((responseText: string) => {
+					try {
+						let schemas: ChangeLog.Schema[] = JSON.parse(responseText);
+						let allUpdates: ChangeLog.Update[];
+						for (let i = 0; i < schemas.length; i++) {
+							if (schemas[i].schemaVersion === ChangeLog.schemaVersionSupported) {
+								allUpdates = schemas[i].updates;
+								break;
+							}
 						}
-					}
 
-					if (allUpdates) {
-						let updatesSinceLastVersion = ChangeLogHelper.getUpdatesBetweenVersions(allUpdates, lastSeenVersion, currentVersion);
-						resolve(updatesSinceLastVersion);
-					} else {
-						throw new Error("No matching schemas were found.");
+						if (allUpdates) {
+							let updatesSinceLastVersion = ChangeLogHelper.getUpdatesBetweenVersions(allUpdates, lastSeenVersion, currentVersion);
+							resolve(updatesSinceLastVersion);
+						} else {
+							throw new Error("No matching schemas were found.");
+						}
+					} catch (error) {
+						reject(error);
 					}
-				} catch (error) {
-					reject(error);
-				}
+				});
 			}, (error) => {
 				reject(error);
 			});
