@@ -124,14 +124,25 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		this.fetchAndStoreLocStrings().then(() => {
 			WebExtension.browser.contextMenus.removeAll(() => {
 				let menus: chrome.contextMenus.CreateProperties[] = [{
+					id: "WebClipper.Label.OneNoteWebClipper",
 					title: Localization.getLocalizedString("WebClipper.Label.OneNoteWebClipper"),
-					contexts: ["page"],
+					contexts: ["page"]
+				}, {
+					id: "WebClipper.Label.ClipSelectionToOneNote",
+					title: Localization.getLocalizedString("WebClipper.Label.ClipSelectionToOneNote"),
+					contexts: ["selection"]
+				}, {
+					id: "WebClipper.Label.ClipImageToOneNote",
+					title: Localization.getLocalizedString("WebClipper.Label.ClipImageToOneNote"),
+					contexts: ["image"]
+				}];
+				let menusOnClicked: chrome.contextMenus.CreateProperties[] = [{
+					id: "WebClipper.Label.OneNoteWebClipper",
 					onclick: (info, tab: W3CTab) => {
 						this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
 					}
-				}, {
-					title: Localization.getLocalizedString("WebClipper.Label.ClipSelectionToOneNote"),
-					contexts: ["selection"],
+					}, {
+					id: "WebClipper.Label.ClipSelectionToOneNote",
 					onclick: (info, tab: W3CTab) => {
 						let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
 
@@ -149,9 +160,8 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 							this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
 						}
 					}
-				}, {
-					title: Localization.getLocalizedString("WebClipper.Label.ClipImageToOneNote"),
-					contexts: ["image"],
+					}, {
+					id: "WebClipper.Label.ClipImageToOneNote",
 					onclick: (info, tab: W3CTab) => {
 						// Even though we know the user right-clicked an image, srcUrl is only present if the src attr exists
 						this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, info.srcUrl ? {
@@ -159,7 +169,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 							invokeDataForMode: info.srcUrl, invokeMode: InvokeMode.ContextImage
 						} : undefined);
 					}
-				}];
+				}]
 
 				let documentUrlPatternList: string[];
 
@@ -194,6 +204,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 						menus[i].documentUrlPatterns = documentUrlPatternList;
 					}
 					WebExtension.browser.contextMenus.create(menus[i]);
+					WebExtension.browser.contextMenus.onClicked.addListener(menusOnClicked[i].onclick);
 				}
 			});
 		});
