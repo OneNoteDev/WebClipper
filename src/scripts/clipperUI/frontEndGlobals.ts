@@ -4,6 +4,7 @@ import {Logger} from "../logging/logger";
 
 import {RemoteStorage} from "../storage/remoteStorage";
 import { StorageAsync } from "../storage/storageAsync";
+import { StringUtils } from "../stringUtils";
 
 export class Clipper {
 	private static injectCommunicator: Communicator;
@@ -24,9 +25,13 @@ export class Clipper {
 			if (sessionId) {
 				resolve(sessionId);
 			} else {
-				Clipper.sessionId.subscribe((definedSessionId: string) => {
+				sessionId = StringUtils.generateGuid();
+				Clipper.sessionId.set(sessionId);
+				resolve(sessionId);
+				// TODO: Check if we still need to use the following code
+				/* Clipper.sessionId.subscribe((definedSessionId: string) => {
 					resolve(definedSessionId);
-				}, { times: 1, callOnSubscribe: false });
+				}, { times: 1, callOnSubscribe: false }); */
 			}
 		});
 	}

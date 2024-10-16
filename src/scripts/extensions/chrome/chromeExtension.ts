@@ -1,6 +1,9 @@
-import {ClientType} from "../../clientType";
+import { ClientType } from "../../clientType";
+import { WebExtension } from "../webExtensionBase/webExtension";
 
-import {WebExtension} from "../webExtensionBase/webExtension";
+/* sendToOffscreenDocument("test-offscreen-document", {}).then((result) => {
+	console.log("Result from offscreen document:", result);
+}); */
 
 WebExtension.browser = chrome;
 let clipperBackground = new WebExtension(ClientType.ChromeExtension, {

@@ -1,7 +1,7 @@
 import {Constants} from "../constants";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
-import {OneNoteApiUtils} from "../clipperUI/OneNoteApiUtils";
+import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
 
 import * as Log from "../logging/log";
 

@@ -1,18 +1,15 @@
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
-import {Status} from "../clipperUI/status";
-
-import {HttpWithRetries} from "../http/httpWithRetries";
 
 import * as Log from "../logging/log";
 
 import {Constants} from "../constants";
-import {PageInfo} from "../pageInfo";
 import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
 import { ErrorUtils } from "../responsePackage";
+import { HttpWithRetries } from "../http/httpWithRetries";
 
 export interface FullPageScreenshotResult extends CaptureFailureInfo {
 	ImageEncoding?: string;
@@ -59,7 +56,7 @@ export class FullPageScreenshotHelper {
 						fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, false);
 						reject();
 					}
-				}, (error: OneNoteApi.RequestError) => {
+				} , (error: OneNoteApi.RequestError) => {
 					errorCallback(error);
 					reject();
 				}).then(() => {

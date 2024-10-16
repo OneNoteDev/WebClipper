@@ -5,7 +5,7 @@ import {Logger} from "../logging/logger";
 
 import {ClipperStorageGateStrategy} from "./clipperStorageGateStrategy";
 import {Storage} from "./storage";
-import {StorageGateStrategy} from "./StorageGateStrategy";
+import {StorageGateStrategy} from "./storageGateStrategy";
 
 /**
  * The data-access-like object that handles the fetching and caching of data

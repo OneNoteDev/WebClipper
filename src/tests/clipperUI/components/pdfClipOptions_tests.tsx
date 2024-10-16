@@ -10,7 +10,7 @@ import {MithrilUtils} from "../../mithrilUtils";
 import {MockProps} from "../../mockProps";
 import {TestModule} from "../../testModule";
 
-import {MockPdfDocument, MockPdfValues} from "../../contentCapture/MockPdfDocument";
+import {MockPdfDocument, MockPdfValues} from "../../contentCapture/mockPdfDocument";
 
 declare function require(name: string);
 
