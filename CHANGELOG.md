@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.9.6 (October 2024)
+* Improvement : XMLHttpRequest() replaced with global fetch().
+
 ## 3.9.5 (June 2023)
 * Improvement : Deprecating the extension in Firefox.
 
