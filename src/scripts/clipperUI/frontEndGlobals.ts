@@ -1,7 +1,6 @@
 import {SmartValue} from "../communicator/smartValue";
 import {Communicator} from "../communicator/communicator";
 import {Logger} from "../logging/logger";
-import {Constants} from "../constants";
 
 import {RemoteStorage} from "../storage/remoteStorage";
 import { StorageAsync } from "../storage/storageAsync";

@@ -16,7 +16,7 @@ import {Localization} from "../localization/localization";
 import * as Log from "../logging/log";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
-import { ResponsePackage } from "../responsePackage";
+import { ErrorUtils, ResponsePackage } from "../responsePackage";
 
 export enum AugmentationModel {
 	None,
@@ -48,7 +48,6 @@ export class AugmentationHelper {
 				let parsedResponse = responsePackage.parsedResponse;
 				let result: AugmentationResult = { ContentModel: AugmentationModel.None, ContentObjects: []	};
 
-				// TODO: Check if the following line is necessary
 				augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, responsePackage.response.headers.get(Constants.HeaderValues.correlationId));
 
 				if (parsedResponse && parsedResponse.length > 0 && parsedResponse[0].ContentInHtml) {
@@ -121,7 +120,9 @@ export class AugmentationHelper {
 							parsedResponse = JSON.parse(responseText);
 						} catch (e) {
 							Clipper.logger.logJsonParseUnexpected(responseText);
-							reject(OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE);
+							ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE).then((error) => {
+								reject(error);
+							});
 						}
 
 						let responsePackage = {

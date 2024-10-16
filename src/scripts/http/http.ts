@@ -1,4 +1,5 @@
 import {ObjectUtils} from "../objectUtils";
+import { ErrorUtils } from "../responsePackage";
 
 /**
  * Helper class for performing http requests. For each of the http methods, resolve(request) is only
@@ -34,7 +35,9 @@ export class Http {
 				if (expectedCodes.indexOf(response.status) > -1) {
 					resolve(response);
 				} else {
-					reject(OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS);
+					ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS, timeout).then((error) => {
+						reject(error);
+					});
 				}
 			}).catch(() => {
 				reject(OneNoteApi.RequestErrorType.NETWORK_ERROR);

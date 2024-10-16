@@ -74,7 +74,7 @@ export class CachedHttpTests extends TestModule {
 			let getRemoteValue = () => {
 				return Promise.resolve({
 					parsedResponse: JSON.stringify("notexpected"),
-					response: undefined // We don't care about the request in the test
+					response: undefined // We don't care about the response in the test
 				} as ResponsePackage<string>);
 			};
 
@@ -109,7 +109,7 @@ export class CachedHttpTests extends TestModule {
 			let getRemoteValue = () => {
 				return Promise.resolve({
 					parsedResponse: JSON.stringify(expected),
-					response: undefined // We don't care about the request in the test
+					response: undefined // We don't care about the response in the test
 				} as ResponsePackage<string>);
 			};
 
@@ -139,7 +139,7 @@ export class CachedHttpTests extends TestModule {
 			let getRemoteValue = () => {
 				return Promise.resolve({
 					parsedResponse: response,
-					response: undefined // We don't care about the request in the test
+					response: undefined // We don't care about the response in the test
 				} as ResponsePackage<string>);
 			};
 
