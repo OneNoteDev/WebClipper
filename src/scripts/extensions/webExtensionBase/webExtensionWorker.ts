@@ -6,28 +6,23 @@ import {ClipperUrls} from "../../clipperUrls";
 import {Constants} from "../../constants";
 import {UrlUtils} from "../../urlUtils";
 
-import {Communicator} from "../../communicator/communicator";
 import {SmartValue} from "../../communicator/smartValue";
-
-import {Localization} from "../../localization/localization";
 
 import * as Log from "../../logging/log";
 
 import {ClipperData} from "../../storage/clipperData";
-import {LocalStorage} from "../../storage/LocalStorage";
+import {LocalStorage} from "../../storage/localStorage";
 
 import {ChangeLog} from "../../versioning/changeLog";
 
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InjectHelper} from "../injectHelper";
-import {InvokeSource} from "../invokeSource";
 
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
 
-type Tab = chrome.tabs.Tab;
 type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
 type WebResponseCacheDetails = chrome.webRequest.WebResponseCacheDetails;
 type Window = chrome.windows.Window;
