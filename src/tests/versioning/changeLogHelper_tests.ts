@@ -1,5 +1,5 @@
 import {ChangeLog} from "../../scripts/versioning/changeLog";
-import {ChangeLogHelper} from "../../scripts/versioning/changeLogHelper";
+import {ChangeLogHelper} from "../../scripts/versioning/changelogHelper";
 import {Version} from "../../scripts/versioning/version";
 import {TestModule} from "../testModule";
 
