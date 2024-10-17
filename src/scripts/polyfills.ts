@@ -56,9 +56,9 @@ export module Polyfills {
 	}
 
 	function requestAnimationFramePoly() {
-		if (!window.requestAnimationFrame) {
-			window.requestAnimationFrame = (<any>window).msRequestAnimationFrame || (<any>window).mozRequestAnimationFrame
-				|| (<any>window).webkitRequestAnimationFrame || (<any>window).oRequestAnimationFrame || ((callback: FrameRequestCallback) => {
+		if (!self.requestAnimationFrame) {
+			self.requestAnimationFrame = (<any>self).msRequestAnimationFrame || (<any>self).mozRequestAnimationFrame
+				|| (<any>self).webkitRequestAnimationFrame || (<any>self).oRequestAnimationFrame || ((callback: FrameRequestCallback) => {
 					setTimeout(() => {
 						callback(Date.now());
 					}, 16);

@@ -356,8 +356,8 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	private setUnhandledExceptionLogging() {
-		let oldOnError = window.onerror;
-		window.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?: Error) => {
+		let oldOnError = self.onerror;
+		self.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?: Error) => {
 			let callStack = error ? Log.Failure.getStackTrace(error) : "[unknown stacktrace]";
 
 			Log.ErrorUtils.sendFailureLogRequest({

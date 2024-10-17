@@ -133,8 +133,8 @@ export module ErrorUtils {
 			properties: propsObject
 		}, true);
 
-		if (shouldShowAlert && window) {
-			window.alert(Localization.getLocalizedString("WebClipper.Error.NoOpError"));
+		if (shouldShowAlert && self) {
+			self.alert(Localization.getLocalizedString("WebClipper.Error.NoOpError"));
 		}
 	}
 

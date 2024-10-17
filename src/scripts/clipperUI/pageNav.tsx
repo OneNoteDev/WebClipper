@@ -97,8 +97,8 @@ class PageNavClass extends ComponentBase<PageNavState, {}> {
 Polyfills.init();
 
 // Catch any unhandled exceptions and log them
-let oldOnError = window.onerror;
-window.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?: Error) => {
+let oldOnError = self.onerror;
+self.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?: Error) => {
 	let callStack = error ? Log.Failure.getStackTrace(error) : "[unknown stacktrace]";
 
 	Clipper.logger.logFailure(Log.Failure.Label.UnhandledExceptionThrown, Log.Failure.Type.Unexpected,
