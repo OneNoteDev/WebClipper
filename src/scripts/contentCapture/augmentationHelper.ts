@@ -11,8 +11,6 @@ import {DomUtils, EmbeddedVideoIFrameSrcs} from "../domParsers/domUtils";
 
 import {HttpWithRetries} from "../http/httpWithRetries";
 
-import {Localization} from "../localization/localization";
-
 import * as Log from "../logging/log";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";

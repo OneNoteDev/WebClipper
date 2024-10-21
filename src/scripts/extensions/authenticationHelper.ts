@@ -3,7 +3,7 @@ import {SmartValue} from "../communicator/smartValue";
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 
-import {CachedHttp, TimeStampedData} from "../http/cachedHttp";
+import {TimeStampedData} from "../http/cachedHttp";
 import {HttpWithRetries} from "../http/httpWithRetries";
 
 import {ClipperData} from "../storage/clipperData";
