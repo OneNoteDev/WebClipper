@@ -1,7 +1,7 @@
 import * as Log from "./log";
 import {ConsoleOutput} from "./consoleOutput";
 import {ConsoleLoggerShell} from "./consoleLoggerShell";
-import {Logger} from "./Logger";
+import {Logger} from "./logger";
 import {LogHelpers} from "./logHelpers";
 
 export class ConsoleLoggerPure extends Logger {

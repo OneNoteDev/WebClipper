@@ -12,7 +12,7 @@ import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
 import {SupportedVideoDomains, VideoUtils} from "./videoUtils";
 
-import {VideoExtractorFactory} from "./VideoExtractorFactory";
+import {VideoExtractorFactory} from "./videoExtractorFactory";
 
 export interface EmbeddedVideoIFrameSrcs {
 	srcAttribute: string;

@@ -1,5 +1,4 @@
 import {ClientType} from "../../clientType";
-import {Constants} from "../../constants";
 import {UrlUtils} from "../../urlUtils";
 
 import {TooltipType} from "../../clipperUI/tooltipType";
@@ -9,9 +8,7 @@ import {VideoUtils} from "../../domParsers/videoUtils";
 import {Localization} from "../../localization/localization";
 
 import {ClipperData} from "../../storage/clipperData";
-import {LocalStorage} from "../../storage/LocalStorage";
-
-import {Version} from "../../versioning/version";
+import {LocalStorage} from "../../storage/localStorage";
 
 import {ExtensionBase} from "../extensionBase";
 import {InvokeInfo} from "../invokeInfo";
