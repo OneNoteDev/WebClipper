@@ -114,7 +114,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	private registerBrowserButton() {
-		WebExtension.browser.browserAction.onClicked.addListener((tab: W3CTab) => {
+		WebExtension.browser.action.onClicked.addListener((tab: W3CTab) => {
 			this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ExtensionButton }, { invokeMode: InvokeMode.Default });
 		});
 	}

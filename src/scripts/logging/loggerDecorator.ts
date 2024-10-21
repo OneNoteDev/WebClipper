@@ -128,7 +128,7 @@ export abstract class LoggerDecorator extends SessionLogger {
 	}
 
 	protected handleSetContext(key: Log.Context.Custom, value: string | number | boolean): void {
-		this.outputSetContext(key, value);
+		// this.outputSetContext(key, value);
 		if (this.component) {
 			this.component.setContextProperty(key, value);
 		}
