@@ -172,7 +172,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 					WebExtension.browser.contextMenus.create(menus[i]);
 					WebExtension.browser.contextMenus.onClicked.addListener((info, tab: W3CTab) => {
 						switch (info.menuItemId) {
-							case "WebClipper.Label.OneNoteWebClipper": 
+							case "WebClipper.Label.OneNoteWebClipper":
 								this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
 								break;
 							case "WebClipper.Label.ClipSelectionToOneNote":
