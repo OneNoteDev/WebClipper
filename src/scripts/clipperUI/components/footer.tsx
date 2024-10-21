@@ -55,7 +55,7 @@ class FooterClass extends ComponentBase<FooterState, FooterProps> {
 
 			Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.DebugFeedback));
 
-			window.alert(debugMessage);
+			self.alert(debugMessage);
 			return;
 		}
 

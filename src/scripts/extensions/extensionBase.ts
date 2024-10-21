@@ -1,5 +1,5 @@
 import {ClientInfo} from "../clientInfo";
-import {ClientType} from "../ClientType";
+import {ClientType} from "../clientType";
 import {Constants} from "../constants";
 import {StringUtils} from "../stringUtils";
 import {UrlUtils} from "../urlUtils";
@@ -40,7 +40,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
-	protected static version = "3.9.5";
+	protected static version = "3.9.7";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
@@ -208,7 +208,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				});
 			}, (error) => {
 				reject(error);
-			}); */
+			});
 		});
 	}
 

@@ -18,7 +18,7 @@ async function handleResponse(message): Promise<string> {
 	}
 }
 
-export async function sendToOffscreenDocument(type: string, data: any): Promise<string> {
+/* export async function sendToOffscreenDocument(type: string, data: any): Promise<string> {
 	const offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
 	const existingContexts = await chrome.runtime.getContexts({
 		contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT],
@@ -45,4 +45,4 @@ export async function sendToOffscreenDocument(type: string, data: any): Promise<
 			});
 		});
 	});
-}
+} */

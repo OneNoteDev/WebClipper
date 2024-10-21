@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.9.7 (October 2024)
+* Improvement : Partial code improvements in order to comply with Manifest V3.
+
+## 3.9.6 (October 2024)
+* Improvement : XMLHttpRequest() replaced with global fetch().
+
 ## 3.9.5 (June 2023)
 * Improvement : Deprecating the extension in Firefox.
 

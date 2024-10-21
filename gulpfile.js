@@ -1092,7 +1092,7 @@ gulp.task("build", function(callback) {
     runSequence(
         "buildOnly",
         "tslint",
-        // "runTests",
+        "runTests",
         callback);
 });
 

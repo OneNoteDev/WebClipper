@@ -17,12 +17,12 @@ import {ChangeLog} from "../../versioning/changeLog";
 
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
+import {InjectHelper} from "../injectHelper";
 
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
 
-type Tab = chrome.tabs.Tab;
 type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
 type WebResponseCacheDetails = chrome.webRequest.WebResponseCacheDetails;
 type Window = chrome.windows.Window;
@@ -80,7 +80,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 */
 	protected invokeClipperBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
-			chrome.scripting.executeScript({
+			WebExtension.browser.scripting.executeScript({
 				target: { tabId: this.tab.id },
 				files: [this.injectUrls.webClipperInjectUrl]
 			});

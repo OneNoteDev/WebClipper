@@ -1,8 +1,7 @@
 import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
-import {ClientType} from "../ClientType";
+import {ClientType} from "../clientType";
 import {ClipperUrls} from "../clipperUrls";
-import {CookieUtils} from "../cookieUtils";
 import {Constants} from "../constants";
 import {Polyfills} from "../polyfills";
 import {AuthType, UserInfo, UpdateReason} from "../userInfo";
