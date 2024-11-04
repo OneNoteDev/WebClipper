@@ -1,3 +1,4 @@
+import { WebExtension } from "../extensions/webExtensionBase/webExtension";
 import {Rtl} from "../localization/rtl";
 
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
@@ -28,10 +29,10 @@ export class LocaleSpecificTasks {
 	}
 }
 
-let localeOverride: string;
 try {
-	localeOverride = window.localStorage.getItem(ClipperStorageKeys.displayLanguageOverride);
+	WebExtension.browser.storage.local.get([ClipperStorageKeys.displayLanguageOverride], ({ localeOverride }) => {
+		// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
+		LocaleSpecificTasks.execute(localeOverride || navigator.language || (<any>navigator).userLanguage);
+	});
 } catch (e) { }
 
-// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
-LocaleSpecificTasks.execute(localeOverride || navigator.language || (<any>navigator).userLanguage);

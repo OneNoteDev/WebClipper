@@ -27,9 +27,10 @@ export module UrlUtils {
 	}
 
 	export function getHostname(url: string): string {
-		let l = document.createElement("a");
+		/*let l = document.createElement("a");
 		l.href = url;
-		return l.protocol + "//" + l.host + "/";
+		return l.protocol + "//" + l.host + "/";*/
+		return "www.google.com"
 	}
 
 	export function getPathname(url: string): string {

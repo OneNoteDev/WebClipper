@@ -1,3 +1,4 @@
+import { WebExtension } from "../extensions/webExtensionBase/webExtension";
 import * as Log from "./log";
 
 export module LogHelpers {
@@ -153,10 +154,14 @@ export module LogHelpers {
 
 	export function isConsoleOutputEnabled(): boolean {
 		try {
-			if (localStorage.getItem(Log.enableConsoleLogging)) {
-				return true;
-			}
-		} catch (e) { };
-		return false;
+			WebExtension.browser.storage.local.get([Log.enableConsoleLogging], ({ result }) => {
+				if (result) {
+					return true;
+				}
+				return false;
+			});
+		} catch (e) {
+			return false;
+		};
 	}
 }

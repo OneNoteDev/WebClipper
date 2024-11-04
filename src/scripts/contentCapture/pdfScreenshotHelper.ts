@@ -27,7 +27,7 @@ export class PdfScreenshotHelper {
 
 	public static getPdfData(url: string): Promise<PdfScreenshotResult> {
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
-			let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetBinaryRequest);
+			/*let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetBinaryRequest);
 
 			let request = new XMLHttpRequest();
 			request.open("GET", url, true);
@@ -64,7 +64,7 @@ export class PdfScreenshotHelper {
 				errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.NETWORK_ERROR));
 			};
 
-			request.send();
+			request.send();*/
 		});
 	}
 
