@@ -13,6 +13,7 @@ import {CaptureFailureInfo} from "./captureFailureInfo";
 import {PdfDocument} from "./pdfDocument";
 import {PdfJsDocument} from "./pdfJsDocument";
 import {ViewportDimensions} from "./viewportDimensions";
+import { ErrorUtils } from "../responsePackage";
 
 export interface PdfScreenshotResult extends CaptureFailureInfo {
 	pdf?: PdfDocument;
@@ -27,44 +28,43 @@ export class PdfScreenshotHelper {
 
 	public static getPdfData(url: string): Promise<PdfScreenshotResult> {
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
+			debugger;
 			let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetBinaryRequest);
 
-			let request = new XMLHttpRequest();
-			request.open("GET", url, true);
-
-			request.responseType = "arraybuffer";
-
-			let errorCallback = (failureInfo: OneNoteApi.RequestError) => {
-				getBinaryEvent.setStatus(Log.Status.Failed);
-				failureInfo.response = failureInfo.responseHeaders = undefined;
-				getBinaryEvent.setFailureInfo(failureInfo);
-				Clipper.logger.logEvent(getBinaryEvent);
-				reject();
+			let errorCallback = (failureInfo: Promise<OneNoteApi.RequestError>) => {
+				failureInfo.then((error) => {
+					getBinaryEvent.setStatus(Log.Status.Failed);
+					error.response = error.responseHeaders = undefined;
+					getBinaryEvent.setFailureInfo(error);
+					Clipper.logger.logEvent(getBinaryEvent);
+					reject();
+				})
 			};
 
-			request.onload = () => {
-				if (request.status === 200 && request.response) {
-					let arrayBuffer = request.response;
 
+			fetch(url)
+			.then(response => {
+				if (!response.ok) {
+					errorCallback(ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
+				}
+				return response.arrayBuffer();
+			})
+				.then(arrayBuffer => {
 					getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.ByteLength, arrayBuffer.byteLength);
 					Clipper.logger.logEvent(getBinaryEvent);
 
-					PdfScreenshotHelper.getPdfScreenshotResult(arrayBuffer).then((pdfScreenshotResult) => {
-						pdfScreenshotResult.byteLength = arrayBuffer.byteLength;
-						resolve(pdfScreenshotResult);
-					});
-				} else {
-					errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
-				}
-			};
-			request.ontimeout = () => {
-				errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT));
-			};
-			request.onerror = () => {
-				errorCallback(OneNoteApi.ErrorUtils.createRequestErrorObject(request, OneNoteApi.RequestErrorType.NETWORK_ERROR));
-			};
-
-			request.send();
+					PdfScreenshotHelper.getPdfScreenshotResult(new Uint8Array(arrayBuffer))
+						.then(pdfScreenshotResult => {
+							pdfScreenshotResult.byteLength = arrayBuffer.byteLength;
+							resolve(pdfScreenshotResult);
+						})
+				})
+			.catch(() => {
+				reject(OneNoteApi.RequestErrorType.NETWORK_ERROR);
+			});
+			setTimeout(() => {
+				reject(OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT)
+			}, 1000);
 		});
 	}
 

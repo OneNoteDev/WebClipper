@@ -144,7 +144,8 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 		// Ensure the frame was created and is visible
 		let clipperFrame = document.getElementById(Constants.Ids.clipperUiFrame);
 		let frameWasNotInjected = ObjectUtils.isNullOrUndefined(clipperFrame);
-		let url = window.location.href;
+		debugger;
+		let url = self.location.href;
 
 		if (frameWasNotInjected) {
 			Log.ErrorUtils.sendNoOpTrackerRequest({
@@ -170,7 +171,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			label: Log.NoOp.Label.InitializeCommunicator,
 			channel: Constants.CommunicationChannels.injectedAndUi,
 			clientInfo: this.clientInfo,
-			url: window.location.href
+			url: self.location.href
 		});
 
 		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.noOpTracker, {
