@@ -144,7 +144,6 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 		// Ensure the frame was created and is visible
 		let clipperFrame = document.getElementById(Constants.Ids.clipperUiFrame);
 		let frameWasNotInjected = ObjectUtils.isNullOrUndefined(clipperFrame);
-		debugger;
 		let url = self.location.href;
 
 		if (frameWasNotInjected) {

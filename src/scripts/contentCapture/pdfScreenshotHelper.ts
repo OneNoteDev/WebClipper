@@ -28,7 +28,6 @@ export class PdfScreenshotHelper {
 
 	public static getPdfData(url: string): Promise<PdfScreenshotResult> {
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
-			debugger;
 			let getBinaryEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetBinaryRequest);
 
 			let errorCallback = (failureInfo: Promise<OneNoteApi.RequestError>) => {
@@ -64,7 +63,7 @@ export class PdfScreenshotHelper {
 			});
 			setTimeout(() => {
 				reject(OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT)
-			}, 1000);
+			}, 60000);
 		});
 	}
 

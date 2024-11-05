@@ -13,7 +13,6 @@ import {InjectHelper} from "../injectHelper";
 if (BrowserUtils.browserNotSupported()) {
 	UnsupportedBrowserInject.main();
 } else if (InjectHelper.isKnownUninjectablePage(self.location.href)) {
-	debugger;
 	InjectHelper.alertUserOfUnclippablePage();
 } else {
 	let clipperUrl = bookmarkletRoot + "/clipper.html";
