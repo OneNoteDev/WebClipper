@@ -8,6 +8,7 @@ import {SmartValue} from "../../communicator/smartValue";
 import {Localization} from "../../localization/localization";
 
 import {Failure, NoOp, unknownValue} from "../log";
+import { WebExtension } from "../../extensions/webExtensionBase/webExtension";
 
 export module ErrorUtils {
 	enum ErrorPropertyName {
@@ -133,8 +134,14 @@ export module ErrorUtils {
 			properties: propsObject
 		}, true);
 
-		if (shouldShowAlert && self) {
-			self.alert(Localization.getLocalizedString("WebClipper.Error.NoOpError"));
+		if (shouldShowAlert) {
+			WebExtension.browser.notifications.create({
+				type: 'basic',
+				iconUrl: '/icons/icon-48.png',
+				title: 'Cannot Clip Page',
+				message: Localization.getLocalizedString("WebClipper.Error.NoOpError"),
+				priority: 1
+				});
 		}
 	}
 
