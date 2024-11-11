@@ -138,7 +138,7 @@ export module ErrorUtils {
 			WebExtension.browser.notifications.create({
 				type: 'basic',
 				iconUrl: '/icons/icon-48.png',
-				title: 'Cannot Clip Page',
+				title: Localization.getLocalizedString("WebClipper.Notification.Title"),
 				message: Localization.getLocalizedString("WebClipper.Error.NoOpError"),
 				priority: 1
 				});
