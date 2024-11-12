@@ -82,11 +82,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		return new Promise<boolean>((resolve) => {
 			WebExtension.browser.scripting.executeScript({
 				target: { tabId: this.tab.id },
-				files: [this.injectUrls.webClipperInjectUrl]
-			});
-			resolve(true);
-			/* WebExtension.browser.tabs.executeScript(this.tab.id, {
-				code: 'var frameUrl = "' + WebExtension.browser.extension.getURL("clipper.html") + '";'
+				function: () => {}
 			}, () => {
 				if (WebExtension.browser.runtime.lastError) {
 					Log.ErrorUtils.sendFailureLogRequest({
@@ -99,8 +95,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						clientInfo: this.clientInfo
 					});
 
-					// In Firefox, alert() is not callable from the background, so it looks like we have to no-op here
-					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
+					// In Firefox and Chrome, alert() is not callable from the service worker, so it looks like we have to no-op here
+					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension && this.clientInfo.get().clipperType !== ClientType.ChromeExtension) {
 						InjectHelper.alertUserOfUnclippablePage();
 					}
 					resolve(false);
@@ -109,7 +105,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						WebExtension.browser.management.uninstallSelf();
 						resolve(true);
 					} else {
-						WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.webClipperInjectUrl });
+						WebExtension.browser.scripting.executeScript({
+							target: { tabId: this.tab.id },
+							files: [this.injectUrls.webClipperInjectUrl]
+						});
 
 						if (!this.noOpTrackerInvoked) {
 							this.setUpNoOpTrackers(this.tab.url);
@@ -118,7 +117,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						resolve(true);
 					}
 				}
-			}); */
+			});
 		});
 	}
 
@@ -128,7 +127,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 */
 	protected invokeDebugLoggingBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.debugLoggingInjectUrl }, () => {
+			WebExtension.browser.scripting.executeScript({
+				target: { tabId: this.tab.id },
+				files: [this.injectUrls.debugLoggingInjectUrl]
+			}, () => {
 				if (WebExtension.browser.runtime.lastError) {
 					// We are probably on a page like about:blank, which is pretty normal
 					resolve(false);
@@ -141,15 +143,19 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 	protected invokePageNavBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.tabs.executeScript(this.tab.id, {
-				code: 'var frameUrl = "' + WebExtension.browser.extension.getURL("pageNav.html") + '";'
+			WebExtension.browser.scripting.executeScript({
+				target: { tabId: this.tab.id },
+				function: () => {}
 			}, () => {
 				// It's safest to not use lastError in the resolve due to special behavior in the Chrome API
 				if (WebExtension.browser.runtime.lastError) {
 					// We are probably on a page like about:blank, which is pretty normal
 					resolve(false);
 				} else {
-					WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.pageNavInjectUrl });
+					WebExtension.browser.scripting.executeScript({
+						target: { tabId: this.tab.id },
+						files: [this.injectUrls.pageNavInjectUrl]
+					});
 					resolve(true);
 				}
 			});
