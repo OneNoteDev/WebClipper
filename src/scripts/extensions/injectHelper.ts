@@ -1,4 +1,5 @@
 import {Localization} from "../localization/localization";
+import { WebExtension } from "./webExtensionBase/webExtension";
 
 export class InjectHelper {
 	private static uninjectableUrlRegexes: RegExp[] = [
@@ -6,7 +7,13 @@ export class InjectHelper {
 	];
 
 	public static alertUserOfUnclippablePage() {
-		alert(Localization.getLocalizedString("WebClipper.Error.CannotClipPage"));
+		WebExtension.browser.notifications.create({
+			type: 'basic',
+			iconUrl: '/icons/icon-48.png',
+			title: Localization.getLocalizedString("WebClipper.Notification.Title"),
+			message: Localization.getLocalizedString("WebClipper.Error.CannotClipPage"),
+			priority: 1
+			});
 	}
 
 	public static isKnownUninjectablePage(url: string): boolean {

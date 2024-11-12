@@ -154,5 +154,6 @@
 	"WebClipper.FontFamily.Semibold": "Segoe UI Semibold,Segoe UI,Segoe,Segoe WP,Helvetica Neue,Roboto,Helvetica,Arial,Tahoma,Verdana,sans-serif",
 	"WebClipper.FontFamily.Semilight": "Segoe UI Semilight,Segoe UI Light,Segoe WP Light,Segoe UI,Segoe,Segoe WP,Helvetica Neue,Roboto,Helvetica,Arial,Tahoma,Verdana,sans-serif",
 	"WebClipper.FontSize.Preview.SerifDefault": "16px",
-	"WebClipper.FontSize.Preview.SansSerifDefault": "16px"
+	"WebClipper.FontSize.Preview.SansSerifDefault": "16px",
+	"WebClipper.Notification.Title": "Cannot Clip Page"
 }
