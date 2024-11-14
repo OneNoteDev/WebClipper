@@ -37,17 +37,16 @@ export class PdfScreenshotHelper {
 					getBinaryEvent.setFailureInfo(error);
 					Clipper.logger.logEvent(getBinaryEvent);
 					reject();
-				})
+				});
 			};
 
-
 			fetch(url)
-			.then(response => {
-				if (!response.ok) {
-					errorCallback(ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
-				}
-				return response.arrayBuffer();
-			})
+				.then(response => {
+					if (!response.ok) {
+						errorCallback(ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNEXPECTED_RESPONSE_STATUS));
+					}
+					return response.arrayBuffer();
+				})
 				.then(arrayBuffer => {
 					getBinaryEvent.setCustomProperty(Log.PropertyName.Custom.ByteLength, arrayBuffer.byteLength);
 					Clipper.logger.logEvent(getBinaryEvent);
@@ -56,13 +55,13 @@ export class PdfScreenshotHelper {
 						.then(pdfScreenshotResult => {
 							pdfScreenshotResult.byteLength = arrayBuffer.byteLength;
 							resolve(pdfScreenshotResult);
-						})
+						});
 				})
 			.catch(() => {
 				reject(OneNoteApi.RequestErrorType.NETWORK_ERROR);
 			});
 			setTimeout(() => {
-				reject(OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT)
+				reject(OneNoteApi.RequestErrorType.REQUEST_TIMED_OUT);
 			}, 60000);
 		});
 	}

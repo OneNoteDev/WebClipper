@@ -81,7 +81,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	protected invokeClipperBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
 			WebExtension.browser.tabs.executeScript(this.tab.id, {
-				code: 'var frameUrl = "' + WebExtension.browser.extension.getURL("clipper.html") + '";'
+				code: ""
 			}, () => {
 				if (WebExtension.browser.runtime.lastError) {
 					Log.ErrorUtils.sendFailureLogRequest({
@@ -137,7 +137,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	protected invokePageNavBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
 			WebExtension.browser.tabs.executeScript(this.tab.id, {
-				code: 'var frameUrl = "' + WebExtension.browser.extension.getURL("pageNav.html") + '";'
+				code: ""
 			}, () => {
 				// It's safest to not use lastError in the resolve due to special behavior in the Chrome API
 				if (WebExtension.browser.runtime.lastError) {
