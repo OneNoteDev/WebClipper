@@ -1,4 +1,3 @@
-declare var frameUrl: string;
 declare var bookmarkletRoot: string;
 
 import {IFrameMessageHandler} from "../../communicator/iframeMessageHandler";
