@@ -80,8 +80,9 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 */
 	protected invokeClipperBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.tabs.executeScript(this.tab.id, {
-				code: ""
+			WebExtension.browser.scripting.executeScript({
+				target: { tabId: this.tab.id },
+				function: () => {}
 			}, () => {
 				if (WebExtension.browser.runtime.lastError) {
 					Log.ErrorUtils.sendFailureLogRequest({
@@ -104,7 +105,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						WebExtension.browser.management.uninstallSelf();
 						resolve(true);
 					} else {
-						WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.webClipperInjectUrl });
+						WebExtension.browser.scripting.executeScript({
+							target: { tabId: this.tab.id },
+							files: [this.injectUrls.webClipperInjectUrl]
+						});
 
 						if (!this.noOpTrackerInvoked) {
 							this.setUpNoOpTrackers(this.tab.url);
@@ -123,7 +127,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 */
 	protected invokeDebugLoggingBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.debugLoggingInjectUrl }, () => {
+			WebExtension.browser.scripting.executeScript({
+				target: { tabId: this.tab.id },
+				files: [this.injectUrls.debugLoggingInjectUrl]
+			}, () => {
 				if (WebExtension.browser.runtime.lastError) {
 					// We are probably on a page like about:blank, which is pretty normal
 					resolve(false);
@@ -136,15 +143,19 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 	protected invokePageNavBrowserSpecific(): Promise<boolean> {
 		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.tabs.executeScript(this.tab.id, {
-				code: ""
+			WebExtension.browser.scripting.executeScript({
+				target: { tabId: this.tab.id },
+				function: () => {}
 			}, () => {
 				// It's safest to not use lastError in the resolve due to special behavior in the Chrome API
 				if (WebExtension.browser.runtime.lastError) {
 					// We are probably on a page like about:blank, which is pretty normal
 					resolve(false);
 				} else {
-					WebExtension.browser.tabs.executeScript(this.tab.id, { file: this.injectUrls.pageNavInjectUrl });
+					WebExtension.browser.scripting.executeScript({
+						target: { tabId: this.tab.id },
+						files: [this.injectUrls.pageNavInjectUrl]
+					});
 					resolve(true);
 				}
 			});
