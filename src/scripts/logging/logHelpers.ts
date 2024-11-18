@@ -152,11 +152,11 @@ export module LogHelpers {
 	}
 
 	export function isConsoleOutputEnabled(): boolean {
-		try {
+		/* try {
 			if (localStorage.getItem(Log.enableConsoleLogging)) {
 				return true;
 			}
-		} catch (e) { };
+		} catch (e) { }; */
 		return false;
 	}
 }
