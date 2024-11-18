@@ -3,7 +3,7 @@
     "name": "OneNote Web Clipper",
     "description": "__MSG_appDesc__",
     "default_locale": "en",
-    "version": "3.9.7",
+    "version": "3.9.8",
     "background": {
       "service_worker": "chromeExtension.js",
       "type": "module"
@@ -42,6 +42,7 @@
       "webRequest",
       "storage",
       "webNavigation",
+      "notifications",
       "offscreen"
     ],
     "host_permissions": [
