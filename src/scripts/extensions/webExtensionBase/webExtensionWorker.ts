@@ -71,7 +71,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	protected doSignOutAction(authType: AuthType) {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
 		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
-		BrowserUtils.appendHiddenIframeToDocument(signOutUrl);
+		fetch(signOutUrl);
 	}
 
 	/**
@@ -206,78 +206,81 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		return new Promise<boolean>((resolve, reject) => {
 			let popupWidth = 1000;
 			let popupHeight = 700;
-			let leftPosition: number = (typeof screen !== "undefined" && screen.width) ? Math.round((screen.width - popupWidth) / 2) : 0;
-			let topPosition: number = (typeof screen !== "undefined" && screen.height) ? Math.round((screen.height - popupHeight) / 2) : 0;
+			WebExtension.browser.windows.getCurrent((currentWindow: Window) => {
+				let leftPosition: number = currentWindow.left + Math.round((currentWindow.width - popupWidth) / 2);
+				let topPosition: number = currentWindow.top + Math.round((currentWindow.height - popupHeight) / 2);
 
-			try {
-				/* As of 7/19/2016, Firefox does not yet supported the "focused" key for windows.create in the WebExtensions API */
-				/* See bug filed here: https://bugzilla.mozilla.org/show_bug.cgi?id=1213484 */
-				let windowOptions: chrome.windows.CreateData = {
-					height: popupHeight,
-					left: leftPosition,
-					top: topPosition,
-					type: "popup",
-					url: url,
-					width: popupWidth
-				};
+				try {
+					/* As of 7/19/2016, Firefox does not yet supported the "focused" key for windows.create in the WebExtensions API */
+					/* See bug filed here: https://bugzilla.mozilla.org/show_bug.cgi?id=1213484 */
+					let windowOptions: chrome.windows.CreateData = {
+						height: popupHeight,
+						left: leftPosition,
+						top: topPosition,
+						type: "popup",
+						url: url,
+						width: popupWidth
+					};
 
-				if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
-					windowOptions.focused = true;
-				}
+					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
+						windowOptions.focused = true;
+					}
 
-				WebExtension.browser.windows.create(windowOptions, (newWindow: Window) => {
-					let redirectOccurred = false;
-					let errorObject;
-					let correlationId: string;
+					WebExtension.browser.windows.create(windowOptions, (newWindow: Window) => {
+						let redirectOccurred = false;
+						let errorObject;
+						let correlationId: string;
 
-					let redirectListener = (details: WebResponseCacheDetails) => {
-						redirectOccurred = true;
+						let redirectListener = (details: WebResponseCacheDetails) => {
+							redirectOccurred = true;
 
-						// Find and get correlation id
-						if (details.responseHeaders) {
-							for (let i = 0; i < details.responseHeaders.length; i++) {
-								if (details.responseHeaders[i].name === Constants.HeaderValues.correlationId) {
-									correlationId = details.responseHeaders[i].value;
-									break;
+							// Find and get correlation id
+							if (details.responseHeaders) {
+								for (let i = 0; i < details.responseHeaders.length; i++) {
+									if (details.responseHeaders[i].name === Constants.HeaderValues.correlationId) {
+										correlationId = details.responseHeaders[i].value;
+										break;
+									}
 								}
 							}
-						}
 
-						let redirectUrl = details.url;
-						let error = UrlUtils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.error);
-						let errorDescription = UrlUtils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.errorDescription);
-						if (error || errorDescription) {
-							errorObject = { error: error, errorDescription: errorDescription, correlationId: correlationId };
-						}
+							let redirectUrl = details.url;
+							let error = UrlUtils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.error);
+							let errorDescription = UrlUtils.getQueryValue(redirectUrl, Constants.Urls.QueryParams.errorDescription);
+							if (error || errorDescription) {
+								errorObject = { error: error, errorDescription: errorDescription, correlationId: correlationId };
+							}
 
-						/* WebExtension.browser.webRequest.onCompleted.removeListener(redirectListener);
-						WebExtension.browser.tabs.remove(details.tabId); */
-					};
+							WebExtension.browser.webRequest.onCompleted.removeListener(redirectListener);
+							WebExtension.browser.tabs.remove(details.tabId);
+						};
 
-					/* WebExtension.browser.webRequest.onCompleted.addListener(redirectListener, {
-						windowId: newWindow.id, urls: [autoCloseDestinationUrl + "*"]
-					}, ["responseHeaders"]); */
+						WebExtension.browser.webRequest.onCompleted.addListener(redirectListener, {
+							windowId: newWindow.id, urls: [autoCloseDestinationUrl + "*"]
+						}, ["responseHeaders"]);
 
-					let closeListener = (tabId: number, tabRemoveInfo: TabRemoveInfo) => {
-						if (tabRemoveInfo.windowId === newWindow.id) {
-							errorObject ? reject(errorObject) : resolve(redirectOccurred);
-							WebExtension.browser.tabs.onRemoved.removeListener(closeListener);
-						}
-					};
+						let closeListener = (tabId: number, tabRemoveInfo: TabRemoveInfo) => {
+							if (tabRemoveInfo.windowId === newWindow.id) {
+								errorObject ? reject(errorObject) : resolve(redirectOccurred);
+								WebExtension.browser.tabs.onRemoved.removeListener(closeListener);
+							}
+						};
 
-					// WebExtension.browser.tabs.onRemoved.addListener(closeListener);
-				});
-			} catch (e) {
-				// In the event that there was an exception thrown during the creation of the popup, fallback to using window.open with a monitor
-				this.logger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, { error: e.message });
+						WebExtension.browser.tabs.onRemoved.addListener(closeListener);
 
-				this.launchPopupAndWaitForClose(url).then((redirectOccurred) => {
-					// From chrome's background, we currently are unable to reliably determine if the redirect happened
-					resolve(true /* redirectOccurred */);
-				}, (errorObject) => {
-					reject(errorObject);
-				});
-			}
+					});
+				} catch (e) {
+					// In the event that there was an exception thrown during the creation of the popup, fallback to using window.open with a monitor
+					this.logger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, { error: e.message });
+
+					this.launchPopupAndWaitForClose(url).then((redirectOccurred) => {
+						// From chrome's background, we currently are unable to reliably determine if the redirect happened
+						resolve(true /* redirectOccurred */);
+					}, (errorObject) => {
+						reject(errorObject);
+					});
+				}
+			});
 		});
 	}
 }
