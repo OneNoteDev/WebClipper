@@ -1,5 +1,4 @@
 import {AuthType} from "../../userInfo";
-import {BrowserUtils} from "../../browserUtils";
 import {ClientInfo} from "../../clientInfo";
 import {ClientType} from "../../clientType";
 import {ClipperUrls} from "../../clipperUrls";
@@ -267,7 +266,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						};
 
 						WebExtension.browser.tabs.onRemoved.addListener(closeListener);
-
 					});
 				} catch (e) {
 					// In the event that there was an exception thrown during the creation of the popup, fallback to using window.open with a monitor
