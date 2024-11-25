@@ -24,6 +24,7 @@ import {ChangeLogHelper} from "../versioning/changelogHelper";
 import {Version} from "../versioning/version";
 
 import {AuthenticationHelper} from "./authenticationHelper";
+import {sendToOffscreenDocument} from "../communicator/chromeOffscreenCommunicator";
 import {ExtensionWorkerBase} from "./extensionWorkerBase";
 import {TooltipHelper} from "./tooltipHelper";
 import {WorkerPassthroughLogger} from "./workerPassthroughLogger";
@@ -56,30 +57,32 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 		let clipperFirstRun = false;
 
-		let clipperId = this.clipperData.getValue(ClipperStorageKeys.clipperId);
-		if (!clipperId) {
-			// New install
-			clipperFirstRun = true;
-			clipperId = ExtensionBase.generateClipperId();
-			this.clipperData.setValue(ClipperStorageKeys.clipperId, clipperId);
+		sendToOffscreenDocument("get-clipper-id", {}).then((clipperId) => {
+			console.log("Clipper ID from offscreen storage:", clipperId);
+			if (!clipperId) {
+				// New install
+				clipperFirstRun = true;
+				clipperId = ExtensionBase.generateClipperId();
+				this.clipperData.setValue(ClipperStorageKeys.clipperId, clipperId);
 
-			// Ensure fresh installs don't trigger thats What's New experience
-			this.updateLastSeenVersionInStorageToCurrent();
-		}
+				// Ensure fresh installs don't trigger thats What's New experience
+				this.updateLastSeenVersionInStorageToCurrent();
+			}
 
-		this.clientInfo = new SmartValue<ClientInfo>({
-			clipperType: clipperType,
-			clipperVersion: ExtensionBase.getExtensionVersion(),
-			clipperId: clipperId
+			this.clientInfo = new SmartValue<ClientInfo>({
+				clipperType: clipperType,
+				clipperVersion: ExtensionBase.getExtensionVersion(),
+				clipperId: clipperId
+			});
+
+			if (clipperFirstRun) {
+				this.onFirstRun();
+			}
+
+			this.initializeUserFlighting();
+
+			this.listenForOpportunityToShowPageNavTooltip();
 		});
-
-		if (clipperFirstRun) {
-			this.onFirstRun();
-		}
-
-		this.initializeUserFlighting();
-
-		this.listenForOpportunityToShowPageNavTooltip();
 	}
 
 	protected abstract addPageNavListener(callback: (tab: TTab) => void);

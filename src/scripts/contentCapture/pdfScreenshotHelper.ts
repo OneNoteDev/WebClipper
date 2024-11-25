@@ -72,7 +72,15 @@ export class PdfScreenshotHelper {
 	private static getPdfScreenshotResult(source: string | Uint8Array): Promise<PdfScreenshotResult> {
 		// Never rejects, interesting
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
-			PDFJS.getDocument(source).then((pdf) => {
+			let pdfPromise: PDFPromise<PDFDocumentProxy>;
+			if (typeof source === "string") {
+				// source is of type string and matches the corresponding overload of PDFJS.getDocument
+				pdfPromise = PDFJS.getDocument(source);
+			} else {
+				// source is of type Uint8Array and matches the corresponding overload of PDFJS.getDocument
+				pdfPromise = PDFJS.getDocument(source);
+			}
+			pdfPromise.then((pdf) => {
 				let pdfDocument: PdfDocument = new PdfJsDocument(pdf);
 				pdfDocument.getAllPageViewportDimensions().then((viewportDimensions) => {
 					pdfDocument.getByteLength().then((byteLength) => {

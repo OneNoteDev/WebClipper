@@ -487,7 +487,7 @@ export class DomUtils {
 			location = document.location;
 		}
 
-		let bases: NodeList = doc.head.getElementsByTagName(DomUtils.tags.base);
+		let bases: NodeList = doc.head.querySelectorAll(DomUtils.tags.base);
 		if (bases.length === 0) {
 			let baseUrl = location.href.split("#")[0].split("?")[0];
 			baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/") + 1);

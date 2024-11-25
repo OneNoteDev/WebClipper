@@ -1,8 +1,5 @@
 // Registering this listener when the script is first executed ensures that the
 // offscreen document will be able to receive messages when the promise returned
-
-import { WebExtension } from "../webExtensionBase/webExtension";
-
 // by `offscreen.createDocument()` resolves.
 chrome.runtime.onMessage.addListener(handleMessages);
 
@@ -16,11 +13,10 @@ async function handleMessages(message, sender, sendResponse) {
 
 	// Dispatch the message to an appropriate handler.
 	switch (message.type) {
-		case "test-offscreen-document":
-			document.body.textContent = "Offscreen document is working!";
+		case "get-clipper-id":
 			sendToServiceWorker(
 				"offscreen-document-ready",
-				document.documentElement.outerHTML,
+				window.localStorage.getItem("clipperId"),
 				sendResponse
 			);
 			break;

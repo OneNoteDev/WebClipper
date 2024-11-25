@@ -82,7 +82,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		return new Promise<boolean>((resolve) => {
 			WebExtension.browser.scripting.executeScript({
 				target: { tabId: this.tab.id },
-				function: () => {}
+				func: () => {}
 			}, () => {
 				if (WebExtension.browser.runtime.lastError) {
 					Log.ErrorUtils.sendFailureLogRequest({
@@ -145,7 +145,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		return new Promise<boolean>((resolve) => {
 			WebExtension.browser.scripting.executeScript({
 				target: { tabId: this.tab.id },
-				function: () => {}
+				func: () => {}
 			}, () => {
 				// It's safest to not use lastError in the resolve due to special behavior in the Chrome API
 				if (WebExtension.browser.runtime.lastError) {
