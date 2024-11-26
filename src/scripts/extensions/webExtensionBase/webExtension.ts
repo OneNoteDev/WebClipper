@@ -31,6 +31,7 @@ type Tab = chrome.tabs.Tab;
 
 export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, number> {
 	public static browser: Browser;
+	public static offscreenUrl: string;
 
 	public injectUrls: InjectUrls;
 
@@ -94,8 +95,8 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		return UrlUtils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
 	}
 
-	protected checkIfTabIsAVideoDomain(tab: W3CTab): boolean {
-		let domain = VideoUtils.videoDomainIfSupported(tab.url);
+	protected async checkIfTabIsAVideoDomain(tab: W3CTab): Promise<boolean> {
+		let domain = await VideoUtils.videoDomainIfSupported(tab.url);
 		return !!domain;
 	}
 

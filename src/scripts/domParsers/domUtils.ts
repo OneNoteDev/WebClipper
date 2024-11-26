@@ -205,7 +205,7 @@ export class DomUtils {
 	 * removes any base64 encoded binaries defined in any <style> tags.
 	 */
 	public static removeStylesWithBase64EncodedBinaries(doc: Document): void {
-		DomUtils.domReplacer(doc, "style", (node: HTMLElement) => {
+		DomUtils.domReplacer(doc, "style", async (node: HTMLElement) => {
 			return node.innerHTML.indexOf("data:application") !== -1 ? undefined : node;
 		});
 	}
@@ -217,27 +217,27 @@ export class DomUtils {
 		let tagsToTurnIntoDiv = [DomUtils.tags.main, DomUtils.tags.article, DomUtils.tags.figure, DomUtils.tags.header, DomUtils.tags.center];
 
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
-		DomUtils.domReplacer(doc, tagsToTurnIntoDiv.join(), (node: HTMLElement) => {
+		DomUtils.domReplacer(doc, tagsToTurnIntoDiv.join(), async (node: HTMLElement) => {
 			let div = document.createElement("div");
 			div.innerHTML = DomUtils.cleanHtml(node.innerHTML);
 			return div;
 		});
 	}
 
-	public static domReplacer(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Node = () => undefined) {
+	public static domReplacer(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Promise<Node> = () => undefined) {
 		let nodes: NodeList = doc.querySelectorAll(querySelector);
 
 		for (let i = 0; i < nodes.length; i++) {
 			let oldNode: Node = nodes[i];
 
 			try {
-				let newNode = getReplacement(oldNode, i);
-
-				if (!newNode) {
-					oldNode.parentNode.removeChild(oldNode);
-				} else if (oldNode !== newNode) {
-					oldNode.parentNode.replaceChild(newNode, oldNode);
-				}
+				getReplacement(oldNode, i).then((newNode) => {
+					if (!newNode) {
+						oldNode.parentNode.removeChild(oldNode);
+					} else if (oldNode !== newNode) {
+						oldNode.parentNode.replaceChild(newNode, oldNode);
+					}
+				});
 			} catch (e) {
 				// There are some cases (like dirty canvases) where running replace will throw an error.
 				// We catch it, thus leaving the original.
@@ -370,29 +370,32 @@ export class DomUtils {
 	 * Add embedded videos to the article preview where supported
 	 */
 	public static addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<EmbeddedVideoIFrameSrcs[]> {
-		let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
-		if (!supportedDomain) {
-			return Promise.resolve();
-		}
+		return new Promise<EmbeddedVideoIFrameSrcs[]>((resolve, reject) => {
+			VideoUtils.videoDomainIfSupported(pageUrl).then(async (supportedDomain) => {
+				if (!supportedDomain) {
+					resolve();
+				}
 
-		let iframes: HTMLIFrameElement[] = [];
-		try {
-			// Construct the appropriate videoExtractor based on the Domain we are on
-			let domain = SupportedVideoDomains[supportedDomain];
-			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
+				let iframes: HTMLIFrameElement[] = [];
+				try {
+					// Construct the appropriate videoExtractor based on the Domain we are on
+					let domain = SupportedVideoDomains[supportedDomain];
+					let extractor = VideoExtractorFactory.createVideoExtractor(domain);
 
-			// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
-			// to render them later
-			if (extractor) {
-				iframes = iframes.concat(extractor.createEmbeddedVideosFromPage(pageUrl, pageContent));
-			}
-		} catch (e) {
-			// if we end up here, we're unexpectedly broken
-			// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
-			return Promise.reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
-		}
+					// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
+					// to render them later
+					if (extractor) {
+						iframes = iframes.concat(await extractor.createEmbeddedVideosFromPage(pageUrl, pageContent));
+					}
+				} catch (e) {
+					// if we end up here, we're unexpectedly broken
+					// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
+					reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
+				}
 
-		return Promise.resolve(DomUtils.addVideosToElement(previewElement, iframes));
+				resolve(DomUtils.addVideosToElement(previewElement, iframes));
+			});
+		});
 	}
 
 	/**
@@ -579,7 +582,7 @@ export class DomUtils {
 		].join());
 
 		// Remove iframes that point to local files
-		DomUtils.domReplacer(doc, DomUtils.tags.iframe, (node: Node) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.iframe, async (node: Node) => {
 			let iframe: HTMLIFrameElement = <HTMLIFrameElement>node;
 			let src = iframe.src;
 			if (this.isLocalReferenceUrl(src)) {
@@ -593,7 +596,7 @@ export class DomUtils {
 	 * Remove any references to URLs that won't work on another box (i.e. our servers)
 	 */
 	public static removeUnsupportedHrefs(doc: Document) {
-		DomUtils.domReplacer(doc, DomUtils.tags.link, (node: Node) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.link, async (node: Node) => {
 			let linkElement: HTMLLinkElement = <HTMLLinkElement>node;
 			let href = linkElement.href;
 
@@ -629,7 +632,7 @@ export class DomUtils {
 	 * called in the same context as the website.
 	 */
 	public static convertRelativeUrlsToAbsolute(doc: Document) {
-		DomUtils.domReplacer(doc, DomUtils.tags.img, (node: Node, index: number) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.img, async (node: Node, index: number) => {
 			let nodeAsImage = node as HTMLImageElement;
 
 			// We don't use nodeAsImage.src as it returns undefined for relative urls
@@ -643,7 +646,7 @@ export class DomUtils {
 			return undefined;
 		});
 
-		DomUtils.domReplacer(doc, DomUtils.tags.a, (node: Node, index: number) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.a, async (node: Node, index: number) => {
 			let nodeAsAnchor = node as HTMLAnchorElement;
 
 			let possiblyRelativeSrcAttr = (nodeAsAnchor.attributes as any).href;
@@ -683,7 +686,7 @@ export class DomUtils {
 		// We need to get the canvas's data from the original DOM since the cloned DOM doesn't have it
 		let originalCanvasElements: NodeList = originalDoc.querySelectorAll(DomUtils.tags.canvas);
 
-		DomUtils.domReplacer(doc, DomUtils.tags.canvas, (node: Node, index: number) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.canvas, async (node: Node, index: number) => {
 			let originalCanvas = originalCanvasElements[index] as HTMLCanvasElement;
 			if (!originalCanvas) {
 				return undefined;
@@ -894,7 +897,7 @@ export class DomUtils {
 					return NodeFilter.FILTER_ACCEPT;
 				}
 			}
-		}, false);
+		});
 
 		let n: Node = walk.nextNode();
 		while (n) {
@@ -964,9 +967,9 @@ export class DomUtils {
 	public static removeDisallowedIframes(doc: Document) {
 		// We also detect if the iframe is a video, and we ensure that we have
 		// the correct attribute set so that ONApi recognizes it
-		DomUtils.domReplacer(doc, DomUtils.tags.iframe, (node) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.iframe, async (node) => {
 			let src = (node as HTMLIFrameElement).src;
-			let supportedDomain = VideoUtils.videoDomainIfSupported(src);
+			let supportedDomain = await VideoUtils.videoDomainIfSupported(src);
 			if (!supportedDomain) {
 				return undefined;
 			}
@@ -978,7 +981,7 @@ export class DomUtils {
 	}
 
 	private static removeAllStylesAndClasses(doc: Document): void {
-		DomUtils.domReplacer(doc, "*", (oldNode, index) => {
+		DomUtils.domReplacer(doc, "*", async (oldNode, index) => {
 			(<HTMLElement>oldNode).removeAttribute("style");
 			(<HTMLElement>oldNode).removeAttribute("class");
 			return oldNode;

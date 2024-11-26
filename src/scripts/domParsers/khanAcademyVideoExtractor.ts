@@ -13,7 +13,7 @@ export class KhanAcademyVideoExtractor extends VideoExtractor {
 		this.youtubeExtractor = new YoutubeVideoExtractor();
 	}
 
-	public createEmbeddedVideosFromHtml(html: string): HTMLIFrameElement[] {
+	public async createEmbeddedVideosFromHtml(html: string): Promise<HTMLIFrameElement[]> {
 		if (!html) {
 			return [];
 		}
@@ -34,7 +34,7 @@ export class KhanAcademyVideoExtractor extends VideoExtractor {
 		return ids.map((id) => this.createEmbeddedVideoFromId(id));
 	}
 
-	public createEmbeddedVideoFromUrl(url: string): HTMLIFrameElement {
+	public async createEmbeddedVideoFromUrl(url: string): Promise<HTMLIFrameElement> {
 		// KhanAcademy does not host their own videos. We can only derive videos
 		// from their page's html.
 		return undefined;

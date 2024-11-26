@@ -88,9 +88,9 @@ export class SafariExtension extends ExtensionBase<SafariWorker, SafariBrowserTa
 		return UrlUtils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
 	}
 
-	protected checkIfTabIsAVideoDomain(tab: SafariBrowserTab): boolean {
-		return !!VideoUtils.videoDomainIfSupported(tab.url);
-
+	protected async checkIfTabIsAVideoDomain(tab: SafariBrowserTab): Promise<boolean> {
+		let domain = await VideoUtils.videoDomainIfSupported(tab.url);
+		return !!domain;
 	}
 
 	private invokeClipperInCurrentTab(invokeInfo: InvokeInfo, options: InvokeOptions) {

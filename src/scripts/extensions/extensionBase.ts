@@ -24,7 +24,7 @@ import {ChangeLogHelper} from "../versioning/changelogHelper";
 import {Version} from "../versioning/version";
 
 import {AuthenticationHelper} from "./authenticationHelper";
-import {sendToOffscreenDocument} from "../communicator/chromeOffscreenCommunicator";
+import {sendToOffscreenDocument} from "../communicator/offscreenCommunicator";
 import {ExtensionWorkerBase} from "./extensionWorkerBase";
 import {TooltipHelper} from "./tooltipHelper";
 import {WorkerPassthroughLogger} from "./workerPassthroughLogger";
@@ -258,8 +258,9 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		return type;
 	}
 
-	private shouldShowVideoTooltip(tab: TTab): boolean {
-		if (this.checkIfTabIsAVideoDomain(tab) && this.tooltip.tooltipDelayIsOver(TooltipType.Video, Date.now())) {
+	private async shouldShowVideoTooltip(tab: TTab): Promise<boolean> {
+		const isTabAVideoDomain = await this.checkIfTabIsAVideoDomain(tab);
+		if (isTabAVideoDomain && this.tooltip.tooltipDelayIsOver(TooltipType.Video, Date.now())) {
 			return true;
 		}
 		return false;
@@ -346,17 +347,19 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 					return;
 				}
 
-				if (this.shouldShowVideoTooltip(tab)) {
-					this.showTooltip(tab, TooltipType.Video);
-					return;
-				}
-			}
+				this.shouldShowVideoTooltip(tab).then((shouldShow) => {
+					if (shouldShow) {
+						this.showTooltip(tab, TooltipType.Video);
+						return;
+					}
 
-			// We don't show updates more recent than the local version for now, as it is easy
-			// for a changelog to be released before a version is actually out
-			if (this.shouldShowWhatsNewTooltip(tab, lastSeenVersion, extensionVersion)) {
-				this.showWhatsNewTooltip(tab, lastSeenVersion, extensionVersion);
-				return;
+					// We don't show updates more recent than the local version for now, as it is easy
+					// for a changelog to be released before a version is actually out
+					if (this.shouldShowWhatsNewTooltip(tab, lastSeenVersion, extensionVersion)) {
+						this.showWhatsNewTooltip(tab, lastSeenVersion, extensionVersion);
+						return;
+					}
+				});
 			}
 		});
 	}
@@ -391,7 +394,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	/**
 	 * Returns True if the Extension determines the tab is a Video, false otherwise
 	 */
-	protected abstract checkIfTabIsAVideoDomain(tab: TTab): boolean;
+	protected abstract checkIfTabIsAVideoDomain(tab: TTab): Promise<boolean>;
 
 	/**
 	 * Updates the ClientInfo with the given flighting info.

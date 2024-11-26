@@ -94,8 +94,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						clientInfo: this.clientInfo
 					});
 
-					// In Firefox and Chrome, alert() is not callable from the service worker, so it looks like we have to no-op here
-					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension && this.clientInfo.get().clipperType !== ClientType.ChromeExtension) {
+					// In Firefox, alert() is not callable from the service worker, so it looks like we have to no-op here
+					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
 						InjectHelper.alertUserOfUnclippablePage();
 					}
 					resolve(false);

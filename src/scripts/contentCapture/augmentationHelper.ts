@@ -58,9 +58,9 @@ export class AugmentationHelper {
 					let doc = (new DOMParser()).parseFromString(result.ContentInHtml, "text/html");
 					let previewElement = AugmentationHelper.getArticlePreviewElement(doc);
 
-					DomUtils.toOnml(doc).then(() => {
+					DomUtils.toOnml(doc).then(async () => {
 						DomUtils.addPreviewContainerStyling(previewElement);
-						AugmentationHelper.addSupportedVideosToElement(previewElement, pageContent, url);
+						await AugmentationHelper.addSupportedVideosToElement(previewElement, pageContent, url);
 						result.ContentInHtml = doc.body.innerHTML;
 						resolve(result);
 					});
@@ -148,10 +148,10 @@ export class AugmentationHelper {
 			contentModel === AugmentationModel.Product;
 	}
 
-	private static addSupportedVideosToElement(previewElement: HTMLElement, pageContent: string, url: string) {
+	private static addSupportedVideosToElement(previewElement: HTMLElement, pageContent: string, url: string): Promise<void> {
 		let addEmbeddedVideoEvent = new Log.Event.PromiseEvent(Log.Event.Label.AddEmbeddedVideo); // start event timer, just in case it gets logged
 
-		DomUtils.addEmbeddedVideosWhereSupported(previewElement, pageContent, url).then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
+		return DomUtils.addEmbeddedVideosWhereSupported(previewElement, pageContent, url).then((videoSrcUrls: EmbeddedVideoIFrameSrcs[]) => {
 			// only log when supported video is found on page
 			if (!ObjectUtils.isNullOrUndefined(videoSrcUrls)) {
 				Clipper.logger.logEvent(addEmbeddedVideoEvent);

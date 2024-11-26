@@ -2,6 +2,7 @@ import {ObjectUtils} from "./objectUtils";
 import {Settings} from "./settings";
 
 import {TooltipType} from "./clipperUI/tooltipType";
+import {sendToOffscreenDocument} from "./communicator/offscreenCommunicator";
 
 export module UrlUtils {
 	export function checkIfUrlMatchesAContentType(url: string, tooltipTypes: TooltipType[]): TooltipType {
@@ -26,14 +27,12 @@ export module UrlUtils {
 		return regexResult && regexResult[0] ? regexResult[0].slice(1) : fallbackResult;
 	}
 
-	export function getHostname(url: string): string {
-		// return await sendToOffscreenDocument("get-hostname", { url });
-		return url.split("/")[2];
+	export async function getHostname(url: string): Promise<string> {
+		return await sendToOffscreenDocument("get-hostname", { url });
 	}
 
-	export function getPathname(url: string): string {
-		// let urlPathName = await sendToOffscreenDocument("get-pathname", { url });
-		let urlPathName = url.split("/").slice(3).join("/");
+	export async function getPathname(url: string): Promise<string> {
+		let urlPathName = await sendToOffscreenDocument("get-pathname", { url });
 
 		// We need to ensure the leading forward slash to make it consistent across all browsers.
 		return ensureLeadingForwardSlash(urlPathName);

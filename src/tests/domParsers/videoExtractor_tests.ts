@@ -3,7 +3,7 @@ import {VideoExtractor} from "../../scripts/domParsers/videoExtractor";
 import {TestModule} from "../testModule";
 
 class MockVideoExtractor extends VideoExtractor {
-	public createEmbeddedVideosFromHtml(html: string): HTMLIFrameElement[] {
+	public async createEmbeddedVideosFromHtml(html: string): Promise<HTMLIFrameElement[]> {
 		return [
 			this.createMockIframe("https://www.myvideosite.xyz/id1"),
 			this.createMockIframe("https://www.myvideosite.xyz/url"),
@@ -12,7 +12,7 @@ class MockVideoExtractor extends VideoExtractor {
 		];
 	}
 
-	public createEmbeddedVideoFromUrl(url: string): HTMLIFrameElement {
+	public async createEmbeddedVideoFromUrl(url: string): Promise<HTMLIFrameElement> {
 		return this.createMockIframe("https://www.myvideosite.xyz/url");
 	}
 
@@ -35,8 +35,8 @@ export class KhanAcademyVideoExtractorTests extends TestModule {
 	}
 
 	protected tests() {
-		test("Given that both of the page url and content represents a bunch of embeddable videos, a list of iframes are returned with no duplicate srcs", () => {
-			let videoEmbeds = this.mockVideoExtractor.createEmbeddedVideosFromPage("", "");
+		test("Given that both of the page url and content represents a bunch of embeddable videos, a list of iframes are returned with no duplicate srcs", async () => {
+			let videoEmbeds = await this.mockVideoExtractor.createEmbeddedVideosFromPage("", "");
 			strictEqual(videoEmbeds.length, 3, "3 unique iframes should be returned");
 			strictEqual(videoEmbeds[0].src, "https://www.myvideosite.xyz/url", "The video associated with the url should be returned first");
 			strictEqual(videoEmbeds[1].src, "https://www.myvideosite.xyz/id1", "The videos in the html should be returned sequentially");

@@ -1,4 +1,7 @@
 // This function performs basic filtering and error checking on messages before
+
+import { WebExtension } from "../extensions/webExtensionBase/webExtension";
+
 // dispatching the message to a more specific message handler.
 async function handleResponse(message): Promise<string> {
 	// Return early if this message isn't meant for the service worker
@@ -19,28 +22,27 @@ async function handleResponse(message): Promise<string> {
 }
 
 export async function sendToOffscreenDocument(type: string, data: any): Promise<string> {
-	const offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
-	const existingContexts = await chrome.runtime.getContexts({
-		contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT],
-		documentUrls: [offscreenUrl]
+	const existingContexts = await WebExtension.browser.runtime.getContexts({
+		contextTypes: [WebExtension.browser.runtime.ContextType.OFFSCREEN_DOCUMENT],
+		documentUrls: [WebExtension.offscreenUrl]
 	});
 
 	if (existingContexts.length === 0) {
-		await chrome.offscreen.createDocument({
-			url: offscreenUrl,
-			reasons: [chrome.offscreen.Reason.DOM_PARSER],
+		await WebExtension.browser.offscreen.createDocument({
+			url: WebExtension.offscreenUrl,
+			reasons: [WebExtension.browser.offscreen.Reason.DOM_PARSER],
 			justification: "Parse DOM",
 		});
 	}
 
 	return await new Promise(resolve => {
-		chrome.runtime.sendMessage({
+		WebExtension.browser.runtime.sendMessage({
 			type: type,
 			target: "offscreen",
 			data: data
 		}, (message) => {
 			handleResponse(message).then((result) => {
-				chrome.offscreen.closeDocument();
+				WebExtension.browser.offscreen.closeDocument();
 				resolve(result);
 			});
 		});

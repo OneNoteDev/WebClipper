@@ -54,9 +54,12 @@ import {RegionSelector} from "./regionSelector";
 import {Status} from "./status";
 
 import * as _ from "lodash";
+import { WebExtension } from "../extensions/webExtensionBase/webExtension";
+import { ClientType } from "../clientType";
 
 class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private isFullScreen = new SmartValue<boolean>(false);
+	private _clientInfo: ClientInfo;
 
 	constructor(props: {}) {
 		super(props);
@@ -77,6 +80,20 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			augmentationResult: { status: Status.NotStarted },
 			oneNoteApiResult: { status: Status.NotStarted },
 			bookmarkResult: { status: Status.NotStarted },
+
+			get clientInfo(): ClientInfo {
+				return this._clientInfo;
+			},
+
+			set clientInfo(_clientInfo: ClientInfo) {
+				this._clientInfo = _clientInfo;
+				if (_clientInfo.clipperType === ClientType.ChromeExtension) {
+					WebExtension.browser = chrome;
+					WebExtension.offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
+				} else if (_clientInfo.clipperType === ClientType.EdgeExtension) {
+					// TODO: Edge specific initialization
+				}
+			},
 
 			setState: (partialState: ClipperState) => {
 				this.setState(partialState);
@@ -720,9 +737,11 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
 		}
 
-		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
-			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
-		}
+		VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl).then((isVideoDomainSupported) => {
+			if (isVideoDomainSupported) {
+				Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
+			}
+		});
 	}
 
 	private static shouldShowOptions(state: ClipperState): boolean {

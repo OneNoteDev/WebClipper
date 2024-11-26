@@ -15,7 +15,7 @@ async function handleMessages(message, sender, sendResponse) {
 	switch (message.type) {
 		case "get-from-local-storage":
 			sendToServiceWorker(
-				"offscreen-document-ready",
+				"local-storage-value-received",
 				window.localStorage.getItem(message.data.key),
 				sendResponse
 			);

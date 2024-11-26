@@ -15,7 +15,7 @@ export class VideoUtils {
 	 * Returns a string from the SupportedVideoDomains enum iff
 	 * the pageUrl's hostname contains the enum string
 	 */
-	public static videoDomainIfSupported(pageUrl: string): string {
+	public static async videoDomainIfSupported(pageUrl: string): Promise<string> {
 		if (!pageUrl) {
 			return;
 		}
@@ -25,7 +25,7 @@ export class VideoUtils {
 			return;
 		}
 
-		let hostname = UrlUtils.getHostname(pageUrlAsLowerCase).toLowerCase();
+		let hostname = (await UrlUtils.getHostname(pageUrlAsLowerCase)).toLowerCase();
 
 		for (let domainEnum in SupportedVideoDomains) {
 			let domain = SupportedVideoDomains[domainEnum];
