@@ -21,7 +21,7 @@ export class RemoteStorage implements StorageAsync {
 			param: key, callback: (value: string) => {
 			if (cacheValue) {
 				this.storageCache[key] = value;
-			}
+				}
 			callback(value);
 		}});
 	}

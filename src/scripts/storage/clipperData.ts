@@ -37,7 +37,7 @@ export class ClipperData implements Storage {
 		return this.storage.getValue(key);
 	}
 
-	public getValues(keys: string[]): {} {
+	public async getValues(keys: string[]): Promise<{}> {
 		return this.storage.getValues(keys);
 	}
 

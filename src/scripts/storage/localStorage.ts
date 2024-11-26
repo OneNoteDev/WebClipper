@@ -13,37 +13,33 @@ export class LocalStorage implements Storage {
 		return result;
 	}
 
-	public getValues(keys: string[]): {} {
+	public async getValues(keys: string[]): Promise<{}> {
 		let values = {};
-		if (window.localStorage && keys) {
-			for (let i = 0; i < keys.length; i++) {
-				let result = window.localStorage.getItem(keys[i]);
-				if (!result) {
-					// Somehow we stored an invalid value. Destroy it!
-					this.removeKey(keys[i]);
-				} else {
-					values[keys[i]] = result;
+		if (keys) {
+			await chrome.storage.local.get(keys, (data) => {
+				for (let i = 0; i < keys.length; i++) {
+					if (!data[keys[i]]) {
+						// Somehow we stored an invalid value. Destroy it!
+						this.removeKey(keys[i]);
+					} else {
+						values[keys[i]] = data[keys[i]];
+					}
 				}
-			}
+			});
 		}
 		return values;
 	}
 
 	public setValue(key: string, value: string): void {
-		if (window.localStorage) {
-			if (!value) {
-				window.localStorage.removeItem(key);
-			} else {
-				window.localStorage.setItem(key, value);
-			}
+		if (!value) {
+			this.removeKey(key);
+		} else {
+			chrome.storage.local.set({ [key]: value });
 		}
 	}
 
 	public removeKey(key: string): boolean {
-		if (window.localStorage) {
-			window.localStorage.removeItem(key);
-		}
-
+		chrome.storage.local.remove(key);
 		return true;
 	}
 }

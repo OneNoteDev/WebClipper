@@ -24,12 +24,12 @@ export class MockStorage implements Storage {
 		return this.storedValues[key];
 	}
 
-	public getValues(keys: string[]): {} {
+	public getValues(keys: string[]): Promise<{}> {
 		let values = {};
 		for (let i = 0; i < keys.length; i++) {
 			values[keys[i]] = this.storedValues[keys[i]];
 		}
-		return values;
+		return Promise.resolve(values);
 	}
 
 	public setValue(key: string, value: string): void {
