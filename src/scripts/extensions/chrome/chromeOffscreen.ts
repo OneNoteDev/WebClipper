@@ -13,10 +13,10 @@ async function handleMessages(message, sender, sendResponse) {
 
 	// Dispatch the message to an appropriate handler.
 	switch (message.type) {
-		case "get-clipper-id":
+		case "get-from-local-storage":
 			sendToServiceWorker(
 				"offscreen-document-ready",
-				window.localStorage.getItem("clipperId"),
+				window.localStorage.getItem(message.data.key),
 				sendResponse
 			);
 			break;

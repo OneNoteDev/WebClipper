@@ -37,6 +37,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	private logger: Logger;
 	private static extensionId: string;
 
+	protected offscreenDocumentResultProcessed: Promise<void>;
 	protected clipperData: ClipperData;
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
@@ -57,7 +58,9 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 		let clipperFirstRun = false;
 
-		sendToOffscreenDocument("get-clipper-id", {}).then((clipperId) => {
+		this.offscreenDocumentResultProcessed = sendToOffscreenDocument("get-from-local-storage", {
+			key: "clipperId",
+		}).then((clipperId) => {
 			console.log("Clipper ID from offscreen storage:", clipperId);
 			if (!clipperId) {
 				// New install
