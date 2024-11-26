@@ -11,7 +11,7 @@ async function handleResponse(message): Promise<string> {
 
 	// Dispatch the message to an appropriate handler.
 	switch (message.type) {
-		case "offscreen-document-ready":
+		case "local-storage-value-received":
 		case "hostname-received":
 		case "pathname-received":
 			return message.data;
