@@ -60,9 +60,11 @@ export class ClipperDataTests extends TestModule {
 
 			let clipperData = new ClipperData(this.mockStorage);
 			clipperData.getFreshValue(key, getRemoteValue, 0).then((timeStampedData) => {
-				let actualStored: TimeStampedData = JSON.parse(this.mockStorage.getValue(key));
-				deepEqual(actualStored.data, {},
-					"Notebooks should be cached if userInformation exists in storage");
+				this.mockStorage.getValue(key).then((value) => {
+					let actualStored: TimeStampedData = JSON.parse(value);
+					deepEqual(actualStored.data, {},
+						"Notebooks should be cached if userInformation exists in storage");
+				})
 			}, (error) => {
 				ok(false, "reject should not be called");
 			}).then(() => {

@@ -33,7 +33,7 @@ export class ClipperData implements Storage {
 		return this.cachedHttp.getFreshValue(key, getRemoteValue, updateInterval);
 	}
 
-	public getValue(key: string): string {
+	public async getValue(key: string): Promise<string> {
 		return this.storage.getValue(key);
 	}
 

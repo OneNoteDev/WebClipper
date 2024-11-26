@@ -273,40 +273,44 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected getLocalizedStrings(locale: string, callback?: Function) {
 		this.logger.setContextProperty(Log.Context.Custom.BrowserLanguage, locale);
 
-		let storedLocale = this.clipperData.getValue(ClipperStorageKeys.locale);
-		let localeInStorageIsDifferent = !storedLocale || storedLocale !== locale;
+		this.clipperData.getValue(ClipperStorageKeys.locale).then((storedLocale) => {
+			let localeInStorageIsDifferent = !storedLocale || storedLocale !== locale;
 
-		let getLocaleEvent = new Log.Event.BaseEvent(Log.Event.Label.GetLocale);
-		getLocaleEvent.setCustomProperty(Log.PropertyName.Custom.StoredLocaleDifferentThanRequested, localeInStorageIsDifferent);
-		this.logger.logEvent(getLocaleEvent);
+			let getLocaleEvent = new Log.Event.BaseEvent(Log.Event.Label.GetLocale);
+			getLocaleEvent.setCustomProperty(Log.PropertyName.Custom.StoredLocaleDifferentThanRequested, localeInStorageIsDifferent);
+			this.logger.logEvent(getLocaleEvent);
 
-		let fetchStringDataFunction = () => { return LocalizationHelper.makeLocStringsFetchRequest(locale); };
-		let updateInterval = localeInStorageIsDifferent ? 0 : ClipperCachedHttp.getDefaultExpiry();
+			let fetchStringDataFunction = () => { return LocalizationHelper.makeLocStringsFetchRequest(locale); };
+			let updateInterval = localeInStorageIsDifferent ? 0 : ClipperCachedHttp.getDefaultExpiry();
 
-		let getLocalizedStringsEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetLocalizedStrings);
-		getLocalizedStringsEvent.setCustomProperty(Log.PropertyName.Custom.ForceRetrieveFreshLocStrings, localeInStorageIsDifferent);
-		this.clipperData.getFreshValue(ClipperStorageKeys.locStrings, fetchStringDataFunction, updateInterval).then((response) => {
-			this.clipperData.setValue(ClipperStorageKeys.locale, locale);
-			if (callback) {
-				callback(response ? response.data : undefined);
-			}
-		}, (error: OneNoteApi.GenericError) => {
-			getLocalizedStringsEvent.setStatus(Log.Status.Failed);
-			getLocalizedStringsEvent.setFailureInfo(error);
-			// Still proceed, as we have backup strings on the client
-			if (callback) {
-				callback(undefined);
-			}
-		}).then(() => {
-			this.logger.logEvent(getLocalizedStringsEvent);
+			let getLocalizedStringsEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetLocalizedStrings);
+			getLocalizedStringsEvent.setCustomProperty(Log.PropertyName.Custom.ForceRetrieveFreshLocStrings, localeInStorageIsDifferent);
+
+			this.clipperData.getFreshValue(ClipperStorageKeys.locStrings, fetchStringDataFunction, updateInterval).then((response) => {
+				this.clipperData.setValue(ClipperStorageKeys.locale, locale);
+				if (callback) {
+					callback(response ? response.data : undefined);
+				}
+			}, (error: OneNoteApi.GenericError) => {
+				getLocalizedStringsEvent.setStatus(Log.Status.Failed);
+				getLocalizedStringsEvent.setFailureInfo(error);
+				// Still proceed, as we have backup strings on the client
+				if (callback) {
+					callback(undefined);
+				}
+			}).then(() => {
+				this.logger.logEvent(getLocalizedStringsEvent);
+			});
 		});
 	}
 
 	protected getLocalizedStringsForBrowser(callback: Function) {
-		let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
-		// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
-		let locale = localeOverride || navigator.language || (<any>navigator).userLanguage;
-		this.getLocalizedStrings(locale, callback);
+		this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride)
+			.then((localeOverride) => {
+				// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
+				let locale = localeOverride || navigator.language || (<any>navigator).userLanguage;
+				this.getLocalizedStrings(locale, callback);
+			});
 	}
 
 	protected getUserSessionIdQueryParamValue(): string {
@@ -472,10 +476,10 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.getMultipleStorageValues, (keys: string[]) => {
-			return new Promise<{ [key: string]: string }>((resolve) => {
+			return new Promise<{ [key: string]: string }>(async (resolve) => {
 				let values: { [key: string]: string } = {};
 				for (let key of keys) {
-					values[key] = this.clipperData.getValue(key);
+					values[key] = await this.clipperData.getValue(key);
 				}
 				resolve(values);
 			});

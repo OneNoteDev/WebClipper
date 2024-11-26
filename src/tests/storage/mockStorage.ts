@@ -20,8 +20,8 @@ export class MockStorage implements Storage {
 		this.setValue(MockStorage.existingKey, JSON.stringify(existingValue));
 	}
 
-	public getValue(key: string): string {
-		return this.storedValues[key];
+	public getValue(key: string): Promise<string> {
+		return Promise.resolve(this.storedValues[key]);
 	}
 
 	public getValues(keys: string[]): Promise<{}> {
