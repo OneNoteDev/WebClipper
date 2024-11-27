@@ -264,12 +264,8 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		let worker = this.getOrCreateWorkerForTab(tab, this.getIdFromTab);
 		let tooltipImpressionEvent = new Log.Event.BaseEvent(Log.Event.Label.TooltipImpression);
 		tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.TooltipType, TooltipType[tooltipType]);
-		this.tooltip.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType).then((value) => {
-			tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.LastSeenTooltipTime, value);
-		});
-		this.tooltip.getTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType).then((value) => {
-			tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.NumTimesTooltipHasBeenSeen, value);
-		});
+		let lastSeenTooltipTimeBase = this.tooltip.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);
+		let numTimesTooltipHasBeenSeenBase = this.tooltip.getTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType);
 		
 		worker.invokeTooltip(tooltipType).then((wasInvoked) => {
 			if (wasInvoked) {
@@ -281,7 +277,11 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				});
 			}
 			tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.FeatureEnabled, wasInvoked);
-			worker.getLogger().logEvent(tooltipImpressionEvent);
+			Promise.all([lastSeenTooltipTimeBase, numTimesTooltipHasBeenSeenBase]).then((values) => {
+				tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.LastSeenTooltipTime, values[0])
+				tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.NumTimesTooltipHasBeenSeen, values[1]);
+				worker.getLogger().logEvent(tooltipImpressionEvent);
+			});
 		});
 	}
 

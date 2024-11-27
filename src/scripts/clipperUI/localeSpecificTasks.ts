@@ -29,8 +29,8 @@ export class LocaleSpecificTasks {
 }
 
 try {
-	window.localStorage.getItem(ClipperStorageKeys.displayLanguageOverride).then((localeOverride) => {
-		// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
-		LocaleSpecificTasks.execute(localeOverride || navigator.language || (<any>navigator).userLanguage);
-	});
+	// window.localStorage.getItem(ClipperStorageKeys.displayLanguageOverride).then((localeOverride) => {
+	// 	// navigator.userLanguage is only available in IE, and Typescript will not recognize this property
+	// 	LocaleSpecificTasks.execute(localeOverride || navigator.language || (<any>navigator).userLanguage);
+	// });
 } catch (e) { }
