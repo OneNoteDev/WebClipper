@@ -42,9 +42,11 @@ export class ClipperData implements Storage {
 	}
 
 	public setValue(key: string, value: string): void {
-		if (this.storageGateStrategy.shouldSet(key, value)) {
-			this.storage.setValue(key, value);
-		}
+		this.storageGateStrategy.shouldSet(key, value).then((result) => {
+			if(result){
+				this.storage.setValue(key, value);
+			}
+		})
 	}
 
 	public removeKey(key: string): boolean {

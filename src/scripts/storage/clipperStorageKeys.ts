@@ -11,12 +11,12 @@ export module ClipperStorageKeys {
 	export var lastClippedDate = "lastClippedDate"; //only set never get
 	export var lastSeenVersion = "lastSeenVersion"; // added await
 	export var lastInvokedDate = "lastInvokedDate"; //set only
-	export var lastSeenTooltipTimeBase = "lastSeenTooltipTime";
-	export var lastClippedTooltipTimeBase = "lastClippedTooltipTime";
-	export var locale = "locale";
-	export var locStrings = "locStrings";
-	export var numSuccessfulClips = "numSuccessfulClips";
-	export var numSuccessfulClipsRatingsEnablement = "numSuccessfulClipsRatingsEnablement";
-	export var numTimesTooltipHasBeenSeenBase = "numTimesTooltipHasBeenSeen";
-	export var userInformation = "userInformation";
+	export var lastSeenTooltipTimeBase = "lastSeenTooltipTime";//added await/then
+	export var lastClippedTooltipTimeBase = "lastClippedTooltipTime";//added await
+	export var locale = "locale";//added then
+	export var locStrings = "locStrings";//added await 
+	export var numSuccessfulClips = "numSuccessfulClips";//cache
+	export var numSuccessfulClipsRatingsEnablement = "numSuccessfulClipsRatingsEnablement";//cache
+	export var numTimesTooltipHasBeenSeenBase = "numTimesTooltipHasBeenSeen";//added await/then
+	export var userInformation = "userInformation";//added await
 }

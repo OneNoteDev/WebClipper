@@ -479,7 +479,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			return new Promise<{ [key: string]: string }>(async (resolve) => {
 				let values: { [key: string]: string } = {};
 				for (let key of keys) {
-					values[key] = await this.clipperData.getValue(key);
+					values[key] = await this.clipperData.getValue(key);//getmultiplevalues
 				}
 				resolve(values);
 			});

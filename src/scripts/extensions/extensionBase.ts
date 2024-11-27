@@ -181,8 +181,8 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	protected getNewUpdates(lastSeenVersion: Version, currentVersion: Version): Promise<ChangeLog.Update[]> {
-		return new Promise<ChangeLog.Update[]>((resolve, reject) => {
-			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
+		return new Promise<ChangeLog.Update[]>(async(resolve, reject) => {
+			let localeOverride = await this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
 			let changelogUrl = UrlUtils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
 			HttpWithRetries.get(changelogUrl).then((response: Response) => {
