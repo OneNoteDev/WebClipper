@@ -39,59 +39,60 @@ export class AuthenticationHelper {
 		return new Promise<UserInfo>((resolve) => {
 			let updateInterval = 0;
 
-			let storedUserInformation = this.clipperData.getValue(ClipperStorageKeys.userInformation);
-			if (storedUserInformation) {
-				let currentInfo: any;
-				try {
-					currentInfo = JSON.parse(storedUserInformation);
-				} catch (e) {
-					this.logger.logJsonParseUnexpected(storedUserInformation);
-				}
-
-				if (currentInfo && currentInfo.data && ObjectUtils.isNumeric(currentInfo.data.accessTokenExpiration)) {
-					// Expiration is in seconds, not milliseconds. Give additional leniency to account for response time.
-					updateInterval = Math.max((currentInfo.data.accessTokenExpiration * 1000) - 180000, 0);
-				}
-			}
-
-			let getUserInformationFunction = () => {
-				return this.retrieveUserInformation(clipperId, undefined);
-			};
-
-			let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
-			getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
-			this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then(async (response: TimeStampedData) => {
-				let isValidUser = this.isValidUserInformation(response.data);
-				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, isValidUser);
-
-				let writeableCookies = this.isThirdPartyCookiesEnabled(response.data);
-				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.WriteableCookies, writeableCookies);
-
-				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserUpdateReason, UpdateReason[updateReason]);
-
-				if (isValidUser) {
-					const dataBoundaryHelper = new UserDataBoundaryHelper();
-					let userDataBoundary: string = await dataBoundaryHelper.getUserDataBoundary(response.data);
-					// The default logging has been configured to EU Pipeline. Once we find the
-					// userdataboundary and if it is different from EUDB , reinit the logger with WW Pipeline
-					if (userDataBoundary === DataBoundary[DataBoundary.GLOBAL] || userDataBoundary === DataBoundary[DataBoundary.PUBLIC]) {
-						LogManager.reInitLoggerForDataBoundaryChange(userDataBoundary);
+			this.clipperData.getValue(ClipperStorageKeys.userInformation).then((storedUserInformation) => {
+				if (storedUserInformation) {
+					let currentInfo: any;
+					try {
+						currentInfo = JSON.parse(storedUserInformation);
+					} catch (e) {
+						this.logger.logJsonParseUnexpected(storedUserInformation);
 					}
-					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.DataBoundary, userDataBoundary);
-					response.data.dataBoundary = userDataBoundary;
-					this.user.set({ user: response.data, lastUpdated: response.lastUpdated, updateReason: updateReason, writeableCookies: writeableCookies });
-				} else {
-					this.user.set({ updateReason: updateReason, writeableCookies: writeableCookies });
+	
+					if (currentInfo && currentInfo.data && ObjectUtils.isNumeric(currentInfo.data.accessTokenExpiration)) {
+						// Expiration is in seconds, not milliseconds. Give additional leniency to account for response time.
+						updateInterval = Math.max((currentInfo.data.accessTokenExpiration * 1000) - 180000, 0);
+					}
 				}
-
-			}, (error: OneNoteApi.GenericError) => {
-				getInfoEvent.setStatus(Log.Status.Failed);
-				getInfoEvent.setFailureInfo(error);
-				this.user.set({ updateReason: updateReason });
-			}).then(() => {
-				this.logger.logEvent(getInfoEvent);
-
-				resolve(this.user.get());
+	
+				let getUserInformationFunction = () => {
+					return this.retrieveUserInformation(clipperId, undefined);
+				};
+	
+				let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
+				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
+				this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then(async (response: TimeStampedData) => {
+					let isValidUser = this.isValidUserInformation(response.data);
+					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, isValidUser);
+	
+					let writeableCookies = this.isThirdPartyCookiesEnabled(response.data);
+					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.WriteableCookies, writeableCookies);
+	
+					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserUpdateReason, UpdateReason[updateReason]);
+	
+					if (isValidUser) {
+						const dataBoundaryHelper = new UserDataBoundaryHelper();
+						let userDataBoundary: string = await dataBoundaryHelper.getUserDataBoundary(response.data);
+						// The default logging has been configured to EU Pipeline. Once we find the
+						// userdataboundary and if it is different from EUDB , reinit the logger with WW Pipeline
+						if (userDataBoundary === DataBoundary[DataBoundary.GLOBAL] || userDataBoundary === DataBoundary[DataBoundary.PUBLIC]) {
+							LogManager.reInitLoggerForDataBoundaryChange(userDataBoundary);
+						}
+						getInfoEvent.setCustomProperty(Log.PropertyName.Custom.DataBoundary, userDataBoundary);
+						response.data.dataBoundary = userDataBoundary;
+						this.user.set({ user: response.data, lastUpdated: response.lastUpdated, updateReason: updateReason, writeableCookies: writeableCookies });
+					} else {
+						this.user.set({ updateReason: updateReason, writeableCookies: writeableCookies });
+					}
+	
+				}, (error: OneNoteApi.GenericError) => {
+					getInfoEvent.setStatus(Log.Status.Failed);
+					getInfoEvent.setFailureInfo(error);
+					this.user.set({ updateReason: updateReason });
+				}).then(() => {
+					this.logger.logEvent(getInfoEvent);
+	
+					resolve(this.user.get());
+				});
 			});
 		});
 	}

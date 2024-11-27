@@ -82,9 +82,11 @@ export class CachedHttpTests extends TestModule {
 				strictEqual(timeStampedData.data, expected, "The storage item should be returned");
 				strictEqual(timeStampedData.lastUpdated, timeOfStorage, "The returned item should have its lastUpdated value be preserved");
 
-				let newStoredValue = JSON.parse(this.mockStorage.getValue(key)) as TimeStampedData;
-				strictEqual(newStoredValue.data, expected, "The storage item should be preserved");
-				strictEqual(newStoredValue.lastUpdated, timeOfStorage, "The storage item's lastUpdated should be preserved");
+				this.mockStorage.getValue(key).then((value) => {
+					let newStoredValue = JSON.parse(value) as TimeStampedData;
+					strictEqual(newStoredValue.data, expected, "The storage item should be preserved");
+					strictEqual(newStoredValue.lastUpdated, timeOfStorage, "The storage item's lastUpdated should be preserved");
+				});
 			}, (error) => {
 				ok(false, "reject should not be called");
 			}).then(() => {
@@ -117,9 +119,11 @@ export class CachedHttpTests extends TestModule {
 				strictEqual(timeStampedData.data, expected, "The remote item should be returned");
 				ok(timeStampedData.lastUpdated > timeOfStorage, "The returned item's lastUpdated should be greater than that of the stale value's one");
 
-				let newStoredValue = JSON.parse(this.mockStorage.getValue(key)) as TimeStampedData;
-				strictEqual(newStoredValue.data, expected, "The storage item should be updated to the remote value");
-				ok(newStoredValue.lastUpdated > timeOfStorage, "The storage item's lastUpdated should be updated to be greater than the old value");
+				this.mockStorage.getValue(key).then((value) => {
+					let newStoredValue = JSON.parse(value) as TimeStampedData;
+					strictEqual(newStoredValue.data, expected, "The storage item should be updated to the remote value");
+					ok(newStoredValue.lastUpdated > timeOfStorage, "The storage item's lastUpdated should be updated to be greater than the old value");
+				});
 			}, (error) => {
 				ok(false, "reject should not be called");
 			}).then(() => {
@@ -147,9 +151,11 @@ export class CachedHttpTests extends TestModule {
 				ok(timeStampedData.lastUpdated > 0);
 				strictEqual(timeStampedData.data, JSON.parse(response),
 					"The parsed response text should be returned as part of the time stamped data");
-				let timeStampedValueInStorage: TimeStampedData = JSON.parse(this.mockStorage.getValue(key));
-				deepEqual(timeStampedValueInStorage, timeStampedData,
+				this.mockStorage.getValue(key).then((value) => {
+					let timeStampedValueInStorage: TimeStampedData = JSON.parse(value);
+					deepEqual(timeStampedValueInStorage, timeStampedData,
 					"The latest time stamped data should be cached in the storage object");
+				});
 			}, (error) => {
 				ok(false, "reject should not be called");
 			}).then(() => {
