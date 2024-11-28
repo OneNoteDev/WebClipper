@@ -15,13 +15,13 @@ export class TooltipHelper {
 		this.validTypes = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe, TooltipType.Video];
 	}
 
-	public getTooltipInformation(storageKeyBase: string, tooltipType: TooltipType): number {
+	public async getTooltipInformation(storageKeyBase: string, tooltipType: TooltipType): Promise<number> {
 		if (ObjectUtils.isNullOrUndefined(storageKeyBase) || ObjectUtils.isNullOrUndefined(tooltipType)) {
 			throw new Error("Invalid argument passed to getTooltipInformation");
 		}
 
 		let storageKey = TooltipHelper.getStorageKeyForTooltip(storageKeyBase, tooltipType);
-		let tooltipInfoAsString = this.storage.getValue(storageKey);
+		let tooltipInfoAsString = await this.storage.getValue(storageKey);
 		let info = parseInt(tooltipInfoAsString, 10 /* radix */);
 		return !isNaN(info) ? info : 0;
 	}
@@ -35,26 +35,25 @@ export class TooltipHelper {
 		this.storage.setValue(storageKey, value);
 	}
 
-	public tooltipDelayIsOver(tooltipType: TooltipType, curTime: number): boolean {
+	public async tooltipDelayIsOver(tooltipType: TooltipType, curTime: number): Promise<boolean> {
 		if (ObjectUtils.isNullOrUndefined(tooltipType) || ObjectUtils.isNullOrUndefined(curTime)) {
 			throw new Error("Invalid argument passed to tooltipDelayIsOver");
 		}
 
 		// If the user has clipped this content type
-		let lastClipTime = this.getTooltipInformation(ClipperStorageKeys.lastClippedTooltipTimeBase, tooltipType);
+		let lastClipTime = await this.getTooltipInformation(ClipperStorageKeys.lastClippedTooltipTimeBase, tooltipType);
 		if (lastClipTime !== 0) {
 			return false;
 		}
 
 		// If the user has seen enough of our tooltips :P 
-		let numTimesTooltipHasBeenSeen = this.getTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType);
+		let numTimesTooltipHasBeenSeen = await this.getTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType);
 		if (numTimesTooltipHasBeenSeen >= Constants.Settings.maximumNumberOfTimesToShowTooltips) {
 			return false;
 		}
 
 		// If not enough time has passed since the user saw this specific tooltip, return false
-		let lastSeenTooltipTime = this.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);
-		if (this.tooltipHasBeenSeenInLastTimePeriod(tooltipType, curTime, Constants.Settings.timeBetweenSameTooltip)) {
+		if (await this.tooltipHasBeenSeenInLastTimePeriod(tooltipType, curTime, Constants.Settings.timeBetweenSameTooltip)) {
 			return false;
 		}
 
@@ -62,7 +61,7 @@ export class TooltipHelper {
 		let indexOfThisTooltip = this.validTypes.indexOf(tooltipType);
 		let validTypesWithCurrentTypeRemoved = this.validTypes.slice();
 		validTypesWithCurrentTypeRemoved.splice(indexOfThisTooltip, 1);
-		if (this.hasAnyTooltipBeenSeenInLastTimePeriod(curTime, validTypesWithCurrentTypeRemoved, Constants.Settings.timeBetweenDifferentTooltips)) {
+		if (await this.hasAnyTooltipBeenSeenInLastTimePeriod(curTime, validTypesWithCurrentTypeRemoved, Constants.Settings.timeBetweenDifferentTooltips)) {
 			return false;
 		}
 		return true;
@@ -79,8 +78,8 @@ export class TooltipHelper {
 	/** 
 	 * Returns true if the lastSeenTooltipTime of @tooltipType is within @timePeriod of @curTime
 	 */
-	public tooltipHasBeenSeenInLastTimePeriod(tooltipType: TooltipType, curTime: number, timePeriod: number): boolean {
-		let lastSeenTooltipTime = this.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);
+	public async tooltipHasBeenSeenInLastTimePeriod(tooltipType: TooltipType, curTime: number, timePeriod: number): Promise<boolean> {
+		let lastSeenTooltipTime = await this.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);
 		if (lastSeenTooltipTime === 0) {
 			return false;
 		}
@@ -91,10 +90,13 @@ export class TooltipHelper {
 	/**
 	 * Returns true if any of the @tooltipTypesToCheck have been seen in the last @timePeriod, given the current @time
 	 */
-	public hasAnyTooltipBeenSeenInLastTimePeriod(curTime: number, typesToCheck: TooltipType[], timePeriod: number): boolean {
-		return typesToCheck.some((tooltipType) => {
-			let tooltipWasSeen = this.tooltipHasBeenSeenInLastTimePeriod(tooltipType, curTime, timePeriod);
-			return tooltipWasSeen;
-		});
+	public async hasAnyTooltipBeenSeenInLastTimePeriod(curTime: number, typesToCheck: TooltipType[], timePeriod: number): Promise<boolean> {
+		for (const tooltipType of typesToCheck) {
+			const seen = await this.tooltipHasBeenSeenInLastTimePeriod(tooltipType, curTime, timePeriod);
+			if (seen) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

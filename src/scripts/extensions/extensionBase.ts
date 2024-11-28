@@ -56,30 +56,31 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 		let clipperFirstRun = false;
 
-		let clipperId = this.clipperData.getValue(ClipperStorageKeys.clipperId);
-		if (!clipperId) {
-			// New install
-			clipperFirstRun = true;
-			clipperId = ExtensionBase.generateClipperId();
-			this.clipperData.setValue(ClipperStorageKeys.clipperId, clipperId);
+		this.clipperData.getValue(ClipperStorageKeys.clipperId).then((clipperId) => {
+			if (!clipperId) {
+				// New install
+				clipperFirstRun = true;
+				clipperId = ExtensionBase.generateClipperId();
+				this.clipperData.setValue(ClipperStorageKeys.clipperId, clipperId);
 
-			// Ensure fresh installs don't trigger thats What's New experience
-			this.updateLastSeenVersionInStorageToCurrent();
-		}
+				// Ensure fresh installs don't trigger thats What's New experience
+				this.updateLastSeenVersionInStorageToCurrent();
+			}
 
-		this.clientInfo = new SmartValue<ClientInfo>({
-			clipperType: clipperType,
-			clipperVersion: ExtensionBase.getExtensionVersion(),
-			clipperId: clipperId
+			this.clientInfo = new SmartValue<ClientInfo>({
+				clipperType: clipperType,
+				clipperVersion: ExtensionBase.getExtensionVersion(),
+				clipperId: clipperId
+			});
+
+			if (clipperFirstRun) {
+				this.onFirstRun();
+			}
+
+			this.initializeUserFlighting();
+
+			this.listenForOpportunityToShowPageNavTooltip();
 		});
-
-		if (clipperFirstRun) {
-			this.onFirstRun();
-		}
-
-		this.initializeUserFlighting();
-
-		this.listenForOpportunityToShowPageNavTooltip();
 	}
 
 	protected abstract addPageNavListener(callback: (tab: TTab) => void);
@@ -174,14 +175,14 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	/**
 	 * Gets the last seen version from storage, and returns undefined if there is none in storage
 	 */
-	protected getLastSeenVersion(): Version {
-		let lastSeenVersionStr = this.clipperData.getValue(ClipperStorageKeys.lastSeenVersion);
+	protected async getLastSeenVersion(): Promise<Version> {
+		let lastSeenVersionStr = await this.clipperData.getValue(ClipperStorageKeys.lastSeenVersion);
 		return lastSeenVersionStr ? new Version(lastSeenVersionStr) : undefined;
 	}
 
 	protected getNewUpdates(lastSeenVersion: Version, currentVersion: Version): Promise<ChangeLog.Update[]> {
-		return new Promise<ChangeLog.Update[]>((resolve, reject) => {
-			let localeOverride = this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
+		return new Promise<ChangeLog.Update[]>(async(resolve, reject) => {
+			let localeOverride = await this.clipperData.getValue(ClipperStorageKeys.displayLanguageOverride);
 			let localeToGet = localeOverride || navigator.language || (<any>navigator).userLanguage;
 			let changelogUrl = UrlUtils.addUrlQueryValue(Constants.Urls.changelogUrl, Constants.Urls.QueryParams.changelogLocale, localeToGet);
 			HttpWithRetries.get(changelogUrl).then((response: Response) => {
@@ -263,17 +264,23 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		let worker = this.getOrCreateWorkerForTab(tab, this.getIdFromTab);
 		let tooltipImpressionEvent = new Log.Event.BaseEvent(Log.Event.Label.TooltipImpression);
 		tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.TooltipType, TooltipType[tooltipType]);
-		tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.LastSeenTooltipTime, this.tooltip.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType));
-		tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.NumTimesTooltipHasBeenSeen, this.tooltip.getTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType));
+		let lastSeenTooltipTimeBase = this.tooltip.getTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType);
+		let numTimesTooltipHasBeenSeenBase = this.tooltip.getTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType);
 		worker.invokeTooltip(tooltipType).then((wasInvoked) => {
 			if (wasInvoked) {
 				this.tooltip.setTooltipInformation(ClipperStorageKeys.lastSeenTooltipTimeBase, tooltipType, Date.now().toString());
 				let numSeenStorageKey = ClipperStorageKeys.numTimesTooltipHasBeenSeenBase;
-				let numTimesSeen = this.tooltip.getTooltipInformation(numSeenStorageKey, tooltipType) + 1;
-				this.tooltip.setTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType, numTimesSeen.toString());
+				this.tooltip.getTooltipInformation(numSeenStorageKey, tooltipType).then((value) => {
+					let numTimesSeen = value + 1;
+					this.tooltip.setTooltipInformation(ClipperStorageKeys.numTimesTooltipHasBeenSeenBase, tooltipType, numTimesSeen.toString());
+				});
 			}
 			tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.FeatureEnabled, wasInvoked);
-			worker.getLogger().logEvent(tooltipImpressionEvent);
+			Promise.all([lastSeenTooltipTimeBase, numTimesTooltipHasBeenSeenBase]).then((values) => {
+				tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.LastSeenTooltipTime, values[0]);
+				tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.NumTimesTooltipHasBeenSeen, values[1]);
+				worker.getLogger().logEvent(tooltipImpressionEvent);
+			});
 		});
 	}
 
@@ -320,17 +327,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	 */
 	private listenForOpportunityToShowPageNavTooltip() {
 		this.addPageNavListener((tab: TTab) => {
-			// Fallback behavior for if the last seen version in storage is somehow in a corrupted format
-			let lastSeenVersion: Version;
-			try {
-				lastSeenVersion = this.getLastSeenVersion();
-			} catch (e) {
-				this.updateLastSeenVersionInStorageToCurrent();
-				return;
-			}
-
-			let extensionVersion = new Version(ExtensionBase.getExtensionVersion());
-
 			if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
 				let tooltips = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
 				// Returns the Type of tooltip to show IF the delay is over and the tab has the correct content type
@@ -346,10 +342,20 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				}
 			}
 
-			// We don't show updates more recent than the local version for now, as it is easy
-			// for a changelog to be released before a version is actually out
-			if (this.shouldShowWhatsNewTooltip(tab, lastSeenVersion, extensionVersion)) {
-				this.showWhatsNewTooltip(tab, lastSeenVersion, extensionVersion);
+			let extensionVersion = new Version(ExtensionBase.getExtensionVersion());
+
+			// Fallback behavior for if the last seen version in storage is somehow in a corrupted format
+			try {
+				this.getLastSeenVersion().then((lastSeenVersion) => {
+					// We don't show updates more recent than the local version for now, as it is easy
+					// for a changelog to be released before a version is actually out
+					if (this.shouldShowWhatsNewTooltip(tab, lastSeenVersion, extensionVersion)) {
+						this.showWhatsNewTooltip(tab, lastSeenVersion, extensionVersion);
+						return;
+					}
+				});
+			} catch (e) {
+				this.updateLastSeenVersionInStorageToCurrent();
 				return;
 			}
 		});

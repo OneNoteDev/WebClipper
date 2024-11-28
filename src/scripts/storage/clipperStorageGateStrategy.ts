@@ -15,10 +15,10 @@ export class ClipperStorageGateStrategy implements StorageGateStrategy {
 		this.storage = storage;
 	}
 
-	public shouldSet(key: string, value: string): boolean {
+	public async shouldSet(key: string, value: string): Promise<boolean> {
 		// An undefined value is the same thing as removing a key, so we allow it regardless
 		if (value && this.keysThatRequireUserInfo.indexOf(key) > -1) {
-			let userInfo = this.storage.getValue(ClipperStorageKeys.userInformation);
+			let userInfo = await this.storage.getValue(ClipperStorageKeys.userInformation);
 			return !!userInfo;
 		}
 		return true;

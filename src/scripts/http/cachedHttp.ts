@@ -25,7 +25,7 @@ export class CachedHttp {
 	 * Given a key, checks the cache for a fresh copy of that value. If the cached value does
 	 * not exist, or is not fresh, fetches a fresh copy of the data from the specified endpoint.
 	 */
-	public getFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval: number): Promise<TimeStampedData> {
+	public async getFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval: number): Promise<TimeStampedData> {
 		if (!key) {
 			throw new Error("key must be a non-empty string, but was: " + key);
 		} else if (!getRemoteValue) {
@@ -34,7 +34,7 @@ export class CachedHttp {
 			updateInterval = 0;
 		}
 
-		let value = this.cache.getValue(key);
+		let value = await this.cache.getValue(key);
 		let keyIsPresent = !!value;
 		if (keyIsPresent) {
 			let valueAsJson: TimeStampedData;

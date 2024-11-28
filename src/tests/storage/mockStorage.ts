@@ -20,11 +20,11 @@ export class MockStorage implements Storage {
 		this.setValue(MockStorage.existingKey, JSON.stringify(existingValue));
 	}
 
-	public getValue(key: string): string {
+	public async getValue(key: string): Promise<string> {
 		return this.storedValues[key];
 	}
 
-	public getValues(keys: string[]): {} {
+	public async getValues(keys: string[]): Promise<{}> {
 		let values = {};
 		for (let i = 0; i < keys.length; i++) {
 			values[keys[i]] = this.storedValues[keys[i]];
