@@ -1,7 +1,7 @@
 import {Storage} from "./storage";
 
 export class LocalStorage implements Storage {
-	public getValue(key: string): string {
+	public async getValue(key: string): Promise<string> {
 		let result: string;
 		// if (window.localStorage) {
 		// 	result = window.localStorage.getItem(key);
@@ -13,7 +13,7 @@ export class LocalStorage implements Storage {
 		return result;
 	}
 
-	public getValues(keys: string[]): {} {
+	public async getValues(keys: string[]): Promise<{}> {
 		let values = {};
 		/* if (window.localStorage && keys) {
 			for (let i = 0; i < keys.length; i++) {

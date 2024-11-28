@@ -1,3 +1,3 @@
 export interface StorageGateStrategy {
-	shouldSet(key: string, value: string): boolean;
+	shouldSet(key: string, value: string): Promise<boolean>;
 }
