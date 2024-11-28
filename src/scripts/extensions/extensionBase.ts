@@ -58,6 +58,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		let clipperFirstRun = false;
 
 		this.offscreenDocumentResultProcessed = this.clipperData.getValue(ClipperStorageKeys.clipperId).then((clipperId) => {
+			console.log("clipperId from storage:", clipperId);
 			if (!clipperId) {
 				// New install
 				clipperFirstRun = true;

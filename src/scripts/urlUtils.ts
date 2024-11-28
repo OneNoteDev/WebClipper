@@ -3,6 +3,7 @@ import {Settings} from "./settings";
 
 import {TooltipType} from "./clipperUI/tooltipType";
 import {sendToOffscreenDocument} from "./communicator/offscreenCommunicator";
+import {OffscreenMessageTypes} from "./communicator/offscreenMessageTypes";
 
 export module UrlUtils {
 	export function checkIfUrlMatchesAContentType(url: string, tooltipTypes: TooltipType[]): TooltipType {
@@ -28,11 +29,11 @@ export module UrlUtils {
 	}
 
 	export async function getHostname(url: string): Promise<string> {
-		return await sendToOffscreenDocument("get-hostname", { url });
+		return await sendToOffscreenDocument(OffscreenMessageTypes.getHostname, { url });
 	}
 
 	export async function getPathname(url: string): Promise<string> {
-		let urlPathName = await sendToOffscreenDocument("get-pathname", { url });
+		let urlPathName = await sendToOffscreenDocument(OffscreenMessageTypes.getPathname, { url });
 
 		// We need to ensure the leading forward slash to make it consistent across all browsers.
 		return ensureLeadingForwardSlash(urlPathName);

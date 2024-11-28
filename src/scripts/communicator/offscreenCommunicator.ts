@@ -1,7 +1,9 @@
+import {WebExtension} from "../extensions/webExtensionBase/webExtension";
+import {OffscreenMessageTypes} from "./offscreenMessageTypes";
+
+let creating: Promise<void>; // A global promise to avoid concurrency issues
+
 // This function performs basic filtering and error checking on messages before
-
-import { WebExtension } from "../extensions/webExtensionBase/webExtension";
-
 // dispatching the message to a more specific message handler.
 async function handleResponse(message): Promise<string> {
 	// Return early if this message isn't meant for the service worker
@@ -11,9 +13,11 @@ async function handleResponse(message): Promise<string> {
 
 	// Dispatch the message to an appropriate handler.
 	switch (message.type) {
-		case "local-storage-value-received":
-		case "hostname-received":
-		case "pathname-received":
+		case OffscreenMessageTypes.getFromLocalStorageResponse:
+		case OffscreenMessageTypes.setToLocalStorageResponse:
+		case OffscreenMessageTypes.removeFromLocalStorageResponse:
+		case OffscreenMessageTypes.getHostnameResponse:
+		case OffscreenMessageTypes.getPathnameResponse:
 			return message.data;
 		default:
 			console.warn(`Unexpected message type received: '${message.type}'.`);
@@ -27,22 +31,31 @@ export async function sendToOffscreenDocument(type: string, data: any): Promise<
 		documentUrls: [WebExtension.offscreenUrl]
 	});
 
-	if (existingContexts.length === 0) {
-		await WebExtension.browser.offscreen.createDocument({
+	if (creating) {
+		await creating;
+	} else if (existingContexts.length === 0) {
+		creating = WebExtension.browser.offscreen.createDocument({
 			url: WebExtension.offscreenUrl,
 			reasons: [WebExtension.browser.offscreen.Reason.DOM_PARSER],
 			justification: "Parse DOM",
 		});
+		await creating;
+		creating = undefined;
 	}
 
-	return await new Promise(resolve => {
+	return new Promise<string>(resolve => {
 		WebExtension.browser.runtime.sendMessage({
 			type: type,
 			target: "offscreen",
 			data: data
 		}, (message) => {
 			handleResponse(message).then((result) => {
-				WebExtension.browser.offscreen.closeDocument();
+				/**
+				 * Commenting out the following line in order to always keep 1 offscreen document open
+				 * so as to avoid concurrency issues with multiple offscreen documents.
+				 * TODO: Investigate if there is a better way to handle concurrency issues.
+				 */
+				// WebExtension.browser.offscreen.closeDocument();
 				resolve(result);
 			});
 		});

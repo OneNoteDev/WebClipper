@@ -1,3 +1,5 @@
+import {OffscreenMessageTypes} from "../../communicator/offscreenMessageTypes";
+
 // Registering this listener when the script is first executed ensures that the
 // offscreen document will be able to receive messages when the promise returned
 // by `offscreen.createDocument()` resolves.
@@ -13,23 +15,39 @@ async function handleMessages(message, sender, sendResponse) {
 
 	// Dispatch the message to an appropriate handler.
 	switch (message.type) {
-		case "get-from-local-storage":
+		case OffscreenMessageTypes.getFromLocalStorage:
 			sendToServiceWorker(
-				"local-storage-value-received",
+				OffscreenMessageTypes.getFromLocalStorageResponse,
 				window.localStorage.getItem(message.data.key),
 				sendResponse
 			);
 			break;
-		case "get-hostname":
+		case OffscreenMessageTypes.setToLocalStorage:
+			window.localStorage.setItem(message.data.key, message.data.value);
 			sendToServiceWorker(
-				"hostname-received",
+				OffscreenMessageTypes.setToLocalStorageResponse,
+				"SUCCESS",
+				sendResponse
+			);
+			break;
+		case OffscreenMessageTypes.removeFromLocalStorage:
+			window.localStorage.removeItem(message.data.key);
+			sendToServiceWorker(
+				OffscreenMessageTypes.removeFromLocalStorageResponse,
+				"SUCCESS",
+				sendResponse
+			);
+			break;
+		case OffscreenMessageTypes.getHostname:
+			sendToServiceWorker(
+				OffscreenMessageTypes.getHostnameResponse,
 				getHostname(message.data.url),
 				sendResponse
 			);
 			break;
-		case "get-pathname":
+		case OffscreenMessageTypes.getPathname:
 			sendToServiceWorker(
-				"pathname-received",
+				OffscreenMessageTypes.getPathnameResponse,
 				getPathname(message.data.url),
 				sendResponse
 			);
