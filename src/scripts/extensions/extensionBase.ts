@@ -62,23 +62,23 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				clipperFirstRun = true;
 				clipperId = ExtensionBase.generateClipperId();
 				this.clipperData.setValue(ClipperStorageKeys.clipperId, clipperId);
-	
+
 				// Ensure fresh installs don't trigger thats What's New experience
 				this.updateLastSeenVersionInStorageToCurrent();
 			}
-	
+
 			this.clientInfo = new SmartValue<ClientInfo>({
 				clipperType: clipperType,
 				clipperVersion: ExtensionBase.getExtensionVersion(),
 				clipperId: clipperId
 			});
-	
+
 			if (clipperFirstRun) {
 				this.onFirstRun();
 			}
-	
+
 			this.initializeUserFlighting();
-	
+
 			this.listenForOpportunityToShowPageNavTooltip();
 		});
 	}
@@ -280,7 +280,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.LastSeenTooltipTime, values[0]);
 				tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.NumTimesTooltipHasBeenSeen, values[1]);
 				worker.getLogger().logEvent(tooltipImpressionEvent);
-			})
+			});
 		});
 	}
 

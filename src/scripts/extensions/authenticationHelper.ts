@@ -47,28 +47,28 @@ export class AuthenticationHelper {
 					} catch (e) {
 						this.logger.logJsonParseUnexpected(storedUserInformation);
 					}
-	
+
 					if (currentInfo && currentInfo.data && ObjectUtils.isNumeric(currentInfo.data.accessTokenExpiration)) {
 						// Expiration is in seconds, not milliseconds. Give additional leniency to account for response time.
 						updateInterval = Math.max((currentInfo.data.accessTokenExpiration * 1000) - 180000, 0);
 					}
 				}
-	
+
 				let getUserInformationFunction = () => {
 					return this.retrieveUserInformation(clipperId, undefined);
 				};
-	
+
 				let getInfoEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetExistingUserInformation);
 				getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserInformationStored, !!storedUserInformation);
 				this.clipperData.getFreshValue(ClipperStorageKeys.userInformation, getUserInformationFunction, updateInterval).then(async (response: TimeStampedData) => {
 					let isValidUser = this.isValidUserInformation(response.data);
 					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.FreshUserInfoAvailable, isValidUser);
-	
+
 					let writeableCookies = this.isThirdPartyCookiesEnabled(response.data);
 					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.WriteableCookies, writeableCookies);
-	
+
 					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserUpdateReason, UpdateReason[updateReason]);
-	
+
 					if (isValidUser) {
 						const dataBoundaryHelper = new UserDataBoundaryHelper();
 						let userDataBoundary: string = await dataBoundaryHelper.getUserDataBoundary(response.data);
@@ -83,14 +83,14 @@ export class AuthenticationHelper {
 					} else {
 						this.user.set({ updateReason: updateReason, writeableCookies: writeableCookies });
 					}
-	
+
 				}, (error: OneNoteApi.GenericError) => {
 					getInfoEvent.setStatus(Log.Status.Failed);
 					getInfoEvent.setFailureInfo(error);
 					this.user.set({ updateReason: updateReason });
 				}).then(() => {
 					this.logger.logEvent(getInfoEvent);
-	
+
 					resolve(this.user.get());
 				});
 			});
