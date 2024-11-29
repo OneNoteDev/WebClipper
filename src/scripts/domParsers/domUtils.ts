@@ -205,7 +205,7 @@ export class DomUtils {
 	 * removes any base64 encoded binaries defined in any <style> tags.
 	 */
 	public static removeStylesWithBase64EncodedBinaries(doc: Document): void {
-		DomUtils.domReplacer(doc, "style", async (node: HTMLElement) => {
+		DomUtils.domReplacer(doc, "style", (node: HTMLElement) => {
 			return node.innerHTML.indexOf("data:application") !== -1 ? undefined : node;
 		});
 	}
@@ -217,27 +217,27 @@ export class DomUtils {
 		let tagsToTurnIntoDiv = [DomUtils.tags.main, DomUtils.tags.article, DomUtils.tags.figure, DomUtils.tags.header, DomUtils.tags.center];
 
 		// ... and for everything else, we replace them with an equivalent, preserving the inner HTML
-		DomUtils.domReplacer(doc, tagsToTurnIntoDiv.join(), async (node: HTMLElement) => {
+		DomUtils.domReplacer(doc, tagsToTurnIntoDiv.join(), (node: HTMLElement) => {
 			let div = document.createElement("div");
 			div.innerHTML = DomUtils.cleanHtml(node.innerHTML);
 			return div;
 		});
 	}
 
-	public static domReplacer(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Promise<Node> = () => undefined) {
+	public static domReplacer(doc: Document, querySelector: string, getReplacement: (oldNode: Node, index: number) => Node = () => undefined) {
 		let nodes: NodeList = doc.querySelectorAll(querySelector);
 
 		for (let i = 0; i < nodes.length; i++) {
 			let oldNode: Node = nodes[i];
 
 			try {
-				getReplacement(oldNode, i).then((newNode) => {
-					if (!newNode) {
-						oldNode.parentNode.removeChild(oldNode);
-					} else if (oldNode !== newNode) {
-						oldNode.parentNode.replaceChild(newNode, oldNode);
-					}
-				});
+				let newNode = getReplacement(oldNode, i);
+
+				if (!newNode) {
+					oldNode.parentNode.removeChild(oldNode);
+				} else if (oldNode !== newNode) {
+					oldNode.parentNode.replaceChild(newNode, oldNode);
+				}
 			} catch (e) {
 				// There are some cases (like dirty canvases) where running replace will throw an error.
 				// We catch it, thus leaving the original.
@@ -582,7 +582,7 @@ export class DomUtils {
 		].join());
 
 		// Remove iframes that point to local files
-		DomUtils.domReplacer(doc, DomUtils.tags.iframe, async (node: Node) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.iframe, (node: Node) => {
 			let iframe: HTMLIFrameElement = <HTMLIFrameElement>node;
 			let src = iframe.src;
 			if (this.isLocalReferenceUrl(src)) {
@@ -596,7 +596,7 @@ export class DomUtils {
 	 * Remove any references to URLs that won't work on another box (i.e. our servers)
 	 */
 	public static removeUnsupportedHrefs(doc: Document) {
-		DomUtils.domReplacer(doc, DomUtils.tags.link, async (node: Node) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.link, (node: Node) => {
 			let linkElement: HTMLLinkElement = <HTMLLinkElement>node;
 			let href = linkElement.href;
 
@@ -632,7 +632,7 @@ export class DomUtils {
 	 * called in the same context as the website.
 	 */
 	public static convertRelativeUrlsToAbsolute(doc: Document) {
-		DomUtils.domReplacer(doc, DomUtils.tags.img, async (node: Node, index: number) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.img, (node: Node, index: number) => {
 			let nodeAsImage = node as HTMLImageElement;
 
 			// We don't use nodeAsImage.src as it returns undefined for relative urls
@@ -646,7 +646,7 @@ export class DomUtils {
 			return undefined;
 		});
 
-		DomUtils.domReplacer(doc, DomUtils.tags.a, async (node: Node, index: number) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.a, (node: Node, index: number) => {
 			let nodeAsAnchor = node as HTMLAnchorElement;
 
 			let possiblyRelativeSrcAttr = (nodeAsAnchor.attributes as any).href;
@@ -686,7 +686,7 @@ export class DomUtils {
 		// We need to get the canvas's data from the original DOM since the cloned DOM doesn't have it
 		let originalCanvasElements: NodeList = originalDoc.querySelectorAll(DomUtils.tags.canvas);
 
-		DomUtils.domReplacer(doc, DomUtils.tags.canvas, async (node: Node, index: number) => {
+		DomUtils.domReplacer(doc, DomUtils.tags.canvas, (node: Node, index: number) => {
 			let originalCanvas = originalCanvasElements[index] as HTMLCanvasElement;
 			if (!originalCanvas) {
 				return undefined;
@@ -967,7 +967,7 @@ export class DomUtils {
 	public static removeDisallowedIframes(doc: Document) {
 		// We also detect if the iframe is a video, and we ensure that we have
 		// the correct attribute set so that ONApi recognizes it
-		DomUtils.domReplacer(doc, DomUtils.tags.iframe, async (node) => {
+		DomUtils.domReplacerAsync(doc, DomUtils.tags.iframe, async (node) => {
 			let src = (node as HTMLIFrameElement).src;
 			let supportedDomain = await VideoUtils.videoDomainIfSupported(src);
 			if (!supportedDomain) {
@@ -981,7 +981,7 @@ export class DomUtils {
 	}
 
 	private static removeAllStylesAndClasses(doc: Document): void {
-		DomUtils.domReplacer(doc, "*", async (oldNode, index) => {
+		DomUtils.domReplacer(doc, "*", (oldNode, index) => {
 			(<HTMLElement>oldNode).removeAttribute("style");
 			(<HTMLElement>oldNode).removeAttribute("class");
 			return oldNode;
