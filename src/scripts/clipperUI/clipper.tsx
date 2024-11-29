@@ -59,7 +59,6 @@ import { ClientType } from "../clientType";
 
 class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private isFullScreen = new SmartValue<boolean>(false);
-	private _clientInfo: ClientInfo;
 
 	constructor(props: {}) {
 		super(props);
@@ -80,20 +79,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			augmentationResult: { status: Status.NotStarted },
 			oneNoteApiResult: { status: Status.NotStarted },
 			bookmarkResult: { status: Status.NotStarted },
-
-			get clientInfo(): ClientInfo {
-				return this._clientInfo;
-			},
-
-			set clientInfo(_clientInfo: ClientInfo) {
-				this._clientInfo = _clientInfo;
-				if (_clientInfo.clipperType === ClientType.ChromeExtension) {
-					WebExtension.browser = chrome;
-					WebExtension.offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
-				} else if (_clientInfo.clipperType === ClientType.EdgeExtension) {
-					// TODO: Edge specific initialization
-				}
-			},
 
 			setState: (partialState: ClipperState) => {
 				this.setState(partialState);
@@ -530,6 +515,17 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				// The default Clip mode now also depends on clientInfo, in addition to pageInfo
 				// TODO: Don't do this if they already have a mode chosen (once we are updating the pageInfo more object more often)
 				this.state.setState({ currentMode: this.state.currentMode.set(this.getDefaultClipMode()) });
+
+				/**
+				 * The following initializations are necessary to make use of
+				 * an offscreen document from the clipper UI.
+				 */
+				if (updatedClientInfo.clipperType === ClientType.ChromeExtension) {
+					WebExtension.browser = chrome;
+					WebExtension.offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
+				} else if (updatedClientInfo.clipperType === ClientType.EdgeExtension) {
+					// TODO: Edge specific initialization
+				}
 			}
 		});
 	}

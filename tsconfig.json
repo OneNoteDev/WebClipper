@@ -2,7 +2,6 @@
 	"compilerOptions": {
 		"jsx": "preserve",
 		"module": "commonjs",
-		"target": "ES5",
 		"types": [
 			"chrome",
 			"es6-promise",

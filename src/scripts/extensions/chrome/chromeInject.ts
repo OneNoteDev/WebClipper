@@ -3,7 +3,6 @@ import {WebExtension} from "../webExtensionBase/webExtension";
 import {WebExtensionContentMessageHandler} from "../webExtensionBase/webExtensionMessageHandler";
 
 WebExtension.browser = chrome;
-WebExtension.offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
 
 const frameUrl = WebExtension.browser.runtime.getURL("clipper.html");
 

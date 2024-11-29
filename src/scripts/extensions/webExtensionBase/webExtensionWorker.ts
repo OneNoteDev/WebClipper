@@ -40,9 +40,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.noOpTrackerInvoked = false;
 
 		let isPrivateWindow: Boolean = !!tab.incognito || !!tab.inPrivate;
-		this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, isPrivateWindow.toString());
 
-		this.invokeDebugLoggingIfEnabled();
+		this.consoleOutputEnabledFlagProcessed.then(() => {
+			this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, isPrivateWindow.toString());
+			this.invokeDebugLoggingIfEnabled();
+		});
 	}
 
 	/**

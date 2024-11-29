@@ -42,7 +42,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 
 		this.registerBrowserButton();
 
-		this.offscreenDocumentResultProcessed.then(() => {
+		this.clipperIdProcessed.then(() => {
 			this.registerContextMenuItems();
 		});
 		this.registerInstallListener();
@@ -82,7 +82,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		// Don't do anything since we're using the onInstalled functionality instead, unless it's not available
 		// then we use our 'missing-clipperId' heuristic
 		if (!this.onInstalledSupported()) {
-			this.offscreenDocumentResultProcessed.then(() => {
+			this.clipperIdProcessed.then(() => {
 				this.onInstalled();
 			});
 		}
@@ -218,7 +218,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		if (this.onInstalledSupported()) {
 			WebExtension.browser.runtime.onInstalled.addListener(details => {
 				if (details.reason === "install") {
-					this.offscreenDocumentResultProcessed.then(() => {
+					this.clipperIdProcessed.then(() => {
 						this.onInstalled();
 					});
 				}

@@ -73,6 +73,11 @@ export class PdfScreenshotHelper {
 		// Never rejects, interesting
 		return new Promise<PdfScreenshotResult>((resolve, reject) => {
 			let pdfPromise: PDFPromise<PDFDocumentProxy>;
+			/**
+			 * PDFJS.getDocument accepts either a string or a Uint8Array or a PDFSource as its source parameter.
+			 * With the latest version of typescript, the type of the source parameter cannot be string | Uint8Array
+			 * but must be exactly one of the three types mentioned above. The if-else block below ensures the same.
+			 */
 			if (typeof source === "string") {
 				// source is of type string and matches the corresponding overload of PDFJS.getDocument
 				pdfPromise = PDFJS.getDocument(source);

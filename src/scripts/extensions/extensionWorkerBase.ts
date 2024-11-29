@@ -41,6 +41,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	private loggerId: string;
 	private clipperFunnelAlreadyLogged = false;
 
+	protected consoleOutputEnabledFlagProcessed: Promise<void>;
 	protected tab: TTab;
 	protected tabId: TTabIdentifier;
 
@@ -70,17 +71,17 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.pageNavInjectCommunicator = new Communicator(injectMessageHandlerThunk(), Constants.CommunicationChannels.pageNavInjectedAndExtension);
 
 		this.sessionId = new SmartValue<string>();
-		this.logger = LogManager.createExtLogger(this.sessionId, LogHelpers.isConsoleOutputEnabled() ? this.debugLoggingInjectCommunicator : undefined);
-		this.logger.logSessionStart();
-
 		this.clipperData = clipperData;
-		this.clipperData.setLogger(this.logger);
-
 		this.auth = auth;
 		this.clientInfo = clientInfo;
+		this.consoleOutputEnabledFlagProcessed = LogHelpers.isConsoleOutputEnabled().then((isConsoleOutputEnabled) => {
+			this.logger = LogManager.createExtLogger(this.sessionId, isConsoleOutputEnabled ? this.debugLoggingInjectCommunicator : undefined);
+			this.logger.logSessionStart();
+			this.clipperData.setLogger(this.logger);
 
-		this.initializeCommunicators();
-		this.initializeContextProperties();
+			this.initializeCommunicators();
+			this.initializeContextProperties();
+		});
 	}
 
 	private initializeContextProperties() {
@@ -197,7 +198,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			}
 		});
 
-		this.invokeClipperBrowserSpecific().then((wasInvoked) => {
+		Promise.all([this.consoleOutputEnabledFlagProcessed, this.invokeClipperBrowserSpecific()]).then(([v, wasInvoked]) => {
 			if (wasInvoked && !this.clipperFunnelAlreadyLogged) {
 				this.logger.logUserFunnel(Log.Funnel.Label.Invoke);
 				this.clipperFunnelAlreadyLogged = true;
@@ -316,8 +317,8 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		return usidQueryParamValue ? usidQueryParamValue : this.clientInfo.get().clipperId;
 	}
 
-	protected invokeDebugLoggingIfEnabled(): Promise<boolean> {
-		if (LogHelpers.isConsoleOutputEnabled()) {
+	protected async invokeDebugLoggingIfEnabled(): Promise<boolean> {
+		if (await LogHelpers.isConsoleOutputEnabled()) {
 			return this.invokeDebugLoggingBrowserSpecific();
 		}
 		return Promise.resolve(false);

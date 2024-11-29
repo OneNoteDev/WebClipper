@@ -2,7 +2,7 @@
 {
     "editor.formatOnType": true,
     "editor.insertSpaces": false,
-    "editor.renderWhitespace": true,
+    "editor.renderWhitespace": "boundary",
     "files.exclude": {
         "**/.git": true,
         "**/.DS_Store": true,

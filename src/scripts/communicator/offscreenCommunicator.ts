@@ -6,6 +6,7 @@ let creating: Promise<void>; // A global promise to avoid concurrency issues
 // This function performs basic filtering and error checking on messages before
 // dispatching the message to a more specific message handler.
 async function handleResponse(message): Promise<string> {
+	message = JSON.parse(message);
 	// Return early if this message isn't meant for the service worker
 	if (message.target !== "service-worker") {
 		return;
@@ -44,11 +45,11 @@ export async function sendToOffscreenDocument(type: string, data: any): Promise<
 	}
 
 	return new Promise<string>(resolve => {
-		WebExtension.browser.runtime.sendMessage({
+		WebExtension.browser.runtime.sendMessage(JSON.stringify({
 			type: type,
 			target: "offscreen",
 			data: data
-		}, (message) => {
+		}), (message) => {
 			handleResponse(message).then((result) => {
 				/**
 				 * Commenting out the following line in order to always keep 1 offscreen document open

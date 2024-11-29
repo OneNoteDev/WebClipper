@@ -8,6 +8,7 @@ chrome.runtime.onMessage.addListener(handleMessages);
 // This function performs basic filtering and error checking on messages before
 // dispatching the message to a more specific message handler.
 async function handleMessages(message, sender, sendResponse) {
+	message = JSON.parse(message);
 	// Return early if this message isn't meant for the offscreen document.
 	if (message.target !== "offscreen") {
 		return false;
@@ -72,9 +73,9 @@ function getPathname(url: string): string {
 }
 
 function sendToServiceWorker(type: string, data: string, sendResponse: (response: any) => void) {
-	sendResponse({
+	sendResponse(JSON.stringify({
 		type,
 		target: "service-worker",
 		data
-	});
+	}));
 }

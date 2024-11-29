@@ -26,8 +26,8 @@ export function createExtLogger(sessionId: SmartValue<string>, uiCommunicator?: 
 function createDebugLogger(uiCommunicator: Communicator, sessionId: SmartValue<string>): SessionLogger {
 	let commLogger: CommunicatorLoggerDecorator = uiCommunicator ? new CommunicatorLoggerDecorator(uiCommunicator) : undefined;
 
-	let consoleOutput: ConsoleOutput =
-		LogHelpers.isConsoleOutputEnabled() ? new WebConsole() : undefined;
+	// If we have received a communicator, we can be sure that console logging is enabled
+	let consoleOutput: ConsoleOutput = new WebConsole();
 
 	return new ConsoleLoggerDecorator(consoleOutput, {
 		contextStrategy: new ProductionRequirements(),
