@@ -1,7 +1,7 @@
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
 
-import { HttpWithRetries } from "../http/httpWithRetries";
+import {HttpWithRetries} from "../http/httpWithRetries";
 
 import * as Log from "../logging/log";
 
