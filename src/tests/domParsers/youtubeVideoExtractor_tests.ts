@@ -47,10 +47,10 @@ export class YoutubeVideoExtractorTests extends TestModule {
 	}
 
 	protected tests() {
-		test("createEmbeddedVimeosFromHtml should return a list of iframes with the src set to the embed url, and the data-original-src set to the watch url", () => {
+		test("createEmbeddedVimeosFromHtml should return a list of iframes with the src set to the embed url, and the data-original-src set to the watch url", async () => {
 			let ids = ["1", "2", "3"];
 			let outerDiv = this.createDivWithEmbeddedVideos(ids);
-			let embedVideos = this.youtubeExtractor.createEmbeddedVideosFromHtml(outerDiv.outerHTML);
+			let embedVideos = await this.youtubeExtractor.createEmbeddedVideosFromHtml(outerDiv.outerHTML);
 			strictEqual(embedVideos.length, ids.length, "There should be one iframe for each unique video");
 			for (let i = 0; i < embedVideos.length; i++) {
 				strictEqual(embedVideos[i].src, "https://www.youtube.com/embed/" + ids[i],
@@ -60,10 +60,10 @@ export class YoutubeVideoExtractorTests extends TestModule {
 			}
 		});
 
-		test("createEmbeddedVimeosFromHtml should return a non-unique list of iframes given some videos are duplicates in the html", () => {
+		test("createEmbeddedVimeosFromHtml should return a non-unique list of iframes given some videos are duplicates in the html", async () => {
 			let ids = ["1", "1", "2"];
 			let outerDiv = this.createDivWithEmbeddedVideos(ids);
-			let embedVideos = this.youtubeExtractor.createEmbeddedVideosFromHtml(outerDiv.outerHTML);
+			let embedVideos = await this.youtubeExtractor.createEmbeddedVideosFromHtml(outerDiv.outerHTML);
 			strictEqual(embedVideos.length, ids.length, "There should be one iframe for each unique video");
 			for (let i = 0; i < embedVideos.length; i++) {
 				strictEqual(embedVideos[i].src, "https://www.youtube.com/embed/" + ids[i],
@@ -73,24 +73,24 @@ export class YoutubeVideoExtractorTests extends TestModule {
 			}
 		});
 
-		test("createEmbeddedVimeosFromHtml should return the empty list if there are no embed videos in the html", () => {
-			let embedVideos = this.youtubeExtractor.createEmbeddedVideosFromHtml("<div></div>");
+		test("createEmbeddedVimeosFromHtml should return the empty list if there are no embed videos in the html", async () => {
+			let embedVideos = await this.youtubeExtractor.createEmbeddedVideosFromHtml("<div></div>");
 			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
 
-			embedVideos = this.youtubeExtractor.createEmbeddedVideosFromHtml("");
-			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
-		});
-
-		test("createEmbeddedVimeosFromHtml should return the empty list if the html is undefined", () => {
-			let embedVideos = this.youtubeExtractor.createEmbeddedVideosFromHtml(undefined);
+			embedVideos = await this.youtubeExtractor.createEmbeddedVideosFromHtml("");
 			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
 		});
 
-		test("createEmbedVideoFromUrl should return an iframe with the src set to the embed url, and the data-original-src set to the watch url", () => {
+		test("createEmbeddedVimeosFromHtml should return the empty list if the html is undefined", async () => {
+			let embedVideos = await this.youtubeExtractor.createEmbeddedVideosFromHtml(undefined);
+			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
+		});
+
+		test("createEmbedVideoFromUrl should return an iframe with the src set to the embed url, and the data-original-src set to the watch url", async () => {
 			// We use this same id in all each of the candidate urls for the test
 			let id = "dQw4w9WgXcQ";
 			for (let supportedYouTubeUrl of this.supportedYouTubeUrls) {
-				let embedVideo = this.youtubeExtractor.createEmbeddedVideoFromUrl(supportedYouTubeUrl);
+				let embedVideo = await this.youtubeExtractor.createEmbeddedVideoFromUrl(supportedYouTubeUrl);
 				strictEqual(embedVideo.src, "https://www.youtube.com/embed/" + id,
 					"The src should be set to the embed url");
 				strictEqual(embedVideo.attributes.getNamedItem("data-original-src").value, "https://www.youtube.com/watch?v=" + id,

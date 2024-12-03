@@ -263,7 +263,7 @@ gulp.task("bundleBookmarklet", function() {
 
 gulp.task("bundleChrome", function() {
     var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/chrome/";
-    var files = ["chromeExtension.js", "chromeDebugLoggingInject.js", "chromeInject.js", "chromePageNavInject.js"];
+    var files = ["chromeExtension.js", "chromeDebugLoggingInject.js", "chromeInject.js", "chromePageNavInject.js", "chromeOffscreen.js"];
     var tasks = generateBrowserifyTasks(extensionRoot, files);
     return merge(tasks);
 });
@@ -536,10 +536,14 @@ function exportChromeJS() {
         PATHS.BUNDLEROOT + "chromePageNavInject.js"
     ]).pipe(concat("chromePageNavInject.js")).pipe(gulp.dest(targetDir));
 
+    var chromeOffscreenTask = gulp.src([
+        PATHS.BUNDLEROOT + "chromeOffscreen.js"
+    ]).pipe(gulp.dest(targetDir));
+
     if (commonTask) {
-        return merge(commonTask, appendIsInstalledMarkerTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
+        return merge(commonTask, appendIsInstalledMarkerTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask, chromeOffscreenTask);
     }
-    return merge(chromeExtensionTask, appendIsInstalledMarkerTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
+    return merge(chromeExtensionTask, appendIsInstalledMarkerTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask, chromeOffscreenTask);
 }
 
 function exportChromeCSS() {
@@ -557,7 +561,11 @@ function exportChromeSrcFiles() {
         PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json"
     ]).pipe(gulp.dest(targetDir));
 
-    return merge(srcCommonTask, commonWebExtensionFiles, chromeTask);
+    var chromeOffscreenTask = gulp.src([
+        PATHS.SRC.ROOT + "scripts/extensions/chrome/chromeOffscreen.html"
+    ]).pipe(gulp.dest(targetDir));
+
+    return merge(srcCommonTask, commonWebExtensionFiles, chromeTask, chromeOffscreenTask);
 }
 
 function exportChromeLibFiles() {
@@ -1041,6 +1049,7 @@ gulp.task("watchSrcFiles", function() {
             PATHS.SRC.ROOT + "unsupportedBrowser.html",
             PATHS.SRC.ROOT + "pageNav.html",
             PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json",
+            PATHS.SRC.ROOT + "scripts/extensions/chrome/chromeOffscreen.html",
             PATHS.SRC.ROOT + "scripts/extensions/edge/edgeExtension.html",
             PATHS.SRC.ROOT + "scripts/extensions/edge/manifest.json",
             PATHS.SRC.ROOT + "scripts/extensions/safari/Info.plist",

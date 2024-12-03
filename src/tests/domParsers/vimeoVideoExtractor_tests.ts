@@ -31,10 +31,10 @@ export class VimeoVideoExtractorTests extends TestModule {
 	}
 
 	protected tests() {
-		test("createEmbeddedVimeosFromHtml should a list of iframes with the src and data-original-src set to the player url with the clip id", () => {
+		test("createEmbeddedVimeosFromHtml should a list of iframes with the src and data-original-src set to the player url with the clip id", async () => {
 			let expectedId = "45196609";
 			for (let pageContentSnippet of this.pageContentWithOneClipId) {
-				let embedVideos = this.vimeoExtractor.createEmbeddedVideosFromHtml(pageContentSnippet);
+				let embedVideos = await this.vimeoExtractor.createEmbeddedVideosFromHtml(pageContentSnippet);
 				strictEqual(embedVideos.length, 1, "There should be one iframe");
 				strictEqual(embedVideos[0].src, "https://player.vimeo.com/video/" + expectedId,
 					"The src should be set to the player url");
@@ -43,13 +43,13 @@ export class VimeoVideoExtractorTests extends TestModule {
 			}
 		});
 
-		test("createEmbeddedVimeosFromHtml should a list of iframes with the src and data-original-src set to the player url with the clip id when there's more than 0 video in the html", () => {
+		test("createEmbeddedVimeosFromHtml should a list of iframes with the src and data-original-src set to the player url with the clip id when there's more than 0 video in the html", async () => {
 			let expectedIds = [
 				["45196609", "45196610", "45196611"],
 				["45196609", "45196610", "45196609", "45196611"]
 			];
 			for (let i = 0; i < this.pageContentWithMultipleClipIds.length; i++) {
-				let embedVideos = this.vimeoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithMultipleClipIds[i]);
+				let embedVideos = await this.vimeoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithMultipleClipIds[i]);
 				strictEqual(embedVideos.length, expectedIds[i].length, "There should be " + expectedIds[i].length + " iframes");
 
 				for (let j = 0; j < expectedIds[i].length; j++) {
@@ -61,29 +61,29 @@ export class VimeoVideoExtractorTests extends TestModule {
 			}
 		});
 
-		test("createEmbeddedVimeosFromHtml should return the empty list if there are no embed videos in the html", () => {
-			let embedVideos = this.vimeoExtractor.createEmbeddedVideosFromHtml("<div></div>");
+		test("createEmbeddedVimeosFromHtml should return the empty list if there are no embed videos in the html", async () => {
+			let embedVideos = await this.vimeoExtractor.createEmbeddedVideosFromHtml("<div></div>");
 			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
 
-			embedVideos = this.vimeoExtractor.createEmbeddedVideosFromHtml("");
-			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
-		});
-
-		test("createEmbeddedVimeosFromHtml should return the empty list if the html is undefined", () => {
-			let embedVideos = this.vimeoExtractor.createEmbeddedVideosFromHtml(undefined);
+			embedVideos = await this.vimeoExtractor.createEmbeddedVideosFromHtml("");
 			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
 		});
 
-		test("createEmbedVideoFromUrl should return an iframe with the src set to the player url, and the data-original-src set to the player url", () => {
-			let embedVideo = this.vimeoExtractor.createEmbeddedVideoFromUrl("https://vimeo.com/193851364");
+		test("createEmbeddedVimeosFromHtml should return the empty list if the html is undefined", async () => {
+			let embedVideos = await this.vimeoExtractor.createEmbeddedVideosFromHtml(undefined);
+			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
+		});
+
+		test("createEmbedVideoFromUrl should return an iframe with the src set to the player url, and the data-original-src set to the player url", async () => {
+			let embedVideo = await this.vimeoExtractor.createEmbeddedVideoFromUrl("https://vimeo.com/193851364");
 			strictEqual(embedVideo.src, "https://player.vimeo.com/video/193851364",
 				"The src should be set to the player url");
 			strictEqual(embedVideo.attributes.getNamedItem("data-original-src").value, "https://player.vimeo.com/video/193851364",
 				"The data original src attribute should be set to the player url");
 		});
 
-		test("createEmbedVideoFromUrl should return an iframe with the src set to the player url without query parameters, and the data-original-src set to the player url", () => {
-			let embedVideo = this.vimeoExtractor.createEmbeddedVideoFromUrl("https://vimeo.com/193851364?foo=134");
+		test("createEmbedVideoFromUrl should return an iframe with the src set to the player url without query parameters, and the data-original-src set to the player url", async () => {
+			let embedVideo = await this.vimeoExtractor.createEmbeddedVideoFromUrl("https://vimeo.com/193851364?foo=134");
 			strictEqual(embedVideo.src, "https://player.vimeo.com/video/193851364",
 				"The src should be set to the player url");
 			strictEqual(embedVideo.attributes.getNamedItem("data-original-src").value, "https://player.vimeo.com/video/193851364",

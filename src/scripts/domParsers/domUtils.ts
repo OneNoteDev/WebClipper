@@ -370,29 +370,32 @@ export class DomUtils {
 	 * Add embedded videos to the article preview where supported
 	 */
 	public static addEmbeddedVideosWhereSupported(previewElement: HTMLElement, pageContent: string, pageUrl: string): Promise<EmbeddedVideoIFrameSrcs[]> {
-		let supportedDomain = VideoUtils.videoDomainIfSupported(pageUrl);
-		if (!supportedDomain) {
-			return Promise.resolve();
-		}
+		return new Promise<EmbeddedVideoIFrameSrcs[]>((resolve, reject) => {
+			VideoUtils.videoDomainIfSupported(pageUrl).then(async (supportedDomain) => {
+				if (!supportedDomain) {
+					resolve();
+				}
 
-		let iframes: HTMLIFrameElement[] = [];
-		try {
-			// Construct the appropriate videoExtractor based on the Domain we are on
-			let domain = SupportedVideoDomains[supportedDomain];
-			let extractor = VideoExtractorFactory.createVideoExtractor(domain);
+				let iframes: HTMLIFrameElement[] = [];
+				try {
+					// Construct the appropriate videoExtractor based on the Domain we are on
+					let domain = SupportedVideoDomains[supportedDomain];
+					let extractor = VideoExtractorFactory.createVideoExtractor(domain);
 
-			// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
-			// to render them later
-			if (extractor) {
-				iframes = iframes.concat(extractor.createEmbeddedVideosFromPage(pageUrl, pageContent));
-			}
-		} catch (e) {
-			// if we end up here, we're unexpectedly broken
-			// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
-			return Promise.reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
-		}
+					// If we are on a Domain that has a valid VideoExtractor, get the embedded videos
+					// to render them later
+					if (extractor) {
+						iframes = iframes.concat(await extractor.createEmbeddedVideosFromPage(pageUrl, pageContent));
+					}
+				} catch (e) {
+					// if we end up here, we're unexpectedly broken
+					// (e.g, vimeo schema updated, we say we're supporting a domain we don't actually, etc)
+					reject({ error: JSON.stringify({ doc: previewElement.outerHTML, pageContent: pageContent, message: e.message }) });
+				}
 
-		return Promise.resolve(DomUtils.addVideosToElement(previewElement, iframes));
+				resolve(DomUtils.addVideosToElement(previewElement, iframes));
+			});
+		});
 	}
 
 	/**
@@ -487,7 +490,7 @@ export class DomUtils {
 			location = document.location;
 		}
 
-		let bases: NodeList = doc.head.getElementsByTagName(DomUtils.tags.base);
+		let bases: NodeList = doc.head.querySelectorAll(DomUtils.tags.base);
 		if (bases.length === 0) {
 			let baseUrl = location.href.split("#")[0].split("?")[0];
 			baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/") + 1);
@@ -894,7 +897,7 @@ export class DomUtils {
 					return NodeFilter.FILTER_ACCEPT;
 				}
 			}
-		}, false);
+		});
 
 		let n: Node = walk.nextNode();
 		while (n) {
@@ -964,9 +967,9 @@ export class DomUtils {
 	public static removeDisallowedIframes(doc: Document) {
 		// We also detect if the iframe is a video, and we ensure that we have
 		// the correct attribute set so that ONApi recognizes it
-		DomUtils.domReplacer(doc, DomUtils.tags.iframe, (node) => {
+		DomUtils.domReplacerAsync(doc, DomUtils.tags.iframe, async (node) => {
 			let src = (node as HTMLIFrameElement).src;
-			let supportedDomain = VideoUtils.videoDomainIfSupported(src);
+			let supportedDomain = await VideoUtils.videoDomainIfSupported(src);
 			if (!supportedDomain) {
 				return undefined;
 			}

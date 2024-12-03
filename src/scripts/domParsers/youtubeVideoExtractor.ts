@@ -1,7 +1,6 @@
 import {DomUtils} from "./domUtils";
 import {VideoExtractor} from "./videoExtractor";
 
-import {ObjectUtils} from "../objectUtils";
 import {UrlUtils} from "../urlUtils";
 
 export class YoutubeVideoExtractor extends VideoExtractor {
@@ -9,7 +8,7 @@ export class YoutubeVideoExtractor extends VideoExtractor {
 	private youTubeVideoIdQueryKey = "v";
 	private dataOriginalSrcAttribute = "data-original-src";
 
-	public createEmbeddedVideosFromHtml(html: string): HTMLIFrameElement[] {
+	public async createEmbeddedVideosFromHtml(html: string): Promise<HTMLIFrameElement[]> {
 		if (!html) {
 			return [];
 		}
@@ -21,7 +20,7 @@ export class YoutubeVideoExtractor extends VideoExtractor {
 		let videoEmbeds: HTMLIFrameElement[] = [];
 		for (let i = 0; i < allIframes.length; i++) {
 			if (this.isYoutubeUrl(allIframes[i].src)) {
-				let videoEmbed = this.createEmbeddedVideoFromUrl(allIframes[i].src);
+				let videoEmbed = await this.createEmbeddedVideoFromUrl(allIframes[i].src);
 				if (videoEmbed) {
 					videoEmbeds.push(videoEmbed);
 				}
@@ -34,16 +33,18 @@ export class YoutubeVideoExtractor extends VideoExtractor {
 		return /[^\w]youtube\.com\/watch(\?v=(\w+)|.*\&v=(\w+))/.test(url) || /[^\w]youtube\.com\/embed\/(\w+)/.test(url);
 	}
 
-	public createEmbeddedVideoFromUrl(url: string): HTMLIFrameElement {
+	public async createEmbeddedVideoFromUrl(url: string): Promise<HTMLIFrameElement> {
 		if (!url) {
 			return undefined;
 		}
 
-		if (UrlUtils.getPathname(url).indexOf("/watch") === 0) {
+		let urlPathName = await UrlUtils.getPathname(url);
+
+		if (urlPathName.indexOf("/watch") === 0) {
 			return this.createEmbeddedVideoFromId(UrlUtils.getQueryValue(url, this.youTubeVideoIdQueryKey));
 		}
 
-		if (UrlUtils.getPathname(url).indexOf("/embed") === 0) {
+		if (urlPathName.indexOf("/embed") === 0) {
 			let youTubeIdMatch = url.match(/youtube\.com\/embed\/([^?|\/?]+)/);
 			return this.createEmbeddedVideoFromId(youTubeIdMatch[1]);
 		}

@@ -54,6 +54,8 @@ import {RegionSelector} from "./regionSelector";
 import {Status} from "./status";
 
 import * as _ from "lodash";
+import { WebExtension } from "../extensions/webExtensionBase/webExtension";
+import { ClientType } from "../clientType";
 
 class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private isFullScreen = new SmartValue<boolean>(false);
@@ -513,6 +515,17 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				// The default Clip mode now also depends on clientInfo, in addition to pageInfo
 				// TODO: Don't do this if they already have a mode chosen (once we are updating the pageInfo more object more often)
 				this.state.setState({ currentMode: this.state.currentMode.set(this.getDefaultClipMode()) });
+
+				/**
+				 * The following initializations are necessary to make use of
+				 * an offscreen document from the clipper UI.
+				 */
+				if (updatedClientInfo.clipperType === ClientType.ChromeExtension) {
+					WebExtension.browser = chrome;
+					WebExtension.offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
+				} else if (updatedClientInfo.clipperType === ClientType.EdgeExtension) {
+					// TODO: Edge specific initialization
+				}
 			}
 		});
 	}
@@ -720,9 +733,11 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + augmentationTypeAsString, Date.now().toString());
 		}
 
-		if (VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl)) {
-			Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
-		}
+		VideoUtils.videoDomainIfSupported(this.state.pageInfo.rawUrl).then((isVideoDomainSupported) => {
+			if (isVideoDomainSupported) {
+				Clipper.storeValue(ClipperStorageKeys.lastClippedTooltipTimeBase + TooltipType[TooltipType.Video], Date.now().toString());
+			}
+		});
 	}
 
 	private static shouldShowOptions(state: ClipperState): boolean {

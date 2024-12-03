@@ -52,7 +52,7 @@ export class InlineExtension extends ExtensionBase<InlineWorker, any, any> {
 		return undefined;
 	}
 
-	protected checkIfTabIsAVideoDomain(tab: SafariBrowserTab): boolean {
+	protected async checkIfTabIsAVideoDomain(tab: SafariBrowserTab): Promise<boolean> {
 		return false;
 	}
 

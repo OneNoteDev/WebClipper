@@ -7,7 +7,7 @@ import {ObjectUtils} from "../objectUtils";
 export class VimeoVideoExtractor extends VideoExtractor {
 	private dataOriginalSrcAttribute = "data-original-src";
 
-	public createEmbeddedVideosFromHtml(html: string): HTMLIFrameElement[] {
+	public async createEmbeddedVideosFromHtml(html: string): Promise<HTMLIFrameElement[]> {
 		if (!html) {
 			return [];
 		}
@@ -30,7 +30,7 @@ export class VimeoVideoExtractor extends VideoExtractor {
 		return ids.map((id) => this.createEmbeddedVideoFromId(id));
 	}
 
-	public createEmbeddedVideoFromUrl(url: string): HTMLIFrameElement {
+	public async createEmbeddedVideoFromUrl(url: string): Promise<HTMLIFrameElement> {
 		if (!url) {
 			return undefined;
 		}

@@ -1,3 +1,5 @@
+import {sendToOffscreenDocument} from "../communicator/offscreenCommunicator";
+import {OffscreenMessageTypes} from "../communicator/offscreenMessageTypes";
 import * as Log from "./log";
 
 export module LogHelpers {
@@ -151,9 +153,10 @@ export module LogHelpers {
 		}
 	}
 
-	export function isConsoleOutputEnabled(): boolean {
+	export async function isConsoleOutputEnabled(): Promise<boolean> {
 		try {
-			if (localStorage.getItem(Log.enableConsoleLogging)) {
+			const result = await sendToOffscreenDocument(OffscreenMessageTypes.getFromLocalStorage, { key: Log.enableConsoleLogging });
+			if (result === "true") {
 				return true;
 			}
 		} catch (e) { };

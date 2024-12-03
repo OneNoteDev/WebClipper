@@ -31,6 +31,7 @@ type Tab = chrome.tabs.Tab;
 
 export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, number> {
 	public static browser: Browser;
+	public static offscreenUrl: string;
 
 	public injectUrls: InjectUrls;
 
@@ -40,7 +41,10 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		this.injectUrls = injectUrls;
 
 		this.registerBrowserButton();
-		this.registerContextMenuItems();
+
+		this.clipperIdProcessed.then(() => {
+			this.registerContextMenuItems();
+		});
 		this.registerInstallListener();
 		this.registerTabRemoveListener();
 	}
@@ -78,7 +82,9 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		// Don't do anything since we're using the onInstalled functionality instead, unless it's not available
 		// then we use our 'missing-clipperId' heuristic
 		if (!this.onInstalledSupported()) {
-			this.onInstalled();
+			this.clipperIdProcessed.then(() => {
+				this.onInstalled();
+			});
 		}
 	}
 
@@ -89,8 +95,8 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		return UrlUtils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
 	}
 
-	protected checkIfTabIsAVideoDomain(tab: W3CTab): boolean {
-		let domain = VideoUtils.videoDomainIfSupported(tab.url);
+	protected async checkIfTabIsAVideoDomain(tab: W3CTab): Promise<boolean> {
+		let domain = await VideoUtils.videoDomainIfSupported(tab.url);
 		return !!domain;
 	}
 
@@ -212,7 +218,9 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		if (this.onInstalledSupported()) {
 			WebExtension.browser.runtime.onInstalled.addListener(details => {
 				if (details.reason === "install") {
-					this.onInstalled();
+					this.clipperIdProcessed.then(() => {
+						this.onInstalled();
+					});
 				}
 			});
 		}

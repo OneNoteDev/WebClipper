@@ -37,10 +37,10 @@ export class KhanAcademyVideoExtractorTests extends TestModule {
 	}
 
 	protected tests() {
-		test("createEmbeddedVimeosFromHtml should return a list of iframes with the src set to the embed url, and the data-original-src set to the watch url, given the html has hyphenated ids", () => {
+		test("createEmbeddedVimeosFromHtml should return a list of iframes with the src set to the embed url, and the data-original-src set to the watch url, given the html has hyphenated ids", async () => {
 			let expectedId = "8-5DTsl1V5k";
 			for (let i = 0; i < this.pageContentWithHyphenatedVideoIds.length; i++) {
-				let embedVideos = this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithHyphenatedVideoIds[i]);
+				let embedVideos = await this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithHyphenatedVideoIds[i]);
 				strictEqual(embedVideos.length, 1, "There should be one returned iframe");
 
 				strictEqual(embedVideos[0].src, "https://www.youtube.com/embed/" + expectedId,
@@ -50,10 +50,10 @@ export class KhanAcademyVideoExtractorTests extends TestModule {
 			}
 		});
 
-		test("createEmbeddedVimeosFromHtml should return a list of iframes with the src set to the embed url, and the data-original-src set to the watch url, given the html has data youtube ids", () => {
+		test("createEmbeddedVimeosFromHtml should return a list of iframes with the src set to the embed url, and the data-original-src set to the watch url, given the html has data youtube ids", async () => {
 			let expectedId = "8-5DTsl1V5k";
 			for (let i = 0; i < this.pageContentWithDataYoutubeIds.length; i++) {
-				let embedVideos = this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithDataYoutubeIds[i]);
+				let embedVideos = await this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithDataYoutubeIds[i]);
 				strictEqual(embedVideos.length, 1, "There should be one returned iframe");
 
 				strictEqual(embedVideos[0].src, "https://www.youtube.com/embed/" + expectedId,
@@ -63,13 +63,13 @@ export class KhanAcademyVideoExtractorTests extends TestModule {
 			}
 		});
 
-		test("createEmbeddedVimeosFromHtml should a list of iframes with the src and data-original-src set to the player url with the clip id when there's more than 0 video in the html", () => {
+		test("createEmbeddedVimeosFromHtml should a list of iframes with the src and data-original-src set to the player url with the clip id when there's more than 0 video in the html", async () => {
 			let expectedIds = [
 				["8-5DTsl1V5k", "8-53sl1V5k", "4ba196611"],
 				["8-5DTsl1V5k", "8-53sl1V5k", "8-53sl1V5k", "4ba196611"]
 			];
 			for (let i = 0; i < this.pageContentWithMultipleHyphenatedVideoIds.length; i++) {
-				let embedVideos = this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithMultipleHyphenatedVideoIds[i]);
+				let embedVideos = await this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithMultipleHyphenatedVideoIds[i]);
 				strictEqual(embedVideos.length, expectedIds[i].length, "There should be " + expectedIds[i].length + " iframes");
 
 				for (let j = 0; j < expectedIds[i].length; j++) {
@@ -81,23 +81,23 @@ export class KhanAcademyVideoExtractorTests extends TestModule {
 			}
 		});
 
-		test("createEmbeddedVimeosFromHtml should return the empty list if there are no embed videos in the html", () => {
-			let embedVideos = this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml("<div></div>");
+		test("createEmbeddedVimeosFromHtml should return the empty list if there are no embed videos in the html", async () => {
+			let embedVideos = await this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml("<div></div>");
 			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
 
-			embedVideos = this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml("");
+			embedVideos = await this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml("");
 			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
 		});
 
-		test("createEmbeddedVimeosFromHtml should return the empty list if there elements with invalid ids in the html", () => {
+		test("createEmbeddedVimeosFromHtml should return the empty list if there elements with invalid ids in the html", async () => {
 			for (let i = 0; i < this.pageContentWithNoClipId.length; i++) {
-				let embedVideos = this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithNoClipId[i]);
+				let embedVideos = await this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(this.pageContentWithNoClipId[i]);
 				strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
 			}
 		});
 
-		test("createEmbeddedVimeosFromHtml should return the empty list if the html is undefined", () => {
-			let embedVideos = this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(undefined);
+		test("createEmbeddedVimeosFromHtml should return the empty list if the html is undefined", async () => {
+			let embedVideos = await this.khanAcademyVideoExtractor.createEmbeddedVideosFromHtml(undefined);
 			strictEqual(embedVideos.length, 0, "There should be 0 iframes in the returned");
 		});
 

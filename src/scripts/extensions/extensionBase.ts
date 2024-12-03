@@ -36,6 +36,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	private logger: Logger;
 	private static extensionId: string;
 
+	protected clipperIdProcessed: Promise<void>;
 	protected clipperData: ClipperData;
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
@@ -56,7 +57,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 		let clipperFirstRun = false;
 
-		this.clipperData.getValue(ClipperStorageKeys.clipperId).then((clipperId) => {
+		this.clipperIdProcessed = this.clipperData.getValue(ClipperStorageKeys.clipperId).then((clipperId) => {
 			if (!clipperId) {
 				// New install
 				clipperFirstRun = true;
@@ -253,8 +254,9 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		return type;
 	}
 
-	private shouldShowVideoTooltip(tab: TTab): boolean {
-		if (this.checkIfTabIsAVideoDomain(tab) && this.tooltip.tooltipDelayIsOver(TooltipType.Video, Date.now())) {
+	private async shouldShowVideoTooltip(tab: TTab): Promise<boolean> {
+		const isTabAVideoDomain = await this.checkIfTabIsAVideoDomain(tab);
+		if (isTabAVideoDomain && this.tooltip.tooltipDelayIsOver(TooltipType.Video, Date.now())) {
 			return true;
 		}
 		return false;
@@ -336,27 +338,29 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 					return;
 				}
 
-				if (this.shouldShowVideoTooltip(tab)) {
-					this.showTooltip(tab, TooltipType.Video);
-					return;
-				}
-			}
+				this.shouldShowVideoTooltip(tab).then((shouldShow) => {
+					if (shouldShow) {
+						this.showTooltip(tab, TooltipType.Video);
+						return;
+					}
 
-			let extensionVersion = new Version(ExtensionBase.getExtensionVersion());
+					let extensionVersion = new Version(ExtensionBase.getExtensionVersion());
 
-			// Fallback behavior for if the last seen version in storage is somehow in a corrupted format
-			try {
-				this.getLastSeenVersion().then((lastSeenVersion) => {
-					// We don't show updates more recent than the local version for now, as it is easy
-					// for a changelog to be released before a version is actually out
-					if (this.shouldShowWhatsNewTooltip(tab, lastSeenVersion, extensionVersion)) {
-						this.showWhatsNewTooltip(tab, lastSeenVersion, extensionVersion);
+					// Fallback behavior for if the last seen version in storage is somehow in a corrupted format
+					try {
+						this.getLastSeenVersion().then((lastSeenVersion) => {
+							// We don't show updates more recent than the local version for now, as it is easy
+							// for a changelog to be released before a version is actually out
+							if (this.shouldShowWhatsNewTooltip(tab, lastSeenVersion, extensionVersion)) {
+								this.showWhatsNewTooltip(tab, lastSeenVersion, extensionVersion);
+								return;
+							}
+						});
+					} catch (e) {
+						this.updateLastSeenVersionInStorageToCurrent();
 						return;
 					}
 				});
-			} catch (e) {
-				this.updateLastSeenVersionInStorageToCurrent();
-				return;
 			}
 		});
 	}
@@ -391,7 +395,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	/**
 	 * Returns True if the Extension determines the tab is a Video, false otherwise
 	 */
-	protected abstract checkIfTabIsAVideoDomain(tab: TTab): boolean;
+	protected abstract checkIfTabIsAVideoDomain(tab: TTab): Promise<boolean>;
 
 	/**
 	 * Updates the ClientInfo with the given flighting info.

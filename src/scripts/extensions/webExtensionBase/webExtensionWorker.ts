@@ -40,9 +40,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.noOpTrackerInvoked = false;
 
 		let isPrivateWindow: Boolean = !!tab.incognito || !!tab.inPrivate;
-		this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, isPrivateWindow.toString());
 
-		this.invokeDebugLoggingIfEnabled();
+		this.consoleOutputEnabledFlagProcessed.then(() => {
+			this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, isPrivateWindow.toString());
+			this.invokeDebugLoggingIfEnabled();
+		});
 	}
 
 	/**
@@ -81,7 +83,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		return new Promise<boolean>((resolve) => {
 			WebExtension.browser.scripting.executeScript({
 				target: { tabId: this.tab.id },
-				function: () => {}
+				func: () => {}
 			}, () => {
 				if (WebExtension.browser.runtime.lastError) {
 					Log.ErrorUtils.sendFailureLogRequest({
@@ -94,7 +96,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						clientInfo: this.clientInfo
 					});
 
-					// In Firefox, alert() is not callable from the background, so it looks like we have to no-op here
+					// In Firefox, alert() is not callable from the service worker, so it looks like we have to no-op here
 					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
 						InjectHelper.alertUserOfUnclippablePage();
 					}
@@ -144,7 +146,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		return new Promise<boolean>((resolve) => {
 			WebExtension.browser.scripting.executeScript({
 				target: { tabId: this.tab.id },
-				function: () => {}
+				func: () => {}
 			}, () => {
 				// It's safest to not use lastError in the resolve due to special behavior in the Chrome API
 				if (WebExtension.browser.runtime.lastError) {

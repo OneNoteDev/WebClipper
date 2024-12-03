@@ -3,6 +3,31 @@ export interface ResponsePackage<T> {
 	response: Response;
 }
 
+/**
+ * The interface below has been replicated from the OneNoteApi library
+ * so as to modify the return type of each function from a Promise<ResponsePackage<any>>
+ * to a Promise<ResponsePackage<any> | OneNoteApi.RequestError> to match the return types
+ * of the functions in the OneNoteApi.OneNoteApi class.
+ */
+export interface IOneNoteApi {
+	createNotebook(name: string): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	createPage(page: OneNoteApi.OneNotePage, sectionId?: string): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	sendBatchRequest(batchRequest: OneNoteApi.BatchRequest): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	getPage(pageId: string): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	getPageContent(pageId: string): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	getPages(options: { top?: number, sectionId?: string }): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	updatePage(pageId: string, revisions: OneNoteApi.Revision[]): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	createSection(notebookId: string, name: string): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	getNotebooks(excludeReadOnlyNotebooks?: boolean): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	getNotebooksWithExpandedSections(expands?: number, excludeReadOnlyNotebooks?: boolean): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	getNotebookByName(name: string): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+	pagesSearch(query: string): Promise<OneNoteApi.ResponsePackage<any> | OneNoteApi.RequestError>;
+}
+
+/**
+ * The code below has been replicated from the OneNoteApi library
+ * so as to accept a response instead of an XMLHttpRequest.
+ */
 export class ErrorUtils {
 	public static createRequestErrorObject(response: Response, errorType: OneNoteApi.RequestErrorType, timeout = 30000): Promise<OneNoteApi.RequestError> {
 		return new Promise<OneNoteApi.RequestError>((resolve, reject) => {
