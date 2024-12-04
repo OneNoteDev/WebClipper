@@ -101,8 +101,15 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	private invokeClipperInTab(tab: W3CTab, invokeInfo: InvokeInfo, options: InvokeOptions) {
-		let worker = this.getOrCreateWorkerForTab(tab, this.getIdFromTab);
-		worker.closeAllFramesAndInvokeClipper(invokeInfo, options);
+		/**
+		 * Create a worker only after the clipperId is processed, since the clientInfo is available
+		 * only after the clipperId is processed. This is to ensure that the worker is created with the
+		 * correct clientInfo.
+		 */
+		this.clipperIdProcessed.then(() => {
+			let worker = this.getOrCreateWorkerForTab(tab, this.getIdFromTab);
+			worker.closeAllFramesAndInvokeClipper(invokeInfo, options);
+		});
 	}
 
 	private onInstalled() {
