@@ -14,10 +14,10 @@ import { OffscreenMessageTypes } from "../communicator/offscreenMessageTypes";
 import { ClipperStorageKeys } from "../storage/clipperStorageKeys";
 
 export module ClipperStateUtilities {
-	export function isUserLoggedIn(state: ClipperState): boolean {
+	export function isUserLoggedIn(state: ClipperState, refreshUserInfo?: boolean): boolean {
 		if (state.userResult && state.userResult.status && state.userResult.data && !!state.userResult.data.user) {
 			return true;
-		} else {
+		} else if (!!refreshUserInfo) {
 			sendToOffscreenDocument(OffscreenMessageTypes.getFromLocalStorage, {
 				key: ClipperStorageKeys.isUserLoggedIn
 			}).then((isUserLoggedIn) => {
