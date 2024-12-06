@@ -160,7 +160,7 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			return PanelType.Loading;
 		}
 
-		if (!ClipperStateUtilities.isUserLoggedIn(this.props.clipperState, true)) {
+		if (!ClipperStateUtilities.isUserLoggedIn(this.props.clipperState)) {
 			return PanelType.SignInNeeded;
 		}
 

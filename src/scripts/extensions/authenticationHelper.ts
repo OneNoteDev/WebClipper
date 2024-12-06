@@ -43,6 +43,7 @@ export class AuthenticationHelper {
 				if (storedUserInformation) {
 					let currentInfo: any;
 					try {
+						this.clipperData.setValue(ClipperStorageKeys.isUserLoggedIn, "true");
 						currentInfo = JSON.parse(storedUserInformation);
 					} catch (e) {
 						this.logger.logJsonParseUnexpected(storedUserInformation);

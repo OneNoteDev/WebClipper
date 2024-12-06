@@ -21,6 +21,7 @@ import {InjectHelper} from "../injectHelper";
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
+import {ClipperStorageKeys} from "../../storage/clipperStorageKeys";
 
 type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
 type WebResponseCacheDetails = chrome.webRequest.WebResponseCacheDetails;
@@ -72,6 +73,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	protected doSignOutAction(authType: AuthType) {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
 		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		this.clipperData.setValue(ClipperStorageKeys.isUserLoggedIn, "false");
 		fetch(signOutUrl);
 	}
 
