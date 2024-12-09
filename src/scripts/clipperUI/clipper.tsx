@@ -630,7 +630,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private handleSignOut(authType: string): void {
-		this.state.setState(this.getSignOutState());
+		Clipper.storeValue(ClipperStorageKeys.isUserLoggedIn, "false", () => {
+			this.state.setState(this.getSignOutState());
+		});
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.signOutUser, { param: AuthType[authType] });
 
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.SignOut);

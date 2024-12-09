@@ -79,6 +79,7 @@ export class AuthenticationHelper {
 						}
 						getInfoEvent.setCustomProperty(Log.PropertyName.Custom.DataBoundary, userDataBoundary);
 						response.data.dataBoundary = userDataBoundary;
+						this.clipperData.setValue(ClipperStorageKeys.isUserLoggedIn, "true");
 						this.user.set({ user: response.data, lastUpdated: response.lastUpdated, updateReason: updateReason, writeableCookies: writeableCookies });
 					} else {
 						this.user.set({ updateReason: updateReason, writeableCookies: writeableCookies });

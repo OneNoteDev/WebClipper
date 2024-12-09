@@ -70,11 +70,11 @@ export class Clipper {
 		Clipper.storage.getValues(storageKeys, () => {}, true);
 	}
 
-	public static storeValue(key: string, value: string): void {
+	public static storeValue(key: string, value: string, callback?: (value: string) => void): void {
 		if (!Clipper.storage) {
 			throw new Error("The remote storage needs to be set up with the extension communicator first");
 		}
-		Clipper.storage.setValue(key, value, undefined);
+		Clipper.storage.setValue(key, value, callback);
 	}
 
 	private static setUpRemoteStorage(extensionCommunicator: Communicator) {

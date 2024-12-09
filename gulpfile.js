@@ -59,7 +59,7 @@ var PATHS = {
 
 var RTL_SUFFIX = "-rtl";
 
-var ARIA_LIB_VERSION = "2.9.0";
+var ARIA_LIB_VERSION = "2.8.2";
 
 // Used for debugging glob declarations
 function printGlobResults(glob) {

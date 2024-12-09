@@ -41,11 +41,17 @@ export class ClipperData implements Storage {
 		return this.storage.getValues(keys);
 	}
 
-	public setValue(key: string, value: string): void {
-		this.storageGateStrategy.shouldSet(key, value).then((result) => {
-			if (result) {
-				this.storage.setValue(key, value);
-			}
+	public async setValue(key: string, value: string): Promise<void> {
+		return new Promise<void>(resolve => {
+			this.storageGateStrategy.shouldSet(key, value).then((result) => {
+				if (result) {
+					this.storage.setValue(key, value).then(() => {
+						resolve();
+					});
+				} else {
+					resolve();
+				}
+			});
 		});
 	}
 
