@@ -36,15 +36,20 @@ export class LocalStorage implements Storage {
 		return values;
 	}
 
-	public setValue(key: string, value: string): void {
-		if (!value) {
-			this.removeKey(key);
-		} else {
-			sendToOffscreenDocument(OffscreenMessageTypes.setToLocalStorage, {
-				key: key,
-				value: value,
-			});
-		}
+	public async setValue(key: string, value: string): Promise<void> {
+		return new Promise<void>(resolve => {
+			if (!value) {
+				this.removeKey(key);
+				resolve();
+			} else {
+				sendToOffscreenDocument(OffscreenMessageTypes.setToLocalStorage, {
+					key: key,
+					value: value,
+				}).then(() => {
+					resolve();
+				});
+			}
+		});
 	}
 
 	public removeKey(key: string): boolean {

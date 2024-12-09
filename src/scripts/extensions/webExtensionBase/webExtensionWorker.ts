@@ -73,7 +73,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	protected doSignOutAction(authType: AuthType) {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
 		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
-		this.clipperData.setValue(ClipperStorageKeys.isUserLoggedIn, "false");
 		fetch(signOutUrl);
 	}
 

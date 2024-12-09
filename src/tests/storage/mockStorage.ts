@@ -32,7 +32,7 @@ export class MockStorage implements Storage {
 		return values;
 	}
 
-	public setValue(key: string, value: string): void {
+	public async setValue(key: string, value: string): Promise<void> {
 		this.storedValues[key] = value;
 	}
 

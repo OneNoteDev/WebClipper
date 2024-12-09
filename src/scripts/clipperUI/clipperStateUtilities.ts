@@ -18,6 +18,10 @@ export module ClipperStateUtilities {
 		if (state.userResult && state.userResult.status && state.userResult.data && !!state.userResult.data.user) {
 			return true;
 		} else if (!!refreshUserInfo) {
+			/**
+			 * Refresh the user info if the user is logged in and the user info is not available.
+			 * This could have possibly happened due to inactivity of the service worker.
+			 */
 			sendToOffscreenDocument(OffscreenMessageTypes.getFromLocalStorage, {
 				key: ClipperStorageKeys.isUserLoggedIn
 			}).then((isUserLoggedIn) => {
@@ -65,6 +69,12 @@ export module ClipperStateUtilities {
 					});
 				}
 			});
+			/**
+			 * There isn't a need to await the response from the offscreen document since the isUserLoggedIn
+			 * function will eventually return true once the user info is updated, and the signed in panel
+			 * will be shown to the user.
+			 */
+			return false;
 		}
 	}
 
