@@ -19,4 +19,5 @@ export module ClipperStorageKeys {
 	export var numSuccessfulClipsRatingsEnablement = "numSuccessfulClipsRatingsEnablement";
 	export var numTimesTooltipHasBeenSeenBase = "numTimesTooltipHasBeenSeen";
 	export var userInformation = "userInformation";
+	export var isUserLoggedIn = "isUserLoggedIn";
 }
