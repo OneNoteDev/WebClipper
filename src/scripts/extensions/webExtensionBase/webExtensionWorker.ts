@@ -21,7 +21,6 @@ import {InjectHelper} from "../injectHelper";
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
-import {ClipperStorageKeys} from "../../storage/clipperStorageKeys";
 
 type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
 type WebResponseCacheDetails = chrome.webRequest.WebResponseCacheDetails;
