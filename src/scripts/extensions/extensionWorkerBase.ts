@@ -40,6 +40,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	private onUnloading: () => void;
 	private loggerId: string;
 	private clipperFunnelAlreadyLogged = false;
+	private keepAlive: number;
 
 	protected consoleOutputEnabledFlagProcessed: Promise<void>;
 	protected tab: TTab;
@@ -458,6 +459,14 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.uiCommunicator.broadcastAcrossCommunicator(this.auth.user, Constants.SmartValueKeys.user);
 		this.uiCommunicator.broadcastAcrossCommunicator(this.clientInfo, Constants.SmartValueKeys.clientInfo);
 		this.uiCommunicator.broadcastAcrossCommunicator(this.sessionId, Constants.SmartValueKeys.sessionId);
+
+		this.uiCommunicator.registerFunction(Constants.FunctionKeys.keepAlive, () => {
+			this.keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+		});
+
+		this.uiCommunicator.registerFunction(Constants.FunctionKeys.clearKeepAlive, () => {
+			clearInterval(this.keepAlive);
+		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.clipperStrings, () => {
 			return new Promise<string>((resolve) => {

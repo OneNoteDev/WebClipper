@@ -449,6 +449,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}), this.state.setState);
 		});
 
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.keepAlive);
+
 		Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {
 			if (updatedClientInfo) {
 				this.state.setState({
@@ -677,6 +679,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private startClip(): void {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.clearKeepAlive);
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 
 		this.storeLastClippedInformation();

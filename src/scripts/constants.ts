@@ -327,6 +327,8 @@ export module Constants {
 		export var unloadHandler = "UNLOAD_HANDLER";
 		export var updateFrameHeight = "UPDATE_FRAME_HEIGHT";
 		export var updatePageInfoIfUrlChanged = "UPDATE_PAGE_INFO_IF_URL_CHANGED";
+		export var keepAlive = "KEEP_ALIVE";
+		export var clearKeepAlive = "CLEAR_KEEP_ALIVE";
 	}
 
 	export module KeyCodes {
