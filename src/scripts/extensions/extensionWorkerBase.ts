@@ -461,11 +461,24 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.uiCommunicator.broadcastAcrossCommunicator(this.sessionId, Constants.SmartValueKeys.sessionId);
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.keepAlive, () => {
+			if (!!this.keepAlive) {
+				clearInterval(this.keepAlive);
+			}
 			this.keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+			// Ensure to clear the interval after 10 minutes if it hasn't been cleared already
+			setTimeout(() => {
+				if (!!this.keepAlive) {
+					clearInterval(this.keepAlive);
+					this.keepAlive = undefined;
+				}
+			}, 10 * 60 * 1000);
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.clearKeepAlive, () => {
-			clearInterval(this.keepAlive);
+			if (!!this.keepAlive) {
+				clearInterval(this.keepAlive);
+				this.keepAlive = undefined;
+			}
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.clipperStrings, () => {
