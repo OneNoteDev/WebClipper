@@ -1,6 +1,6 @@
 # Change Log
 
-## 3.9.9 (December 2024)
+## 3.10.0 (December 2024)
 * Improvement : Completed the migration to Manifest V3 on Google Chrome.
 
 ## 3.9.8 (October 2024)
