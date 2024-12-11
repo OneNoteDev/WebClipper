@@ -449,7 +449,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}), this.state.setState);
 		});
 
-		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.keepAlive);
+		// Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.keepAlive);
 
 		Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {
 			if (updatedClientInfo) {
@@ -678,8 +678,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}});
 	}
 
-	private startClip(): void {
+	private clearKeepAlive(): void {
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.clearKeepAlive);
+	}
+
+	private startClip(): void {
+		this.clearKeepAlive();
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 
 		this.storeLastClippedInformation();
@@ -784,7 +788,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 						onSignInInvoked={this.handleSignIn.bind(this) }
 						onSignOutInvoked={this.handleSignOut.bind(this) }
 						updateFrameHeight={this.updateFrameHeight.bind(this) }
-						onStartClip={this.handleStartClip.bind(this) } />
+						onStartClip={this.handleStartClip.bind(this)}
+						clearKeepAlive={this.clearKeepAlive.bind(this)}
+					/>
 				</div>
 			</div>
 		);

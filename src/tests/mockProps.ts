@@ -232,7 +232,9 @@ export module MockProps {
 			updateFrameHeight: (newContainerHeight: number) => {
 			},
 			onStartClip: () => {
-			}
+			},
+			clearKeepAlive: () => {
+			},
 		};
 	}
 

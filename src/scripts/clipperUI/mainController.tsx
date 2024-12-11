@@ -58,6 +58,7 @@ export interface MainControllerProps extends ClipperStateProp {
 	onSignOutInvoked: (authType: string) => void;
 	updateFrameHeight: (newContainerHeight: number) => void;
 	onStartClip: () => void;
+	clearKeepAlive: () => void;
 }
 
 export class MainControllerClass extends ComponentBase<MainControllerState, MainControllerProps> {
@@ -191,6 +192,8 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 		closeEvent.setCustomProperty(Log.PropertyName.Custom.CurrentPanel, PanelType[this.state.currentPanel]);
 		closeEvent.setCustomProperty(Log.PropertyName.Custom.CloseReason, CloseReason[closeReason]);
 		Clipper.logger.logEvent(closeEvent);
+
+		this.props.clearKeepAlive();
 
 		// Clear region selections on clipper exit rather than invoke to avoid conflicting logic with scenarios like context menu image selection
 		this.props.clipperState.setState({

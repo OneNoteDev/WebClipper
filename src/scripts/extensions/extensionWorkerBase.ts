@@ -185,6 +185,18 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * Skeleton method that notifies the UI to invoke the Clipper. Also performs logging.
 	 */
 	public invokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
+		if (!!this.keepAlive) {
+			clearInterval(this.keepAlive);
+		}
+		this.keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+		// Ensure to clear the interval after 10 minutes if it hasn't been cleared already
+		setTimeout(() => {
+			if (!!this.keepAlive) {
+				clearInterval(this.keepAlive);
+				this.keepAlive = undefined;
+			}
+		}, 10 * 60 * 1000);
+
 		// For safety, we enforce that the object we send is never undefined.
 		let invokeOptionsToSend: InvokeOptions = {
 			invokeDataForMode: options ? options.invokeDataForMode : undefined,
