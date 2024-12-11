@@ -449,8 +449,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			}), this.state.setState);
 		});
 
-		// Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.keepAlive);
-
 		Clipper.getExtensionCommunicator().subscribeAcrossCommunicator(clientInfo, Constants.SmartValueKeys.clientInfo, (updatedClientInfo: ClientInfo) => {
 			if (updatedClientInfo) {
 				this.state.setState({

@@ -110,6 +110,20 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		}
 	}
 
+	private setKeepAlive() {
+		if (!!this.keepAlive) {
+			clearInterval(this.keepAlive);
+		}
+		this.keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+		// Ensure to clear the interval after 10 minutes if it hasn't been cleared already
+		setTimeout(() => {
+			if (!!this.keepAlive) {
+				clearInterval(this.keepAlive);
+				this.keepAlive = undefined;
+			}
+		}, 10 * 60 * 1000);
+	}
+
 	/**
 	 * Get the unique id associated with this worker's tab. The type is any type that allows us to distinguish
 	 * between tabs, and is dependent on the browser itself.
@@ -185,17 +199,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * Skeleton method that notifies the UI to invoke the Clipper. Also performs logging.
 	 */
 	public invokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
-		if (!!this.keepAlive) {
-			clearInterval(this.keepAlive);
-		}
-		this.keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
-		// Ensure to clear the interval after 10 minutes if it hasn't been cleared already
-		setTimeout(() => {
-			if (!!this.keepAlive) {
-				clearInterval(this.keepAlive);
-				this.keepAlive = undefined;
-			}
-		}, 10 * 60 * 1000);
+		this.setKeepAlive();
 
 		// For safety, we enforce that the object we send is never undefined.
 		let invokeOptionsToSend: InvokeOptions = {
@@ -473,17 +477,11 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.uiCommunicator.broadcastAcrossCommunicator(this.sessionId, Constants.SmartValueKeys.sessionId);
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.keepAlive, () => {
-			if (!!this.keepAlive) {
-				clearInterval(this.keepAlive);
-			}
-			this.keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
-			// Ensure to clear the interval after 10 minutes if it hasn't been cleared already
-			setTimeout(() => {
-				if (!!this.keepAlive) {
-					clearInterval(this.keepAlive);
-					this.keepAlive = undefined;
-				}
-			}, 10 * 60 * 1000);
+			/**
+			 * This function is currently not being called from anywhere, but it is being registered
+			 * so that it may be used in the future if needed.
+			 */
+			this.setKeepAlive();
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.clearKeepAlive, () => {
