@@ -676,7 +676,12 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		}});
 	}
 
+	private clearKeepAlive(): void {
+		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.clearKeepAlive);
+	}
+
 	private startClip(): void {
+		this.clearKeepAlive();
 		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
 
 		this.storeLastClippedInformation();
@@ -781,7 +786,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 						onSignInInvoked={this.handleSignIn.bind(this) }
 						onSignOutInvoked={this.handleSignOut.bind(this) }
 						updateFrameHeight={this.updateFrameHeight.bind(this) }
-						onStartClip={this.handleStartClip.bind(this) } />
+						onStartClip={this.handleStartClip.bind(this)}
+						clearKeepAlive={this.clearKeepAlive.bind(this)}
+					/>
 				</div>
 			</div>
 		);
