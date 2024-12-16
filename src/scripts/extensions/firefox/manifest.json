@@ -27,8 +27,7 @@
         "tabs",
         "webRequest",
         "storage",
-        "webNavigation",
-        "notifications"
+        "webNavigation"
     ],
 
     "applications": {

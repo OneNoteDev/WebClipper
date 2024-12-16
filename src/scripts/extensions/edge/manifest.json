@@ -29,8 +29,7 @@
         "tabs",
         "webRequest",
         "storage",
-        "webNavigation",
-        "notifications"
+        "webNavigation"
     ],
 
     "content_security_policy": "script-src 'self'; object-src 'self'",

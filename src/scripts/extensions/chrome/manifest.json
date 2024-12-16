@@ -42,7 +42,6 @@
       "webRequest",
       "storage",
       "webNavigation",
-      "notifications",
       "offscreen"
     ],
     "host_permissions": [
