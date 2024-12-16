@@ -244,11 +244,11 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		let type = this.checkIfTabMatchesATooltipType(tab, tooltipTypes);
 
 		if (!type) {
-			return;
+			return Promise.reject(undefined);
 		}
 
 		if (!await this.tooltip.tooltipDelayIsOver(type, Date.now())) {
-			return;
+			return Promise.reject(undefined);
 		}
 
 		return type;
@@ -337,6 +337,9 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 						this.showTooltip(tab, typeToShow);
 						return;
 					}
+				})
+				.catch(() => {
+					// No specific actions to be taken if shouldShowTooltip returns a failed promise
 				});
 
 				this.shouldShowVideoTooltip(tab).then((shouldShow) => {
