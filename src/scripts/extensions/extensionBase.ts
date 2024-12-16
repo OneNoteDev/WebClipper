@@ -41,7 +41,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
-	protected static version = "3.10.0";
+	protected static version = "3.10.1";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
@@ -240,15 +240,15 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		this.updateClientInfoWithFlightInformation([]);
 	}
 
-	private shouldShowTooltip(tab: TTab, tooltipTypes: TooltipType[]): TooltipType {
+	private async shouldShowTooltip(tab: TTab, tooltipTypes: TooltipType[]): Promise<TooltipType> {
 		let type = this.checkIfTabMatchesATooltipType(tab, tooltipTypes);
 
 		if (!type) {
-			return;
+			return Promise.reject(undefined);
 		}
 
-		if (!this.tooltip.tooltipDelayIsOver(type, Date.now())) {
-			return;
+		if (!await this.tooltip.tooltipDelayIsOver(type, Date.now())) {
+			return Promise.reject(undefined);
 		}
 
 		return type;
@@ -256,7 +256,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 
 	private async shouldShowVideoTooltip(tab: TTab): Promise<boolean> {
 		const isTabAVideoDomain = await this.checkIfTabIsAVideoDomain(tab);
-		if (isTabAVideoDomain && this.tooltip.tooltipDelayIsOver(TooltipType.Video, Date.now())) {
+		if (isTabAVideoDomain && await this.tooltip.tooltipDelayIsOver(TooltipType.Video, Date.now())) {
 			return true;
 		}
 		return false;
@@ -332,11 +332,15 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
 				let tooltips = [TooltipType.Pdf, TooltipType.Product, TooltipType.Recipe];
 				// Returns the Type of tooltip to show IF the delay is over and the tab has the correct content type
-				let typeToShow = this.shouldShowTooltip(tab, tooltips);
-				if (typeToShow) {
-					this.showTooltip(tab, typeToShow);
-					return;
-				}
+				this.shouldShowTooltip(tab, tooltips).then((typeToShow) => {
+					if (typeToShow) {
+						this.showTooltip(tab, typeToShow);
+						return;
+					}
+				})
+				.catch(() => {
+					// No specific actions to be taken if shouldShowTooltip returns a failed promise
+				});
 
 				this.shouldShowVideoTooltip(tab).then((shouldShow) => {
 					if (shouldShow) {
