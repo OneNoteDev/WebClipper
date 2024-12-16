@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.1 (December 2024)
+* Bug : Fixed showing tooltip consistently on video and pdf clips. 
+
 ## 3.10.0 (December 2024)
 * Improvement : Completed the migration to Manifest V3 on Google Chrome.
 
