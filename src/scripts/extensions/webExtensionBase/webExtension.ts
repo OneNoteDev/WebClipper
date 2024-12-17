@@ -244,13 +244,19 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	private registerTabCreateOrUpdateListener() {
+		const matchesAnyUnclippablePage = (url) => {
+			const unclippablePages = ["chrome://*", "edge://*"];
+			return unclippablePages.some(unclippablePage => url.match(unclippablePage))
+		};
+
 		WebExtension.browser.tabs.onCreated.addListener((tab: W3CTab) => {
-		if (tab.url.match("chrome://*")) {
+		if (matchesAnyUnclippablePage(tab.url)) {
 			WebExtension.browser.action.disable(tab.id);
 		}
 		});
+		
 		WebExtension.browser.tabs.onUpdated.addListener((tabId: number, changeInfo: any, tab: W3CTab) => {
-			if (tab.url.match("chrome://*")) {
+			if (matchesAnyUnclippablePage(tab.url)) {
 				WebExtension.browser.action.disable(tabId);
 			}
 		});
