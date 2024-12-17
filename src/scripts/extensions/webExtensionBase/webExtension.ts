@@ -46,6 +46,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 			this.registerContextMenuItems();
 		});
 		this.registerInstallListener();
+		this.registerTabCreateOrUpdateListener();
 		this.registerTabRemoveListener();
 	}
 
@@ -238,6 +239,19 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 			let worker = this.getExistingWorkerForTab(tabId);
 			if (worker) {
 				this.removeWorker(worker);
+			}
+		});
+	}
+
+	private registerTabCreateOrUpdateListener() {
+		WebExtension.browser.tabs.onCreated.addListener((tab: W3CTab) => {
+		if (tab.url.match("chrome://*")) {
+			WebExtension.browser.action.disable(tab.id);
+		}
+		});
+		WebExtension.browser.tabs.onUpdated.addListener((tabId: number, changeInfo: any, tab: W3CTab) => {
+			if (tab.url.match("chrome://*")) {
+				WebExtension.browser.action.disable(tabId);
 			}
 		});
 	}
