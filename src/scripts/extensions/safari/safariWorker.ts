@@ -37,7 +37,7 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 		this.tabId = tab;
 		this.noOpTrackerInvoked = false;
 
-		this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, tab.private.toString());
+		this.logger.then(sessionLogger => sessionLogger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, tab.private.toString()));
 
 		this.invokeDebugLoggingIfEnabled();
 	}
@@ -54,8 +54,8 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 	 * authentication. Otherwise, it resolves with true if the redirect endpoint was hit as a result of a successful
 	 * sign in attempt, and false if it was not hit (e.g., user manually closed the popup)
 	 */
-	protected doSignInAction(authType: AuthType): Promise<boolean> {
-		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
+	protected async doSignInAction(authType: AuthType): Promise<boolean> {
+		let usidQueryParamValue = await this.getUserSessionIdQueryParamValue();
 		let signInUrl = ClipperUrls.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		return this.launchSafariPopup(signInUrl, Constants.Urls.Authentication.authRedirectUrl);
@@ -65,11 +65,12 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 	 * Signs the user out
 	 */
 	protected doSignOutAction(authType: AuthType) {
-		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		this.getUserSessionIdQueryParamValue().then(usidQueryParamValue => {
+			let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
-		// The signout doesn't work in an iframe in the Safari background page, so we need to launch a popup instead
-		this.launchSafariPopup(signOutUrl);
+			// The signout doesn't work in an iframe in the Safari background page, so we need to launch a popup instead
+			this.launchSafariPopup(signOutUrl);
+		});
 	}
 
 	/**

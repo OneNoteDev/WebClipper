@@ -51,7 +51,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		ExtensionBase.extensionId = StringUtils.generateGuid();
 
 		this.clipperData = clipperData;
-		this.clipperData.setLogger(this.logger);
+		this.clipperData.setLogger(Promise.resolve(this.logger));
 		this.auth = new AuthenticationHelper(this.clipperData, this.logger);
 		this.tooltip = new TooltipHelper(this.clipperData);
 
@@ -281,7 +281,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 			Promise.all([lastSeenTooltipTimeBase, numTimesTooltipHasBeenSeenBase]).then((values) => {
 				tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.LastSeenTooltipTime, values[0]);
 				tooltipImpressionEvent.setCustomProperty(Log.PropertyName.Custom.NumTimesTooltipHasBeenSeen, values[1]);
-				worker.getLogger().logEvent(tooltipImpressionEvent);
+				worker.getLogger().then(sessionLogger => sessionLogger.logEvent(tooltipImpressionEvent));
 			});
 		});
 	}
@@ -300,7 +300,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 					if (wasInvoked) {
 						let whatsNewImpressionEvent = new Log.Event.BaseEvent(Log.Event.Label.WhatsNewImpression);
 						whatsNewImpressionEvent.setCustomProperty(Log.PropertyName.Custom.FeatureEnabled, wasInvoked);
-						worker.getLogger().logEvent(whatsNewImpressionEvent);
+						worker.getLogger().then(sessionLogger => sessionLogger.logEvent(whatsNewImpressionEvent));
 
 						// We don't want to do this if the tooltip was not invoked (e.g., on about:blank) so we can show it at the next opportunity
 						this.updateLastSeenVersionInStorageToCurrent();

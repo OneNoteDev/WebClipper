@@ -26,7 +26,7 @@ export class ClipperCachedHttpTests extends TestModule {
 
 	protected tests() {
 		test("When getFreshValue is called with an undefined key, a failure should be logged", () => {
-			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, this.stubLogger);
+			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, Promise.resolve(this.stubLogger));
 
 			clipperCachedHttp.getFreshValue(undefined, MockStorage.fetchNonLocalData);
 
@@ -37,7 +37,7 @@ export class ClipperCachedHttpTests extends TestModule {
 		});
 
 		test("When getFreshValue is called with an empty key, a failure should be logged", () => {
-			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, this.stubLogger);
+			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, Promise.resolve(this.stubLogger));
 
 			clipperCachedHttp.getFreshValue("", MockStorage.fetchNonLocalData);
 
@@ -48,7 +48,7 @@ export class ClipperCachedHttpTests extends TestModule {
 		});
 
 		test("When getFreshValue is called with an undefined fetchNonLocalData parameter, a failure should be logged", () => {
-			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, this.stubLogger);
+			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, Promise.resolve(this.stubLogger));
 
 			clipperCachedHttp.getFreshValue("k", undefined);
 
@@ -59,7 +59,7 @@ export class ClipperCachedHttpTests extends TestModule {
 		});
 
 		test("When getFreshValue is called with an updateInterval of less than 0, a failure should be logged", () => {
-			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, this.stubLogger);
+			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, Promise.resolve(this.stubLogger));
 
 			clipperCachedHttp.getFreshValue("k", MockStorage.fetchNonLocalData, -1);
 
@@ -72,7 +72,7 @@ export class ClipperCachedHttpTests extends TestModule {
 		test("When getFreshValue is called with valid parameters (assuming when nothing is in storage), logEvent should be called once", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, this.stubLogger);
+			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, Promise.resolve(this.stubLogger));
 
 			clipperCachedHttp.getFreshValue("k", MockStorage.fetchNonLocalData, 0).then((timeStampedData) => {
 				let logEventSpy = this.stubLogger.logEvent as sinon.SinonSpy;
@@ -96,7 +96,7 @@ export class ClipperCachedHttpTests extends TestModule {
 			} as TimeStampedData;
 			this.mockStorage.setValue(key, JSON.stringify(value));
 
-			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, this.stubLogger);
+			let clipperCachedHttp = new ClipperCachedHttp(this.mockStorage, Promise.resolve(this.stubLogger));
 
 			clipperCachedHttp.getFreshValue(key, MockStorage.fetchNonLocalData, expiry).then((timeStampedData) => {
 				let logEventSpy = this.stubLogger.logEvent as sinon.SinonSpy;
