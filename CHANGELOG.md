@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.2 (December 2024)
+Improvement : Removed the notification permission
+
 ## 3.10.1 (December 2024)
 * Bug : Fixed showing tooltip consistently on video and pdf clips. 
 
