@@ -42,7 +42,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	private clipperFunnelAlreadyLogged = false;
 	private keepAlive: number;
 
-	protected consoleOutputEnabledFlagProcessed: Promise<void>;
 	protected tab: TTab;
 	protected tabId: TTabIdentifier;
 
@@ -55,7 +54,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected injectCommunicator: Communicator;
 	protected pageNavInjectCommunicator: Communicator;
 
-	protected logger: SessionLogger;
+	protected logger: Promise<SessionLogger>;
 
 	protected clientInfo: SmartValue<ClientInfo>;
 	protected sessionId: SmartValue<string>;
@@ -75,10 +74,14 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		this.clipperData = clipperData;
 		this.auth = auth;
 		this.clientInfo = clientInfo;
-		this.consoleOutputEnabledFlagProcessed = LogHelpers.isConsoleOutputEnabled().then((isConsoleOutputEnabled) => {
-			this.logger = LogManager.createExtLogger(this.sessionId, isConsoleOutputEnabled ? this.debugLoggingInjectCommunicator : undefined);
-			this.logger.logSessionStart();
-			this.clipperData.setLogger(this.logger);
+		this.logger = new Promise<SessionLogger>(resolve => {
+			LogHelpers.isConsoleOutputEnabled().then((isConsoleOutputEnabled) => {
+				resolve(LogManager.createExtLogger(this.sessionId, isConsoleOutputEnabled ? this.debugLoggingInjectCommunicator : undefined));
+			});
+		});
+		this.clipperData.setLogger(this.logger);
+		this.logger.then((sessionLogger) => {
+			sessionLogger.logSessionStart();
 
 			this.initializeCommunicators();
 			this.initializeContextProperties();
@@ -87,13 +90,15 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 	private initializeContextProperties() {
 		let clientInfo = this.clientInfo.get();
-		this.logger.setContextProperty(Log.Context.Custom.AppInfoId, Settings.getSetting("App_Id"));
-		this.logger.setContextProperty(Log.Context.Custom.ExtensionLifecycleId, ExtensionBase.getExtensionId());
-		this.logger.setContextProperty(Log.Context.Custom.UserInfoId, undefined);
-		this.logger.setContextProperty(Log.Context.Custom.AuthType, "None");
-		this.logger.setContextProperty(Log.Context.Custom.AppInfoVersion, clientInfo.clipperVersion);
-		this.logger.setContextProperty(Log.Context.Custom.DeviceInfoId, clientInfo.clipperId);
-		this.logger.setContextProperty(Log.Context.Custom.ClipperType, ClientType[clientInfo.clipperType]);
+		this.logger.then((sessionLogger) => {
+			sessionLogger.setContextProperty(Log.Context.Custom.AppInfoId, Settings.getSetting("App_Id"));
+			sessionLogger.setContextProperty(Log.Context.Custom.ExtensionLifecycleId, ExtensionBase.getExtensionId());
+			sessionLogger.setContextProperty(Log.Context.Custom.UserInfoId, undefined);
+			sessionLogger.setContextProperty(Log.Context.Custom.AuthType, "None");
+			sessionLogger.setContextProperty(Log.Context.Custom.AppInfoVersion, clientInfo.clipperVersion);
+			sessionLogger.setContextProperty(Log.Context.Custom.DeviceInfoId, clientInfo.clipperId);
+			sessionLogger.setContextProperty(Log.Context.Custom.ClipperType, ClientType[clientInfo.clipperType]);
+		});
 
 		// Sometimes the worker is created really early (e.g., pageNav, inline extension), so we need to wait
 		// for flighting info to be returned before we set the context property
@@ -101,12 +106,12 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			let clientInfoSetCb = ((newClientInfo) => {
 				if (newClientInfo.flightingInfo) {
 					this.clientInfo.unsubscribe(clientInfoSetCb);
-					this.logger.setContextProperty(Log.Context.Custom.FlightInfo, newClientInfo.flightingInfo.join(","));
+					this.logger.then(sessionLogger => sessionLogger.setContextProperty(Log.Context.Custom.FlightInfo, newClientInfo.flightingInfo.join(",")));
 				}
 			}).bind(this);
 			this.clientInfo.subscribe(clientInfoSetCb, { callOnSubscribe: false });
 		} else {
-			this.logger.setContextProperty(Log.Context.Custom.FlightInfo, clientInfo.flightingInfo.join(","));
+			this.logger.then(sessionLogger => sessionLogger.setContextProperty(Log.Context.Custom.FlightInfo, clientInfo.flightingInfo.join(",")));
 		}
 	}
 
@@ -215,9 +220,9 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			}
 		});
 
-		Promise.all([this.consoleOutputEnabledFlagProcessed, this.invokeClipperBrowserSpecific()]).then(([v, wasInvoked]) => {
+		this.invokeClipperBrowserSpecific().then((wasInvoked) => {
 			if (wasInvoked && !this.clipperFunnelAlreadyLogged) {
-				this.logger.logUserFunnel(Log.Funnel.Label.Invoke);
+				this.logger.then(sessionLogger => sessionLogger.logUserFunnel(Log.Funnel.Label.Invoke));
 				this.clipperFunnelAlreadyLogged = true;
 			}
 			this.logClipperInvoke(invokeInfo, invokeOptionsToSend);
@@ -239,13 +244,13 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 						invokeWhatsNewEvent.setStatus(Log.Status.Failed);
 						invokeWhatsNewEvent.setFailureInfo({ error: "invoking the What's New experience failed" });
 					}
-					this.logger.logEvent(invokeWhatsNewEvent);
+					this.logger.then(sessionLogger => sessionLogger.logEvent(invokeWhatsNewEvent));
 					return Promise.resolve(wasInvoked);
 				});
 			} else {
 				invokeWhatsNewEvent.setStatus(Log.Status.Failed);
 				invokeWhatsNewEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
-				this.logger.logEvent(invokeWhatsNewEvent);
+				this.logger.then(sessionLogger => sessionLogger.logEvent(invokeWhatsNewEvent));
 				return Promise.resolve(false);
 			}
 		});
@@ -259,13 +264,13 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			if (successful) {
 				this.registerTooltipCommunicatorFunctions(tooltipType);
 				return this.invokeTooltipBrowserSpecific(tooltipType).then((wasInvoked) => {
-					this.logger.logEvent(tooltipInvokeEvent);
+					this.logger.then(sessionLogger => sessionLogger.logEvent(tooltipInvokeEvent));
 					return Promise.resolve(wasInvoked);
 				});
 			} else {
 				tooltipInvokeEvent.setStatus(Log.Status.Failed);
 				tooltipInvokeEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
-				this.logger.logEvent(tooltipInvokeEvent);
+				this.logger.then(sessionLogger => sessionLogger.logEvent(tooltipInvokeEvent));
 				return Promise.resolve(false);
 			}
 		});
@@ -282,21 +287,21 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * Clean up anything related to the worker before it stops being used (aka the tab or window was closed)
 	 */
 	public destroy() {
-		this.logger.logSessionEnd(Log.Session.EndTrigger.Unload);
+		this.logger.then(sessionLogger => sessionLogger.logSessionEnd(Log.Session.EndTrigger.Unload));
 	}
 
 	/**
 	 * Returns the current version of localized strings used in the UI.
 	 */
 	protected getLocalizedStrings(locale: string, callback?: Function) {
-		this.logger.setContextProperty(Log.Context.Custom.BrowserLanguage, locale);
+		this.logger.then(sessionLogger => sessionLogger.setContextProperty(Log.Context.Custom.BrowserLanguage, locale));
 
 		this.clipperData.getValue(ClipperStorageKeys.locale).then((storedLocale) => {
 			let localeInStorageIsDifferent = !storedLocale || storedLocale !== locale;
 
 			let getLocaleEvent = new Log.Event.BaseEvent(Log.Event.Label.GetLocale);
 			getLocaleEvent.setCustomProperty(Log.PropertyName.Custom.StoredLocaleDifferentThanRequested, localeInStorageIsDifferent);
-			this.logger.logEvent(getLocaleEvent);
+			this.logger.then(sessionLogger => sessionLogger.logEvent(getLocaleEvent));
 
 			let fetchStringDataFunction = () => { return LocalizationHelper.makeLocStringsFetchRequest(locale); };
 			let updateInterval = localeInStorageIsDifferent ? 0 : ClipperCachedHttp.getDefaultExpiry();
@@ -316,7 +321,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 					callback(undefined);
 				}
 			}).then(() => {
-				this.logger.logEvent(getLocalizedStringsEvent);
+				this.logger.then(sessionLogger => sessionLogger.logEvent(getLocalizedStringsEvent));
 			});
 		});
 	}
@@ -329,9 +334,13 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		});
 	}
 
-	protected getUserSessionIdQueryParamValue(): string {
-		let usidQueryParamValue = this.logger.getUserSessionId();
-		return usidQueryParamValue ? usidQueryParamValue : this.clientInfo.get().clipperId;
+	protected getUserSessionIdQueryParamValue(): Promise<string> {
+		return new Promise<string>(resolve => {
+			this.logger.then(sessionLogger => {
+				let usidQueryParamValue = sessionLogger.getUserSessionId();
+				resolve(usidQueryParamValue ? usidQueryParamValue : this.clientInfo.get().clipperId);
+			});
+		});
 	}
 
 	protected async invokeDebugLoggingIfEnabled(): Promise<boolean> {
@@ -352,7 +361,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 					try {
 						dataAsJson = JSON.parse(event.data);
 					} catch (e) {
-						this.logger.logJsonParseUnexpected(event.data);
+						this.logger.then(sessionLogger => sessionLogger.logJsonParseUnexpected(event.data));
 					}
 
 					if (dataAsJson && (dataAsJson[Constants.Urls.QueryParams.error] || dataAsJson[Constants.Urls.QueryParams.errorDescription])) {
@@ -382,7 +391,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		let invokeClipperEvent = new Log.Event.BaseEvent(Log.Event.Label.InvokeClipper);
 		invokeClipperEvent.setCustomProperty(Log.PropertyName.Custom.InvokeSource, InvokeSource[invokeInfo.invokeSource]);
 		invokeClipperEvent.setCustomProperty(Log.PropertyName.Custom.InvokeMode, InvokeMode[options.invokeMode]);
-		this.logger.logEvent(invokeClipperEvent);
+		this.logger.then(sessionLogger => sessionLogger.logEvent(invokeClipperEvent));
 	}
 
 	/**
@@ -453,10 +462,11 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * should be removed when they fix their iframes not properly loading in the background.
 	 */
 	private doSignOutActionInFrontEnd(authType: AuthType) {
-		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
-		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.createHiddenIFrame, {
-			param: signOutUrl
+		this.getUserSessionIdQueryParamValue().then((usidQueryParamValue) => {
+			let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+			this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.createHiddenIFrame, {
+				param: signOutUrl
+			});
 		});
 	}
 
@@ -564,7 +574,9 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.telemetry, (data: Log.LogDataPackage) => {
-			Log.parseAndLogDataPackage(data, this.logger);
+			this.logger.then((sessionLogger) => {
+				Log.parseAndLogDataPackage(data, sessionLogger);
+			});
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, () => {
@@ -611,7 +623,9 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 	private initializePageNavUiCommunicator() {
 		this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.telemetry, (data: Log.LogDataPackage) => {
-			Log.parseAndLogDataPackage(data, this.logger);
+			this.logger.then((sessionLogger) => {
+				Log.parseAndLogDataPackage(data, sessionLogger);
+			});
 		});
 
 		this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.invokeClipperFromPageNav, (invokeSource: InvokeSource) => {
@@ -621,7 +635,9 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 	private initializePageNavInjectCommunicator() {
 		this.pageNavInjectCommunicator.registerFunction(Constants.FunctionKeys.telemetry, (data: Log.LogDataPackage) => {
-			Log.parseAndLogDataPackage(data, this.logger);
+			this.logger.then((sessionLogger) => {
+				Log.parseAndLogDataPackage(data, sessionLogger);
+			});
 		});
 		this.pageNavInjectCommunicator.registerFunction(Constants.FunctionKeys.unloadHandler, () => {
 			this.tearDownCommunicators();

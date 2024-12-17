@@ -18,14 +18,14 @@ export class ClipperData implements Storage {
 	private storageGateStrategy: StorageGateStrategy;
 	private cachedHttp: ClipperCachedHttp;
 
-	constructor(storage: Storage, logger?: Logger) {
+	constructor(storage: Storage, logger?: Promise<Logger>) {
 		this.storage = storage;
 		this.storageGateStrategy = new ClipperStorageGateStrategy(storage);
 		// We pass 'this' as the Storage object as it handles all the sanity-check gating in the setValue
 		this.cachedHttp = new ClipperCachedHttp(this, logger);
 	}
 
-	public setLogger(logger: Logger) {
+	public setLogger(logger: Promise<Logger>) {
 		this.cachedHttp.setLogger(logger);
 	}
 

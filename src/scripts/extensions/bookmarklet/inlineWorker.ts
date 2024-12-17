@@ -31,7 +31,7 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 		let injectMessageHandlerThunk = () => { return new IFrameMessageHandler(() => parent); };
 		super(clientInfo, auth, new ClipperData(new LocalStorage()), uiMessageHandlerThunk, injectMessageHandlerThunk);
 
-		this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, Log.unknownValue);
+		this.logger.then(sessionLogger => sessionLogger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, Log.unknownValue));
 
 		let invokeOptions = {
 			invokeMode: InvokeMode.Default
@@ -39,7 +39,7 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 		this.sendInvokeOptionsToInject(invokeOptions);
 
 		// The inline worker gets created after the UI was successfully inject, so we can safely log this here
-		this.logger.logUserFunnel(Log.Funnel.Label.Invoke);
+		this.logger.then(sessionLogger => sessionLogger.logUserFunnel(Log.Funnel.Label.Invoke));
 		this.logClipperInvoke({
 			invokeSource: InvokeSource.Bookmarklet
 		}, invokeOptions);
@@ -82,8 +82,8 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 	 * authentication. Otherwise, it resolves with true if the redirect endpoint was hit as a result of a successful
 	 * sign in attempt, and false if it was not hit (e.g., user manually closed the popup)
 	 */
-	protected doSignInAction(authType: AuthType): Promise<boolean> {
-		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
+	protected async doSignInAction(authType: AuthType): Promise<boolean> {
+		let usidQueryParamValue = await this.getUserSessionIdQueryParamValue();
 		let signInUrl = ClipperUrls.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		return this.launchPopupAndWaitForClose(signInUrl);
@@ -93,18 +93,19 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 	 * Signs the user out
 	 */
 	protected doSignOutAction(authType: AuthType) {
-		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		this.getUserSessionIdQueryParamValue().then(usidQueryParamValue => {
+			let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
-		let iframe = document.createElement("iframe");
-		iframe.hidden = true;
-		iframe.style.display = "none";
-		iframe.src = signOutUrl;
-		document.body.appendChild(iframe);
+			let iframe = document.createElement("iframe");
+			iframe.hidden = true;
+			iframe.style.display = "none";
+			iframe.src = signOutUrl;
+			document.body.appendChild(iframe);
+		});
 	}
 
 	private throwNotImplementedFailure(): any {
-		this.logger.logFailure(Log.Failure.Label.NotImplemented, Log.Failure.Type.Unexpected);
+		this.logger.then(sessionLogger => sessionLogger.logFailure(Log.Failure.Label.NotImplemented, Log.Failure.Type.Unexpected));
 		throw new Error("not implemented");
 	}
 }
