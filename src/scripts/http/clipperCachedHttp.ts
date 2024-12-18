@@ -14,14 +14,14 @@ import {CachedHttp, GetResponseAsync, TimeStampedData} from "./cachedHttp";
 export class ClipperCachedHttp extends CachedHttp {
 	private static defaultExpiry = 12 * 60 * 60 * 1000; // 12 hours
 
-	private logger: Promise<Logger>;
+	private logger: Logger;
 
-	constructor(cache: Storage, logger?: Promise<Logger>) {
+	constructor(cache: Storage, logger?: Logger) {
 		super(cache);
 		this.logger = logger;
 	}
 
-	public setLogger(logger: Promise<Logger>) {
+	public setLogger(logger: Logger) {
 		this.logger = logger;
 	}
 
@@ -32,16 +32,16 @@ export class ClipperCachedHttp extends CachedHttp {
 	// Override
 	public getFreshValue(key: string, getRemoteValue: GetResponseAsync, updateInterval = ClipperCachedHttp.defaultExpiry): Promise<TimeStampedData> {
 		if (!key) {
-			this.logger.then(logger => logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
-				{ error: "getFreshValue key parameter should be passed a non-empty string" }, "" + key));
+			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
+				{ error: "getFreshValue key parameter should be passed a non-empty string" }, "" + key);
 			return Promise.resolve(undefined);
 		} else if (!getRemoteValue) {
-			this.logger.then(logger => logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
-				{ error: "getFreshValue getRemoteValue parameter should be passed a non-undefined function" }, "" + getRemoteValue));
+			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
+				{ error: "getFreshValue getRemoteValue parameter should be passed a non-undefined function" }, "" + getRemoteValue);
 			return Promise.resolve(undefined);
 		} else if (updateInterval < 0) {
-			this.logger.then(logger => logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
-				{ error: "getFreshValue updateInterval parameter should be passed a number >= 0" }, "" + updateInterval));
+			this.logger.logFailure(Log.Failure.Label.InvalidArgument, Log.Failure.Type.Unexpected,
+				{ error: "getFreshValue updateInterval parameter should be passed a number >= 0" }, "" + updateInterval);
 			updateInterval = 0;
 		}
 
@@ -68,7 +68,7 @@ export class ClipperCachedHttp extends CachedHttp {
 					fetchNonLocalDataEvent.setFailureInfo(error);
 					reject(error);
 				}).then(() => {
-					this.logger.then(logger => logger.logEvent(fetchNonLocalDataEvent));
+					this.logger.logEvent(fetchNonLocalDataEvent);
 				});
 			});
 		};

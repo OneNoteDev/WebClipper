@@ -41,9 +41,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 		let isPrivateWindow: Boolean = !!tab.incognito || !!tab.inPrivate;
 
-		this.logger.then(sessionLogger => sessionLogger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, isPrivateWindow.toString()));
-
-		this.invokeDebugLoggingIfEnabled();
+		this.consoleOutputEnabledFlagProcessed.then(() => {
+			this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, isPrivateWindow.toString());
+			this.invokeDebugLoggingIfEnabled();
+		});
 	}
 
 	/**
@@ -58,8 +59,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 * authentication. Otherwise, it resolves with true if the redirect endpoint was hit as a result of a successful
 	 * sign in attempt, and false if it was not hit (e.g., user manually closed the popup)
 	 */
-	protected async doSignInAction(authType: AuthType): Promise<boolean> {
-		let usidQueryParamValue = await this.getUserSessionIdQueryParamValue();
+	protected doSignInAction(authType: AuthType): Promise<boolean> {
+		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
 		let signInUrl = ClipperUrls.generateSignInUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 
 		return this.launchWebExtensionPopupAndWaitForClose(signInUrl, Constants.Urls.Authentication.authRedirectUrl);
@@ -69,10 +70,9 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 * Signs the user out
 	 */
 	protected doSignOutAction(authType: AuthType) {
-		this.getUserSessionIdQueryParamValue().then(usidQueryParamValue => {
-			let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
-			fetch(signOutUrl);
-		});
+		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
+		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
+		fetch(signOutUrl);
 	}
 
 	/**
@@ -271,7 +271,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					});
 				} catch (e) {
 					// In the event that there was an exception thrown during the creation of the popup, fallback to using window.open with a monitor
-					this.logger.then(sessionLogger => sessionLogger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, { error: e.message }));
+					this.logger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, { error: e.message });
 
 					this.launchPopupAndWaitForClose(url).then((redirectOccurred) => {
 						// From chrome's background, we currently are unable to reliably determine if the redirect happened
