@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.3 (December 2024)
+Improvement : Disabled the extension for unclippable pages and fixed telemetry logging
+
 ## 3.10.2 (December 2024)
 Improvement : Removed the notification permission
 
