@@ -524,7 +524,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 					WebExtension.browser = chrome;
 					WebExtension.offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
 				} else if (updatedClientInfo.clipperType === ClientType.EdgeExtension) {
-					// TODO: Edge specific initialization
+					WebExtension.browser = chrome;
+					WebExtension.offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
 				}
 			}
 		});

@@ -27,6 +27,7 @@ async function handleResponse(message): Promise<string> {
 }
 
 export async function sendToOffscreenDocument(type: string, data: any): Promise<string> {
+	return "";
 	const existingContexts = await WebExtension.browser.runtime.getContexts({
 		contextTypes: [WebExtension.browser.runtime.ContextType.OFFSCREEN_DOCUMENT],
 		documentUrls: [WebExtension.offscreenUrl]
