@@ -520,12 +520,11 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				 * The following initializations are necessary to make use of
 				 * an offscreen document from the clipper UI.
 				 */
-				if (updatedClientInfo.clipperType === ClientType.ChromeExtension) {
+				if (updatedClientInfo.clipperType === ClientType.ChromeExtension || updatedClientInfo.clipperType === ClientType.EdgeExtension) {
 					WebExtension.browser = chrome;
-					WebExtension.offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
-				} else if (updatedClientInfo.clipperType === ClientType.EdgeExtension) {
-					WebExtension.browser = chrome;
-					WebExtension.offscreenUrl = chrome.runtime.getURL("chromeOffscreen.html");
+					WebExtension.offscreenUrl = chrome.runtime.getURL("offscreen.html");
+				} else {
+					// Do nothing since clipper has been deprecated for other browsers
 				}
 			}
 		});
