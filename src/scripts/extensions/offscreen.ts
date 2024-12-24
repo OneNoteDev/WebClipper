@@ -1,4 +1,4 @@
-import {OffscreenMessageTypes} from "../../communicator/offscreenMessageTypes";
+import {OffscreenMessageTypes} from "../communicator/offscreenMessageTypes";
 
 // Registering this listener when the script is first executed ensures that the
 // offscreen document will be able to receive messages when the promise returned

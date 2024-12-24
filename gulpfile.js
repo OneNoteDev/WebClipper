@@ -229,6 +229,13 @@ gulp.task("bundleAppendIsInstalledMarker", function () {
     return merge(tasks);
 });
 
+gulp.task("bundleOffscreen", function () {
+    var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/";
+    var files = ["offscreen.js"];
+    var tasks = generateBrowserifyTasks(extensionRoot, files);
+    return merge(tasks);
+});
+
 gulp.task("bundleClipperUI", function () {
     var extensionRoot = PATHS.BUILDROOT + "scripts/clipperUI/";
     var files = ["clipper.js", "pageNav.js", "localeSpecificTasks.js", "unsupportedBrowser.js"];
@@ -263,7 +270,7 @@ gulp.task("bundleBookmarklet", function() {
 
 gulp.task("bundleChrome", function() {
     var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/chrome/";
-    var files = ["chromeExtension.js", "chromeDebugLoggingInject.js", "chromeInject.js", "chromePageNavInject.js", "chromeOffscreen.js"];
+    var files = ["chromeExtension.js", "chromeDebugLoggingInject.js", "chromeInject.js", "chromePageNavInject.js"];
     var tasks = generateBrowserifyTasks(extensionRoot, files);
     return merge(tasks);
 });
@@ -299,6 +306,7 @@ gulp.task("bundleTests", function () {
 gulp.task("bundle", function(callback) {
     runSequence(
         "bundleAppendIsInstalledMarker",
+        "bundleOffscreen",
         "bundleClipperUI",
         "bundleLogManager",
         "bundleBookmarklet",
@@ -512,6 +520,10 @@ function exportChromeJS() {
         PATHS.BUNDLEROOT + "appendIsInstalledMarker.js"
     ]).pipe(concat("appendIsInstalledMarker.js")).pipe(gulp.dest(targetDir));
 
+    var offscreenTask = gulp.src([
+        PATHS.BUNDLEROOT + "offscreen.js"
+    ]).pipe(concat("offscreen.js")).pipe(gulp.dest(targetDir));
+
     var chromeExtensionTask = gulp.src([
         targetDir + "logManager.js",
         targetDir + "oneNoteApi.min.js",
@@ -536,14 +548,10 @@ function exportChromeJS() {
         PATHS.BUNDLEROOT + "chromePageNavInject.js"
     ]).pipe(concat("chromePageNavInject.js")).pipe(gulp.dest(targetDir));
 
-    var chromeOffscreenTask = gulp.src([
-        PATHS.BUNDLEROOT + "chromeOffscreen.js"
-    ]).pipe(gulp.dest(targetDir));
-
     if (commonTask) {
-        return merge(commonTask, appendIsInstalledMarkerTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask, chromeOffscreenTask);
+        return merge(commonTask, appendIsInstalledMarkerTask, offscreenTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
     }
-    return merge(chromeExtensionTask, appendIsInstalledMarkerTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask, chromeOffscreenTask);
+    return merge(chromeExtensionTask, appendIsInstalledMarkerTask, offscreenTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
 }
 
 function exportChromeCSS() {
@@ -561,11 +569,11 @@ function exportChromeSrcFiles() {
         PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json"
     ]).pipe(gulp.dest(targetDir));
 
-    var chromeOffscreenTask = gulp.src([
-        PATHS.SRC.ROOT + "scripts/extensions/chrome/chromeOffscreen.html"
+    var offscreenTask = gulp.src([
+        PATHS.SRC.ROOT + "scripts/extensions/offscreen.html"
     ]).pipe(gulp.dest(targetDir));
 
-    return merge(srcCommonTask, commonWebExtensionFiles, chromeTask, chromeOffscreenTask);
+    return merge(srcCommonTask, commonWebExtensionFiles, chromeTask, offscreenTask);
 }
 
 function exportChromeLibFiles() {
@@ -581,6 +589,10 @@ function exportEdgeJS() {
     var appendIsInstalledMarkerTask = gulp.src([
         PATHS.BUNDLEROOT + "appendIsInstalledMarker.js"
     ]).pipe(concat("appendIsInstalledMarker.js")).pipe(gulp.dest(targetDir));
+
+    var offscreenTask = gulp.src([
+        PATHS.BUNDLEROOT + "offscreen.js"
+    ]).pipe(concat("offscreen.js")).pipe(gulp.dest(targetDir));
 
     var edgeExtensionTask = gulp.src([
         targetDir + "logManager.js",
@@ -607,9 +619,9 @@ function exportEdgeJS() {
     ]).pipe(concat("edgePageNavInject.js")).pipe(gulp.dest(targetDir));
 
     if (commonTask) {
-        return merge(commonTask, appendIsInstalledMarkerTask, edgeExtensionTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
+        return merge(commonTask, appendIsInstalledMarkerTask, offscreenTask, edgeExtensionTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
     }
-    return merge(edgeExtensionTask, appendIsInstalledMarkerTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
+    return merge(edgeExtensionTask, appendIsInstalledMarkerTask, offscreenTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
 }
 
 function exportEdgeCSS() {
@@ -628,7 +640,11 @@ function exportEdgeSrcFiles() {
         PATHS.SRC.ROOT + "scripts/extensions/edge/manifest.json"
     ]).pipe(gulp.dest(targetDir));
 
-    return merge(srcCommonTask, commonWebExtensionFiles, edgeTask);
+    var offscreenTask = gulp.src([
+        PATHS.SRC.ROOT + "scripts/extensions/offscreen.html"
+    ]).pipe(gulp.dest(targetDir));
+
+    return merge(srcCommonTask, commonWebExtensionFiles, edgeTask, offscreenTask);
 }
 
 function exportEdgePackageFiles() {
@@ -1049,7 +1065,7 @@ gulp.task("watchSrcFiles", function() {
             PATHS.SRC.ROOT + "unsupportedBrowser.html",
             PATHS.SRC.ROOT + "pageNav.html",
             PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json",
-            PATHS.SRC.ROOT + "scripts/extensions/chrome/chromeOffscreen.html",
+            PATHS.SRC.ROOT + "scripts/extensions/offscreen.html",
             PATHS.SRC.ROOT + "scripts/extensions/edge/edgeExtension.html",
             PATHS.SRC.ROOT + "scripts/extensions/edge/manifest.json",
             PATHS.SRC.ROOT + "scripts/extensions/safari/Info.plist",
