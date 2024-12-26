@@ -72,9 +72,9 @@ export class AuthenticationHelper {
 					if (isValidUser) {
 						const dataBoundaryHelper = new UserDataBoundaryHelper();
 						let userDataBoundary: string = await dataBoundaryHelper.getUserDataBoundary(response.data);
-						// The default logging has been configured to EU Pipeline. Once we find the
-						// userdataboundary and if it is different from EUDB , reinit the logger with WW Pipeline
-						if (userDataBoundary === DataBoundary[DataBoundary.GLOBAL] || userDataBoundary === DataBoundary[DataBoundary.PUBLIC]) {
+						// The default logging has been configured to WW Pipeline. Once we find the
+						// userdataboundary and if it is EUDB , reinit the logger with EU Pipeline
+						if (userDataBoundary === DataBoundary[DataBoundary.EMEA] || userDataBoundary === DataBoundary[DataBoundary.EUDB]) {
 							LogManager.reInitLoggerForDataBoundaryChange(userDataBoundary);
 						}
 						getInfoEvent.setCustomProperty(Log.PropertyName.Custom.DataBoundary, userDataBoundary);
