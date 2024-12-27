@@ -1,6 +1,7 @@
 import { Clipper } from "../clipperUI/frontEndGlobals";
 import { Constants } from "../constants";
 import { HttpWithRetries } from "../http/httpWithRetries";
+import { StringUtils } from "../stringUtils";
 import { UrlUtils } from "../urlUtils";
 import { UserInfoData, AuthType } from "../userInfo";
 import { DataBoundary } from "./dataBoundary";
@@ -39,7 +40,21 @@ export class UserDataBoundaryHelper {
 			let domainValue = userInfo.emailAddress.substring(
 				userInfo.emailAddress.indexOf("@") + 1);
 			const urlDataBoundaryDomain: string = UrlUtils.addUrlQueryValue(Constants.Urls.userDataBoundaryDomain, Constants.Urls.QueryParams.domain, domainValue);
-			HttpWithRetries.get(urlDataBoundaryDomain).then((response: Response) => {
+			const headers = {
+				/**
+				 * TODO: Update the officeApplicationNumber to the correct value
+				 * once OneNote Web Clipper is onboarded to HRD.
+				 */
+				"X-Office-Application": undefined,
+				"Enlightened-Hrd-Client": "1", // To turn on the EUDB/Telemetry region
+				"X-Office-Platform": "Web",
+				"Content-Type": "application/json",
+			};
+			const correlationId = StringUtils.generateGuid();
+			HttpWithRetries.get(urlDataBoundaryDomain, {
+				...headers,
+				"X-CorrelationId": correlationId,
+			}).then((response: Response) => {
 				let expectedCodes = [200];
 				if (expectedCodes.indexOf(response.status) > -1) {
 					response.text().then((responseText: string) => {
