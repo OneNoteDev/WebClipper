@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.4 (December 2024)
+Improvement : Completed the migration to Manifest V3 on Microsoft Edge.
+
 ## 3.10.3 (December 2024)
 Improvement : Disabled the extension for unclippable pages and fixed telemetry logging
 
