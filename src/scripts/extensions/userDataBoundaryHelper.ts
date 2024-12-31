@@ -50,6 +50,10 @@ export class UserDataBoundaryHelper {
 				"X-Office-Platform": "Web",
 				"Content-Type": "application/json",
 			};
+			/**
+			 * TODO: Revisit the correlationId generation logic if there
+			 * is ever a need for us to actually check the Email HRD logs.
+			 */
 			const correlationId = StringUtils.generateGuid();
 			HttpWithRetries.get(urlDataBoundaryDomain, {
 				...headers,
