@@ -1,10 +1,16 @@
 # Change Log
 
+## 3.10.5 (January 2025)
+* Bug : Fixed dark mode clipping issues and enabled ratings in Microsoft Edge.
+
+## 3.10.4 (December 2024)
+* Improvement : Completed the migration to Manifest V3 on Microsoft Edge.
+
 ## 3.10.3 (December 2024)
-Improvement : Disabled the extension for unclippable pages and fixed telemetry logging
+* Improvement : Disabled the extension for unclippable pages and fixed telemetry logging
 
 ## 3.10.2 (December 2024)
-Improvement : Removed the notification permission
+* Improvement : Removed the notification permission
 
 ## 3.10.1 (December 2024)
 * Bug : Fixed showing tooltip consistently on video and pdf clips. 

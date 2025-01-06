@@ -43,6 +43,7 @@ export class StyledFrameFactory {
 		iframe.style.position = "fixed";
 		iframe.style.transition = "initial";
 		iframe.style.zIndex = "2147483647";
+		(iframe.style as any).colorScheme = "light";
 	}
 
 	private static getGloballyStyledFrame(): HTMLIFrameElement {
