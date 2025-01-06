@@ -219,6 +219,14 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			return Promise.resolve();
 		});
 
+		// Register the following function to the extension communicator in
+		// order to allow the function to be remotely called from the same
+		this.extCommunicator.registerFunction(Constants.FunctionKeys.showRefreshClipperMessage, (errorMessage: string) => {
+			this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.showRefreshClipperMessage, {
+				param: errorMessage
+			});
+		});
+
 		this.extCommunicator.setErrorHandler((e: Error) => {
 			this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.showRefreshClipperMessage, {
 				param: "Communicator " + Constants.CommunicationChannels.injectedAndExtension + " caught an error: " + e.message
