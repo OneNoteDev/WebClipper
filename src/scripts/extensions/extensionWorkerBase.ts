@@ -120,6 +120,15 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			if (!!this.keepAlive) {
 				clearInterval(this.keepAlive);
 				this.keepAlive = undefined;
+				/**
+				 * If we reach this point, it means that the keep alive interval was not cleared within 10 minutes
+				 * which is an indication that the clipper ux is not being used. We will now allow the service worker
+				 * to become inactive and notifiy the user to refresh the page.
+				 */
+				this.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.showRefreshClipperMessage, {
+					param: "Communicator " + Constants.CommunicationChannels.injectedAndExtension + " caught an error: " +
+						"Clipper UX was not used for 10 minutes."
+				});
 			}
 		}, 10 * 60 * 1000);
 	}
