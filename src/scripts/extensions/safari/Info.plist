@@ -28,7 +28,7 @@
 				<key>Identifier</key>
 				<string>Clipper</string>
 				<key>Image</key>
-				<string>icon-16.png</string>
+				<string>icon-16-alpha.png</string>
 				<key>Include By Default</key>
 				<true/>
 				<key>Label</key>
