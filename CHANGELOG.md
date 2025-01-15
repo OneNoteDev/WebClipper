@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.6 (January 2025)
+* Improvement : Updated icons and fixed the default telemetry region.
+
 ## 3.10.5 (January 2025)
 * Bug : Fixed dark mode clipping issues and enabled ratings in Microsoft Edge.
 
