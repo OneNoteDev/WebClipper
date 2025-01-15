@@ -42,10 +42,10 @@ export class UserDataBoundaryHelper {
 			const urlDataBoundaryDomain: string = UrlUtils.addUrlQueryValue(Constants.Urls.userDataBoundaryDomain, Constants.Urls.QueryParams.domain, domainValue);
 			const headers = {
 				/**
-				 * TODO: Update the officeApplicationNumber to the correct value
-				 * once OneNote Web Clipper is onboarded to HRD.
+				 * OneNote has historically been Application == 8. Hence, we are using the
+				 * same for Web Clipper. The calls could be differentiated using Platform.
 				 */
-				"X-Office-Application": undefined,
+				"X-Office-Application": 8,
 				"Enlightened-Hrd-Client": "1", // To turn on the EUDB/Telemetry region
 				"X-Office-Platform": "Web",
 				"Content-Type": "application/json",
