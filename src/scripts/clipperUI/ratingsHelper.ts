@@ -219,10 +219,18 @@ export class RatingsHelper {
 			return;
 		}
 
-		let numSuccessfulClipsRatingsEnablementAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement);
+		/**
+		 * This is commented out since we would need numSuccessfulClipsRatingsEnablement
+		 * to be updated even if it has already been set. This is because the user could
+		 * have not already interacted with the prompt. If the user has already interacted
+		 * with the prompt, doNotPromptRatings will be set to true which in turn will
+		 * ensure that the prompt is not shown again.
+		 */
+
+		/* let numSuccessfulClipsRatingsEnablementAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement);
 		if (parseInt(numSuccessfulClipsRatingsEnablementAsStr, 10) >= 0) {
 			return;
-		}
+		} */
 
 		let numSuccessfulClips: number = parseInt(Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips), 10);
 		// subtracting 1 below to account for the fact that this set is occuring after one already successful clip
