@@ -20,4 +20,5 @@ export module ClipperStorageKeys {
 	export var numTimesTooltipHasBeenSeenBase = "numTimesTooltipHasBeenSeen";
 	export var userInformation = "userInformation";
 	export var isUserLoggedIn = "isUserLoggedIn";
+	export var isRatingsPromptLogicExecutedInEdge = "isRatingsPromptLogicExecutedInEdge";
 }

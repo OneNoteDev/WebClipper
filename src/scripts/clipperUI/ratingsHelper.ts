@@ -77,6 +77,7 @@ export class RatingsHelper {
 	public static preCacheNeededValues(): void {
 		let ratingsPromptStorageKeys = [
 			ClipperStorageKeys.doNotPromptRatings,
+			ClipperStorageKeys.isRatingsPromptLogicExecutedInEdge,
 			ClipperStorageKeys.lastBadRatingDate,
 			ClipperStorageKeys.lastBadRatingVersion,
 			ClipperStorageKeys.lastSeenVersion,
@@ -93,6 +94,15 @@ export class RatingsHelper {
 		Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "true");
 
 		Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.SetDoNotPromptRatings));
+	}
+
+	/**
+	 * Set ClipperStorageKeys.isRatingsPromptLogicExecutedInEdge value to "true"
+	 */
+	public static setisRatingsPromptLogicExecutedInEdge(): void {
+		Clipper.storeValue(ClipperStorageKeys.isRatingsPromptLogicExecutedInEdge, "true");
+
+		Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.SetIsRatingsPromptLogicExecutedInEdge));
 	}
 
 	/**
@@ -204,7 +214,8 @@ export class RatingsHelper {
 	 *
 	 * The set is "needed" if ALL of the below applies:
 	 *   * The user has not already interacted with the prompt (ClipperStorageKeys.doNotPromptRatings is not set)
-	 *   * ClipperStorageKeys.numSuccessfulClipsRatingsEnablement has not already been set
+	 *   * The ratings prompt logic has not already executed in Edge or
+	 *       ClipperStorageKeys.numSuccessfulClipsRatingsEnablement has not already been set
 	 *
 	 * Public for testing
 	 *
@@ -213,24 +224,30 @@ export class RatingsHelper {
 	 * re-raise the prompt for users who have already interacted with it (although it is possible users who didn't interact
 	 * with the original prompt see it up to twice as many times as originally planned).
 	 */
-	public static setNumSuccessfulClipsRatingsEnablement(): void {
+	public static setNumSuccessfulClipsRatingsEnablement(clientType: ClientType): void {
 		let doNotPromptRatingsAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
 		if (RatingsHelper.doNotPromptRatingsIsSet(doNotPromptRatingsAsStr)) {
 			return;
 		}
 
 		/**
-		 * This is commented out since we would need numSuccessfulClipsRatingsEnablement
-		 * to be updated even if it has already been set. This is because the user could
-		 * have not already interacted with the prompt. If the user has already interacted
-		 * with the prompt, doNotPromptRatings will be set to true which in turn will
-		 * ensure that the prompt is not shown again.
+		 * If the ratings prompt logic hasn't been executed in Edge, then we would
+		 * need numSuccessfulClipsRatingsEnablement to be updated even if it has
+		 * already been set. This is because the user hasn't already interacted
+		 * with the prompt, and we need to ensure that the difference between the
+		 * number of successful clips and the anchor clip value is less than or
+		 * equal to the maximum number of successful clips for ratings enablement,
+		 * as per the logic in clipSuccessDelayIsOver(...).
 		 */
-
-		/* let numSuccessfulClipsRatingsEnablementAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement);
-		if (parseInt(numSuccessfulClipsRatingsEnablementAsStr, 10) >= 0) {
-			return;
-		} */
+		let isRatingsPromptLogicExecutedInEdgeAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.isRatingsPromptLogicExecutedInEdge);
+		if (clientType !== ClientType.EdgeExtension || RatingsHelper.isRatingsPromptLogicExecutedInEdge(isRatingsPromptLogicExecutedInEdgeAsStr)) {
+			let numSuccessfulClipsRatingsEnablementAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement);
+			if (parseInt(numSuccessfulClipsRatingsEnablementAsStr, 10) >= 0) {
+				return;
+			}
+		} else if (clientType === ClientType.EdgeExtension) {
+			RatingsHelper.setisRatingsPromptLogicExecutedInEdge();
+		}
 
 		let numSuccessfulClips: number = parseInt(Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips), 10);
 		// subtracting 1 below to account for the fact that this set is occuring after one already successful clip
@@ -259,7 +276,7 @@ export class RatingsHelper {
 			return false;
 		}
 
-		RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
+		RatingsHelper.setNumSuccessfulClipsRatingsEnablement(clipperState.clientInfo.clipperType);
 
 		let doNotPromptRatingsStr: string = Clipper.getCachedValue(ClipperStorageKeys.doNotPromptRatings);
 		let lastBadRatingDateAsStr: string = Clipper.getCachedValue(ClipperStorageKeys.lastBadRatingDate);
@@ -320,5 +337,9 @@ export class RatingsHelper {
 
 	private static doNotPromptRatingsIsSet(doNotPromptRatingsStr: string): boolean {
 		return !ObjectUtils.isNullOrUndefined(doNotPromptRatingsStr) && doNotPromptRatingsStr.toLowerCase() === "true";
+	}
+
+	private static isRatingsPromptLogicExecutedInEdge(isRatingsPromptLogicExecutedInEdgeAsStr: string): boolean {
+		return !ObjectUtils.isNullOrUndefined(isRatingsPromptLogicExecutedInEdgeAsStr) && isRatingsPromptLogicExecutedInEdgeAsStr.toLowerCase() === "true";
 	}
 }
