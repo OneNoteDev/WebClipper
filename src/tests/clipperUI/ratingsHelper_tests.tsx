@@ -37,13 +37,14 @@ export class RatingsHelperTests extends TestModule {
 
 	protected tests() {
 		test("setNumSuccessfulClipsRatingsEnablement does not set the value when ClipperStorageKeys.doNotPromptRatings is set", (assert: QUnitAssert) => {
+			let clientType: ClientType = ClientType.EdgeExtension;
 			let done = assert.async();
 
 			let numClips = 12;
 			Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numClips.toString());
 			Clipper.storeValue(ClipperStorageKeys.doNotPromptRatings, "true");
 
-			RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
+			RatingsHelper.setNumSuccessfulClipsRatingsEnablement(clientType);
 
 			Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, (numClipsAnchorAsStr: string) => {
 				ok(ObjectUtils.isNullOrUndefined(numClipsAnchorAsStr));
@@ -52,15 +53,19 @@ export class RatingsHelperTests extends TestModule {
 		});
 
 		test("setNumSuccessfulClipsRatingsEnablement does not overwrite the value when it already exists", (assert: QUnitAssert) => {
+			let clientType: ClientType = ClientType.EdgeExtension;
 			let done = assert.async();
 
 			let numClips = 12;
 			Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numClips.toString());
 
+			let isRatingsPromptExecutedInEdge = true;
+			Clipper.storeValue(ClipperStorageKeys.isRatingsPromptLogicExecutedInEdge, isRatingsPromptExecutedInEdge.toString());
+
 			let expectedStorageValue = 999;
 			Clipper.storeValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, expectedStorageValue.toString());
 
-			RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
+			RatingsHelper.setNumSuccessfulClipsRatingsEnablement(clientType);
 
 			Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, (numClipsAnchorAsStr: string) => {
 				strictEqual(parseInt(numClipsAnchorAsStr, 10), expectedStorageValue);
@@ -69,12 +74,13 @@ export class RatingsHelperTests extends TestModule {
 		});
 
 		test("setNumSuccessfulClipsRatingsEnablement sets the value to (ClipperStorageKeys.numSuccessfulClips - 1) when applicable", (assert: QUnitAssert) => {
+			let clientType: ClientType = ClientType.EdgeExtension;
 			let done = assert.async();
 
 			let numClips = 12;
 			Clipper.storeValue(ClipperStorageKeys.numSuccessfulClips, numClips.toString());
 
-			RatingsHelper.setNumSuccessfulClipsRatingsEnablement();
+			RatingsHelper.setNumSuccessfulClipsRatingsEnablement(clientType);
 
 			Clipper.getStoredValue(ClipperStorageKeys.numSuccessfulClipsRatingsEnablement, (numClipsAnchorAsStr: string) => {
 				strictEqual(parseInt(numClipsAnchorAsStr, 10), numClips - 1);

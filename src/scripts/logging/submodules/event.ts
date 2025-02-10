@@ -58,6 +58,7 @@ export module Event {
 		SendBatchRequest,
 		SetContextProperty,
 		SetDoNotPromptRatings,
+		SetIsRatingsPromptLogicExecutedInEdge,
 		ShouldShowRatingsPrompt,
 		TooltipImpression,
 		UpdatePage,
