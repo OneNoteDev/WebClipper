@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.7 (February 2025)
+* Bug : Fixed the ratings prompt logic for Microsoft Edge.
+
 ## 3.10.6 (January 2025)
 * Improvement : Updated icons and fixed the default telemetry region.
 
