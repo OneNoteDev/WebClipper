@@ -99,7 +99,7 @@ export class RatingsHelper {
 	/**
 	 * Set ClipperStorageKeys.isRatingsPromptLogicExecutedInEdge value to "true"
 	 */
-	public static setisRatingsPromptLogicExecutedInEdge(): void {
+	public static setIsRatingsPromptLogicExecutedInEdge(): void {
 		Clipper.storeValue(ClipperStorageKeys.isRatingsPromptLogicExecutedInEdge, "true");
 
 		Clipper.logger.logEvent(new Log.Event.BaseEvent(Log.Event.Label.SetIsRatingsPromptLogicExecutedInEdge));
@@ -246,7 +246,7 @@ export class RatingsHelper {
 				return;
 			}
 		} else if (clientType === ClientType.EdgeExtension) {
-			RatingsHelper.setisRatingsPromptLogicExecutedInEdge();
+			RatingsHelper.setIsRatingsPromptLogicExecutedInEdge();
 		}
 
 		let numSuccessfulClips: number = parseInt(Clipper.getCachedValue(ClipperStorageKeys.numSuccessfulClips), 10);
