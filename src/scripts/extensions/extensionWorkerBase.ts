@@ -340,7 +340,29 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 	protected getUserSessionIdQueryParamValue(): string {
 		let usidQueryParamValue = this.logger.getUserSessionId();
-		return usidQueryParamValue ? usidQueryParamValue : this.clientInfo.get().clipperId;
+		console.log("usidQueryParamValue: " + usidQueryParamValue);
+
+		// Validate the usid parameter (UUID-like format)
+		const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+		const isValidUsid = uuidRegex.test(usidQueryParamValue);
+		if (!isValidUsid) {
+			throw new Error("Invalid usid parameter");
+		}
+
+		// Validate the clipperId parameter (ON-UUID format)
+		const clipperId = this.clientInfo.get().clipperId;
+		const clipperIdRegex = /^ON-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+		const isValidClipperId = clipperIdRegex.test(clipperId);
+		if (!isValidClipperId) {
+			throw new Error("Invalid clipperId parameter");
+		}
+
+		// Encode the usid parameter
+		usidQueryParamValue = encodeURIComponent(usidQueryParamValue);
+		console.log("usidQueryParamValue: " + usidQueryParamValue);
+		console.log("clipperId: " + clipperId);
+
+		return usidQueryParamValue ? usidQueryParamValue : encodeURIComponent(clipperId);
 	}
 
 	protected async invokeDebugLoggingIfEnabled(): Promise<boolean> {
