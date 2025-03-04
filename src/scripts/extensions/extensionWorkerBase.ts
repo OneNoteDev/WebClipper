@@ -340,7 +340,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 	protected getUserSessionIdQueryParamValue(): string {
 		let usidQueryParamValue = this.logger.getUserSessionId();
-		console.log("usidQueryParamValue: " + usidQueryParamValue);
 
 		// Validate the usid parameter (UUID-like format)
 		const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -359,8 +358,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 		// Encode the usid parameter
 		usidQueryParamValue = encodeURIComponent(usidQueryParamValue);
-		console.log("usidQueryParamValue: " + usidQueryParamValue);
-		console.log("clipperId: " + clipperId);
 
 		return usidQueryParamValue ? usidQueryParamValue : encodeURIComponent(clipperId);
 	}
