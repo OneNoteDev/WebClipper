@@ -153,11 +153,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected getClipperInstalledPageUrl(clipperId: string, clipperType: ClientType, isInlineInstall: boolean): string {
 		let installUrl: string = Constants.Urls.clipperInstallPageUrl;
 
-		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clientType, ClientType[clipperType]);
-		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperId, clipperId);
-		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.clipperVersion,  ExtensionBase.getExtensionVersion());
-		installUrl = UrlUtils.addUrlQueryValue(installUrl, Constants.Urls.QueryParams.inlineInstall, isInlineInstall.toString());
-
 		this.logger.logTrace(Log.Trace.Label.RequestForClipperInstalledPageUrl, Log.Trace.Level.Information, installUrl);
 
 		return installUrl;
@@ -286,9 +281,9 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		});
 	}
 
-	private shouldShowWhatsNewTooltip(tab: TTab, lastSeenVersion: Version, extensionVersion: Version): boolean {
-		// We explicitly check for control group as well so we prevent updating lastSeenVersion on everyone before the experiment starts
-		return this.checkIfTabIsOnWhitelistedUrl(tab) && ExtensionBase.shouldCheckForMajorUpdates(lastSeenVersion, extensionVersion);
+	private shouldShowWhatsNewTooltip(_tab: TTab, _lastSeenVersion: Version, _extensionVersion: Version): boolean {
+		// Disable the "What's New" tooltip for OneNote Web Clipper for now
+		return false;
 	}
 
 	private showWhatsNewTooltip(tab: TTab, lastSeenVersion: Version, extensionVersion: Version): void {
