@@ -377,10 +377,10 @@ export module Constants {
 		export var augmentationApiUrl = serviceDomain + "/onaugmentation/clipperextract/v1.0/";
 		export var changelogUrl = serviceDomain + "/whatsnext/webclipper";
 		export var clipperFeedbackUrl = serviceDomain + "/feedback";
-		export var clipperInstallPageUrl = serviceDomain + "/clipper/installed";
 		export var fullPageScreenshotUrl = serviceDomain + "/onaugmentation/clipperDomEnhancer/v1.0/";
 		export var localizedStringsUrlBase = serviceDomain + "/strings?ids=WebClipper.";
 
+		export var clipperInstallPageUrl = "https://support.microsoft.com/en-us/office/getting-started-with-the-onenote-web-clipper-5696609d-c5ae-4591-b3af-1f897cb6eda6";
 		export var msaDomain = "https://login.live.com";
 		export var orgIdDomain = "https://login.microsoftonline.com";
 		export var userDataBoundaryDomain = "https://odc.officeapps.live.com/odc/v2.1/federationprovider";
