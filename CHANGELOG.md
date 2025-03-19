@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.8 (March 2025)
+* Improvement : Deprecated onenote.com subsites.
+
 ## 3.10.7 (February 2025)
 * Bug : Fixed the ratings prompt logic for Microsoft Edge.
 
