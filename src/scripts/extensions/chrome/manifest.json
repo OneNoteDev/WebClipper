@@ -40,7 +40,6 @@
       "contextMenus",
       "tabs",
       "webRequest",
-      "storage",
       "webNavigation",
       "offscreen"
     ],
