@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.9 (March 2025)
+* Improvement : Removed the storage permission.
+
 ## 3.10.8 (March 2025)
 * Improvement : Deprecated onenote.com subsites.
 
