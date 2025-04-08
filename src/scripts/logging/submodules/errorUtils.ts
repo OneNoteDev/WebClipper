@@ -9,6 +9,7 @@ import {Localization} from "../../localization/localization";
 
 import {Failure, NoOp, unknownValue} from "../log";
 import { WebExtension } from "../../extensions/webExtensionBase/webExtension";
+import { Clipper } from "../../clipperUI/frontEndGlobals";
 
 export module ErrorUtils {
 	enum ErrorPropertyName {
@@ -67,24 +68,17 @@ export module ErrorUtils {
 	 * Sends a request to the misc logging endpoint with relevant failure data as query parameters
 	 */
 	export function sendFailureLogRequest(data: FailureLogEventData): void {
-		let propsObject: { [key: string]: string } = {};
+		let failureInfoString = ErrorUtils.toString(data.properties.failureInfo);
+		let callStack = data.properties.stackTrace;
 
-		propsObject[Constants.Urls.QueryParams.failureType] = Failure.Type[data.properties.failureType];
-		propsObject[Constants.Urls.QueryParams.failureInfo] = ErrorUtils.toString(data.properties.failureInfo);
-		propsObject[Constants.Urls.QueryParams.stackTrace] = data.properties.stackTrace;
-
-		if (!ObjectUtils.isNullOrUndefined(data.properties.failureId)) {
-			propsObject[Constants.Urls.QueryParams.failureId] = data.properties.failureId;
-		}
-
-		let clientInfo: SmartValue<ClientInfo> = data.clientInfo as SmartValue<ClientInfo>;
-		addDelayedSetValuesOnNoOp(propsObject, clientInfo);
-
-		LogManager.sendMiscLogRequest({
-			label: Failure.Label[data.label],
-			category: Failure.category,
-			properties: propsObject
-		}, true);
+		Clipper.logger.logFailure(
+			data.label,
+			data.properties.failureType,
+			{
+				error: "failureInfo: " + failureInfoString + ", callStack: " + callStack,
+			},
+			data.properties.failureId
+		);
 	}
 
 	export function handleCommunicatorError(channel: string, e: Error, clientInfo: SmartValue<ClientInfo>, message?: string) {
@@ -128,11 +122,13 @@ export module ErrorUtils {
 		let clientInfo: SmartValue<ClientInfo> = props.clientInfo as SmartValue<ClientInfo>;
 		addDelayedSetValuesOnNoOp(propsObject, clientInfo);
 
-		LogManager.sendMiscLogRequest({
-			label: NoOp.Label[props.label],
-			category: NoOp.category,
-			properties: propsObject
-		}, true);
+		// The clipper button has been disabled on unclippable pages.
+		// Hence, we don't need to send the request below.
+		// LogManager.sendMiscLogRequest({
+		// 	label: NoOp.Label[props.label],
+		// 	category: NoOp.category,
+		// 	properties: propsObject
+		// }, true);
 
 		if (shouldShowAlert) {
 			// No-op for for now
