@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.10 (April 2025)
+* Improvement : Deprecated the webclipper/data subsite.
+
 ## 3.10.9 (March 2025)
 * Improvement : Removed the storage permission.
 
