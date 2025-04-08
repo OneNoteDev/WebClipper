@@ -65,7 +65,7 @@ export module ErrorUtils {
 	}
 
 	/**
-	 * Sends a request to the misc logging endpoint with relevant failure data as query parameters
+	 * Logs a failure with relevant failure data
 	 */
 	export function sendFailureLogRequest(data: FailureLogEventData): void {
 		let failureInfoString = ErrorUtils.toString(data.properties.failureInfo);
