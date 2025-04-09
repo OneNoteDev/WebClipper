@@ -36,13 +36,6 @@ function createDebugLogger(uiCommunicator: Communicator, sessionId: SmartValue<s
 	});
 }
 
-/**
- * Sends an event to console with relevant data as query parameters
- */
-export function sendMiscLogRequest(data: LogManager.MiscLogEventData, keysToCamelCase: boolean): void {
-	console.warn(JSON.stringify({ label: data.label, category: data.category, properties: data.properties }));
-}
-
 export function reInitLoggerForDataBoundaryChange(userDataBoundary: string): void {
 	let message: string = "DataBoundary different than default logging boundary :" + userDataBoundary;
 	console.log(message);
