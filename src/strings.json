@@ -146,6 +146,8 @@
 	"WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessage": "OneNote couldn't load your notebooks.",
 	"WebClipper.SectionPicker.NotebookLoadUnretryableFailureMessageWithExplanation": "We couldn't load your notebooks because a list limit was exceeded in OneDrive.",
 	"WebClipper.SectionPicker.NotebookLoadUnretryableFailureLinkMessage": "Learn more",
+	"WebClipper.SectionPicker.CopilotNotebooksHeader": "Copilot Notebooks",
+	"WebClipper.SectionPicker.GroupedNotebooksHeader": "Notebooks",
 	"WebClipper.FontFamily.Regular": "Segoe UI Regular,Segoe UI,Segoe,Segoe WP,Helvetica Neue,Roboto,Helvetica,Arial,Tahoma,Verdana,sans-serif",
 	"WebClipper.FontFamily.Bold": "Segoe UI Bold,Segoe UI,Segoe,Segoe WP,Helvetica Neue,Roboto,Helvetica,Arial,Tahoma,Verdana,sans-serif",
 	"WebClipper.FontFamily.Light": "Segoe UI Light,Segoe WP Light,Segoe UI,Segoe,Segoe WP,Helvetica Neue,Roboto,Helvetica,Arial,Tahoma,Verdana,sans-serif",

@@ -294,6 +294,8 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 		let locationString = Localization.getLocalizedString("WebClipper.Label.ClipLocation");
 
+		let groupedNotebooks = this.createGroupedNotebooks();
+
 		return (
 			<div id={Constants.Ids.locationPickerContainer} {...this.onElementFirstDraw(this.addSrOnlyLocationDiv)}>
 				<div id={Constants.Ids.optionLabel} className="optionLabel">
@@ -304,7 +306,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 				<OneNotePicker.OneNotePickerComponent
 					id={Constants.Ids.sectionLocationContainer}
 					tabIndex={70}
-					notebooks={this.state.notebooks}
+					notebooks={groupedNotebooks}
 					status={Status[this.state.status]}
 					onPopupToggle={this.onPopupToggle.bind(this)}
 					onSectionClicked={this.onSectionClicked.bind(this)}
@@ -313,6 +315,65 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 					localizedStrings={localizedStrings}/>
 			</div>
 		);
+	}
+
+	private createGroupedNotebooks(): OneNoteApi.Notebook[] {
+		let groupedNotebooks: OneNoteApi.Notebook[] = [];
+		let copilotNotebookTitle = Localization.getLocalizedString("WebClipper.SectionPicker.CopilotNotebooksHeader");
+		let copilotNotebook = this.createExpandableSection(copilotNotebookTitle, []);
+		groupedNotebooks.push(copilotNotebook);
+		let groupedNotebookTitle = Localization.getLocalizedString("WebClipper.SectionPicker.GroupedNotebooksHeader");
+		let notebooksSection = this.createExpandableSectionWithNotebooks(groupedNotebookTitle, this.state.notebooks || []);
+		groupedNotebooks.push(notebooksSection);
+		return groupedNotebooks;
+	}
+
+	private createNotebookTemplate(title: string): OneNoteApi.Notebook {
+		return {
+			id: "section-" + title.toLowerCase().replace(/\s+/g, "-"),
+			name: title,
+			isDefault: false,
+			userRole: "Owner",
+			isShared: false,
+			sectionsUrl: "",
+			sectionGroupsUrl: "",
+			sections: [],
+			self: "",
+			createdTime: new Date(),
+			lastModifiedTime: new Date(),
+			createdBy: "",
+			lastModifiedBy: "",
+			sectionGroups: [],
+			links: {
+				oneNoteClientUrl: { href: "" },
+				oneNoteWebUrl: { href: "" }
+			}
+		};
+	}
+
+	private createExpandableSectionWithNotebooks(title: string, childNotebooks: OneNoteApi.Notebook[]): OneNoteApi.Notebook {
+		let template = this.createNotebookTemplate(title);
+		template.sectionGroups = childNotebooks.map(notebook => ({
+			id: notebook.id + "-group",
+			name: notebook.name,
+			self: notebook.self,
+			sectionsUrl: notebook.sectionsUrl,
+			sectionGroupsUrl: notebook.sectionGroupsUrl,
+			sections: notebook.sections || [],
+			sectionGroups: notebook.sectionGroups || [],
+			createdTime: notebook.createdTime,
+			lastModifiedTime: notebook.lastModifiedTime,
+			createdBy: notebook.createdBy,
+			lastModifiedBy: notebook.lastModifiedBy,
+			links: notebook.links,
+			parentNotebook: undefined,
+			parentSectionGroup: undefined
+		}));
+		return template;
+	}
+
+	private createExpandableSection(title: string, childNotebooks: OneNoteApi.Notebook[]): OneNoteApi.Notebook {
+		return this.createNotebookTemplate(title);
 	}
 }
 

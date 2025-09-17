@@ -22,7 +22,51 @@
 @SegoeUiSemiBold: 'Segoe UI Semibold', @SegoeUi;
 @SegoeUiLight: 'Segoe UI Light', @SegoeUi;
 
-.SaveToLocationContainer {
+@SectionHeaderBackgroundColor: #f3f2f1;
+@SectionHeaderHoverColor: #e8e6e4;
+@SectionHeaderTextColor: #323130;
+@SectionHeaderBorderColor: #e1dfdd;
+@NestedItemBackgroundColor: white;
+@NestedItemHoverColor: #f3f2f1;
+@DeepNestedTextColor: #605E5C;
+
+.section-header-base() {
+	background-color: @SectionHeaderBackgroundColor !important;
+	height: 32px !important;
+	font-weight: 600;
+	color: @SectionHeaderTextColor !important;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-bottom: 1px solid @SectionHeaderBorderColor;
+}
+
+.section-header-hover() {
+	background-color: @SectionHeaderHoverColor !important;
+	cursor: pointer !important;
+}
+
+.nested-item-base() {
+	padding-left: 28px !important;
+	background-color: @NestedItemBackgroundColor !important;
+	font-weight: normal !important;
+	color: @SectionHeaderTextColor !important;
+	font-size: 14px !important;
+	text-transform: none !important;
+	letter-spacing: normal !important;
+	border-bottom: none !important;
+}
+
+.nested-item-hover() {
+	background-color: @NestedItemHoverColor !important;
+}
+
+.expandable-section-base(@padding-left: 12px) {
+	.section-header-base();
+	padding-left: @padding-left !important;
+}
+
+ .SaveToLocationContainer {
 	border: 1px white solid;
 	font-family: @SegoeUi;
 	line-height: 30px;
@@ -35,10 +79,9 @@
 	color: #604a60;
 }
 
-.SectionPickerContainer {
-	img{ //this is color #604a60 which is color of text in sectionPickerContainer
-		filter: brightness(0) saturate(100%) invert(32%) sepia(7%) saturate(1393%) hue-rotate(251deg) brightness(94%) contrast(96%);
-	}
+// this is color #604a60 which is color of text in sectionPickerContainer
+.SectionPickerContainer img{
+	filter: brightness(0) saturate(100%) invert(32%) sepia(7%) saturate(1393%) hue-rotate(251deg) brightness(94%) contrast(96%);
 }
 
 .SectionPickerPopup * {
@@ -48,4 +91,57 @@
 
 .OpenSectionPickerArrow {
 	padding-right: 12px;
+}
+
+ul.SectionPicker li[data-notebook-id="section-copilot-notebooks"] .EntityImageAndNameContainer,
+ul.SectionPicker li[data-notebook-id="section-notebooks"] .EntityImageAndNameContainer {
+	.expandable-section-base();
+}
+
+ul.SectionPicker li[data-notebook-id="section-copilot-notebooks"] .EntityImageAndNameContainer:hover,
+ul.SectionPicker li[data-notebook-id="section-notebooks"] .EntityImageAndNameContainer:hover {
+	.section-header-hover();
+}
+
+ul.SectionPicker li[data-notebook-id="section-copilot-notebooks"] .EntityImageAndNameContainer .EntityName,
+ul.SectionPicker li[data-notebook-id="section-notebooks"] .EntityImageAndNameContainer .EntityName {
+	padding-top: 8px !important;
+	margin-left: 0 !important;
+	font-weight: 600;
+}
+
+ul.SectionPicker li[data-notebook-id="section-copilot-notebooks"] .ExpandCollapseContainer,
+ul.SectionPicker li[data-notebook-id="section-notebooks"] .ExpandCollapseContainer {
+	display: block !important;
+}
+
+ul.SectionPicker li[data-notebook-id="section-copilot-notebooks"] .NotebookImage,
+ul.SectionPicker li[data-notebook-id="section-notebooks"] .NotebookImage {
+	display: none !important;
+}
+
+ul.SectionPicker li[data-notebook-id="section-copilot-notebooks"] ul.SectionPicker li,
+ul.SectionPicker li[data-notebook-id="section-notebooks"] ul.SectionPicker li {
+	margin-left: 0;
+	border-left: none;
+}
+
+ul.SectionPicker li[data-notebook-id="section-copilot-notebooks"] ul.SectionPicker li .EntityImageAndNameContainer,
+ul.SectionPicker li[data-notebook-id="section-notebooks"] ul.SectionPicker li .EntityImageAndNameContainer {
+	.nested-item-base();
+}
+
+ul.SectionPicker li[data-notebook-id="section-copilot-notebooks"] ul.SectionPicker li .EntityImageAndNameContainer:hover,
+ul.SectionPicker li[data-notebook-id="section-notebooks"] ul.SectionPicker li .EntityImageAndNameContainer:hover {
+	.nested-item-hover();
+}
+
+ul.SectionPicker li[data-notebook-id="section-notebooks"] ul.SectionPicker li ul.SectionPicker li .EntityImageAndNameContainer {
+	padding-left: 44px !important;
+	font-size: 13px !important;
+	color: @DeepNestedTextColor !important;
+}
+
+ul.SectionPicker li[data-notebook-id="section-notebooks"] {
+	margin-top: 4px;
 }
