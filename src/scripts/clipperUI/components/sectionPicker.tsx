@@ -45,7 +45,6 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		this.setState({
 			curSection: curSection
 		});
-		Clipper.storeValue(ClipperStorageKeys.currentSelectedSection, JSON.stringify(curSection));
 		Clipper.logger.logClickEvent(Log.Click.Label.sectionComponent);
 	}
 
@@ -69,9 +68,6 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		return true;
 	}
 
-	// Begins by updating state with information found in local storage, then retrieves and stores fresh notebook information
-	// from the API. If the user does not have a previous section selection in storage, or has not made a section selection yet,
-	// additionally set the current section to the default section.
 	retrieveAndUpdateNotebookAndSectionSelection(): Promise<SectionPickerState> {
 		return new Promise<SectionPickerState>((resolve, reject) => {
 			if (this.dataSourceUninitialized()) {
@@ -82,13 +78,14 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 				status: Status.InProgress
 			});
 
-			// Always set the values with what is in local storage, and when the XHR returns it will overwrite if necessary
 			this.fetchCachedNotebookAndSectionInfoAsState((cachedInfoAsState: SectionPickerState) => {
-				if (cachedInfoAsState) {
-					this.setState(cachedInfoAsState);
-					this.props.clipperState.setState({
-						saveLocation: cachedInfoAsState.curSection && cachedInfoAsState.curSection.section ? cachedInfoAsState.curSection.section.id : ""
+				if (cachedInfoAsState && cachedInfoAsState.notebooks) {
+					this.setState({
+						notebooks: cachedInfoAsState.notebooks,
+						status: Status.Succeeded,
+						curSection: undefined
 					});
+					this.props.clipperState.setState({ saveLocation: "" });
 				}
 
 				let getNotebooksEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetNotebooks);
@@ -113,30 +110,17 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 					Clipper.storeValue(ClipperStorageKeys.cachedNotebooks, JSON.stringify(freshNotebooks));
 
-					// The curSection property is the default section found in the notebook list
-					let freshNotebooksAsState = SectionPickerClass.convertNotebookListToState(freshNotebooks);
-
-					let shouldOverrideCurSectionWithDefault = true;
-					if (this.state.curSection && this.state.curSection.section) {
-						// The user has already selected a section ...
-						let currentSectionStillExists = OneNoteApi.NotebookUtils.sectionExistsInNotebooks(freshNotebooks, this.state.curSection.section.id);
-						if (currentSectionStillExists) {
-							// ... which exists, so we don't override it with the default
-							freshNotebooksAsState.curSection = this.state.curSection;
-							shouldOverrideCurSectionWithDefault = false;
-						}
-						getNotebooksEvent.setCustomProperty(Log.PropertyName.Custom.CurrentSectionStillExists, currentSectionStillExists);
-					}
-
-					if (shouldOverrideCurSectionWithDefault) {
-						// A default section was found, so we set it as currently selected since the user has not made a valid selection yet
-						// curSection can be undefined if there's no default found, which is fine
-						Clipper.storeValue(ClipperStorageKeys.currentSelectedSection, JSON.stringify(freshNotebooksAsState.curSection));
-						this.props.clipperState.setState({saveLocation: freshNotebooksAsState.curSection ? freshNotebooksAsState.curSection.section.id : undefined});
-					}
-
-					this.setState(freshNotebooksAsState);
-					resolve(freshNotebooksAsState);
+					this.setState({
+						notebooks: freshNotebooks,
+						status: Status.Succeeded,
+						curSection: undefined
+					});
+					this.props.clipperState.setState({ saveLocation: "" });
+					resolve({
+						notebooks: freshNotebooks,
+						status: Status.Succeeded,
+						curSection: undefined
+					});
 				}).catch((failure: OneNoteApi.RequestError) => {
 					this.setState({
 						apiResponseCode: OneNoteApiUtils.getApiResponseCode(failure)
@@ -261,16 +245,18 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			// stored notebooks in state
 			this.fetchCachedNotebookAndSectionInfoAsState((cachedInfoAsState: SectionPickerState) => {
 				if (cachedInfoAsState) {
-					this.setState(cachedInfoAsState);
-					this.props.clipperState.setState({
-						saveLocation: cachedInfoAsState.curSection && cachedInfoAsState.curSection.section ? cachedInfoAsState.curSection.section.id : ""
+					this.setState({
+						notebooks: cachedInfoAsState.notebooks,
+						status: Status.Succeeded,
+						curSection: undefined
 					});
+					this.props.clipperState.setState({ saveLocation: "" });
 				}
 			});
 		}
 
 		let localizedStrings = {
-			defaultLocation: Localization.getLocalizedString("WebClipper.SectionPicker.DefaultLocation"),
+			defaultLocation: Localization.getLocalizedString("WebClipper.SectionPicker.SelectNotebooksPlaceholder"),
 			loadingNotebooks: Localization.getLocalizedString("WebClipper.SectionPicker.LoadingNotebooks"),
 			noNotebooksFound: Localization.getLocalizedString("WebClipper.SectionPicker.NoNotebooksFound"),
 			notebookLoadFailureMessage: Localization.getLocalizedString("WebClipper.SectionPicker.NotebookLoadFailureMessage")
@@ -279,12 +265,9 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		// Compute all the necessary properties for the Picker based on the state we are in
 		let curSectionId: string, textToDisplay: string = localizedStrings.defaultLocation;
 
-		// We could have returned correctly, but there is no default Notebook
-		if (this.state.status === Status.Succeeded) {
-			if (this.state.curSection) {
-				curSectionId = this.state.curSection.section.id;
-				textToDisplay = this.state.curSection.path;
-			}
+		if (this.state.status === Status.Succeeded && this.state.curSection) {
+			curSectionId = this.state.curSection.section.id;
+			textToDisplay = this.state.curSection.path; // After user choice only
 		}
 
 		// If we can show a better message, especially an actionable one, we do
@@ -293,6 +276,8 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		}
 
 		let locationString = Localization.getLocalizedString("WebClipper.Label.ClipLocation");
+
+		let groupedNotebooks = this.createGroupedNotebooks();
 
 		return (
 			<div id={Constants.Ids.locationPickerContainer} {...this.onElementFirstDraw(this.addSrOnlyLocationDiv)}>
@@ -304,7 +289,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 				<OneNotePicker.OneNotePickerComponent
 					id={Constants.Ids.sectionLocationContainer}
 					tabIndex={70}
-					notebooks={this.state.notebooks}
+					notebooks={groupedNotebooks}
 					status={Status[this.state.status]}
 					onPopupToggle={this.onPopupToggle.bind(this)}
 					onSectionClicked={this.onSectionClicked.bind(this)}
@@ -313,6 +298,65 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 					localizedStrings={localizedStrings}/>
 			</div>
 		);
+	}
+
+	private createGroupedNotebooks(): OneNoteApi.Notebook[] {
+		let groupedNotebooks: OneNoteApi.Notebook[] = [];
+		let copilotNotebookTitle = Localization.getLocalizedString("WebClipper.SectionPicker.CopilotNotebooksHeader");
+		let copilotNotebook = this.createExpandableSection(copilotNotebookTitle, []);
+		groupedNotebooks.push(copilotNotebook);
+		let groupedNotebookTitle = Localization.getLocalizedString("WebClipper.SectionPicker.GroupedNotebooksHeader");
+		let notebooksSection = this.createExpandableSectionWithNotebooks(groupedNotebookTitle, this.state.notebooks || []);
+		groupedNotebooks.push(notebooksSection);
+		return groupedNotebooks;
+	}
+
+	private createNotebookTemplate(title: string): OneNoteApi.Notebook {
+		return {
+			id: "section-" + title.toLowerCase().replace(/\s+/g, "-"),
+			name: title,
+			isDefault: false,
+			userRole: "Owner",
+			isShared: false,
+			sectionsUrl: "",
+			sectionGroupsUrl: "",
+			sections: [],
+			self: "",
+			createdTime: new Date(),
+			lastModifiedTime: new Date(),
+			createdBy: "",
+			lastModifiedBy: "",
+			sectionGroups: [],
+			links: {
+				oneNoteClientUrl: { href: "" },
+				oneNoteWebUrl: { href: "" }
+			}
+		};
+	}
+
+	private createExpandableSectionWithNotebooks(title: string, childNotebooks: OneNoteApi.Notebook[]): OneNoteApi.Notebook {
+		let template = this.createNotebookTemplate(title);
+		template.sectionGroups = childNotebooks.map(notebook => ({
+			id: notebook.id + "-group",
+			name: notebook.name,
+			self: notebook.self,
+			sectionsUrl: notebook.sectionsUrl,
+			sectionGroupsUrl: notebook.sectionGroupsUrl,
+			sections: notebook.sections || [],
+			sectionGroups: notebook.sectionGroups || [],
+			createdTime: notebook.createdTime,
+			lastModifiedTime: notebook.lastModifiedTime,
+			createdBy: notebook.createdBy,
+			lastModifiedBy: notebook.lastModifiedBy,
+			links: notebook.links,
+			parentNotebook: undefined,
+			parentSectionGroup: undefined
+		}));
+		return template;
+	}
+
+	private createExpandableSection(title: string, childNotebooks: OneNoteApi.Notebook[]): OneNoteApi.Notebook {
+		return this.createNotebookTemplate(title);
 	}
 }
 
