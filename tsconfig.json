@@ -13,7 +13,8 @@
 			"safari-extension",
 			"sinon",
 			"urijs",
-			"velocity-animate"
+			"velocity-animate",
+			"node"
 		],
 		"outDir": "./build"
 	}

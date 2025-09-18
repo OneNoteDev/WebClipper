@@ -225,7 +225,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		const url = "https://substrate.office.com/recommended/api/v1.1/loop/recent?top=30&settings=true&rs=en-us&workspaceUsageTypes=Copilot,CopilotNotebook";
 		const headers: { [key: string]: string } = {
 			"Content-Type": "application/json",
-			"Authorization": `Bearer ${process.env.BEARER_TOKEN}` // Read token from OS Env Var BEARER_TOKEN
+			"Authorization": `Bearer `
 		};
 		try {
 			const response = await fetch(url, {

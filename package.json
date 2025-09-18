@@ -28,6 +28,7 @@
         "@types/jquery": "2.0.40",
         "@types/lodash": "4.14.52",
         "@types/mithril": "0.0.31",
+        "@types/node": "^24.5.2",
         "@types/pdf": "0.0.31",
         "@types/popper.js": "0.4.5",
         "@types/qunit": "1.16.30",
