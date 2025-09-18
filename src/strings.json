@@ -140,6 +140,7 @@
 	"WebClipper.Preview.Header.SerifButtonLabel": "Serif",
 	"WebClipper.Preview.Spinner.ClipAnyTimeInFullPage": "In a hurry? You can clip any time in Full Page mode!",
 	"WebClipper.SectionPicker.DefaultLocation": "Default location",
+	"WebClipper.SectionPicker.SelectNotebooksPlaceholder": "Select Notebooks",
 	"WebClipper.SectionPicker.LoadingNotebooks": "Loading notebooks...",
 	"WebClipper.SectionPicker.NoNotebooksFound": "You don't have any notebooks yet, so we'll create your default notebook when you clip this page.",
 	"WebClipper.SectionPicker.NotebookLoadFailureMessage": "OneNote couldn't load your notebooks. Please try again later.",
