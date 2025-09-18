@@ -222,12 +222,10 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 	}
 
 	async fetchFreshCopilotNotebooks(sessionId: string): Promise<OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>> {
-		// Read token from OS Env Var BEARER_TOKEN
-		const token = process.env.BEARER_TOKEN;
 		const url = "https://substrate.office.com/recommended/api/v1.1/loop/recent?top=30&settings=true&rs=en-us&workspaceUsageTypes=Copilot,CopilotNotebook";
 		const headers: { [key: string]: string } = {
 			"Content-Type": "application/json",
-			"Authorization": `Bearer ${token}`
+			"Authorization": `Bearer ${process.env.BEARER_TOKEN}` // Read token from OS Env Var BEARER_TOKEN
 		};
 		try {
 			const response = await fetch(url, {
