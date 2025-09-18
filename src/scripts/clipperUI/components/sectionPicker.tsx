@@ -15,6 +15,7 @@ import { Status } from "../status";
 
 export interface SectionPickerState {
 	notebooks?: OneNoteApi.Notebook[];
+	copilotNotebooks?: OneNoteApi.Notebook[];
 	status?: Status;
 	apiResponseCode?: string;
 	curSection?: {
@@ -93,11 +94,18 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 				let getNotebooksEvent: Log.Event.PromiseEvent = new Log.Event.PromiseEvent(Log.Event.Label.GetNotebooks);
 
-				this.fetchFreshNotebooks(Clipper.getUserSessionId()).then((responsePackage) => {
-					let correlationId = responsePackage.request.getResponseHeader(Constants.HeaderValues.correlationId);
+				Promise.all([
+					this.fetchFreshNotebooks(Clipper.getUserSessionId()),
+					this.fetchFreshCopilotNotebooks(Clipper.getUserSessionId())
+				]).then(([notebooksResponse, copilotResponse]) => {
+					let correlationId = notebooksResponse.request.getResponseHeader(Constants.HeaderValues.correlationId);
 					getNotebooksEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
-					let freshNotebooks = responsePackage.parsedResponse;
+					let freshNotebooks = notebooksResponse.parsedResponse;
+					let freshCopilotNotebooks = copilotResponse.parsedResponse;
+					console.log("Fetched Notebooks:", freshNotebooks);
+					console.log("Fetched Copilot Notebooks:", freshCopilotNotebooks);
+
 					if (!freshNotebooks) {
 						getNotebooksEvent.setStatus(Log.Status.Failed);
 						let error = {error: "GetNotebooks Promise was resolved but returned null or undefined value for notebooks."};
@@ -211,6 +219,41 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
 
 		return SectionPickerClass.dataSource.getNotebooks(headers);
+	}
+
+	async fetchFreshCopilotNotebooks(sessionId: string): Promise<OneNoteApi.ResponsePackage<OneNoteApi.Notebook[]>> {
+		// Read token from OS Env Var BEARER_TOKEN
+		const token = "";
+		const url = "https://substrate.office.com/recommended/api/v1.1/loop/recent?top=30&settings=true&rs=en-us&workspaceUsageTypes=Copilot,CopilotNotebook";
+		const headers: { [key: string]: string } = {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${token}`
+		};
+		try {
+			const response = await fetch(url, {
+				method: "GET",
+				headers
+			});
+			if (!response.ok) {
+				throw new Error(`Failed to fetch Copilot Notebooks: ${response.status} ${response.statusText}`);
+			}
+			const raw = await response.json();
+			// Map API response to OneNoteApi.Notebook[]
+			const notebooks: OneNoteApi.Notebook[] = (raw.workspaces || []).map((ws: any) => ({
+				Name: ws.title,
+				link: ws.sharepoint_info ? ws.sharepoint_info.site_url : undefined
+			}));
+			// Mocking the XHR object for compatibility
+			const mockRequest = {
+				getResponseHeader: (header: string) => null
+			};
+			return {
+				parsedResponse: notebooks,
+				request: mockRequest as any
+			};
+		} catch (error) {
+			return Promise.reject(error);
+		}
 	}
 
 	// Given a notebook list, converts it to state form where the curSection is the default section (or undefined if not found)
