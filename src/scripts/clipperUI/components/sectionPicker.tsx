@@ -12,6 +12,8 @@ import {ComponentBase} from "../componentBase";
 import {Clipper} from "../frontEndGlobals";
 import {OneNoteApiUtils} from "../oneNoteApiUtils";
 import { Status } from "../status";
+import {HttpClient} from "../../http/httpClient";
+import {WorkspaceService} from "../../services/workspaceService";
 
 export interface SectionPickerState {
 	notebooks?: OneNoteApi.Notebook[];
@@ -21,6 +23,7 @@ export interface SectionPickerState {
 		path: string;
 		section: OneNoteApi.Section;
 	};
+	workspaces?: string[];
 }
 
 interface SectionPickerProp extends ClipperStateProp {
@@ -31,10 +34,19 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 	static dataSource: OneNotePicker.OneNotePickerDataSource;
 
 	getInitialState(): SectionPickerState {
+		// Start with demo workspaces as fallback, then try to fetch real ones
+		const initialWorkspaces = ["Demo Workspace 1", "Demo Workspace 2"];
+		
+		// Fetch real workspaces asynchronously and update state when available
+		this.fetchWorkspaces().catch(error => {
+			// Keep the demo workspaces as fallback if fetch fails
+		});
+		
 		return {
 			notebooks: undefined,
 			status: Status.NotStarted,
-			curSection: undefined
+			curSection: undefined,
+			workspaces: initialWorkspaces
 		};
 	}
 
@@ -114,6 +126,11 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 						notebooks: freshNotebooks,
 						status: Status.Succeeded,
 						curSection: undefined
+					});
+					
+					// Fetch workspaces in parallel
+					this.fetchWorkspaces().catch(error => {
+						console.error("Failed to fetch workspaces:", error);
 					});
 					this.props.clipperState.setState({ saveLocation: "" });
 					resolve({
@@ -207,6 +224,20 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			status: Status.Succeeded,
 			curSection: defaultSectionInfo
 		};
+	}
+
+	// Fetches workspaces from Substrate API using shared service
+	async fetchWorkspaces(): Promise<string[]> {
+		try {
+			const workspaceTitles = await WorkspaceService.fetchWorkspaces();
+			if (workspaceTitles.length > 0) {
+				this.setState({ workspaces: workspaceTitles });
+			}
+			return workspaceTitles;
+		} catch (error) {
+			console.error("Failed to fetch workspaces:", error);
+			return [];
+		}
 	}
 
 	static formatSectionInfoForStorage(pathToSection: OneNoteApi.SectionPathElement[]): { path: string, section: OneNoteApi.Section } {
@@ -356,7 +387,39 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 	}
 
 	private createExpandableSection(title: string, childNotebooks: OneNoteApi.Notebook[]): OneNoteApi.Notebook {
-		return this.createNotebookTemplate(title);
+		let template = this.createNotebookTemplate(title);
+		
+		// Special handling for Copilot Notebooks - add workspace sections
+		if (title === "Copilot Notebooks") {
+			// Add workspaces as sections under Copilot Notebooks
+			if (this.state.workspaces && this.state.workspaces.length > 0) {
+				template.sections = this.state.workspaces.map((workspaceTitle, index) => ({
+					id: `workspace-${index}`,
+					name: workspaceTitle,
+					createdTime: new Date(),
+					lastModifiedTime: new Date(),
+					createdBy: "",
+					lastModifiedBy: "",
+					self: "",
+					pagesUrl: "",
+					parentNotebook: template,
+					pages: [],
+					isDefault: false
+				}));
+			}
+		} else {
+			// Original logic for other notebook types
+			for (let i = 0; i < childNotebooks.length; i++) {
+				if (childNotebooks[i].sections) {
+					template.sections = template.sections.concat(childNotebooks[i].sections);
+				}
+				if (childNotebooks[i].sectionGroups) {
+					template.sectionGroups = template.sectionGroups.concat(childNotebooks[i].sectionGroups);
+				}
+			}
+		}
+		
+		return template;
 	}
 }
 
