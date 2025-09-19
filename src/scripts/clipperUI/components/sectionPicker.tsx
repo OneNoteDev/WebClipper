@@ -103,6 +103,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 					let freshNotebooks = notebooksResponse.parsedResponse;
 					let freshCopilotNotebooks = copilotResponse.parsedResponse;
+					let allNotebooks = [...(freshNotebooks || []), ...(freshCopilotNotebooks || [])];
 					console.log("Fetched Notebooks:", freshNotebooks);
 					console.log("Fetched Copilot Notebooks:", freshCopilotNotebooks);
 
@@ -122,12 +123,13 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 					Clipper.storeValue(ClipperStorageKeys.cachedNotebooks, JSON.stringify(freshNotebooks));
 
 					// The curSection property is the default section found in the notebook list
-					let freshNotebooksAsState = SectionPickerClass.convertNotebookListToState(freshNotebooks);
+					let freshNotebooksAsState = SectionPickerClass.convertNotebookListToState(allNotebooks);
+					this.setState(freshNotebooksAsState);
 
 					let shouldOverrideCurSectionWithDefault = true;
 					if (this.state.curSection && this.state.curSection.section) {
 						// The user has already selected a section ...
-						let currentSectionStillExists = OneNoteApi.NotebookUtils.sectionExistsInNotebooks(freshNotebooks, this.state.curSection.section.id);
+						let currentSectionStillExists = OneNoteApi.NotebookUtils.sectionExistsInNotebooks(allNotebooks, this.state.curSection.section.id);
 						if (currentSectionStillExists) {
 							// ... which exists, so we don't override it with the default
 							freshNotebooksAsState.curSection = this.state.curSection;
@@ -238,7 +240,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			const raw = await response.json();
 			// Map API response to OneNoteApi.Notebook[]
 			const notebooks: OneNoteApi.Notebook[] = (raw.workspaces || []).map((ws: any) => ({
-				Name: ws.title,
+				name: ws.title,
 				link: ws.sharepoint_info ? ws.sharepoint_info.site_url : undefined
 			}));
 			// Mocking the XHR object for compatibility
