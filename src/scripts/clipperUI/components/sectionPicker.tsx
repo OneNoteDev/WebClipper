@@ -32,6 +32,7 @@ interface SectionPickerProp extends ClipperStateProp {
 
 export class SectionPickerClass extends ComponentBase<SectionPickerState, SectionPickerProp> {
 	static dataSource: OneNotePicker.OneNotePickerDataSource;
+	static driveId: string | null = null;
 
 	getInitialState(): SectionPickerState {
 		// Start with demo workspaces as fallback, then try to fetch real ones
@@ -57,6 +58,15 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		this.setState({
 			curSection: curSection
 		});
+		// If the section is a Copilot workspace, print its id (workspace title) to the console
+		if (
+			curSection &&
+			curSection.section &&
+			this.state.workspaces
+		) {
+			// eslint-disable-next-line no-console
+			console.log("Copilot workspace clicked:", curSection.section.id);
+		}
 		Clipper.logger.logClickEvent(Log.Click.Label.sectionComponent);
 	}
 
@@ -129,7 +139,14 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 					});
 					
 					// Fetch workspaces in parallel
-					this.fetchWorkspaces().catch(error => {
+					this.fetchWorkspaces().then(() => {
+						// Fetch driveId if not available
+						if (SectionPickerClass.driveId == null) {
+							WorkspaceService.fetchDriveId().then((driveId) => {
+								SectionPickerClass.driveId = driveId;
+							});
+						}
+					}).catch(error => {
 						console.error("Failed to fetch workspaces:", error);
 					});
 					this.props.clipperState.setState({ saveLocation: "" });
@@ -393,8 +410,8 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		if (title === "Copilot Notebooks") {
 			// Add workspaces as sections under Copilot Notebooks
 			if (this.state.workspaces && this.state.workspaces.length > 0) {
-				template.sections = this.state.workspaces.map((workspaceTitle, index) => ({
-					id: `workspace-${index}`,
+				template.sections = this.state.workspaces.map((workspaceTitle) => ({
+					id: SectionPickerClass.driveId, // Use driveId as id
 					name: workspaceTitle,
 					createdTime: new Date(),
 					lastModifiedTime: new Date(),
