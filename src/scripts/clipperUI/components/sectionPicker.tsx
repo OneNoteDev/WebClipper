@@ -60,19 +60,25 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			curSection: curSection
 		});
 
-		console.log("CurSection:", curSection);	
-		console.log("Workspaces:", this.state.workspaces);
+
 
 		// Detect Copilot Notebook section click and broadcast event
 		const copilotHeader = Localization.getLocalizedString("WebClipper.SectionPicker.CopilotNotebooksHeader");
 		const isCopilotSection = curSection && curSection.path && curSection.path.startsWith(copilotHeader);
 		if (isCopilotSection) {
-			// Mark the section as Copilot for downstream consumers
 			curSection.isCopilotNotebookSection = true;
-			console.log("[SectionPicker] Broadcasting copilotSectionClicked", curSection);
-			// Wrap in SmartValue to satisfy communicator API
+			
+			this.props.clipperState.setState({
+				isCopilotNotebookSelected: true
+			});
+			
 			Clipper.getInjectCommunicator().broadcastAcrossCommunicator(new SmartValue(curSection), "copilotSectionClicked");
-			console.log("[SectionPicker] Broadcast sent");
+		} else {
+			this.props.clipperState.setState({
+				isCopilotNotebookSelected: false
+			});
+
+			Clipper.getInjectCommunicator().broadcastAcrossCommunicator(new SmartValue(curSection), "regularSectionClicked");
 		}
 
 		Clipper.logger.logClickEvent(Log.Click.Label.sectionComponent);

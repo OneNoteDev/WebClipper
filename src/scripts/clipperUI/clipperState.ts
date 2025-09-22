@@ -45,6 +45,7 @@ export interface ClipperState {
 	// User input
 	currentMode?: SmartValue<ClipMode>; // Full, Region, Augmentation
 	saveLocation?: string; // Result from the SectionPicker
+	isCopilotNotebookSelected?: boolean; // Flag to track when clipping to Copilot Notebooks
 
 	// Content preview data + retrieval status
 	fullPageResult?: DataResult<FullPageScreenshotResult>;

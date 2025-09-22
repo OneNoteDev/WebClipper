@@ -39,6 +39,8 @@ import {OneNoteSaveableFactory} from "../saveToOneNote/oneNoteSaveableFactory";
 import {SaveToOneNote, SaveToOneNoteOptions} from "../saveToOneNote/saveToOneNote";
 import {SaveToOneNoteLogger} from "../saveToOneNote/saveToOneNoteLogger";
 
+import {WorkspaceService} from "../services/workspaceService";
+
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 
 import {ClipMode} from "./clipMode";
@@ -73,6 +75,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			currentMode: new SmartValue<ClipMode>(this.getDefaultClipMode()),
 
 			userResult: { status: Status.NotStarted } ,
+			isCopilotNotebookSelected: false,
 			fullPageResult: { status: Status.NotStarted },
 			pdfResult: { data: new SmartValue<PdfScreenshotResult>(), status: Status.NotStarted },
 			regionResult: { status: Status.NotStarted, data: [] },
@@ -115,7 +118,8 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	private getResetState(): ClipperState {
 		return {
 			currentMode: this.state.currentMode.set(this.getDefaultClipMode()),
-			oneNoteApiResult: { status: Status.NotStarted }
+			oneNoteApiResult: { status: Status.NotStarted },
+			isCopilotNotebookSelected: false
 		};
 	}
 
@@ -191,22 +195,110 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			"copilotSectionClicked",
 			(copilotSection: any) => {
 				if (copilotSection && copilotSection.isCopilotNotebookSection) {
-					this.captureContentForCPNB();
+					this.state.setState({ isCopilotNotebookSelected: true });
 				}
+			}
+		);
+
+		// Subscribe to regular section click event to reset Copilot flag
+		Clipper.getInjectCommunicator().subscribeAcrossCommunicator(
+			new SmartValue<any>(),
+			"regularSectionClicked",
+			(regularSection: any) => {
+				this.state.setState({ isCopilotNotebookSelected: false });
 			}
 		);
 	}
 
-	private captureContentForCPNB() {
-		console.log("Capture for Copilot Notebooks section clicked");
-		// TODO:
-		// 1.  getPdfScreenshotResultFromRawUrl() --> capture binary data for pdf
-		//     Use https://www.cs.binghamton.edu/~davidl/papers/ICSE22.pdf  to get Clip pdf option
+	private async captureContentForCPNB() {
+		this.state.setState({ oneNoteApiResult: { status: Status.InProgress } });
+		
+		try {
+			const pdfResult = await this.getPdfScreenshotResultFromRawUrl(this.state.pageInfo.rawUrl);
+			
+			if (!pdfResult || !pdfResult.pdf) {
+				this.state.setState({ 
+					oneNoteApiResult: { 
+						data: { 
+							error: "Failed to get PDF data",
+							statusCode: 500
+						} as OneNoteApi.RequestError, 
+						status: Status.Failed 
+					} 
+				});
+				return;
+			}
 
-		// Call these APIS:
-		// 2. Call `SharePointUpload()`
-		// 2a. From the response, extract id attribute
-		// 3.Call `createLink()`
+			const pdfData = await pdfResult.pdf.getData();
+
+			const driveId = await WorkspaceService.fetchDriveId();
+			if (!driveId) {
+				this.state.setState({ 
+					oneNoteApiResult: { 
+						data: { 
+							error: "Failed to get drive ID",
+							statusCode: 500
+						} as OneNoteApi.RequestError, 
+						status: Status.Failed 
+					} 
+				});
+				return;
+			}
+
+			const urlParts = this.state.pageInfo.rawUrl.split('/');
+			const lastPart = urlParts[urlParts.length - 1];
+			const filename = (lastPart && lastPart.replace('.pdf', '')) || 'clipped-document';
+
+			const fileId = await WorkspaceService.SharePointUpload(driveId, filename, pdfData);
+			if (!fileId) {
+				this.state.setState({ 
+					oneNoteApiResult: { 
+						data: { 
+							error: "Failed to upload PDF to SharePoint",
+							statusCode: 500
+						} as OneNoteApi.RequestError, 
+						status: Status.Failed 
+					} 
+				});
+				return;
+			}
+
+			const shareLink = await WorkspaceService.createLink(driveId, fileId);
+			if (!shareLink) {
+				this.state.setState({ 
+					oneNoteApiResult: { 
+						data: { 
+							error: "Failed to create sharing link",
+							statusCode: 500
+						} as OneNoteApi.RequestError, 
+						status: Status.Failed 
+					} 
+				});
+				return;
+			}
+
+			this.state.setState({
+				oneNoteApiResult: { 
+					data: { 
+						id: fileId,
+						self: shareLink,
+						title: filename
+					} as OneNoteApi.Page, 
+					status: Status.Succeeded 
+				}
+			});
+			
+		} catch (error) {
+			this.state.setState({ 
+				oneNoteApiResult: { 
+					data: { 
+						error: "Copilot Notebook upload failed: " + error.message,
+						statusCode: 500
+					} as OneNoteApi.RequestError, 
+					status: Status.Failed 
+				} 
+			});
+		}
 	}
 
 	private capturePdfScreenshotContent() {
@@ -670,8 +762,18 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		return signOutState;
 	}
 
+	private isCopilotNotebookCurrentlySelected(): boolean {
+		return this.state.isCopilotNotebookSelected || false;
+	}
+
 	private handleStartClip(): void {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ClipAttempted);
+
+		const isCopilotSelected = this.isCopilotNotebookCurrentlySelected();
+		if (isCopilotSelected) {
+			this.captureContentForCPNB();
+			return;
+		}
 
 		this.state.setState({ userResult: { status: Status.InProgress, data: this.state.userResult.data } });
 		Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, { callback: (updatedUser: UserInfo) => {

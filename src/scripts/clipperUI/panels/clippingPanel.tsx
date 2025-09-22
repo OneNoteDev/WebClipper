@@ -18,6 +18,10 @@ import {SpriteAnimation} from "../components/spriteAnimation";
 
 class ClippingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 	getProgressLabel(): string {
+		if (this.props.clipperState.isCopilotNotebookSelected) {
+			return Localization.getLocalizedString("WebClipper.ClipType.CopilotNotebook.ProgressLabel");
+		}
+
 		switch (this.props.clipperState.currentMode.get()) {
 			case ClipMode.Pdf:
 				return Localization.getLocalizedString("WebClipper.ClipType.Pdf.ProgressLabel");
