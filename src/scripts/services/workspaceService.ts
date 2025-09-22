@@ -2,7 +2,7 @@ import * as jwtDecode from 'jwt-decode';
 import { HttpClient } from '../http/httpClient';
 
 export class WorkspaceService {
-	private static token = "<token>";
+	private static token = "";
 	private static graphToken = ""; // Set this to your Microsoft Graph token as needed
 	private static sharePointToken = ""; // Set this to your SharePoint token as needed
 	private static microsoftToken = ""; // Set this to your Microsoft token as needed

@@ -184,6 +184,29 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		Clipper.getInjectCommunicator().setErrorHandler((e: Error) => {
 			Log.ErrorUtils.handleCommunicatorError(Constants.CommunicationChannels.injectedAndUi, e, clientInfo);
 		});
+
+		// Subscribe to Copilot Notebooks section click event
+		Clipper.getInjectCommunicator().subscribeAcrossCommunicator(
+			new SmartValue<any>(),
+			"copilotSectionClicked",
+			(copilotSection: any) => {
+				if (copilotSection && copilotSection.isCopilotNotebookSection) {
+					this.captureContentForCPNB();
+				}
+			}
+		);
+	}
+
+	private captureContentForCPNB() {
+		console.log("Capture for Copilot Notebooks section clicked");
+		// TODO:
+		// 1.  getPdfScreenshotResultFromRawUrl() --> capture binary data for pdf
+		//     Use https://www.cs.binghamton.edu/~davidl/papers/ICSE22.pdf  to get Clip pdf option
+
+		// Call these APIS:
+		// 2. Call `SharePointUpload()`
+		// 2a. From the response, extract id attribute
+		// 3.Call `createLink()`
 	}
 
 	private capturePdfScreenshotContent() {

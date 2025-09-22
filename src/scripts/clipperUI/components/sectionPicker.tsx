@@ -14,6 +14,7 @@ import {OneNoteApiUtils} from "../oneNoteApiUtils";
 import { Status } from "../status";
 import {HttpClient} from "../../http/httpClient";
 import {WorkspaceService} from "../../services/workspaceService";
+import { SmartValue } from "../../communicator/smartValue";
 
 export interface SectionPickerState {
 	notebooks?: OneNoteApi.Notebook[];
@@ -58,15 +59,22 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		this.setState({
 			curSection: curSection
 		});
-		// If the section is a Copilot workspace, print its id (workspace title) to the console
-		if (
-			curSection &&
-			curSection.section &&
-			this.state.workspaces
-		) {
-			// eslint-disable-next-line no-console
-			console.log("Copilot workspace clicked:", curSection.section.id);
+
+		console.log("CurSection:", curSection);	
+		console.log("Workspaces:", this.state.workspaces);
+
+		// Detect Copilot Notebook section click and broadcast event
+		const copilotHeader = Localization.getLocalizedString("WebClipper.SectionPicker.CopilotNotebooksHeader");
+		const isCopilotSection = curSection && curSection.path && curSection.path.startsWith(copilotHeader);
+		if (isCopilotSection) {
+			// Mark the section as Copilot for downstream consumers
+			curSection.isCopilotNotebookSection = true;
+			console.log("[SectionPicker] Broadcasting copilotSectionClicked", curSection);
+			// Wrap in SmartValue to satisfy communicator API
+			Clipper.getInjectCommunicator().broadcastAcrossCommunicator(new SmartValue(curSection), "copilotSectionClicked");
+			console.log("[SectionPicker] Broadcast sent");
 		}
+
 		Clipper.logger.logClickEvent(Log.Click.Label.sectionComponent);
 	}
 
