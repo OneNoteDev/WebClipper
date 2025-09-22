@@ -14,6 +14,7 @@ import {OneNoteApiUtils} from "../oneNoteApiUtils";
 import { Status } from "../status";
 import {HttpClient} from "../../http/httpClient";
 import {WorkspaceService} from "../../services/workspaceService";
+import { SmartValue } from "../../communicator/smartValue";
 
 export interface SectionPickerState {
 	notebooks?: OneNoteApi.Notebook[];
@@ -32,6 +33,7 @@ interface SectionPickerProp extends ClipperStateProp {
 
 export class SectionPickerClass extends ComponentBase<SectionPickerState, SectionPickerProp> {
 	static dataSource: OneNotePicker.OneNotePickerDataSource;
+	static driveId: string | null = null;
 
 	getInitialState(): SectionPickerState {
 		// Start with demo workspaces as fallback, then try to fetch real ones
@@ -57,6 +59,22 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		this.setState({
 			curSection: curSection
 		});
+
+		console.log("CurSection:", curSection);	
+		console.log("Workspaces:", this.state.workspaces);
+
+		// Detect Copilot Notebook section click and broadcast event
+		const copilotHeader = Localization.getLocalizedString("WebClipper.SectionPicker.CopilotNotebooksHeader");
+		const isCopilotSection = curSection && curSection.path && curSection.path.startsWith(copilotHeader);
+		if (isCopilotSection) {
+			// Mark the section as Copilot for downstream consumers
+			curSection.isCopilotNotebookSection = true;
+			console.log("[SectionPicker] Broadcasting copilotSectionClicked", curSection);
+			// Wrap in SmartValue to satisfy communicator API
+			Clipper.getInjectCommunicator().broadcastAcrossCommunicator(new SmartValue(curSection), "copilotSectionClicked");
+			console.log("[SectionPicker] Broadcast sent");
+		}
+
 		Clipper.logger.logClickEvent(Log.Click.Label.sectionComponent);
 	}
 
@@ -129,7 +147,14 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 					});
 					
 					// Fetch workspaces in parallel
-					this.fetchWorkspaces().catch(error => {
+					this.fetchWorkspaces().then(() => {
+						// Fetch driveId if not available
+						if (SectionPickerClass.driveId == null) {
+							WorkspaceService.fetchDriveId().then((driveId) => {
+								SectionPickerClass.driveId = driveId;
+							});
+						}
+					}).catch(error => {
 						console.error("Failed to fetch workspaces:", error);
 					});
 					this.props.clipperState.setState({ saveLocation: "" });
@@ -393,8 +418,8 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		if (title === "Copilot Notebooks") {
 			// Add workspaces as sections under Copilot Notebooks
 			if (this.state.workspaces && this.state.workspaces.length > 0) {
-				template.sections = this.state.workspaces.map((workspaceTitle, index) => ({
-					id: `workspace-${index}`,
+				template.sections = this.state.workspaces.map((workspaceTitle) => ({
+					id: SectionPickerClass.driveId, // Use driveId as id
 					name: workspaceTitle,
 					createdTime: new Date(),
 					lastModifiedTime: new Date(),
