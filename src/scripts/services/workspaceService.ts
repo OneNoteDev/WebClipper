@@ -11,15 +11,12 @@ export class WorkspaceService {
 		try {
 			const decodedToken: { exp: number } = jwtDecode(token);
 			const expirationDate = new Date(decodedToken.exp * 1000);
-			console.log(`Token expires on: ${expirationDate.toUTCString()}`);
 
 			if (expirationDate.getTime() < Date.now()) {
-				console.error("Token has expired. Please provide a new token.");
 				return false;
 			}
 			return true;
 		} catch (error) {
-			console.error("Failed to decode token:", error);
 			return false;
 		}
 	}
@@ -32,29 +29,23 @@ export class WorkspaceService {
 
 			const url = "https://substrate.office.com/recommended/api/v1.1/loop/recent?top=3&settings=true&rs=en-us&workspaceUsageTypes=Copilot,CopilotNotebook";
 			const httpClient = new HttpClient();
-			console.log("Fetching workspaces from:", url);
 
 			const response = await httpClient.get(url, {
 				"Authorization": `Bearer ${this.token}`
 			});
 
-			console.log("Workspace API response:", response);
-
 			if (response && response.workspaces) {
 				const workspaceTitles = response.workspaces.map((workspace: any) => workspace.title);
-				console.log("Extracted workspace titles:", workspaceTitles);
 				return workspaceTitles;
 			}
-			console.log("No workspaces found in response");
 			return [];
 		} catch (error) {
-			console.error("Failed to fetch workspaces:", error);
 			return [];
 		}
 	}
 
 	// Fetches the user's drive id from Microsoft Graph
-    static async fetchDriveId(): Promise<string | null> {
+	static async fetchDriveId(): Promise<string | null> {
         if (!this.graphToken || !this.validateToken(this.graphToken)) {
             return null;
         }
@@ -69,12 +60,9 @@ export class WorkspaceService {
             }
             return null;
         } catch (error) {
-            console.error("Failed to fetch drive id:", error);
             return null;
         }
-	}
-	
-	/**
+	}	/**
 	 * Uploads a PDF file to SharePoint and returns the fileReferenceId (the uploaded file's id).
 	 * @param driveId The drive id to upload to.
 	 * @param filename The name of the PDF file (without extension).
@@ -87,19 +75,38 @@ export class WorkspaceService {
 			return null;
 		}
 		const encodedFilename = encodeURIComponent(filename);
-		const url = `https://microsoft-my.sharepoint.com/_api/v2.0/drives/${driveId}/items/root:/Microsoft%20Copilot%20Chat%20Files/Copilot%20Notebook%20Uploads/${encodedFilename}.pdf:/content?%40name.conflictBehavior=rename`;
+		const url = `https://microsoftapc-my.sharepoint.com/_api/v2.0/drives/${driveId}/items/root:/Microsoft%20Copilot%20Chat%20Files/Copilot%20Notebook%20Uploads/${encodedFilename}.pdf:/content?%40name.conflictBehavior=rename`;
+		
 		try {
-			const httpClient = new HttpClient();
-			const response = await httpClient.post(url, pdfBuffer, {
-				"Authorization": `Bearer ${WorkspaceService.sharePointToken}`,
-				"Content-Type": "application/pdf"
+			const response = await fetch(url, {
+				method: 'PUT',
+				headers: {
+					"Authorization": `Bearer ${WorkspaceService.sharePointToken}`,
+					"Content-Type": "application/pdf"
+				},
+				body: pdfBuffer
 			});
-			if (response && response.id) {
-				return response.id as string; // fileReferenceId
+			
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(`SharePoint upload failed: ${response.status} ${response.statusText}`);
 			}
+			
+			let responseData;
+			const contentType = response.headers.get('content-type');
+			if (contentType && contentType.indexOf('application/json') !== -1) {
+				responseData = await response.json();
+			} else {
+				responseData = await response.text();
+			}
+			
+			if (responseData && typeof responseData === 'object' && responseData.id) {
+				return responseData.id as string;
+			}
+			
 			return null;
+			
 		} catch (error) {
-			console.error("Failed to upload PDF to SharePoint:", error);
 			return null;
 		}
 	}
@@ -116,7 +123,7 @@ export class WorkspaceService {
 		if (!WorkspaceService.microsoftToken || !WorkspaceService.validateToken(WorkspaceService.microsoftToken)) {
 			return null;
 		}
-		const url = `https://microsoft-my.sharepoint.com/_api/v2.1/drives/${driveId}/items/${itemId}/createLink`;
+		const url = `https://microsoftapc-my.sharepoint.com/_api/v2.1/drives/${driveId}/items/${itemId}/createLink`;
 		try {
 			const httpClient = new HttpClient();
 			const response = await httpClient.post(url, WorkspaceService.createLinkPayload, {
@@ -128,7 +135,6 @@ export class WorkspaceService {
 			}
 			return null;
 		} catch (error) {
-			console.error("Failed to create sharing link:", error);
 			return null;
 		}
 	}

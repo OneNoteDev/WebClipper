@@ -21,6 +21,7 @@ import {OneNoteApiUtils} from "./oneNoteApiUtils";
 import {ClippingPanel} from "./panels/clippingPanel";
 import {ClippingPanelWithDelayedMessage} from "./panels/clippingPanelWithDelayedMessage";
 import {ClippingPanelWithProgressIndicator} from "./panels/clippingPanelWithProgressIndicator";
+import {CopilotNotebookSuccessPanel} from "./panels/copilotNotebookSuccessPanel";
 import {DialogButton} from "./panels/dialogPanel";
 import {ErrorDialogPanel} from "./panels/errorDialogPanel";
 import {LoadingPanel} from "./panels/loadingPanel";
@@ -304,6 +305,10 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 				return <ErrorDialogPanel
 					message={OneNoteApiUtils.getLocalizedErrorMessage(apiResponseCode)} buttons={buttons}/>;
 			case PanelType.ClippingSuccess:
+				if (this.props.clipperState.isCopilotNotebookSelected) {
+					return [<CopilotNotebookSuccessPanel clipperState={this.props.clipperState}/>];
+				}
+
 				let panels: any[] = [<SuccessPanel clipperState={this.props.clipperState}/>];
 
 				if (!this.state.ratingsPanelAnimationState) {

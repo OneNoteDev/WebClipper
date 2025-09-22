@@ -56,6 +56,7 @@
 	"WebClipper.ClipType.Selection.Button": "Selection",
 	"WebClipper.ClipType.Selection.Button.Tooltip": "Clip the selection you made on the web page.",
 	"WebClipper.ClipType.Selection.ProgressLabel": "Clipping Selection",
+	"WebClipper.ClipType.CopilotNotebook.ProgressLabel": "Clipping to Copilot Notebook",
 	"WebClipper.Error.ConflictingExtension": "Your PDF viewer or another extension might be blocking the OneNote Web Clipper. You could temporarily disable the following extension and try clipping again.",
 	"WebClipper.Error.CannotClipPage": "Sorry, this type of page can\u0027t be clipped.",
 	"WebClipper.Error.CookiesDisabled.Line1": "Cookies must be enabled in order for OneNote Web Clipper to work correctly.",
