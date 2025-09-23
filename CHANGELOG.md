@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.11 (October 2025)
+* Updated – Chrome and Edge extension icons refreshed to match the updated icon set across all platforms.
+
 ## 3.10.10 (April 2025)
 * Improvement : Deprecated the webclipper/data subsite.
 
