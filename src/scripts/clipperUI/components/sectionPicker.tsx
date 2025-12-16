@@ -21,6 +21,7 @@ export interface SectionPickerState {
 		path: string;
 		section: OneNoteApi.Section;
 	};
+	keyboardNavigationHandler?: (e: KeyboardEvent) => void;
 }
 
 interface SectionPickerProp extends ClipperStateProp {
@@ -250,6 +251,11 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 
 	// Keyboard navigation handler for the OneNotePicker tree
 	handlePickerKeyboardNavigation(element: HTMLElement, isFirstDraw: boolean) {
+		// Clean up existing handler if it exists
+		if (this.state.keyboardNavigationHandler) {
+			document.removeEventListener("keydown", this.state.keyboardNavigationHandler, true);
+		}
+
 		if (!isFirstDraw) {
 			return;
 		}
@@ -349,7 +355,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 						currentItemLeft.click();
 					} else {
 						// Move to parent item
-						const parentItem = this.findParentTreeItem(currentItemLeft, treeItems);
+						const parentItem = this.findParentTreeItem(currentItemLeft);
 						if (parentItem) {
 							parentItem.focus();
 						}
@@ -387,6 +393,8 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			}
 		};
 
+		// Store handler reference and add event listener
+		this.setState({ keyboardNavigationHandler: keydownHandler });
 		document.addEventListener("keydown", keydownHandler, true);
 	}
 
@@ -429,7 +437,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 	}
 
 	// Helper function to find parent tree item
-	private findParentTreeItem(item: HTMLElement, allItems: HTMLElement[]): HTMLElement {
+	private findParentTreeItem(item: HTMLElement): HTMLElement | undefined {
 		// Walk up the DOM to find the parent tree item
 		let current = item.parentElement;
 		while (current && current !== document.body) {
