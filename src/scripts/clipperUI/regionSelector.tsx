@@ -26,6 +26,7 @@ interface RegionSelectorState {
 	winWidth?: number;
 	winHeight?: number;
 	ariaLiveMessage?: string;
+	ariaLiveAssertiveMessage?: string;
 }
 
 class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStateProp> {
@@ -36,6 +37,8 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	private mouseMovementHandler = this.globalMouseMoveHandler.bind(this);
 	private mouseOverHandler = this.globalMouseOverHandler.bind(this);
 	private keyDownDict: { [key: number]: boolean } = {};
+	private lastAnnouncementTime: number = 0;
+	private announcementThrottleMs: number = 500; // Throttle announcements to every 500ms
 
 	getInitialState(): RegionSelectorState {
 		return {
@@ -78,9 +81,9 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 			this.setState({ firstPoint: point, secondPoint: undefined, selectionInProgress: true, keyboardSelectionInProgress: fromKeyboard });
 			this.props.clipperState.setState({ regionResult: { status: Status.InProgress, data: this.props.clipperState.regionResult.data } });
 
-			// Announce selection started for screen readers
+			// Announce selection started for screen readers (assertive - important state change)
 			if (fromKeyboard) {
-				this.announceAriaLiveMessage(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionStarted"));
+				this.announceAriaLiveAssertiveMessage(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionStarted"));
 			}
 		}
 	}
@@ -112,10 +115,22 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	}
 
 	/**
-	 * Announce screen reader message for keyboard navigation
+	 * Announce screen reader message for keyboard navigation (polite, throttled)
 	 */
 	private announceAriaLiveMessage(message: string) {
-		this.setState({ ariaLiveMessage: message });
+		const now = Date.now();
+		// Throttle direction announcements to avoid overwhelming the screen reader
+		if (now - this.lastAnnouncementTime >= this.announcementThrottleMs) {
+			this.setState({ ariaLiveMessage: message });
+			this.lastAnnouncementTime = now;
+		}
+	}
+
+	/**
+	 * Announce critical screen reader message (assertive, not throttled)
+	 */
+	private announceAriaLiveAssertiveMessage(message: string) {
+		this.setState({ ariaLiveAssertiveMessage: message });
 	}
 
 	/**
@@ -151,9 +166,9 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 			} else {
 				this.setState({ secondPoint: point, selectionInProgress: false, keyboardSelectionInProgress: false });
 
-				// Announce selection completed for screen readers
+				// Announce selection completed for screen readers (assertive - important state change)
 				if (this.state.keyboardSelectionInProgress) {
-					this.announceAriaLiveMessage(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionCompleted"));
+					this.announceAriaLiveAssertiveMessage(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionCompleted"));
 				}
 
 				// Get the image immediately
@@ -478,8 +493,11 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				onmouseup={this.mouseUpHandler.bind(this)} ontouchstart={this.touchStartHandler.bind(this)}
 				ontouchmove={this.touchMoveHandler.bind(this)} ontouchend={this.touchEndHandler.bind(this)}
 				onkeydown={this.keyDownHandler.bind(this)} onkeyup={this.keyUpHandler.bind(this)}>
-				<div aria-live="assertive" aria-atomic="true" className={Constants.Classes.srOnly}>
+				<div aria-live="polite" aria-atomic="true" className={Constants.Classes.srOnly}>
 					{this.state.ariaLiveMessage}
+				</div>
+				<div aria-live="assertive" aria-atomic="true" className={Constants.Classes.srOnly}>
+					{this.state.ariaLiveAssertiveMessage}
 				</div>
 				<img id="cursor"  {...this.ref("cursor")} src={ExtensionUtils.getImageResourceUrl("crosshair_cursor.svg")}
 					width={Constants.Styles.customCursorSize + "px"} height={Constants.Styles.customCursorSize + "px"} />
