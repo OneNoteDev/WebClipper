@@ -25,6 +25,7 @@ interface RegionSelectorState {
 	keyboardSelectionInProgress?: boolean;
 	winWidth?: number;
 	winHeight?: number;
+	ariaLiveMessage?: string;
 }
 
 class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStateProp> {
@@ -76,6 +77,11 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		if (this.props.clipperState.regionResult.status !== Status.InProgress) {
 			this.setState({ firstPoint: point, secondPoint: undefined, selectionInProgress: true, keyboardSelectionInProgress: fromKeyboard });
 			this.props.clipperState.setState({ regionResult: { status: Status.InProgress, data: this.props.clipperState.regionResult.data } });
+
+			// Announce selection started for screen readers
+			if (fromKeyboard) {
+				this.announceAriaLiveMessage(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionStarted"));
+			}
 		}
 	}
 
@@ -106,6 +112,35 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	}
 
 	/**
+	 * Announce screen reader message for keyboard navigation
+	 */
+	private announceAriaLiveMessage(message: string) {
+		this.setState({ ariaLiveMessage: message });
+	}
+
+	/**
+	 * Get the direction message for screen reader based on key presses
+	 */
+	private getDirectionMessage(): string {
+		let directions: string[] = [];
+
+		if (this.keyDownDict[Constants.KeyCodes.up]) {
+			directions.push(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Up"));
+		}
+		if (this.keyDownDict[Constants.KeyCodes.down]) {
+			directions.push(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Down"));
+		}
+		if (this.keyDownDict[Constants.KeyCodes.left]) {
+			directions.push(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Left"));
+		}
+		if (this.keyDownDict[Constants.KeyCodes.right]) {
+			directions.push(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Right"));
+		}
+
+		return directions.join(" ");
+	}
+
+	/**
 	 * Define the ending point, and notify the main UI
 	 */
 	private stopSelection(point: Point) {
@@ -115,6 +150,12 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				this.resetState();
 			} else {
 				this.setState({ secondPoint: point, selectionInProgress: false, keyboardSelectionInProgress: false });
+
+				// Announce selection completed for screen readers
+				if (this.state.keyboardSelectionInProgress) {
+					this.announceAriaLiveMessage(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionCompleted"));
+				}
+
 				// Get the image immediately
 				this.startRegionClip();
 			}
@@ -163,6 +204,12 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 			let newPosition: Point = {x: Math.max(Math.min(this.state.mousePosition.x + delta.x, this.state.winWidth), 0), y: Math.max(Math.min(this.state.mousePosition.y + delta.y, this.state.winHeight), 0)};
 
 			this.setMousePosition(newPosition);
+
+			// Announce direction for screen readers
+			let directionMessage = this.getDirectionMessage();
+			if (directionMessage) {
+				this.announceAriaLiveMessage(directionMessage);
+			}
 
 			if (this.state.selectionInProgress) {
 				this.moveSelection(newPosition);
@@ -431,6 +478,9 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				onmouseup={this.mouseUpHandler.bind(this)} ontouchstart={this.touchStartHandler.bind(this)}
 				ontouchmove={this.touchMoveHandler.bind(this)} ontouchend={this.touchEndHandler.bind(this)}
 				onkeydown={this.keyDownHandler.bind(this)} onkeyup={this.keyUpHandler.bind(this)}>
+				<div aria-live="assertive" aria-atomic="true" className={Constants.Classes.srOnly}>
+					{this.state.ariaLiveMessage}
+				</div>
 				<img id="cursor"  {...this.ref("cursor")} src={ExtensionUtils.getImageResourceUrl("crosshair_cursor.svg")}
 					width={Constants.Styles.customCursorSize + "px"} height={Constants.Styles.customCursorSize + "px"} />
 				<canvas id={Constants.Ids.outerFrame} {...this.ref(Constants.Ids.outerFrame)}></canvas>
