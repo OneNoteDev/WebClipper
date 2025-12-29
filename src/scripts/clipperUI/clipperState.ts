@@ -71,6 +71,9 @@ export interface ClipperState {
 	numSuccessfulClips?: number;
 	showRatingsPrompt?: boolean;
 
+	// Element ID to focus after next render
+	focusOnRender?: string;
+
 	setState?: (partialState: ClipperState) => void;
 	reset?: () => void;
 }

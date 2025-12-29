@@ -249,7 +249,8 @@ export module MockProps {
 			selected: false,
 			onModeSelected: (modeButton: ClipMode) => {
 			},
-			tooltipText: "tooltip"
+			tooltipText: "tooltip",
+			clipperState: getMockClipperState()
 		};
 	}
 }

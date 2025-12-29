@@ -29,7 +29,8 @@ export class ModeButtonTests extends TestModule {
 			aria-setsize={this.mockModeButtonProps["aria-setsize"]}
 			aria-posinset={this.mockModeButtonProps["aria-posinset"]}
 			onModeSelected={this.mockModeButtonProps.onModeSelected}
-			tooltipText={this.mockModeButtonProps.tooltipText}/>;
+			tooltipText={this.mockModeButtonProps.tooltipText}
+			clipperState={this.mockModeButtonProps.clipperState}/>;
 	}
 
 	protected tests() {
@@ -53,7 +54,8 @@ export class ModeButtonTests extends TestModule {
 					aria-posinset={startingState["aria-posinset"]}
 					selected={startingState.selected}
 					onModeSelected={startingState.onModeSelected}
-					tooltipText={startingState.tooltipText}/>);
+					tooltipText={startingState.tooltipText}
+					clipperState={startingState.clipperState}/>);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild;
 			ok(modeButton.classList.contains(TestConstants.Classes.selected),
@@ -113,7 +115,8 @@ export class ModeButtonTests extends TestModule {
 					tabIndex={startingState.tabIndex}
 					selected={startingState.selected}
 					onModeSelected={startingState.onModeSelected}
-					tooltipText={startingState.tooltipText}/>);
+					tooltipText={startingState.tooltipText}
+					clipperState={startingState.clipperState}/>);
 
 			let modeButton = MithrilUtils.getFixture().firstElementChild as HTMLElement;
 			strictEqual(modeButton.title, "");

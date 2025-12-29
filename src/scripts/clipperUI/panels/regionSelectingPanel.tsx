@@ -5,15 +5,10 @@ import {ComponentBase} from "../componentBase";
 
 class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 	handleCancelButton() {
+		this.props.clipperState.setState({
+			focusOnRender: Constants.Ids.regionButton
+		});
 		this.props.clipperState.reset();
-		// Set focus back to the region button after the panel animations complete
-		// The panel fades out (200ms) then fades in (200ms), so we wait 500ms to ensure rendering is complete
-		setTimeout(() => {
-			const regionButton = document.getElementById(Constants.Ids.regionButton);
-			if (regionButton) {
-				regionButton.focus();
-			}
-		}, 500);
 	}
 
 	render() {

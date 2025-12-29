@@ -20,40 +20,23 @@ export class RegionSelectingPanelTests extends TestModule {
 	}
 
 	protected tests() {
-		test("When the back button is clicked, focus should return to the region button", (done) => {
+		test("When the back button is clicked, focusOnRender should be set to region button ID", () => {
 			let mockState = MockProps.getMockClipperState();
 			mockState.currentMode.set(ClipMode.Region);
 
 			MithrilUtils.mountToFixture(<RegionSelectingPanel clipperState={mockState}/>);
 
-			// Create a mock region button to test focus
-			let regionButton = document.createElement("a");
-			regionButton.id = Constants.Ids.regionButton;
-			regionButton.tabIndex = 0;
-			document.body.appendChild(regionButton);
-
-			// Track if focus was called
-			let focusCalled = false;
-			regionButton.focus = () => {
-				focusCalled = true;
-			};
-
 			let backButton = document.getElementById(Constants.Ids.regionClipCancelButton);
 			ok(backButton, "The back button should be rendered");
+
+			strictEqual(mockState.focusOnRender, undefined, "focusOnRender should not be set initially");
 
 			// Click the back button
 			MithrilUtils.simulateAction(() => {
 				backButton.click();
 			});
 
-			// Wait for setTimeout to execute (500ms + buffer)
-			setTimeout(() => {
-				ok(focusCalled, "Focus should be called on the region button after clicking back");
-
-				// Clean up
-				document.body.removeChild(regionButton);
-				done();
-			}, 600);
+			strictEqual(mockState.focusOnRender, Constants.Ids.regionButton, "focusOnRender should be set to region button ID");
 		});
 
 		test("The back button should call reset on the clipper state", () => {
@@ -76,7 +59,7 @@ export class RegionSelectingPanelTests extends TestModule {
 			strictEqual(resetCalled, true, "Reset should be called when back button is clicked");
 		});
 
-		test("The back button should not fail if region button does not exist", (done) => {
+		test("The back button should set focusOnRender even if region button does not exist", () => {
 			let mockState = MockProps.getMockClipperState();
 			mockState.currentMode.set(ClipMode.Region);
 
@@ -85,16 +68,12 @@ export class RegionSelectingPanelTests extends TestModule {
 			let backButton = document.getElementById(Constants.Ids.regionClipCancelButton);
 			ok(backButton, "The back button should be rendered");
 
-			// Click the back button without a region button present
+			// Click the back button without a region button present - should not throw
 			MithrilUtils.simulateAction(() => {
 				backButton.click();
 			});
 
-			// Wait for setTimeout to execute (500ms + buffer) - should not throw
-			setTimeout(() => {
-				ok(true, "Should not throw even if region button does not exist");
-				done();
-			}, 600);
+			strictEqual(mockState.focusOnRender, Constants.Ids.regionButton, "focusOnRender should be set even if button doesn't exist");
 		});
 	}
 }
