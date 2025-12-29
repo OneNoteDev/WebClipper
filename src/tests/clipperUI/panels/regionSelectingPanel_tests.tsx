@@ -46,14 +46,14 @@ export class RegionSelectingPanelTests extends TestModule {
 				backButton.click();
 			});
 
-			// Wait for setTimeout to execute
+			// Wait for setTimeout to execute (500ms + buffer)
 			setTimeout(() => {
 				ok(focusCalled, "Focus should be called on the region button after clicking back");
 
 				// Clean up
 				document.body.removeChild(regionButton);
 				done();
-			}, 10);
+			}, 600);
 		});
 
 		test("The back button should call reset on the clipper state", () => {
@@ -90,11 +90,11 @@ export class RegionSelectingPanelTests extends TestModule {
 				backButton.click();
 			});
 
-			// Wait for setTimeout to execute - should not throw
+			// Wait for setTimeout to execute (500ms + buffer) - should not throw
 			setTimeout(() => {
 				ok(true, "Should not throw even if region button does not exist");
 				done();
-			}, 10);
+			}, 600);
 		});
 	}
 }
