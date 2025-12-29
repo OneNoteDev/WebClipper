@@ -35,10 +35,12 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 		let clipMode: string = ClipMode[this.props.myMode];
 		clipMode = clipMode[0].toLowerCase() + clipMode.slice(1);
 		let idName: string = clipMode + "Button";
+		let ariaLabel = this.props.tooltipText ? `${this.props.label}, ${this.props.tooltipText}` : this.props.label;
 
 		return (
-			<a className={className} role="button" aria-selected={this.props.selected}
+			<a className={className} role="option" aria-selected={this.props.selected}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
+				aria-label={ariaLabel}
 				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
 				{...this.onElementFirstDraw(this.initiallySetFocus)}
 				{...this.enableAriaInvoke({callback: this.buttonHandler, tabIndex: this.props.tabIndex, ariaSetName: Constants.AriaSet.modeButtonSet})}>
