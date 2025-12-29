@@ -8,7 +8,7 @@ class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 		this.props.clipperState.reset();
 		// Set focus back to the region button after the UI re-renders
 		setTimeout(() => {
-			const regionButton = document.getElementById("regionButton");
+			const regionButton = document.getElementById(Constants.Ids.regionButton);
 			if (regionButton) {
 				regionButton.focus();
 			}

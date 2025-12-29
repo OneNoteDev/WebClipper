@@ -28,7 +28,7 @@ export class RegionSelectingPanelTests extends TestModule {
 
 			// Create a mock region button to test focus
 			let regionButton = document.createElement("a");
-			regionButton.id = "regionButton";
+			regionButton.id = Constants.Ids.regionButton;
 			regionButton.tabIndex = 0;
 			document.body.appendChild(regionButton);
 
