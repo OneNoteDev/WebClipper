@@ -154,7 +154,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			<div aria-live="polite" aria-relevant="text" role="group"
 				aria-label={ this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode) }>
 				<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}
-					role="listbox" className="modeButtonContainer" aria-hidden="true">
+					role="listbox" className="modeButtonContainer">
 					{ this.getListOfButtons() }
 				</div>
 			</div>
