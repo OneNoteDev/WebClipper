@@ -134,6 +134,10 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 					}
 				}
 			};
+
+			// Set focus to the iframe on initial invocation to ensure keyboard users can access it
+			// immediately, regardless of how the extension was invoked (MAS 2.4.3 - Focus Order)
+			this.frame.focus();
 		} catch (e) {
 			this.handleConstructorError(e);
 			throw e;
@@ -375,6 +379,9 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 	private toggleClipper() {
 		if (this.frame.style.display === "none") {
 			this.frame.style.display = "";
+			// Set focus to the iframe when showing it to ensure focus moves from browser chrome
+			// This enables keyboard users to access the clipper immediately (MAS 2.4.3 - Focus Order)
+			this.frame.focus();
 		}
 		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.toggleClipper);
 	}
