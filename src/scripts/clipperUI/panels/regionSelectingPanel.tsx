@@ -6,6 +6,13 @@ import {ComponentBase} from "../componentBase";
 class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 	handleCancelButton() {
 		this.props.clipperState.reset();
+		// Set focus back to the region button after the UI re-renders
+		setTimeout(() => {
+			const regionButton = document.getElementById("regionButton");
+			if (regionButton) {
+				regionButton.focus();
+			}
+		}, 0);
 	}
 
 	render() {
