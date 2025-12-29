@@ -37,7 +37,7 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 		let idName: string = clipMode + "Button";
 
 		return (
-			<a className={className} role="button" aria-selected={this.props.selected}
+			<a className={className} role="option" aria-selected={this.props.selected}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
 				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
 				{...this.onElementFirstDraw(this.initiallySetFocus)}
