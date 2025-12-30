@@ -27,6 +27,29 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		return undefined;
 	}
 
+	/**
+	 * Determines if the preview body should have a tabIndex.
+	 * Can be overridden by child classes if they handle tabIndex differently.
+	 */
+	protected shouldPreviewBodyHaveTabIndex(): boolean {
+		return true;
+	}
+
+	/**
+	 * Makes all interactive elements (links, buttons) within the preview body non-tabbable
+	 * to prevent them from appearing in the tab order after the close button
+	 */
+	private makeChildLinksNonTabbable(element: HTMLElement, isInitialized: boolean) {
+		if (!isInitialized) {
+			return;
+		}
+		// Set tabindex="-1" on all links and buttons within the preview body
+		const interactiveElements = element.querySelectorAll('a, button, input, select, textarea');
+		for (let i = 0; i < interactiveElements.length; i++) {
+			(interactiveElements[i] as HTMLElement).setAttribute('tabindex', '-1');
+		}
+	}
+
 	private addTextAreaListener() {
 		document.addEventListener("input", (event) => {
 			let element = event.target;
@@ -174,7 +197,16 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 								style={previewStyle}
 								id={Constants.Ids.previewBody}
 								className={inProgressClassIfApplicable + " " + this.getPreviewBodyClass()}
-								config={this.getPreviewBodyConfig.bind(this)}>
+								tabIndex={this.shouldPreviewBodyHaveTabIndex() ? 260 : undefined}
+								config={(element: HTMLElement, isInitialized: boolean) => {
+									if (this.shouldPreviewBodyHaveTabIndex()) {
+										this.makeChildLinksNonTabbable(element, isInitialized);
+									}
+									let bodyConfig = this.getPreviewBodyConfig();
+									if (bodyConfig) {
+										bodyConfig.call(this, element, isInitialized);
+									}
+								}}>
 								{contentBody}
 							</div>
 						</div>
