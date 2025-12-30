@@ -261,6 +261,24 @@
 		outline: solid 2px Highlight !important;
 		outline-offset: 2px !important;
 	}
+	
+	// Ensure icons are visible in all high contrast themes
+	// Apply drop shadow filter to make icons stand out against any background
+	// Double drop-shadow creates a stronger glow effect for better visibility
+	img,
+	.icon {
+		forced-color-adjust: none;
+		// Standard icons get a subtle shadow
+		filter: drop-shadow(0 0 1px CanvasText) drop-shadow(0 0 1px CanvasText);
+	}
+	
+	// Critical UI icons get a stronger shadow for enhanced visibility
+	#feedbackImage,
+	#userDropdownArrow,
+	.closeButtonIcon,
+	.modeButton img {
+		filter: drop-shadow(0 0 2px CanvasText) drop-shadow(0 0 2px CanvasText);
+	}
 }
 
 @media screen and (-ms-high-contrast: black-on-white) {
