@@ -101,7 +101,7 @@ class BookmarkPreview extends PreviewComponentBase<{}, ClipperStateProp> {
 							{ this.renderTitleIfExists(result.title) }
 							<tr>
 								<td style={urlTdStyle}>
-									<a class="tabbableLink" tabIndex={250} href={url} target="_blank" title={url}>{url}</a>
+									<a class="tabbableLink" tabIndex={0} href={url} target="_blank" title={url}>{url}</a>
 								</td>
 							</tr>
 							{ this.renderDescriptionIfExists(result.description) }
