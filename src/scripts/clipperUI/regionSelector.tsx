@@ -26,7 +26,6 @@ interface RegionSelectorState {
 	winWidth?: number;
 	winHeight?: number;
 	ariaLiveMessage?: string;
-	ariaLiveAssertiveMessage?: string;
 }
 
 class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStateProp> {
@@ -80,11 +79,6 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		if (this.props.clipperState.regionResult.status !== Status.InProgress) {
 			this.setState({ firstPoint: point, secondPoint: undefined, selectionInProgress: true, keyboardSelectionInProgress: fromKeyboard });
 			this.props.clipperState.setState({ regionResult: { status: Status.InProgress, data: this.props.clipperState.regionResult.data } });
-
-			// Announce selection started for screen readers (assertive - important state change)
-			if (fromKeyboard) {
-				this.announceAriaLiveAssertiveMessage(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionStarted"));
-			}
 		}
 	}
 
@@ -127,13 +121,6 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	}
 
 	/**
-	 * Announce critical screen reader message (assertive, not throttled)
-	 */
-	private announceAriaLiveAssertiveMessage(message: string) {
-		this.setState({ ariaLiveAssertiveMessage: message });
-	}
-
-	/**
 	 * Get the direction message for screen reader based on key presses
 	 */
 	private getDirectionMessage(): string {
@@ -165,11 +152,6 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				this.resetState();
 			} else {
 				this.setState({ secondPoint: point, selectionInProgress: false, keyboardSelectionInProgress: false });
-
-				// Announce selection completed for screen readers (assertive - important state change)
-				if (this.state.keyboardSelectionInProgress) {
-					this.announceAriaLiveAssertiveMessage(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionCompleted"));
-				}
 
 				// Get the image immediately
 				this.startRegionClip();
@@ -495,9 +477,6 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				onkeydown={this.keyDownHandler.bind(this)} onkeyup={this.keyUpHandler.bind(this)}>
 				<div aria-live="polite" aria-atomic="true" className={Constants.Classes.srOnly}>
 					{this.state.ariaLiveMessage}
-				</div>
-				<div aria-live="assertive" aria-atomic="true" className={Constants.Classes.srOnly}>
-					{this.state.ariaLiveAssertiveMessage}
 				</div>
 				<img id="cursor"  {...this.ref("cursor")} src={ExtensionUtils.getImageResourceUrl("crosshair_cursor.svg")}
 					width={Constants.Styles.customCursorSize + "px"} height={Constants.Styles.customCursorSize + "px"} />

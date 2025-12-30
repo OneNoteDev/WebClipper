@@ -16,8 +16,6 @@
 	"WebClipper.Accessibility.ScreenReader.Down": "Down",
 	"WebClipper.Accessibility.ScreenReader.Left": "Left",
 	"WebClipper.Accessibility.ScreenReader.Right": "Right",
-	"WebClipper.Accessibility.ScreenReader.SelectionStarted": "Selection started. Use arrow keys to adjust and press Enter to complete.",
-	"WebClipper.Accessibility.ScreenReader.SelectionCompleted": "Selection completed",
 	"WebClipper.Action.BackToHome": "Back",
 	"WebClipper.Action.Cancel": "Cancel",
 	"WebClipper.Action.Clip": "Clip",
