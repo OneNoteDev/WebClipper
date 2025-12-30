@@ -250,6 +250,25 @@
 		forced-color-adjust: none;
 		color: ButtonText !important;
 	}
+	
+	// Ensure focus indicators are visible in all high contrast themes
+	:focus {
+		outline: solid 2px Highlight !important;
+		outline-offset: 2px !important;
+	}
+	
+	.wideActionButton:focus,
+	.wideButtonContainer:focus,
+	.control-button:focus,
+	.spinner:focus,
+	.pdf-label:focus,
+	#closeButton:focus,
+	#highlightButton:focus,
+	#regionClipCancelButton:focus,
+	#sectionLocationContainer:focus {
+		outline: solid 2px Highlight !important;
+		outline-offset: 2px !important;
+	}
 }
 
 @media screen and (-ms-high-contrast: black-on-white) {
