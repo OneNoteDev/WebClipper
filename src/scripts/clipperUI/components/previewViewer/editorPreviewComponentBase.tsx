@@ -57,11 +57,6 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 		];
 	}
 
-	// Override - EditorPreviewComponentBase handles tabIndex in the inner wrapper
-	protected shouldPreviewBodyHaveTabIndex(): boolean {
-		return false;
-	}
-
 	// Makes all interactive elements (links, buttons) within the article body non-tabbable
 	private makeChildLinksNonTabbable(element: HTMLElement, isInitialized: boolean) {
 		if (!isInitialized) {
