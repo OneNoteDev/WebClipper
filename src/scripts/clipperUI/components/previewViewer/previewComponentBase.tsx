@@ -38,13 +38,9 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 	}
 
 	private handleFocusOnRender(element: HTMLElement) {
-		// Check if this container should receive focus after render
 		if (this.props.clipperState.focusOnRender === element.id) {
-			// Set tabindex="-1" to make the container focusable programmatically (not via tab key)
-			// This is needed because divs are not focusable by default, unlike buttons
 			element.setAttribute("tabindex", "-1");
 			element.focus();
-			// Clear the focusOnRender flag
 			this.props.clipperState.setState({
 				focusOnRender: undefined
 			});
