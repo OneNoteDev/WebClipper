@@ -67,10 +67,10 @@ class OptionsPanelClass extends ComponentBase<{}, OptionsPanelProp> {
 					const targetAsAny = ev.target as any;
 					if (targetAsAny && targetAsAny.id) {
 						const idsThatShouldLoopFocus = [
-							"fullPageButton",
-							"bookmarkButton",
-							"regionButton",
-							"augmentationButton"
+							Constants.Ids.fullPageButton,
+							Constants.Ids.bookmarkButton,
+							Constants.Ids.regionButton,
+							Constants.Ids.augmentationButton
 						];
 						if (idsThatShouldLoopFocus.indexOf(targetAsAny.id) !== -1) {
 							document.getElementById("closeButton").focus();
