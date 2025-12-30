@@ -135,6 +135,7 @@
 	background: @OneNotePurpleTransparent;
 	border-radius: @ClipperBorderRadius;
 	box-shadow: @ClipperBoxShadow;
+	border: 1px solid rgba(255, 255, 255, 0.2);
 
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -252,8 +253,6 @@
 	}
 	
 	// Ensure focus indicators are visible in all high contrast themes
-	// Target specific interactive elements that need visible focus
-	// Note: !important is required to override existing focus styles that use !important
 	a:focus,
 	button:focus,
 	[role="button"]:focus,
@@ -263,22 +262,12 @@
 	}
 	
 	// Ensure icons are visible in all high contrast themes
-	// Apply drop shadow filter to make icons stand out against any background
-	// Double drop-shadow creates a stronger glow effect for better visibility
 	img,
 	.icon {
 		forced-color-adjust: none;
-		// Standard icons get a subtle shadow
 		filter: drop-shadow(0 0 1px CanvasText) drop-shadow(0 0 1px CanvasText);
 	}
 	
-	// Critical UI icons get a stronger shadow for enhanced visibility
-	#feedbackImage,
-	#userDropdownArrow,
-	.closeButtonIcon,
-	.modeButton img {
-		filter: drop-shadow(0 0 2px CanvasText) drop-shadow(0 0 2px CanvasText);
-	}
 }
 
 @media screen and (-ms-high-contrast: black-on-white) {
