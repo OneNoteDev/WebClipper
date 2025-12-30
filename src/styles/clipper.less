@@ -252,7 +252,10 @@
 	}
 	
 	// Ensure focus indicators are visible in all high contrast themes
-	:focus {
+	// Target specific interactive elements that need visible focus
+	a:focus,
+	button:focus,
+	[role="button"]:focus {
 		outline: solid 2px Highlight !important;
 		outline-offset: 2px !important;
 	}
