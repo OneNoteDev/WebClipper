@@ -11,7 +11,8 @@ import {ModeButton, PropsForModeElementNoAriaGrouping} from "./modeButton";
 class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 	onModeSelected(newMode: ClipMode) {
 		this.props.clipperState.setState({
-			currentMode: this.props.clipperState.currentMode.set(newMode)
+			currentMode: this.props.clipperState.currentMode.set(newMode),
+			focusOnRender: Constants.Ids.previewInnerContainer
 		});
 	};
 

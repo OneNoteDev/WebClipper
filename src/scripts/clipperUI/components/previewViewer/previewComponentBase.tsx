@@ -37,6 +37,18 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 		});
 	}
 
+	private handleFocusOnRender(element: HTMLElement) {
+		// Check if this container should receive focus after render
+		if (this.props.clipperState.focusOnRender === element.id) {
+			element.setAttribute("tabindex", "-1");
+			element.focus();
+			// Clear the focusOnRender flag
+			this.props.clipperState.setState({
+				focusOnRender: undefined
+			});
+		}
+	}
+
 	private handleTitleChange(newTitleText: string) {
 		_.assign(_.extend(this.props.clipperState.previewGlobalInfo, {
 			previewTitleText: newTitleText
@@ -147,7 +159,8 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 						id={Constants.Ids.previewInnerContainer}
 						className={previewInnerContainerClass}
 						role="region"
-						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.PagePreview")}>
+						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.PagePreview")}
+						{...this.onElementDraw(this.handleFocusOnRender)}>
 						<div id={Constants.Ids.previewAriaLiveDiv} aria-live="polite" aria-relevant="additions text" className={Constants.Classes.srOnly}></div>
 						<div id={Constants.Ids.previewOptionsContainer}>
 							{this.getHeader()}
