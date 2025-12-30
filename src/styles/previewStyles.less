@@ -436,6 +436,10 @@
 					}
 
 					#highlightablePreviewBody {
+						&:focus {
+							outline: solid 2px black;
+							outline-offset: 2px;
+						}
 						&.highlightable {
 							// We need to adjust the 'hotspot' of the cursor to be aligned to middle of the "I" symbol
 							cursor: url('./images/editoroptions/highlight_cursor.cur'), text; // Hotspots are built into cur files, which IE/Edge interprets

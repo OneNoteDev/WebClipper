@@ -53,8 +53,19 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	// Override
 	protected getContentBodyForCurrentStatus() {
 		return [
-			<div id={Constants.Ids.highlightablePreviewBody} tabindex="0">{this.getHighlightableContentBodyForCurrentStatus()}</div>
+			<div id={Constants.Ids.highlightablePreviewBody} tabIndex={260} config={this.makeChildLinksNonTabbable.bind(this)}>{this.getHighlightableContentBodyForCurrentStatus()}</div>
 		];
+	}
+
+	// Makes all interactive elements (links, buttons) within the article body non-tabbable
+	private makeChildLinksNonTabbable(element: HTMLElement, isInitialized: boolean) {
+		if (!isInitialized) {
+			return;
+		}
+		const interactiveElements = element.querySelectorAll("a, button, input, select, textarea");
+		interactiveElements.forEach((el: HTMLElement) => {
+			el.tabIndex = -1;
+		});
 	}
 
 	// Override
