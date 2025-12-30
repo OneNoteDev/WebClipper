@@ -18,10 +18,6 @@ declare function require(name: string);
 module TestConstants {
 	export module Ids {
 		// Dynamically generated, hence not in constants module
-		export var fullPageButton = "fullPageButton";
-		export var regionButton = "regionButton";
-		export var augmentationButton = "augmentationButton";
-
 		export var sectionLocationContainer = "sectionLocationContainer";
 	}
 }

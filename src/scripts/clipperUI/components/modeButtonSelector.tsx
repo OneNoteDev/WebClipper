@@ -15,13 +15,6 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		});
 	};
 
-	private getScreenReaderThatAnnouncesCurrentModeProps(currentMode: ClipMode): string {
-		let stringToTellUserModeHasChanged = Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.CurrentModeHasChanged");
-		stringToTellUserModeHasChanged = stringToTellUserModeHasChanged.replace("{0}", ClipMode[currentMode]);
-
-		return stringToTellUserModeHasChanged;
-	}
-
 	private getPdfButtonProps(currentMode: ClipMode): PropsForModeElementNoAriaGrouping {
 		if (this.props.clipperState.pageInfo.contentType !== OneNoteApi.ContentType.EnhancedUrl) {
 			return undefined;
@@ -142,7 +135,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 			let attributes = propsForVisibleButtons[i];
 			let ariaPos = i + 1;
 			visibleButtons.push(<ModeButton {...attributes} aria-setsize={propsForVisibleButtons.length}
-				aria-posinset={ariaPos} aria-selected={attributes.selected} />);
+				aria-posinset={ariaPos} aria-selected={attributes.selected} clipperState={this.props.clipperState} />);
 		}
 		return visibleButtons;
 	}
@@ -151,8 +144,7 @@ class ModeButtonSelectorClass extends ComponentBase<{}, ClipperStateProp> {
 		let currentMode = this.props.clipperState.currentMode.get();
 
 		return (
-			<div aria-live="polite" aria-relevant="text" role="group"
-				aria-label={ this.getScreenReaderThatAnnouncesCurrentModeProps(currentMode) }>
+			<div role="group">
 				<div style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Semilight)}
 					role="listbox" className="modeButtonContainer">
 					{ this.getListOfButtons() }

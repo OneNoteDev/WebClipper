@@ -10,6 +10,7 @@ import {SmartValue} from "../../../scripts/communicator/smartValue";
 import {InvokeMode} from "../../../scripts/extensions/invokeOptions";
 
 import {ClientType} from "../../../scripts/clientType";
+import {Constants} from "../../../scripts/constants";
 
 import {Assert} from "../../assert";
 import {MithrilUtils} from "../../mithrilUtils";
@@ -24,15 +25,6 @@ module TestConstants {
 		export var label = "label";
 		export var modeButton = "modeButton";
 		export var selected = "selected";
-	}
-
-	export module Ids {
-		export var pdfButton = "pdfButton";
-		export var fullPageButton = "fullPageButton";
-		export var regionButton = "regionButton";
-		export var augmentationButton = "augmentationButton";
-		export var selectionButton = "selectionButton";
-		export var bookmarkButton = "bookmarkButton";
 	}
 }
 
@@ -62,9 +54,9 @@ export class ModeButtonSelectorTests extends TestModule {
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
 			strictEqual(buttonElements.length, 3, "There should only be three mode buttons");
-			strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
-			strictEqual(buttonElements[1].id, TestConstants.Ids.augmentationButton, "The second button should be the augmentation button");
-			strictEqual(buttonElements[2].id, TestConstants.Ids.bookmarkButton, "The third button should be the bookmark button");
+			strictEqual(buttonElements[0].id, Constants.Ids.fullPageButton, "The first button should be the full page button");
+			strictEqual(buttonElements[1].id, Constants.Ids.augmentationButton, "The second button should be the augmentation button");
+			strictEqual(buttonElements[2].id, Constants.Ids.bookmarkButton, "The third button should be the bookmark button");
 		});
 
 		test("The region clipping button should appear when enableRegionClipping is injected as true", () => {
@@ -74,10 +66,10 @@ export class ModeButtonSelectorTests extends TestModule {
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
 			strictEqual(buttonElements.length, 4, "There should be four mode buttons");
-			strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
-			strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
-			strictEqual(buttonElements[2].id, TestConstants.Ids.augmentationButton, "The third button should be the augmentation button");
-			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
+			strictEqual(buttonElements[0].id, Constants.Ids.fullPageButton, "The first button should be the full page button");
+			strictEqual(buttonElements[1].id, Constants.Ids.regionButton, "The second button should be the region button");
+			strictEqual(buttonElements[2].id, Constants.Ids.augmentationButton, "The third button should be the augmentation button");
+			strictEqual(buttonElements[3].id, Constants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
 		});
 
 		test("The region clipping button should appear when enableRegionClipping is injected as false, but invokeMode is set to image selection", () => {
@@ -91,10 +83,10 @@ export class ModeButtonSelectorTests extends TestModule {
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
 			strictEqual(buttonElements.length, 4, "There should be four mode buttons");
-			strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
-			strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
-			strictEqual(buttonElements[2].id, TestConstants.Ids.augmentationButton, "The third button should be the augmentation button");
-			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
+			strictEqual(buttonElements[0].id, Constants.Ids.fullPageButton, "The first button should be the full page button");
+			strictEqual(buttonElements[1].id, Constants.Ids.regionButton, "The second button should be the region button");
+			strictEqual(buttonElements[2].id, Constants.Ids.augmentationButton, "The third button should be the augmentation button");
+			strictEqual(buttonElements[3].id, Constants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
 		});
 
 		test("The region button should be labeled 'Region' in non-Edge browsers", () => {
@@ -137,11 +129,11 @@ export class ModeButtonSelectorTests extends TestModule {
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
 			strictEqual(buttonElements.length, 5, "There should be five mode buttons");
-			strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
-			strictEqual(buttonElements[1].id, TestConstants.Ids.regionButton, "The second button should be the region button");
-			strictEqual(buttonElements[2].id, TestConstants.Ids.augmentationButton, "The third button should be the augmentation button");
-			strictEqual(buttonElements[3].id, TestConstants.Ids.selectionButton, "The fourth button should be the selection button");
-			strictEqual(buttonElements[4].id, TestConstants.Ids.bookmarkButton, "The fifth button should be the bookmark button");
+			strictEqual(buttonElements[0].id, Constants.Ids.fullPageButton, "The first button should be the full page button");
+			strictEqual(buttonElements[1].id, Constants.Ids.regionButton, "The second button should be the region button");
+			strictEqual(buttonElements[2].id, Constants.Ids.augmentationButton, "The third button should be the augmentation button");
+			strictEqual(buttonElements[3].id, Constants.Ids.selectionButton, "The fourth button should be the selection button");
+			strictEqual(buttonElements[4].id, Constants.Ids.bookmarkButton, "The fifth button should be the bookmark button");
 		});
 
 		test("The selection button should appear when invokeMode is set to selection, and the region button should not appear when its disabled", () => {
@@ -155,10 +147,10 @@ export class ModeButtonSelectorTests extends TestModule {
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
 			strictEqual(buttonElements.length, 4, "There should be four mode buttons");
-			strictEqual(buttonElements[0].id, TestConstants.Ids.fullPageButton, "The first button should be the full page button");
-			strictEqual(buttonElements[1].id, TestConstants.Ids.augmentationButton, "The second button should be the augmentation button");
-			strictEqual(buttonElements[2].id, TestConstants.Ids.selectionButton, "The third button should be the selection button");
-			strictEqual(buttonElements[3].id, TestConstants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
+			strictEqual(buttonElements[0].id, Constants.Ids.fullPageButton, "The first button should be the full page button");
+			strictEqual(buttonElements[1].id, Constants.Ids.augmentationButton, "The second button should be the augmentation button");
+			strictEqual(buttonElements[2].id, Constants.Ids.selectionButton, "The third button should be the selection button");
+			strictEqual(buttonElements[3].id, Constants.Ids.bookmarkButton, "The fourth button should be the bookmark button");
 		});
 
 		test("The aria-posinset attribute should flow in element order, assuming they are all available if the user has selected an image in context image mode", () => {
@@ -167,8 +159,8 @@ export class ModeButtonSelectorTests extends TestModule {
 			startingState.invokeOptions.invokeMode = InvokeMode.ContextImage;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
-			Assert.checkAriaSetAttributes([TestConstants.Ids.fullPageButton,
-				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
+			Assert.checkAriaSetAttributes([Constants.Ids.fullPageButton,
+				Constants.Ids.regionButton, Constants.Ids.augmentationButton, Constants.Ids.bookmarkButton]);
 		});
 
 		test("The aria-posinset attribute should flow in element order, assuming they are all available if the user has selected text in context text mode", () => {
@@ -177,8 +169,8 @@ export class ModeButtonSelectorTests extends TestModule {
 			startingState.invokeOptions.invokeMode = InvokeMode.Default;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
-			Assert.checkAriaSetAttributes([TestConstants.Ids.fullPageButton,
-				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
+			Assert.checkAriaSetAttributes([Constants.Ids.fullPageButton,
+				Constants.Ids.regionButton, Constants.Ids.augmentationButton, Constants.Ids.bookmarkButton]);
 		});
 
 		test("The aria-posinset attribute should flow in element order, assuming they are all available if the clipper is in default mode (no selected text or image)", () => {
@@ -187,8 +179,8 @@ export class ModeButtonSelectorTests extends TestModule {
 			startingState.invokeOptions.invokeMode = InvokeMode.Default;
 			MithrilUtils.mountToFixture(
 				<ModeButtonSelector clipperState={ startingState } />);
-			Assert.checkAriaSetAttributes([TestConstants.Ids.fullPageButton,
-				TestConstants.Ids.regionButton, TestConstants.Ids.augmentationButton, TestConstants.Ids.bookmarkButton]);
+			Assert.checkAriaSetAttributes([Constants.Ids.fullPageButton,
+				Constants.Ids.regionButton, Constants.Ids.augmentationButton, Constants.Ids.bookmarkButton]);
 		});
 
 		test("The full page button should have the 'selected' class styling applied to it by default", () => {
@@ -224,9 +216,9 @@ export class ModeButtonSelectorTests extends TestModule {
 
 		test("Other modes' buttons should have the 'selected' class styling applied to it if they are clicked on", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
-			let fullPageButton = document.getElementById(TestConstants.Ids.fullPageButton);
-			let regionButton = document.getElementById(TestConstants.Ids.regionButton);
-			let augmentationButton = document.getElementById(TestConstants.Ids.augmentationButton);
+			let fullPageButton = document.getElementById(Constants.Ids.fullPageButton);
+			let regionButton = document.getElementById(Constants.Ids.regionButton);
+			let augmentationButton = document.getElementById(Constants.Ids.augmentationButton);
 
 			MithrilUtils.simulateAction(() => {
 				regionButton.click();
@@ -252,9 +244,9 @@ export class ModeButtonSelectorTests extends TestModule {
 
 		test("The 'selected' class styling should not go away if the user clicks away from a previously clicked mode button", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
-			let fullPageButton = document.getElementById(TestConstants.Ids.fullPageButton);
-			let regionButton = document.getElementById(TestConstants.Ids.regionButton);
-			let augmentationButton = document.getElementById(TestConstants.Ids.augmentationButton);
+			let fullPageButton = document.getElementById(Constants.Ids.fullPageButton);
+			let regionButton = document.getElementById(Constants.Ids.regionButton);
+			let augmentationButton = document.getElementById(Constants.Ids.augmentationButton);
 
 			MithrilUtils.simulateAction(() => {
 				regionButton.click();
@@ -268,9 +260,9 @@ export class ModeButtonSelectorTests extends TestModule {
 		test("The current mode state should be updated accordingly depending on the mode button that was pressed", () => {
 			let controllerInstance = MithrilUtils.mountToFixture(this.defaultComponent);
 
-			let fullPageButton = document.getElementById(TestConstants.Ids.fullPageButton);
-			let regionButton = document.getElementById(TestConstants.Ids.regionButton);
-			let augmentationButton = document.getElementById(TestConstants.Ids.augmentationButton);
+			let fullPageButton = document.getElementById(Constants.Ids.fullPageButton);
+			let regionButton = document.getElementById(Constants.Ids.regionButton);
+			let augmentationButton = document.getElementById(Constants.Ids.augmentationButton);
 
 			MithrilUtils.simulateAction(() => {
 				regionButton.click();
@@ -375,9 +367,9 @@ export class ModeButtonSelectorTests extends TestModule {
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
 			strictEqual(buttonElements.length, 3, "There should be three mode buttons");
-			strictEqual(buttonElements[0].id, TestConstants.Ids.regionButton, "The first button should be the region button");
-			strictEqual(buttonElements[1].id, TestConstants.Ids.bookmarkButton, "The second button should be the bookmark button");
-			strictEqual(buttonElements[2].id, TestConstants.Ids.pdfButton, "The third button should be the pdf button");
+			strictEqual(buttonElements[0].id, Constants.Ids.regionButton, "The first button should be the region button");
+			strictEqual(buttonElements[1].id, Constants.Ids.bookmarkButton, "The second button should be the bookmark button");
+			strictEqual(buttonElements[2].id, Constants.Ids.pdfButton, "The third button should be the pdf button");
 		});
 
 		test("The bookmark clipping button should not appear when a PDF was detected but was on a local file", () => {
@@ -393,8 +385,8 @@ export class ModeButtonSelectorTests extends TestModule {
 			let buttonElements = modeButtonSelector.getElementsByClassName(TestConstants.Classes.modeButton);
 
 			strictEqual(buttonElements.length, 2, "There should be two mode buttons");
-			strictEqual(buttonElements[0].id, TestConstants.Ids.regionButton, "The first button should be the region button");
-			strictEqual(buttonElements[1].id, TestConstants.Ids.pdfButton, "The second button should be the pdf button");
+			strictEqual(buttonElements[0].id, Constants.Ids.regionButton, "The first button should be the region button");
+			strictEqual(buttonElements[1].id, Constants.Ids.pdfButton, "The second button should be the pdf button");
 		});
 	}
 }
