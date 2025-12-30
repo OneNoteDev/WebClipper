@@ -197,7 +197,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 								style={previewStyle}
 								id={Constants.Ids.previewBody}
 								className={inProgressClassIfApplicable + " " + this.getPreviewBodyClass()}
-								tabIndex={this.shouldPreviewBodyHaveTabIndex() ? 260 : undefined}
+								{...(this.shouldPreviewBodyHaveTabIndex() ? { tabIndex: 260 } : {})}
 								config={(element: HTMLElement, isInitialized: boolean) => {
 									if (this.shouldPreviewBodyHaveTabIndex()) {
 										this.makeChildLinksNonTabbable(element, isInitialized);
