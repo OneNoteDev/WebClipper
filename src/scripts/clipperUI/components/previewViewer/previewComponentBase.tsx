@@ -38,7 +38,7 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 	}
 
 	private handleFocusOnRender(element: HTMLElement) {
-		// Check if this content container should receive focus after render
+		// Check if this container should receive focus after render
 		if (this.props.clipperState.focusOnRender === element.id) {
 			// Set tabindex="-1" to make the container focusable programmatically (not via tab key)
 			// This is needed because divs are not focusable by default, unlike buttons
@@ -161,15 +161,15 @@ export abstract class PreviewComponentBase<TState, TProps extends ClipperStatePr
 						id={Constants.Ids.previewInnerContainer}
 						className={previewInnerContainerClass}
 						role="region"
-						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.PagePreview")}>
+						aria-label={Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.PagePreview")}
+						{...this.onElementDraw(this.handleFocusOnRender)}>
 						<div id={Constants.Ids.previewAriaLiveDiv} aria-live="polite" aria-relevant="additions text" className={Constants.Classes.srOnly}></div>
 						<div id={Constants.Ids.previewOptionsContainer}>
 							{this.getHeader()}
 						</div>
 						<div
 							id={Constants.Ids.previewContentContainer}
-							className={inProgressClassIfApplicable + " " + this.getPreviewContentContainerClass()}
-							{...this.onElementDraw(this.handleFocusOnRender)}>
+							className={inProgressClassIfApplicable + " " + this.getPreviewContentContainerClass()}>
 							{this.isTitleEnabled() ? <div id={Constants.Ids.previewHeaderContainer}>
 								{this.getPreviewTitle(contentTitle, titleIsEditable, inProgressClassIfApplicable)}
 								{this.getPreviewSubtitle()}
