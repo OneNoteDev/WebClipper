@@ -53,8 +53,23 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	// Override
 	protected getContentBodyForCurrentStatus() {
 		return [
-			<div id={Constants.Ids.highlightablePreviewBody} tabIndex={260}>{this.getHighlightableContentBodyForCurrentStatus()}</div>
+			<div id={Constants.Ids.highlightablePreviewBody} tabIndex={260} config={this.makeChildLinksNonTabbable.bind(this)}>{this.getHighlightableContentBodyForCurrentStatus()}</div>
 		];
+	}
+
+	/**
+	 * Makes all interactive elements (links, buttons) within the article body non-tabbable
+	 * to prevent them from appearing in the tab order after the close button
+	 */
+	private makeChildLinksNonTabbable(element: HTMLElement, isInitialized: boolean) {
+		if (!isInitialized) {
+			return;
+		}
+		// Set tabindex="-1" on all links and buttons within the article body
+		const interactiveElements = element.querySelectorAll('a, button, input, select, textarea');
+		for (let i = 0; i < interactiveElements.length; i++) {
+			(interactiveElements[i] as HTMLElement).setAttribute('tabindex', '-1');
+		}
 	}
 
 	// Override
