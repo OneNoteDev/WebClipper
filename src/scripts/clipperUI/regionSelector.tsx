@@ -26,6 +26,7 @@ interface RegionSelectorState {
 	winWidth?: number;
 	winHeight?: number;
 	ariaLiveMessage?: string;
+	ariaAlertMessage?: string;
 }
 
 class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStateProp> {
@@ -36,8 +37,6 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	private mouseMovementHandler = this.globalMouseMoveHandler.bind(this);
 	private mouseOverHandler = this.globalMouseOverHandler.bind(this);
 	private keyDownDict: { [key: number]: boolean } = {};
-	private lastAnnouncementTime: number = 0;
-	private announcementThrottleMs: number = 500; // Throttle announcements to every 500ms
 
 	getInitialState(): RegionSelectorState {
 		return {
@@ -109,18 +108,6 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	}
 
 	/**
-	 * Announce screen reader message for keyboard navigation (polite, throttled)
-	 */
-	private announceAriaLiveMessage(message: string) {
-		const now = Date.now();
-		// Throttle direction announcements to avoid overwhelming the screen reader
-		if (now - this.lastAnnouncementTime >= this.announcementThrottleMs) {
-			this.setState({ ariaLiveMessage: message });
-			this.lastAnnouncementTime = now;
-		}
-	}
-
-	/**
 	 * Get the direction message for screen reader based on key presses
 	 */
 	private getDirectionMessage(): string {
@@ -171,7 +158,9 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		if (e.which === Constants.KeyCodes.enter ) {
 			if (!this.state.selectionInProgress) {
 				this.startSelection({ x: this.state.mousePosition.x, y: this.state.mousePosition.y }, true /* fromKeyboard */);
+				this.setState({ ariaLiveMessage: Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionStarted") });
 			} else {
+				this.setState({ ariaAlertMessage: Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionComplete") });
 				this.stopSelection({ x: this.state.mousePosition.x, y: this.state.mousePosition.y });
 			}
 			e.preventDefault();
@@ -202,10 +191,11 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 
 			this.setMousePosition(newPosition);
 
-			// Announce direction for screen readers
-			let directionMessage = this.getDirectionMessage();
-			if (directionMessage) {
-				this.announceAriaLiveMessage(directionMessage);
+			if (!e.repeat) {
+				let directionMessage = this.getDirectionMessage();
+				if (directionMessage) {
+					this.setState({ ariaLiveMessage: directionMessage });
+				}
 			}
 
 			if (this.state.selectionInProgress) {
@@ -477,6 +467,9 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				onkeydown={this.keyDownHandler.bind(this)} onkeyup={this.keyUpHandler.bind(this)}>
 				<div aria-live="polite" aria-atomic="true" className={Constants.Classes.srOnly}>
 					{this.state.ariaLiveMessage}
+				</div>
+				<div role="alert" aria-atomic="true" className={Constants.Classes.srOnly}>
+					{this.state.ariaAlertMessage}
 				</div>
 				<img id="cursor"  {...this.ref("cursor")} src={ExtensionUtils.getImageResourceUrl("crosshair_cursor.svg")}
 					width={Constants.Styles.customCursorSize + "px"} height={Constants.Styles.customCursorSize + "px"} />
