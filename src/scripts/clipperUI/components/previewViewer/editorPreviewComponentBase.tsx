@@ -53,7 +53,7 @@ export abstract class EditorPreviewComponentBase<TState extends EditorPreviewSta
 	// Override
 	protected getContentBodyForCurrentStatus() {
 		return [
-			<div id={Constants.Ids.highlightablePreviewBody} tabindex="260">{this.getHighlightableContentBodyForCurrentStatus()}</div>
+			<div id={Constants.Ids.highlightablePreviewBody} tabIndex={260}>{this.getHighlightableContentBodyForCurrentStatus()}</div>
 		];
 	}
 
