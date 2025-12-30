@@ -253,11 +253,13 @@
 	
 	// Ensure focus indicators are visible in all high contrast themes
 	// Target specific interactive elements that need visible focus
+	// Note: !important is required to override existing focus styles that use !important
 	a:focus,
 	button:focus,
-	[role="button"]:focus {
-		outline: solid 2px Highlight;
-		outline-offset: 2px;
+	[role="button"]:focus,
+	.wideActionButton:focus {
+		outline: solid 2px Highlight !important;
+		outline-offset: 2px !important;
 	}
 }
 
