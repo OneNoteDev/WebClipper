@@ -139,7 +139,6 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				this.resetState();
 			} else {
 				this.setState({ secondPoint: point, selectionInProgress: false, keyboardSelectionInProgress: false });
-
 				// Get the image immediately
 				this.startRegionClip();
 			}
