@@ -264,19 +264,28 @@
 	
 	// Ensure icons are visible in all high contrast themes
 	// Apply a drop shadow filter to make icons stand out against any background
+	// Double drop-shadow creates a stronger glow effect for better visibility
 	img,
-	.icon {
-		filter: drop-shadow(0 0 1px CanvasText) drop-shadow(0 0 1px CanvasText);
+	.icon,
+	#feedbackImage,
+	#userDropdownArrow,
+	.closeButtonIcon,
+	.modeButton img {
 		forced-color-adjust: none;
 	}
 	
-	// Special handling for specific icon IDs to ensure visibility
+	// Standard icons get a subtle shadow
+	img,
+	.icon {
+		filter: drop-shadow(0 0 1px CanvasText) drop-shadow(0 0 1px CanvasText);
+	}
+	
+	// Critical UI icons get a stronger shadow for enhanced visibility
 	#feedbackImage,
 	#userDropdownArrow,
 	.closeButtonIcon,
 	.modeButton img {
 		filter: drop-shadow(0 0 2px CanvasText) drop-shadow(0 0 2px CanvasText);
-		forced-color-adjust: none;
 	}
 }
 
