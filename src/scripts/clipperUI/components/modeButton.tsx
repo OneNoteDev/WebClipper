@@ -1,6 +1,7 @@
 import {Constants} from "../../constants";
 import {Localization} from "../../localization/localization";
 import {ClipMode} from "../clipMode";
+import {ClipperStateProp} from "../clipperState";
 import {ComponentBase} from "../componentBase";
 import {AriaSetProps} from "./ariaSetProps";
 
@@ -14,12 +15,23 @@ export interface PropsForModeElementNoAriaGrouping {
 	tooltipText?: string;
 }
 
-export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, AriaSetProps { }
+export interface PropsForModeButton extends PropsForModeElementNoAriaGrouping, AriaSetProps, ClipperStateProp { }
 
 class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 	initiallySetFocus(element: HTMLElement) {
 		if (this.props.selected) {
 			element.focus();
+		}
+	}
+
+	handleFocusOnRender(element: HTMLElement) {
+		// Check if this button should receive focus after render
+		if (this.props.clipperState.focusOnRender === element.id) {
+			element.focus();
+			// Clear the focusOnRender flag
+			this.props.clipperState.setState({
+				focusOnRender: undefined
+			});
 		}
 	}
 
@@ -35,12 +47,15 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 		let clipMode: string = ClipMode[this.props.myMode];
 		clipMode = clipMode[0].toLowerCase() + clipMode.slice(1);
 		let idName: string = clipMode + "Button";
+		let ariaLabel = this.props.tooltipText ? `${this.props.label} clipping mode, ${this.props.tooltipText}` : `${this.props.label} clipping mode`;
 
 		return (
-			<a className={className} role="button" aria-selected={this.props.selected}
+			<a className={className} role="option" aria-selected={this.props.selected}
 				id={idName} title={this.props.tooltipText ? this.props.tooltipText : ""}
+				aria-label={ariaLabel}
 				aria-setsize={this.props["aria-setsize"]} aria-posinset={this.props["aria-posinset"]}
 				{...this.onElementFirstDraw(this.initiallySetFocus)}
+				{...this.onElementDraw(this.handleFocusOnRender)}
 				{...this.enableAriaInvoke({callback: this.buttonHandler, tabIndex: this.props.tabIndex, ariaSetName: Constants.AriaSet.modeButtonSet})}>
 				<img className="icon" src={this.props.imgSrc} aria-hidden="true" />
 				<span className="label buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>

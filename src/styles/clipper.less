@@ -135,6 +135,7 @@
 	background: @OneNotePurpleTransparent;
 	border-radius: @ClipperBorderRadius;
 	box-shadow: @ClipperBoxShadow;
+	border: 1px solid rgba(255, 255, 255, 0.2);
 
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -250,6 +251,23 @@
 		forced-color-adjust: none;
 		color: ButtonText !important;
 	}
+	
+	// Ensure focus indicators are visible in all high contrast themes
+	a:focus,
+	button:focus,
+	[role="button"]:focus,
+	.wideActionButton:focus {
+		outline: solid 2px Highlight !important;
+		outline-offset: 2px !important;
+	}
+	
+	// Ensure icons are visible in all high contrast themes
+	img,
+	.icon {
+		forced-color-adjust: none;
+		filter: drop-shadow(0 0 1px CanvasText) drop-shadow(0 0 1px CanvasText);
+	}
+	
 }
 
 @media screen and (-ms-high-contrast: black-on-white) {
