@@ -47,7 +47,7 @@ class ModeButtonClass extends ComponentBase<{}, PropsForModeButton> {
 		let clipMode: string = ClipMode[this.props.myMode];
 		clipMode = clipMode[0].toLowerCase() + clipMode.slice(1);
 		let idName: string = clipMode + "Button";
-		let ariaLabel = this.props.tooltipText ? `${this.props.label}, ${this.props.tooltipText}` : this.props.label;
+		let ariaLabel = this.props.tooltipText ? `${this.props.label} clipping mode, ${this.props.tooltipText}` : `${this.props.label} clipping mode`;
 
 		return (
 			<a className={className} role="option" aria-selected={this.props.selected}
