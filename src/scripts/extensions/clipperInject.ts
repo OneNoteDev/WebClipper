@@ -137,9 +137,11 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 
 			// Set focus to the iframe on initial invocation to ensure keyboard users can access it
 			// immediately, regardless of how the extension was invoked (MAS 2.4.3 - Focus Order)
-			// Use requestAnimationFrame to ensure the iframe is rendered before focusing
+			// Use both requestAnimationFrame and setTimeout to handle different browser behaviors
 			requestAnimationFrame(() => {
-				this.frame.focus();
+				setTimeout(() => {
+					this.frame.focus();
+				}, 50);
 			});
 		} catch (e) {
 			this.handleConstructorError(e);
@@ -194,6 +196,15 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 		this.frame.src = this.options.frameUrl;
 		// Set tabindex to make iframe focusable for keyboard accessibility (MAS 2.4.3 - Focus Order)
 		this.frame.tabIndex = -1;
+
+		// Add onload handler to focus the iframe once content is loaded
+		// This ensures focus transfer works even when invoked from browser chrome
+		this.frame.onload = () => {
+			// Small delay to ensure browser chrome has released focus
+			setTimeout(() => {
+				this.frame.focus();
+			}, 100);
+		};
 	}
 
 	protected handleConstructorError(e: Error) {
@@ -386,10 +397,10 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			this.frame.style.display = "";
 			// Set focus to the iframe when showing it to ensure focus moves from browser chrome
 			// This enables keyboard users to access the clipper immediately (MAS 2.4.3 - Focus Order)
-			// Use requestAnimationFrame to ensure the iframe is visible before focusing
-			requestAnimationFrame(() => {
+			// Use setTimeout to ensure the iframe is fully visible before focusing
+			setTimeout(() => {
 				this.frame.focus();
-			});
+			}, 50);
 		}
 		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.toggleClipper);
 	}
