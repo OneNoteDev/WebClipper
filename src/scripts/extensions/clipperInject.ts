@@ -139,7 +139,12 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			// immediately, regardless of how the extension was invoked (MAS 2.4.3 - Focus Order)
 			// Use both requestAnimationFrame and setTimeout to handle different browser behaviors
 			requestAnimationFrame(() => {
+				// First, try to move focus from browser chrome to the page content
+				// This is necessary when invoked via keyboard from extensions list
+				window.focus();
+
 				setTimeout(() => {
+					// Then focus the iframe
 					this.frame.focus();
 				}, 50);
 			});
@@ -200,6 +205,9 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 		// Add onload handler to focus the iframe once content is loaded
 		// This ensures focus transfer works even when invoked from browser chrome
 		this.frame.onload = () => {
+			// First, try to move focus from browser chrome to the page content
+			window.focus();
+
 			// Small delay to ensure browser chrome has released focus
 			setTimeout(() => {
 				this.frame.focus();
@@ -397,6 +405,9 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			this.frame.style.display = "";
 			// Set focus to the iframe when showing it to ensure focus moves from browser chrome
 			// This enables keyboard users to access the clipper immediately (MAS 2.4.3 - Focus Order)
+			// First move focus to page, then to iframe
+			window.focus();
+
 			// Use setTimeout to ensure the iframe is fully visible before focusing
 			setTimeout(() => {
 				this.frame.focus();
