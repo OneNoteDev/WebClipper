@@ -104,6 +104,25 @@ export class MainControllerClass extends ComponentBase<MainControllerState, Main
 			onBeforeAnimateOut: () => { this.setState({currentPanel: PanelType.None}); },
 			onBeforeAnimateIn: () => { this.props.clipperState.reset(); },
 			onAnimateInExpand: () => { this.setState({currentPanel: this.getPanelTypeToShow()}); },
+			onAfterAnimateIn: (el: HTMLElement) => {
+				// Set focus to the clipper when it opens for accessibility (MAS 2.4.3 - Focus Order)
+				// Find the first tabbable element and focus on it
+				let tabbables = el.querySelectorAll("[tabindex]");
+				let lowestTabIndexElement: HTMLElement;
+				if (tabbables.length > 0) {
+					for (let i = 0; i < tabbables.length; i++) {
+						let tabbable = tabbables[i] as HTMLElement;
+						if (!lowestTabIndexElement || tabbable.tabIndex < lowestTabIndexElement.tabIndex) {
+							if (tabbable.tabIndex >= 0) {
+								lowestTabIndexElement = tabbable;
+							}
+						}
+					}
+					if (lowestTabIndexElement) {
+						lowestTabIndexElement.focus();
+					}
+				}
+			},
 			onAfterAnimateOut: () => { Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi); }
 		});
 
