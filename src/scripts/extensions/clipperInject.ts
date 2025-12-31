@@ -137,7 +137,10 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 
 			// Set focus to the iframe on initial invocation to ensure keyboard users can access it
 			// immediately, regardless of how the extension was invoked (MAS 2.4.3 - Focus Order)
-			this.frame.focus();
+			// Use requestAnimationFrame to ensure the iframe is rendered before focusing
+			requestAnimationFrame(() => {
+				this.frame.focus();
+			});
 		} catch (e) {
 			this.handleConstructorError(e);
 			throw e;
@@ -189,6 +192,8 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 		this.frame = StyledFrameFactory.getStyledFrame(Frame.WebClipper);
 		this.frame.id = Constants.Ids.clipperUiFrame;
 		this.frame.src = this.options.frameUrl;
+		// Set tabindex to make iframe focusable for keyboard accessibility (MAS 2.4.3 - Focus Order)
+		this.frame.tabIndex = -1;
 	}
 
 	protected handleConstructorError(e: Error) {
@@ -381,7 +386,10 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			this.frame.style.display = "";
 			// Set focus to the iframe when showing it to ensure focus moves from browser chrome
 			// This enables keyboard users to access the clipper immediately (MAS 2.4.3 - Focus Order)
-			this.frame.focus();
+			// Use requestAnimationFrame to ensure the iframe is visible before focusing
+			requestAnimationFrame(() => {
+				this.frame.focus();
+			});
 		}
 		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.toggleClipper);
 	}
