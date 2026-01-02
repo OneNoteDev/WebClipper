@@ -5,6 +5,9 @@ import {ComponentBase} from "../componentBase";
 
 class RegionSelectingPanelClass extends ComponentBase<{}, ClipperStateProp> {
 	handleCancelButton() {
+		this.props.clipperState.setState({
+			focusOnRender: Constants.Ids.regionButton
+		});
 		this.props.clipperState.reset();
 	}
 

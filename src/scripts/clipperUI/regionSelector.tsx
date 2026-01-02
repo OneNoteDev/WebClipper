@@ -25,6 +25,8 @@ interface RegionSelectorState {
 	keyboardSelectionInProgress?: boolean;
 	winWidth?: number;
 	winHeight?: number;
+	ariaLiveMessage?: string;
+	ariaAlertMessage?: string;
 }
 
 class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStateProp> {
@@ -106,6 +108,28 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 	}
 
 	/**
+	 * Get the direction message for screen reader based on key presses
+	 */
+	private getDirectionMessage(): string {
+		let directions: string[] = [];
+
+		if (this.keyDownDict[Constants.KeyCodes.up]) {
+			directions.push(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Up"));
+		}
+		if (this.keyDownDict[Constants.KeyCodes.down]) {
+			directions.push(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Down"));
+		}
+		if (this.keyDownDict[Constants.KeyCodes.left]) {
+			directions.push(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Left"));
+		}
+		if (this.keyDownDict[Constants.KeyCodes.right]) {
+			directions.push(Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.Right"));
+		}
+
+		return directions.join(" ");
+	}
+
+	/**
 	 * Define the ending point, and notify the main UI
 	 */
 	private stopSelection(point: Point) {
@@ -133,7 +157,9 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 		if (e.which === Constants.KeyCodes.enter ) {
 			if (!this.state.selectionInProgress) {
 				this.startSelection({ x: this.state.mousePosition.x, y: this.state.mousePosition.y }, true /* fromKeyboard */);
+				this.setState({ ariaLiveMessage: Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionStarted") });
 			} else {
+				this.setState({ ariaAlertMessage: Localization.getLocalizedString("WebClipper.Accessibility.ScreenReader.SelectionComplete") });
 				this.stopSelection({ x: this.state.mousePosition.x, y: this.state.mousePosition.y });
 			}
 			e.preventDefault();
@@ -163,6 +189,13 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 			let newPosition: Point = {x: Math.max(Math.min(this.state.mousePosition.x + delta.x, this.state.winWidth), 0), y: Math.max(Math.min(this.state.mousePosition.y + delta.y, this.state.winHeight), 0)};
 
 			this.setMousePosition(newPosition);
+
+			if (!e.repeat) {
+				let directionMessage = this.getDirectionMessage();
+				if (directionMessage) {
+					this.setState({ ariaLiveMessage: directionMessage });
+				}
+			}
 
 			if (this.state.selectionInProgress) {
 				this.moveSelection(newPosition);
@@ -431,6 +464,12 @@ class RegionSelectorClass extends ComponentBase<RegionSelectorState, ClipperStat
 				onmouseup={this.mouseUpHandler.bind(this)} ontouchstart={this.touchStartHandler.bind(this)}
 				ontouchmove={this.touchMoveHandler.bind(this)} ontouchend={this.touchEndHandler.bind(this)}
 				onkeydown={this.keyDownHandler.bind(this)} onkeyup={this.keyUpHandler.bind(this)}>
+				<div aria-live="polite" aria-atomic="true" className={Constants.Classes.srOnly}>
+					{this.state.ariaLiveMessage}
+				</div>
+				<div role="alert" aria-atomic="true" className={Constants.Classes.srOnly}>
+					{this.state.ariaAlertMessage}
+				</div>
 				<img id="cursor"  {...this.ref("cursor")} src={ExtensionUtils.getImageResourceUrl("crosshair_cursor.svg")}
 					width={Constants.Styles.customCursorSize + "px"} height={Constants.Styles.customCursorSize + "px"} />
 				<canvas id={Constants.Ids.outerFrame} {...this.ref(Constants.Ids.outerFrame)}></canvas>

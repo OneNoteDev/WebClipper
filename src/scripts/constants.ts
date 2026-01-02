@@ -136,6 +136,14 @@ export module Constants {
 		// OneNotePicker
 		export var saveToLocationContainer = "saveToLocationContainer";
 
+		// modeButton
+		export var regionButton = "regionButton";
+		export var fullPageButton = "fullPageButton";
+		export var bookmarkButton = "bookmarkButton";
+		export var augmentationButton = "augmentationButton";
+		export var pdfButton = "pdfButton";
+		export var selectionButton = "selectionButton";
+
 		// optionsPanel
 		export var clipButton = "clipButton";
 		export var clipButtonContainer = "clipButtonContainer";
