@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.12 (January 2026)
+* Improvement : Added a11y improvements.
+
 ## 3.10.11 (October 2025)
 * Improvement : Chrome and Edge extension icons refreshed to match the updated icon set across all platforms.
 
