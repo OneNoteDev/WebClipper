@@ -21,7 +21,6 @@
         "url": "git+https://github.com/OneNoteDev/WebClipper.git"
     },
     "devDependencies": {
-        "@playwright/test": "^1.57.0",
         "@types/chrome": "0.0.257",
         "@types/es6-promise": "0.0.32",
         "@types/filesystem": "0.0.36",
