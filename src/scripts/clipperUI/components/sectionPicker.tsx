@@ -56,10 +56,12 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			Clipper.logger.logClickEvent(Log.Click.Label.sectionPickerLocationContainer);
 
 			// Set focus on the selected section for keyboard accessibility
-			// Use setTimeout to ensure the popup is rendered before trying to focus
+			// Use a small delay to ensure the popup is fully rendered before trying to focus
+			// requestAnimationFrame would be ideal but setTimeout with a small delay is more reliable
+			// across different browsers and system performance scenarios
 			setTimeout(() => {
 				this.setFocusOnSelectedSection();
-			}, 0);
+			}, 100);
 		}
 		this.props.onPopupToggle(shouldNowBeOpen);
 	}
@@ -80,9 +82,14 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			}
 		} else {
 			// If no section is selected, focus on the first focusable element in the popup
+			// Note: "notebookList" is an ID from the OneNotePicker library (v1.0.9)
+			// This is a known dependency on the external library's DOM structure
 			const notebookList = document.getElementById("notebookList");
 			if (notebookList) {
-				const firstFocusableElement = notebookList.querySelector("[tabindex]") as HTMLElement;
+				// Query for the first keyboard-focusable element
+				// The OneNotePicker library uses tabindex on section elements, and we exclude tabindex="-1"
+				// which is only programmatically focusable
+				const firstFocusableElement = notebookList.querySelector('[tabindex]:not([tabindex="-1"])') as HTMLElement;
 				if (firstFocusableElement) {
 					firstFocusableElement.focus();
 				}
