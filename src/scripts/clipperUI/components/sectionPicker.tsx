@@ -54,8 +54,40 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			// If the user selects a section, onPopupToggle will fire because it closes the popup, even though it wasn't a click
 			// so logging only when they open it is potentially the next best thing
 			Clipper.logger.logClickEvent(Log.Click.Label.sectionPickerLocationContainer);
+
+			// Set focus on the selected section for keyboard accessibility
+			// Use setTimeout to ensure the popup is rendered before trying to focus
+			setTimeout(() => {
+				this.setFocusOnSelectedSection();
+			}, 0);
 		}
 		this.props.onPopupToggle(shouldNowBeOpen);
+	}
+
+	// Sets focus on the currently selected section when the dropdown opens
+	// This ensures keyboard users can immediately see and interact with the selected item
+	setFocusOnSelectedSection() {
+		// Get the current section ID from state
+		const curSectionId = this.state.curSection && this.state.curSection.section
+			? this.state.curSection.section.id
+			: undefined;
+
+		if (curSectionId) {
+			// Find the section element by its ID and set focus on it
+			const sectionElement = document.getElementById(curSectionId);
+			if (sectionElement) {
+				sectionElement.focus();
+			}
+		} else {
+			// If no section is selected, focus on the first focusable element in the popup
+			const notebookList = document.getElementById("notebookList");
+			if (notebookList) {
+				const firstFocusableElement = notebookList.querySelector("[tabindex]") as HTMLElement;
+				if (firstFocusableElement) {
+					firstFocusableElement.focus();
+				}
+			}
+		}
 	}
 
 	// Returns true if successful; false otherwise
