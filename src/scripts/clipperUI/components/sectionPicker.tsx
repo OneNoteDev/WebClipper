@@ -54,8 +54,47 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			// If the user selects a section, onPopupToggle will fire because it closes the popup, even though it wasn't a click
 			// so logging only when they open it is potentially the next best thing
 			Clipper.logger.logClickEvent(Log.Click.Label.sectionPickerLocationContainer);
+
+			// Set focus on the selected section for keyboard accessibility
+			// Use a small delay to ensure the popup is fully rendered before trying to focus
+			// requestAnimationFrame would be ideal but setTimeout with a small delay is more reliable
+			// across different browsers and system performance scenarios
+			setTimeout(() => {
+				this.setFocusOnSelectedSection();
+			}, 100);
 		}
 		this.props.onPopupToggle(shouldNowBeOpen);
+	}
+
+	// Sets focus on the currently selected section when the dropdown opens
+	// This ensures keyboard users can immediately see and interact with the selected item
+	setFocusOnSelectedSection() {
+		// Get the current section ID from state
+		const curSectionId = this.state.curSection && this.state.curSection.section
+			? this.state.curSection.section.id
+			: undefined;
+
+		if (curSectionId) {
+			// Find the section element by its ID and set focus on it
+			const sectionElement = document.getElementById(curSectionId);
+			if (sectionElement) {
+				sectionElement.focus();
+			}
+		} else {
+			// If no section is selected, focus on the first focusable element in the popup
+			// Note: "notebookList" is an ID from the OneNotePicker library (v1.0.9)
+			// This is a known dependency on the external library's DOM structure
+			const notebookList = document.getElementById("notebookList");
+			if (notebookList) {
+				// Query for the first keyboard-focusable element
+				// The OneNotePicker library uses tabindex on section elements, and we exclude tabindex="-1"
+				// which is only programmatically focusable
+				const firstFocusableElement = notebookList.querySelector('[tabindex]:not([tabindex="-1"])') as HTMLElement;
+				if (firstFocusableElement) {
+					firstFocusableElement.focus();
+				}
+			}
+		}
 	}
 
 	// Returns true if successful; false otherwise
