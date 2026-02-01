@@ -900,22 +900,32 @@ export class SectionPickerSinonTests extends TestModule {
 			strictEqual(controllerInstance.popupIsOpen, true, "The popupIsOpen flag should be true when popup opens");
 
 			// Create and dispatch an ESC key event
-			let escEvent;
-			if (document.createEvent) {
-				escEvent = document.createEvent("KeyboardEvent") as KeyboardEvent;
-				escEvent.initKeyboardEvent(
-					"keydown",
-					true,
-					true,
-					/* tslint:disable:no-null-keyword */
-					null,
-					/* tslint:enable:no-null-keyword */
-					false,
-					false,
-					false,
-					false,
-					27, // ESC key code
-					0);
+			let escEvent: KeyboardEvent;
+			try {
+				// Try modern KeyboardEvent constructor first
+				escEvent = new KeyboardEvent("keydown", {
+					keyCode: 27,
+					bubbles: true,
+					cancelable: true
+				} as any);
+			} catch (e) {
+				// Fallback to deprecated initKeyboardEvent for older test environments
+				if (document.createEvent) {
+					escEvent = document.createEvent("KeyboardEvent") as KeyboardEvent;
+					escEvent.initKeyboardEvent(
+						"keydown",
+						true,
+						true,
+						/* tslint:disable:no-null-keyword */
+						null,
+						/* tslint:enable:no-null-keyword */
+						false,
+						false,
+						false,
+						false,
+						27, // ESC key code
+						0);
+				}
 			}
 			document.dispatchEvent(escEvent);
 
