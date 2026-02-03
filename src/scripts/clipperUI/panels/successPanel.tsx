@@ -14,6 +14,10 @@ import {Clipper} from "../frontEndGlobals";
 import {SpriteAnimation} from "../components/spriteAnimation";
 
 class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
+	initiallySetFocus(element: HTMLElement) {
+		element.focus();
+	}
+
 	public onLaunchOneNoteButton() {
 		Clipper.logger.logUserFunnel(Log.Funnel.Label.ViewInWac);
 		let data = this.props.clipperState.oneNoteApiResult.data as OneNoteApi.Page;
@@ -38,6 +42,7 @@ class SuccessPanelClass extends ComponentBase<{ }, ClipperStateProp> {
 				</div>
 				<div className="wideButtonContainer">
 					<a id={Constants.Ids.launchOneNoteButton} className="wideButtonFont wideActionButton buttonTextInHighContrast" role="button"
+						{...this.onElementFirstDraw(this.initiallySetFocus)}
 						{...this.enableInvoke({callback: this.onLaunchOneNoteButton, tabIndex: 70})}
 						style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 						{Localization.getLocalizedString("WebClipper.Action.ViewInOneNote")}
