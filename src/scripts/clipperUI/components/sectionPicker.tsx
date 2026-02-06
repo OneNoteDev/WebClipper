@@ -29,6 +29,8 @@ interface SectionPickerProp extends ClipperStateProp {
 
 export class SectionPickerClass extends ComponentBase<SectionPickerState, SectionPickerProp> {
 	static dataSource: OneNotePicker.OneNotePickerDataSource;
+	private popupIsOpen: boolean = false;
+	private escWasPressed: boolean = false;
 
 	getInitialState(): SectionPickerState {
 		return {
@@ -54,6 +56,20 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 			// If the user selects a section, onPopupToggle will fire because it closes the popup, even though it wasn't a click
 			// so logging only when they open it is potentially the next best thing
 			Clipper.logger.logClickEvent(Log.Click.Label.sectionPickerLocationContainer);
+			this.popupIsOpen = true;
+		} else {
+			this.popupIsOpen = false;
+			// If ESC was pressed to close the popup, restore focus to the trigger element
+			if (this.escWasPressed) {
+				this.escWasPressed = false;
+				// Delay focus restoration slightly to ensure the popup has fully closed
+				setTimeout(() => {
+					const sectionLocationContainer = document.getElementById(Constants.Ids.sectionLocationContainer);
+					if (sectionLocationContainer) {
+						sectionLocationContainer.focus();
+					}
+				}, 0);
+			}
 		}
 		this.props.onPopupToggle(shouldNowBeOpen);
 	}
@@ -248,6 +264,27 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		pickerLinkElement.insertBefore(srDiv, pickerLinkElement.firstChild);
 	}
 
+	attachEscapeHandler(element: HTMLElement, isInitialized: boolean, context: any) {
+		if (!isInitialized) {
+			// Attach ESC key listener at initialization
+			let oldOnKeyDown = document.onkeydown;
+			document.onkeydown = (ev: KeyboardEvent) => {
+				if (ev.keyCode === Constants.KeyCodes.esc && this.popupIsOpen) {
+					// Mark that ESC was pressed so we can restore focus after the popup closes
+					this.escWasPressed = true;
+				}
+				if (oldOnKeyDown) {
+					oldOnKeyDown.call(document, ev);
+				}
+			};
+
+			// Remove listener when this element is unmounted
+			context.onunload = () => {
+				document.onkeydown = oldOnKeyDown ? oldOnKeyDown.bind(document) : undefined;
+			};
+		}
+	}
+
 	render() {
 		if (this.dataSourceUninitialized()) {
 			// This logic gets executed on app launch (if already signed in) and whenever the user signs in or out ...
@@ -295,7 +332,7 @@ export class SectionPickerClass extends ComponentBase<SectionPickerState, Sectio
 		let locationString = Localization.getLocalizedString("WebClipper.Label.ClipLocation");
 
 		return (
-			<div id={Constants.Ids.locationPickerContainer} {...this.onElementFirstDraw(this.addSrOnlyLocationDiv)}>
+			<div id={Constants.Ids.locationPickerContainer} {...this.onElementFirstDraw(this.addSrOnlyLocationDiv)} config={this.attachEscapeHandler.bind(this)}>
 				<div id={Constants.Ids.optionLabel} className="optionLabel">
 					<label htmlFor={Constants.Ids.sectionLocationContainer} aria-label={locationString} className="buttonLabelFont" style={Localization.getFontFamilyAsStyle(Localization.FontFamily.Regular)}>
 						<span aria-hidden="true">{locationString}</span>
