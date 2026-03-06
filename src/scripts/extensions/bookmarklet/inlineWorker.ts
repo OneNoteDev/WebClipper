@@ -77,6 +77,10 @@ export class InlineWorker extends ExtensionWorkerBase<any, any> {
 		return this.throwNotImplementedFailure();
 	}
 
+	protected takeFullPageScreenshot(htmlContent: string): Promise<string[]> {
+		return this.throwNotImplementedFailure();
+	}
+
 	/**
 	 * Launches the sign in window, rejecting with an error object if something went wrong on the server during
 	 * authentication. Otherwise, it resolves with true if the redirect endpoint was hit as a result of a successful

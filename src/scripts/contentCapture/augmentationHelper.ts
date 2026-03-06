@@ -1,20 +1,16 @@
-import {Constants} from "../constants";
-import {Settings} from "../settings";
 import {StringUtils} from "../stringUtils";
 import {ObjectUtils} from "../objectUtils";
 
 import {Clipper} from "../clipperUI/frontEndGlobals";
 import {ClipperState} from "../clipperUI/clipperState";
-import {OneNoteApiUtils} from "../clipperUI/oneNoteApiUtils";
 
 import {DomUtils, EmbeddedVideoIFrameSrcs} from "../domParsers/domUtils";
-
-import {HttpWithRetries} from "../http/httpWithRetries";
 
 import * as Log from "../logging/log";
 
 import {CaptureFailureInfo} from "./captureFailureInfo";
-import { ErrorUtils, ResponsePackage } from "../responsePackage";
+
+import {Readability} from "@mozilla/readability";
 
 export enum AugmentationModel {
 	None,
@@ -38,43 +34,65 @@ export class AugmentationHelper {
 	public static augmentPage(url: string, locale: string, pageContent: string): Promise<AugmentationResult> {
 		return new Promise<AugmentationResult>((resolve, reject) => {
 			let augmentationEvent = new Log.Event.PromiseEvent(Log.Event.Label.AugmentationApiCall);
+			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, StringUtils.generateGuid());
 
-			let correlationId = StringUtils.generateGuid();
-			augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
+			try {
+				let result: AugmentationResult = { ContentModel: AugmentationModel.None, ContentObjects: [] };
 
-			AugmentationHelper.makeAugmentationRequest(url, locale, pageContent, correlationId).then((responsePackage: { parsedResponse: AugmentationResult[], response: Response }) => {
-				let parsedResponse = responsePackage.parsedResponse;
-				let result: AugmentationResult = { ContentModel: AugmentationModel.None, ContentObjects: []	};
+				// Parse the page HTML into a Document for Readability
+				let doc = (new DOMParser()).parseFromString(pageContent, "text/html");
 
-				augmentationEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, responsePackage.response.headers.get(Constants.HeaderValues.correlationId));
+				// Clone the document because Readability mutates it
+				let docClone = doc.cloneNode(true) as Document;
 
-				if (parsedResponse && parsedResponse.length > 0 && parsedResponse[0].ContentInHtml) {
-					result = parsedResponse[0];
+				let reader = new Readability(docClone, { charThreshold: 100 });
+				let article = reader.parse();
+
+				if (article && article.content) {
+					result.ContentInHtml = article.content;
+					result.ContentModel = AugmentationModel.Article;
+					result.ContentObjects = [];
+
+					let metadata: { [key: string]: string } = {};
+					if (article.title) {
+						metadata.title = article.title;
+					}
+					if (article.excerpt) {
+						metadata.description = article.excerpt;
+					}
+					if (article.byline) {
+						metadata.author = article.byline;
+					}
+					if (article.siteName) {
+						metadata.siteName = article.siteName;
+					}
+					if (article.publishedTime) {
+						metadata.publishedTime = article.publishedTime;
+					}
+					result.PageMetadata = metadata;
 
 					augmentationEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, AugmentationModel[result.ContentModel]);
 
 					// Remove tags that are unsupported by ONML before we display them in the preview
-					// Supported tags: https://msdn.microsoft.com/en-us/library/office/dn575442.aspx
-					let doc = (new DOMParser()).parseFromString(result.ContentInHtml, "text/html");
-					let previewElement = AugmentationHelper.getArticlePreviewElement(doc);
+					let contentDoc = (new DOMParser()).parseFromString(result.ContentInHtml, "text/html");
+					let previewElement = AugmentationHelper.getArticlePreviewElement(contentDoc);
 
-					DomUtils.toOnml(doc).then(async () => {
+					DomUtils.toOnml(contentDoc).then(async () => {
 						DomUtils.addPreviewContainerStyling(previewElement);
 						await AugmentationHelper.addSupportedVideosToElement(previewElement, pageContent, url);
-						result.ContentInHtml = doc.body.innerHTML;
+						result.ContentInHtml = contentDoc.body.innerHTML;
 						resolve(result);
 					});
 				} else {
 					resolve(result);
 				}
-
-				augmentationEvent.setCustomProperty(Log.PropertyName.Custom.AugmentationModel, AugmentationModel[result.ContentModel]);
-			}).catch((failure: OneNoteApi.RequestError) => {
-				OneNoteApiUtils.logOneNoteApiRequestError(augmentationEvent, failure);
+			} catch (e) {
+				augmentationEvent.setStatus(Log.Status.Failed);
+				augmentationEvent.setFailureInfo({ error: e.message || "Readability parsing failed" });
 				reject();
-			}).then(() => {
-				Clipper.logger.logEvent(augmentationEvent);
-			});
+			}
+
+			Clipper.logger.logEvent(augmentationEvent);
 		});
 	}
 
@@ -86,8 +104,6 @@ export class AugmentationHelper {
 			return augmentationType;
 		}
 
-		// TODO: There is a work-item to change the AugmentationApi to return ContentModel as a StringUtils
-		// instead of an integer
 		let contentModel: AugmentationModel = state.augmentationResult.data.ContentModel;
 
 		if (AugmentationHelper.isSupportedAugmentationType(contentModel)) {
@@ -95,43 +111,6 @@ export class AugmentationHelper {
 		}
 
 		return augmentationType;
-	}
-
-	/*
-	 * Returns the augmented preview text.
-	 */
-	public static makeAugmentationRequest(url: string, locale: string, pageContent: string, requestCorrelationId: string): Promise<ResponsePackage<any>> {
-		return new Promise<ResponsePackage<any>>((resolve, reject) => {
-			Clipper.getUserSessionIdWhenDefined().then((sessionId) => {
-				let augmentationApiUrl = Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + url + "&lang=" + locale;
-
-				let headers = {};
-				headers[Constants.HeaderValues.appIdKey] = Settings.getSetting("App_Id");
-				headers[Constants.HeaderValues.noAuthKey] = "true";
-				headers[Constants.HeaderValues.correlationId] = requestCorrelationId;
-				headers[Constants.HeaderValues.userSessionIdKey] = sessionId;
-
-				HttpWithRetries.post(augmentationApiUrl, pageContent, headers).then((response: Response) => {
-					response.text().then((responseText: string) => {
-						let parsedResponse: any;
-						try {
-							parsedResponse = JSON.parse(responseText);
-						} catch (e) {
-							Clipper.logger.logJsonParseUnexpected(responseText);
-							ErrorUtils.createRequestErrorObject(response, OneNoteApi.RequestErrorType.UNABLE_TO_PARSE_RESPONSE).then((error) => {
-								reject(error);
-							});
-						}
-
-						let responsePackage = {
-							parsedResponse: parsedResponse,
-							response: response
-						};
-						resolve(responsePackage);
-					});
-				});
-			});
-		});
 	}
 
 	public static getArticlePreviewElement(doc: Document): HTMLElement {

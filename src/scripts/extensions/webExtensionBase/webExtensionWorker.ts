@@ -29,6 +29,7 @@ type Window = chrome.windows.Window;
 export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private injectUrls: InjectUrls;
 	private noOpTrackerInvoked: boolean;
+	private activeRendererCleanup: () => void;
 
 	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
 		let messageHandlerThunk = () => { return new WebExtensionBackgroundMessageHandler(tab.id); };
@@ -38,6 +39,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.tab = tab;
 		this.tabId = tab.id;
 		this.noOpTrackerInvoked = false;
+
+		this.activeRendererCleanup = () => { /* no-op */ };
 
 		let isPrivateWindow: Boolean = !!tab.incognito || !!tab.inPrivate;
 
@@ -200,6 +203,169 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					resolve(dataUrl);
 				});
 			});
+		});
+	}
+
+	/**
+	 * Cancels an in-progress full-page screenshot capture.
+	 */
+	protected cancelFullPageScreenshot(): void {
+		this.activeRendererCleanup();
+	}
+
+	/**
+	 * Renders HTML in a temporary popup window and captures full-page screenshots.
+	 * Mirrors the server-side DomEnhancer approach: opens an extension renderer page,
+	 * communicates via chrome.runtime port, then scroll-captures it.
+	 */
+	protected takeFullPageScreenshot(htmlContent: string): Promise<string[]> {
+		let rendererUrl = WebExtension.browser.runtime.getURL("renderer.html");
+
+		return new Promise<string[]>((resolve) => {
+			let dataUrls: string[] = [];
+			let renderWindowId: number;
+			let pendingPort: chrome.runtime.Port;
+			let windowReady = false;
+
+			// Position renderer directly behind the user's window to hide it
+			WebExtension.browser.windows.getCurrent((currentWindow: chrome.windows.Window) => {
+			let renderWidth = Math.min(currentWindow ? currentWindow.width : 1280, 1280);
+			let renderHeight = currentWindow ? currentWindow.height : 768;
+			let renderLeft = currentWindow ? currentWindow.left : 0;
+			let renderTop = currentWindow ? currentWindow.top : 0;
+
+			let startCapture = (port: chrome.runtime.Port) => {
+				let viewportHeight: number;
+				let captureCount = 0;
+				let scrollPositions: number[] = [];
+
+				let cleaned = false;
+				let cleanup = () => {
+					if (cleaned) { return; }
+					cleaned = true;
+					this.activeRendererCleanup = () => { /* no-op */ };
+					try { port.disconnect(); } catch (e) { /* ignore */ }
+					WebExtension.browser.windows.remove(renderWindowId);
+					chrome.storage.session.remove([
+						"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText",
+						"fullPageScreenshots", "fullPageScrollData"
+					]);
+				};
+				this.activeRendererCleanup = cleanup;
+
+				port.onMessage.addListener((message: any) => {
+					if (message.action === "ready") {
+						// Set zoom to 100% before loading content, then load
+						let rendererTabId: number;
+						try {
+							WebExtension.browser.tabs.query({ windowId: renderWindowId }, (tabs: chrome.tabs.Tab[]) => {
+								if (tabs && tabs.length > 0 && tabs[0].id) {
+									rendererTabId = tabs[0].id;
+									WebExtension.browser.tabs.setZoom(rendererTabId, 1, () => {
+										port.postMessage({ action: "loadContent" });
+									});
+								} else {
+									port.postMessage({ action: "loadContent" });
+								}
+							});
+						} catch (e) {
+							port.postMessage({ action: "loadContent" });
+						}
+					}
+
+					if (message.action === "dimensions") {
+						viewportHeight = message.viewportHeight;
+
+						if (!viewportHeight) {
+							cleanup();
+							resolve([]);
+							return;
+						}
+
+						port.postMessage({ action: "scroll", scrollTo: 0 });
+					}
+
+					if (message.action === "scrollResult") {
+						setTimeout(() => {
+							WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "jpeg", quality: 95 }, (dataUrl: string) => {
+								if (!dataUrl) {
+									// Capture failed (window occluded/unfocused) — abort and fail
+									cleanup();
+									resolve({ success: false } as any);
+									return;
+								}
+
+								dataUrls.push(dataUrl);
+								scrollPositions.push(message.scrollY);
+								captureCount++;
+
+								// Stop at bottom or when captures would exceed canvas height limit (16384px)
+								let maxCaptureHeight = 16384;
+								let atBottom = message.scrollY + viewportHeight >= message.pageHeight
+									|| (captureCount * viewportHeight) >= maxCaptureHeight;
+
+								if (atBottom) {
+									cleanup();
+									chrome.storage.session.set({
+										fullPageScreenshots: dataUrls,
+										fullPageScrollData: {
+											scrollPositions: scrollPositions,
+											viewportHeight: viewportHeight
+										}
+									}, () => {
+										resolve({ success: true, count: dataUrls.length, format: "jpeg", cssWidth: renderWidth } as any);
+									});
+								} else {
+									port.postMessage({ action: "scroll", scrollTo: captureCount * viewportHeight });
+								}
+							});
+						}, 500);
+					}
+				});
+			};
+
+			// Listen for the renderer page to connect via port
+			let onConnect = (port: chrome.runtime.Port) => {
+				if (port.name !== "renderer") {
+					return;
+				}
+				WebExtension.browser.runtime.onConnect.removeListener(onConnect);
+
+				if (windowReady) {
+					startCapture(port);
+				} else {
+					// Window.create callback hasn't fired yet, defer
+					pendingPort = port;
+				}
+			};
+
+			WebExtension.browser.runtime.onConnect.addListener(onConnect);
+
+			// Create the renderer window. Must be focused so Chrome paints it
+			// for captureVisibleTab. It auto-closes when capture completes.
+			WebExtension.browser.windows.create({
+				url: rendererUrl,
+				type: "popup",
+				width: renderWidth,
+				height: renderHeight,
+				left: renderLeft,
+				top: renderTop,
+				focused: true
+			}, (renderWindow: chrome.windows.Window) => {
+				if (!renderWindow) {
+					WebExtension.browser.runtime.onConnect.removeListener(onConnect);
+					resolve([]);
+					return;
+				}
+				renderWindowId = renderWindow.id;
+				windowReady = true;
+
+				// If port connected before window.create callback, start now
+				if (pendingPort) {
+					startCapture(pendingPort);
+				}
+			});
+			}); // end getCurrent
 		});
 	}
 

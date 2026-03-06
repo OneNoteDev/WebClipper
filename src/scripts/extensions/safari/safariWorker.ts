@@ -141,6 +141,14 @@ export class SafariWorker extends ExtensionWorkerBase<SafariBrowserTab, SafariBr
 	}
 
 	/**
+	 * Not supported on legacy Safari (lacks chrome.storage.session).
+	 * Returns failure signal; Full Page mode will show "No content found".
+	 */
+	protected takeFullPageScreenshot(htmlContent: string): Promise<string[]> {
+		return Promise.resolve({ success: false } as any);
+	}
+
+	/**
 	 * Launches a new tab and navigates to the given url. If autoCloseDestinationUrl is defined, then a
 	 * listener is set that will wait until the given URL is navigated to, the window is closed.
 	 */

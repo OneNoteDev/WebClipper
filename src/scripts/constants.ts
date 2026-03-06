@@ -330,6 +330,8 @@ export module Constants {
 		export var signOutUser = "SIGN_OUT_USER";
 		export var tabToLowestIndexedElement = "TAB_TO_LOWEST_INDEXED_ELEMENT";
 		export var takeTabScreenshot = "TAKE_TAB_SCREENSHOT";
+		export var takeFullPageScreenshot = "TAKE_FULL_PAGE_SCREENSHOT";
+		export var cancelFullPageScreenshot = "CANCEL_FULL_PAGE_SCREENSHOT";
 		export var telemetry = "TELEMETRY";
 		export var toggleClipper = "TOGGLE_CLIPPER";
 		export var unloadHandler = "UNLOAD_HANDLER";
@@ -382,9 +384,7 @@ export module Constants {
 	export module Urls {
 		export var serviceDomain = "https://www.onenote.com";
 
-		export var augmentationApiUrl = serviceDomain + "/onaugmentation/clipperextract/v1.0/";
 		export var changelogUrl = serviceDomain + "/whatsnext/webclipper";
-		export var fullPageScreenshotUrl = serviceDomain + "/onaugmentation/clipperDomEnhancer/v1.0/";
 		export var localizedStringsUrlBase = serviceDomain + "/strings?ids=WebClipper.";
 
 		export var clipperInstallPageUrl = "https://support.microsoft.com/en-us/office/getting-started-with-the-onenote-web-clipper-5696609d-c5ae-4591-b3af-1f897cb6eda6";

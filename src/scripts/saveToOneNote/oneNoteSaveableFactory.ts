@@ -126,7 +126,18 @@ export class OneNoteSaveableFactory {
 				}
 				break;
 			case ClipMode.FullPage:
-				page.addHtml(this.clipperState.pageInfo.contentData);
+				let fullPageData = this.clipperState.fullPageResult.data;
+				if (fullPageData && fullPageData.ImageBlob) {
+					// Send as binary MIME part — avoids base64 encoding overhead
+					let mimeName = "FullPageImage" + Math.floor(Math.random() * 10000);
+					(page as any).dataParts.push({
+						content: fullPageData.ImageBlob,
+						name: mimeName,
+						type: "image/" + (fullPageData.ImageFormat || "jpeg")
+					});
+					let imgWidth = fullPageData.ImageWidth || 1280;
+					page.addOnml("<p><img src=\"name:" + mimeName + "\" width=\"" + imgWidth + "\" /></p>&nbsp;");
+				}
 				break;
 			case ClipMode.Region:
 				for (let regionDataUrl of this.clipperState.regionResult.data) {

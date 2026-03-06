@@ -22,7 +22,7 @@ export class OneNoteSaveableFactoryTests extends TestModule {
 			let clipperState = MockProps.getMockClipperState();
 
 			clipperState.currentMode.set(ClipMode.FullPage);
-			clipperState.fullPageResult.data.Images = ["data:image/png;base64,iVBORw0KGgo"];
+			clipperState.fullPageResult.data.ImageBlob = new Blob(["test"], { type: "image/jpeg" });
 			clipperState.fullPageResult.status = Status.Succeeded;
 
 			let factory = new OneNoteSaveableFactory(clipperState);

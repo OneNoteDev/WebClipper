@@ -8,7 +8,6 @@ import {PageInfo} from "../pageInfo";
 import {Polyfills} from "../polyfills";
 import {PreviewGlobalInfo} from "../previewInfo";
 import {TooltipType} from "./tooltipType";
-import {UrlUtils} from "../urlUtils";
 
 import {Communicator} from "../communicator/communicator";
 import {IFrameMessageHandler} from "../communicator/iframeMessageHandler";
@@ -232,6 +231,9 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 	}
 
 	private captureFullPageScreenshotContent() {
+		if (this.state.fullPageResult && this.state.fullPageResult.status === Status.InProgress) {
+			return;
+		}
 		if (this.state.pageInfo.contentType === OneNoteApi.ContentType.EnhancedUrl) {
 			this.state.setState({
 				fullPageResult: {
@@ -244,7 +246,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		} else {
 			this.state.setState({ fullPageResult: { status: Status.InProgress } });
 
-			FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData).then((result) => {
+			FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData, this.state.pageInfo.rawUrl).then((result) => {
 				this.state.setState({ fullPageResult: { data: result, status: Status.Succeeded } });
 			}, () => {
 				this.state.setState({
@@ -532,8 +534,20 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 
 	private initializeSmartValues() {
 		this.state.currentMode.subscribe((newMode: ClipMode) => {
+			if (newMode !== ClipMode.FullPage && this.state.fullPageResult && this.state.fullPageResult.status === Status.InProgress) {
+				// Cancel in-progress screenshot when switching away from FullPage
+				Clipper.getExtensionCommunicator().callRemoteFunction(Constants.FunctionKeys.cancelFullPageScreenshot);
+				this.state.setState({ fullPageResult: { status: Status.Failed } });
+			}
+
 			switch (newMode) {
 				case ClipMode.FullPage:
+					Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged);
+					// Retry screenshot if previous attempt failed
+					if (!this.state.fullPageResult || this.state.fullPageResult.status === Status.Failed || this.state.fullPageResult.status === Status.NotStarted) {
+						this.captureFullPageScreenshotContent();
+					}
+					break;
 				case ClipMode.Augmentation:
 					Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.updatePageInfoIfUrlChanged);
 					break;
@@ -571,9 +585,6 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				return ClipMode.Pdf;
 			}
 
-			if (UrlUtils.onWhitelistedDomain(this.state.pageInfo.rawUrl)) {
-				return ClipMode.Augmentation;
-			}
 		}
 
 		return ClipMode.FullPage;

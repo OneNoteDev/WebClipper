@@ -1,9 +1,6 @@
 import {Constants} from "../../../constants";
 
-import {SmartValue} from "../../../communicator/smartValue";
-
 import {FullPageScreenshotResult} from "../../../contentCapture/fullPageScreenshotHelper";
-import {PdfScreenshotResult} from "../../../contentCapture/pdfScreenshotHelper";
 
 import {ExtensionUtils} from "../../../extensions/extensionUtils";
 
@@ -18,6 +15,8 @@ import {PreviewComponentBase} from "./previewComponentBase";
 import {PreviewViewerFullPageHeader} from "./previewViewerFullPageHeader";
 
 class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
+	private currentObjectUrl: string = "";
+
 	protected getContentBodyForCurrentStatus(): any[] {
 		let state = this.props.clipperState;
 
@@ -59,7 +58,8 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 				return Localization.getLocalizedString("WebClipper.Preview.LoadingMessage");
 			default:
 			case Status.Failed:
-				failureMessage = this.props.clipperState.fullPageResult.data.failureMessage;
+				let resultData = this.props.clipperState.fullPageResult.data;
+				failureMessage = resultData ? resultData.failureMessage : undefined;
 				return !!failureMessage ? failureMessage : noContentFoundString;
 		}
 	}
@@ -74,9 +74,12 @@ class FullPagePreview extends PreviewComponentBase<{}, ClipperStateProp> {
 
 				if (this.props.clipperState.fullPageResult.data) {
 					let screenshotImages: FullPageScreenshotResult = this.props.clipperState.fullPageResult.data;
-					for (let imageData of screenshotImages.Images) {
-						let dataUrl = "data:image/" + screenshotImages.ImageFormat + ";" + screenshotImages.ImageEncoding + "," + imageData;
-						contentBody.push(<img src={dataUrl} alt={altTag}></img>);
+					if (screenshotImages.ImageBlob) {
+						if (this.currentObjectUrl) {
+							URL.revokeObjectURL(this.currentObjectUrl);
+						}
+						this.currentObjectUrl = URL.createObjectURL(screenshotImages.ImageBlob);
+						contentBody.push(<img src={this.currentObjectUrl} alt={altTag}></img>);
 					}
 				}
 				break;

@@ -1,118 +1,56 @@
-import * as sinon from "sinon";
-
-import {Constants} from "../../scripts/constants";
-
-import {Clipper} from "../../scripts/clipperUI/frontEndGlobals";
-
 import {AugmentationHelper, AugmentationModel} from "../../scripts/contentCapture/augmentationHelper";
 
-import {AsyncUtils} from "../asyncUtils";
 import {MithrilUtils} from "../mithrilUtils";
 import {MockProps} from "../mockProps";
 import {TestModule} from "../testModule";
 
-export class AugmentationHelperTests extends TestModule {
-	private server: sinon.SinonFakeServer;
-
+export class AugmentationHelperReadabilityTests extends TestModule {
 	protected module() {
-		return "augmentationHelper-sinon";
-	}
-
-	protected beforeEach() {
-		this.server = sinon.fakeServer.create();
-		this.server.respondImmediately = true;
-
-		AsyncUtils.mockSetTimeout();
-
-		// The augmentation call waits on the session id, so we need to set this
-		Clipper.sessionId.set("abcde");
-	}
-
-	protected afterEach() {
-		this.server.restore();
-		AsyncUtils.restoreSetTimeout();
-		Clipper.sessionId.set(undefined);
+		return "augmentationHelper-readability";
 	}
 
 	protected tests() {
-		test("makeAugmentationRequest should return the parsed response and the original xhr in the resolved promise", (assert: QUnitAssert) => {
+		test("augmentPage should return Article content model when page has readable content", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let state = MockProps.getMockClipperState();
-			let pageInfo = state.pageInfo;
+			let paragraphs = "";
+			for (let i = 0; i < 10; i++) {
+				paragraphs += "<p>This is a test article with enough content to be parsed by Readability. It needs sufficient text to pass the content threshold. </p>";
+			}
+			let html = "<html><head><title>Test Article</title></head><body><article>" + paragraphs + "</article></body></html>";
 
-			let responseJson = [{
-				ContentModel: 1,
-				ContentInHtml: "Hello world",
-				ContentObjects: []
-			}];
-			this.server.respondWith(
-				"POST", Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + pageInfo.canonicalUrl + "&lang=" + pageInfo.contentLocale,
-				[200, { "Content-Type": "application/json" },
-				JSON.stringify(responseJson)
-			]);
-
-			AugmentationHelper.makeAugmentationRequest(pageInfo.canonicalUrl, pageInfo.contentLocale, pageInfo.contentData, "abc123").then((responsePackage) => {
-				deepEqual(responsePackage.parsedResponse, responseJson, "The parsedResponse field should be the response in json form");
-				ok(responsePackage.response, "The response field should be defined");
-			}).catch((error) => {
-				ok(false, "reject should not be called");
-			}).then(() => {
-				done();
-			});
+			AugmentationHelper.augmentPage("http://example.com", "en-US", html).then((result) => {
+				strictEqual(result.ContentModel, AugmentationModel.Article, "ContentModel should be Article");
+				ok(result.ContentInHtml && result.ContentInHtml.length > 0, "ContentInHtml should not be empty");
+				ok(result.PageMetadata, "PageMetadata should be defined");
+			}).then(() => { done(); });
 		});
 
-		test("makeAugmentationRequest should return the error object in the rejected promise if the status code is not 200", (assert: QUnitAssert) => {
+		test("augmentPage should return None content model when page is not readable", (assert: QUnitAssert) => {
 			let done = assert.async();
+			let html = "<html><body><nav>Just navigation</nav></body></html>";
 
-			let state = MockProps.getMockClipperState();
-			let pageInfo = state.pageInfo;
-
-			let responseJson = "A *spooky* 404 message!";
-			this.server.respondWith(
-				"POST", Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + pageInfo.canonicalUrl + "&lang=" + pageInfo.contentLocale,
-				[404, { "Content-Type": "application/json" },
-				JSON.stringify(responseJson)
-			]);
-
-			AugmentationHelper.makeAugmentationRequest(pageInfo.canonicalUrl, pageInfo.contentLocale, pageInfo.contentData, "abc123").then((responsePackage) => {
-				ok(false, "resolve should not be called");
-			}).catch((error) => {
-				deepEqual(error,
-					{ error: "Unexpected response status", statusCode: 404, responseHeaders: { "Content-Type": "application/json" }, response: JSON.stringify(responseJson), timeout: 30000 },
-					"The error object should be returned in the reject");
-			}).then(() => {
-				done();
-			});
+			AugmentationHelper.augmentPage("http://example.com", "en-US", html).then((result) => {
+				strictEqual(result.ContentModel, AugmentationModel.None, "ContentModel should be None for non-readable pages");
+			}).then(() => { done(); });
 		});
 
-		test("makeAugmentationRequest should return the error object in the rejected promise if the status code is 200, but the response cannot be parsed as json", (assert: QUnitAssert) => {
+		test("augmentPage should populate PageMetadata from Readability output", (assert: QUnitAssert) => {
 			let done = assert.async();
 
-			let state = MockProps.getMockClipperState();
-			let pageInfo = state.pageInfo;
+			let paragraphs = "";
+			for (let i = 0; i < 20; i++) {
+				paragraphs += "<p>Long article content here for readability extraction to work properly. </p>";
+			}
+			let html = "<html><head><title>Great Article</title>" +
+				'<meta name="author" content="John Doe">' +
+				'<meta name="description" content="A great article">' +
+				"</head><body><article>" + paragraphs + "</article></body></html>";
 
-			let obj = [{
-				ContentModel: 1,
-				ContentInHtml: "Hello world",
-				ContentObjects: []
-			}];
-			let unJsonifiableString = "{" + JSON.stringify(obj);
-			this.server.respondWith(
-				"POST", Constants.Urls.augmentationApiUrl + "?renderMethod=extractAggressive&url=" + pageInfo.canonicalUrl + "&lang=" + pageInfo.contentLocale,
-				[200, { "Content-Type": "application/json" },
-				unJsonifiableString
-			]);
-
-			AugmentationHelper.makeAugmentationRequest(pageInfo.canonicalUrl, pageInfo.contentLocale, pageInfo.contentData, "abc123").then((responsePackage) => {
-				ok(false, "resolve should not be called");
-			}).catch((error) => {
-				deepEqual(error,
-					{ error: "Unable to parse response", statusCode: 200, responseHeaders: { "Content-Type": "application/json" }, response: unJsonifiableString },
-					"The error object should be returned in the reject");
-			}).then(() => {
-				done();
-			});
+			AugmentationHelper.augmentPage("http://example.com", "en-US", html).then((result) => {
+				ok(result.PageMetadata, "PageMetadata should be populated");
+				strictEqual(result.PageMetadata.title, "Great Article", "Title should be extracted");
+			}).then(() => { done(); });
 		});
 	}
 }
@@ -183,5 +121,5 @@ export class AugmentationHelperSinonTests extends TestModule {
 	}
 }
 
-(new AugmentationHelperTests()).runTests();
+(new AugmentationHelperReadabilityTests()).runTests();
 (new AugmentationHelperSinonTests()).runTests();

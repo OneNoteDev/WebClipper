@@ -193,6 +193,19 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected abstract takeTabScreenshot(): Promise<string>;
 
 	/**
+	 * Renders the given HTML in an offscreen context and captures full-page screenshots.
+	 * Returns an array of data URL strings.
+	 */
+	protected abstract takeFullPageScreenshot(htmlContent: string): Promise<string[]>;
+
+	/**
+	 * Cancels an in-progress full-page screenshot capture.
+	 */
+	protected cancelFullPageScreenshot(): void {
+		// Default no-op; overridden in WebExtensionWorker
+	}
+
+	/**
 	 * Closes all active frames and notifies the UI to invoke the clipper.
 	 */
 	public closeAllFramesAndInvokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
@@ -582,6 +595,14 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.takeTabScreenshot, () => {
 			return this.takeTabScreenshot();
+		});
+
+		this.uiCommunicator.registerFunction(Constants.FunctionKeys.takeFullPageScreenshot, () => {
+			return this.takeFullPageScreenshot("");
+		});
+
+		this.uiCommunicator.registerFunction(Constants.FunctionKeys.cancelFullPageScreenshot, () => {
+			this.cancelFullPageScreenshot();
 		});
 
 		this.uiCommunicator.setErrorHandler((e: Error) => {

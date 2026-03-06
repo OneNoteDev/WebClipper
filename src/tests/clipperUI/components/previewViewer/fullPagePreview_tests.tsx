@@ -113,12 +113,7 @@ export class FullPagePreviewTests extends TestModule {
 			let images = previewBody.getElementsByTagName("IMG");
 
 			let imageDataInState = mockClipperState.fullPageResult.data;
-			strictEqual(images.length, imageDataInState.Images.length);
-
-			for (let i = 0; i < images.length; i++) {
-				let image = images[i] as HTMLImageElement;
-				strictEqual(image.src, "data:image/" + imageDataInState.ImageFormat + ";" + imageDataInState.ImageEncoding + "," + imageDataInState.Images[i]);
-			}
+			strictEqual(images.length, imageDataInState.ImageBlob ? 1 : 0);
 		});
 
 		test("When the full page screenshot response is a failure, the preview should display an error message in Full Page mode", () => {
@@ -146,9 +141,8 @@ export class FullPagePreviewTests extends TestModule {
 		state.currentMode.set(ClipMode.FullPage);
 		state.fullPageResult = {
 			data: {
-				ImageEncoding: "jpeg",
-				ImageFormat: "base64",
-				Images: ["abc", "def"]
+				ImageFormat: "jpeg",
+				ImageBlob: new Blob(["test"], { type: "image/jpeg" })
 			},
 			status: Status.Succeeded
 		};

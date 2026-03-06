@@ -36,7 +36,8 @@
         "tabs",
         "webRequest",
         "webNavigation",
-        "offscreen"
+        "offscreen",
+        "storage"
     ],
 
     "host_permissions": [

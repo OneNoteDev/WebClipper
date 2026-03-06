@@ -41,7 +41,8 @@
       "tabs",
       "webRequest",
       "webNavigation",
-      "offscreen"
+      "offscreen",
+      "storage"
     ],
     "host_permissions": [
       "<all_urls>"
