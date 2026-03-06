@@ -329,13 +329,19 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 	private createPageInfo(): PageInfo {
 		let contentType: OneNoteApi.ContentType = DomUtils.getPageContentType(document);
 
+		// Extract external stylesheets from the live CSSOM for the full page screenshot renderer.
+		// Stored on pageInfo and passed through the communicator (content scripts can't use chrome.storage.session).
+		// The clipper UI (an extension page) stores this in session storage before opening the renderer.
+		let stylesheetCache = DomUtils.extractExternalStylesheets(document);
+
 		return {
 			canonicalUrl: DomUtils.fetchCanonicalUrl(document),
 			contentData: this.getTrimmedDomString(),
 			contentLocale: DomUtils.getLocale(document),
 			contentTitle: (contentType === OneNoteApi.ContentType.EnhancedUrl) ? DomUtils.getFileNameFromUrl(document) : document.title,
 			contentType: contentType,
-			rawUrl: document.URL
+			rawUrl: document.URL,
+			stylesheetCache: Object.keys(stylesheetCache).length > 0 ? stylesheetCache : undefined
 		} as PageInfo;
 	}
 

@@ -20,7 +20,7 @@ interface ScrollData {
 }
 
 export class FullPageScreenshotHelper {
-	public static getFullPageScreenshot(pageInfoContentData: string, pageUrl?: string): Promise<FullPageScreenshotResult> {
+	public static getFullPageScreenshot(pageInfoContentData: string, pageUrl?: string, stylesheetCache?: { [url: string]: { cssText: string; media: string } }): Promise<FullPageScreenshotResult> {
 		return new Promise<FullPageScreenshotResult>((resolve, reject) => {
 			let fullPageScreenshotEvent = new Log.Event.PromiseEvent(Log.Event.Label.FullPageScreenshotCall);
 			let correlationId = StringUtils.generateGuid();
@@ -30,6 +30,9 @@ export class FullPageScreenshotHelper {
 			let storageData: any = { fullPageHtmlContent: pageInfoContentData, fullPageStatusText: statusText };
 			if (pageUrl) {
 				storageData.fullPageBaseUrl = pageUrl;
+			}
+			if (stylesheetCache) {
+				storageData.fullPageStylesheets = stylesheetCache;
 			}
 
 			chrome.storage.session.set(storageData, () => {
@@ -49,7 +52,7 @@ export class FullPageScreenshotHelper {
 
 								chrome.storage.session.remove([
 								"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText",
-								"fullPageScreenshots", "fullPageScrollData"
+								"fullPageScreenshots", "fullPageScrollData", "fullPageStylesheets"
 							]);
 
 								if (dataUrls.length > 0) {

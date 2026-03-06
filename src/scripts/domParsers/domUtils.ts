@@ -336,6 +336,8 @@ export class DomUtils {
 	 */
 	public static getCleanDomOfCurrentPage(originalDoc: Document): string {
 		let doc = DomUtils.cloneDocument(originalDoc);
+		DomUtils.inlineHiddenElements(doc, originalDoc);
+		DomUtils.flattenShadowDomSlots(doc, originalDoc);
 		DomUtils.convertCanvasElementsToImages(doc, originalDoc);
 		DomUtils.addBaseTagIfNecessary(doc, originalDoc.location);
 
@@ -468,6 +470,89 @@ export class DomUtils {
 	}
 
 	/**
+	 * Handle elements that were inside web components with shadow DOM.
+	 * cloneNode(true) does NOT clone declarative shadow roots, so slotted content
+	 * (e.g., dropdown panels with slot="dropdown") becomes visible as regular DOM.
+	 * For elements whose shadow-hosted parent hid them via slot CSS, we check the
+	 * original document's computed visibility and inline display:none if hidden.
+	 *
+	 * Also removes <template shadowroot="open"> elements from the clone since
+	 * they render as visible empty content without shadow DOM support.
+	 */
+	public static flattenShadowDomSlots(doc: Document, originalDoc: Document): void {
+		// Remove any leftover shadow root templates in the clone
+		let templates = doc.querySelectorAll('template[shadowroot], template[shadowrootmode]');
+		for (let i = 0; i < templates.length; i++) {
+			if (templates[i].parentNode) {
+				templates[i].parentNode.removeChild(templates[i]);
+			}
+		}
+
+		// Detect shadow hosts from the ORIGINAL document (not the clone).
+		// The browser consumes <template shadowroot> during parsing, creating real shadow roots.
+		// cloneNode(true) does NOT clone shadow roots, so slotted content becomes visible.
+		// We find shadow hosts by checking element.shadowRoot on the original DOM.
+		let originalAll = originalDoc.body ? originalDoc.body.querySelectorAll("*") : [];
+		let clonedAll = doc.body ? doc.body.querySelectorAll("*") : [];
+
+		for (let i = 0; i < originalAll.length && i < clonedAll.length; i++) {
+			let origEl = originalAll[i] as HTMLElement;
+			if (origEl.shadowRoot) {
+				// This element had a shadow root — hide non-button slot content in the clone
+				let clonedEl = clonedAll[i] as HTMLElement;
+				let slots = clonedEl.querySelectorAll('[slot]:not([slot="button"]):not([slot="trigger"])');
+				for (let j = 0; j < slots.length; j++) {
+					(slots[j] as HTMLElement).style.setProperty("display", "none", "important");
+				}
+			}
+		}
+	}
+
+	/**
+	 * Preserve the computed visibility of elements by inlining display:none on elements
+	 * that are hidden in the live document. Without this, elements hidden by JavaScript
+	 * or CSS classes (popups, dropdowns, modals) would become visible in the renderer
+	 * since scripts are stripped and CSS class logic may not apply.
+	 *
+	 * Must be called immediately after cloneDocument and before any element removals,
+	 * so that element indices match between the original and cloned documents.
+	 */
+	public static inlineHiddenElements(doc: Document, originalDoc: Document): void {
+		if (!originalDoc.body || !doc.body) {
+			return;
+		}
+
+		let originalElements = originalDoc.body.querySelectorAll("*");
+		let clonedElements = doc.body.querySelectorAll("*");
+
+		// Batch read: collect indices of hidden elements
+		let hiddenIndices: number[] = [];
+		for (let i = 0; i < originalElements.length && i < clonedElements.length; i++) {
+			let el = originalElements[i] as HTMLElement;
+			// Skip elements that already have inline display:none
+			if (el.style && el.style.display === "none") {
+				continue;
+			}
+			try {
+				let computed = window.getComputedStyle(el);
+				if (computed.display === "none") {
+					hiddenIndices.push(i);
+				}
+			} catch (e) {
+				// Skip elements that can't be computed (e.g., disconnected nodes)
+			}
+		}
+
+		// Batch write: inline display:none on corresponding cloned elements
+		for (let i = 0; i < hiddenIndices.length; i++) {
+			let el = clonedElements[hiddenIndices[i]] as HTMLElement;
+			if (el && el.style) {
+				el.style.setProperty("display", "none", "important");
+			}
+		}
+	}
+
+	/**
 	 * Clones the document into a new document object
 	 */
 	public static cloneDocument(originalDoc: Document): Document {
@@ -593,18 +678,28 @@ export class DomUtils {
 	}
 
 	/**
-	 * Remove any references to URLs that won't work on another box (i.e. our servers)
+	 * Remove links that reference non-web URLs (extension resources, local files, etc.)
+	 * that won't work in the renderer. Uses getAttribute to get the raw href value,
+	 * since linkElement.href may not resolve properly on cloned documents.
+	 * Relative URLs (starting with / or .) are kept — they're valid web URLs.
 	 */
 	public static removeUnsupportedHrefs(doc: Document) {
 		DomUtils.domReplacer(doc, DomUtils.tags.link, (node: Node) => {
 			let linkElement: HTMLLinkElement = <HTMLLinkElement>node;
-			let href = linkElement.href;
+			let href = linkElement.getAttribute("href") || "";
 
-			if (this.isLocalReferenceUrl(href)) {
-				return undefined;
+			// Keep links with web URLs (absolute or relative paths)
+			if (href.indexOf("http://") === 0 || href.indexOf("https://") === 0 || href.indexOf("//") === 0) {
+				return linkElement;
 			}
 
-			return linkElement;
+			// Keep relative URLs (paths starting with / or . or alphanumeric)
+			if (href.length > 0 && !this.isNonWebScheme(href)) {
+				return linkElement;
+			}
+
+			// Remove links without href or with non-web schemes (chrome-extension://, file://, etc.)
+			return undefined;
 		});
 	}
 
@@ -1010,7 +1105,74 @@ export class DomUtils {
 		return scrollValue * 100;
 	}
 
+	/**
+	 * Extract CSS text from all accessible external stylesheets in the document's CSSOM.
+	 * Returns a map of absolute stylesheet URL → { cssText, media }.
+	 * Cross-origin sheets without CORS will be silently skipped.
+	 */
+	public static extractExternalStylesheets(originalDoc: Document): { [url: string]: { cssText: string; media: string } } {
+		let result: { [url: string]: { cssText: string; media: string } } = {};
+
+		for (let i = 0; i < originalDoc.styleSheets.length; i++) {
+			let sheet = originalDoc.styleSheets[i] as CSSStyleSheet;
+			if (!sheet.href) {
+				continue;
+			}
+
+			let rules: CSSRuleList;
+			try {
+				rules = sheet.cssRules;
+			} catch (e) {
+				// SecurityError for cross-origin sheets without CORS headers
+				continue;
+			}
+
+			if (!rules || rules.length === 0) {
+				continue;
+			}
+
+			let cssText = "";
+			for (let j = 0; j < rules.length; j++) {
+				// Skip @import rules — imported sheets are separate entries in document.styleSheets
+				if (rules[j].type === CSSRule.IMPORT_RULE) {
+					continue;
+				}
+				cssText += rules[j].cssText + "\n";
+			}
+
+			// Resolve url() references to absolute using the stylesheet's URL as base
+			cssText = DomUtils.resolveCssUrls(cssText, sheet.href);
+
+			let media = sheet.media && sheet.media.mediaText ? sheet.media.mediaText : "";
+			result[sheet.href] = { cssText: cssText, media: media };
+		}
+
+		return result;
+	}
+
+	/**
+	 * Resolve relative url() references in CSS text to absolute URLs.
+	 * Chrome's CSSOM usually returns absolute URLs, but this is a safety net.
+	 */
+	private static resolveCssUrls(cssText: string, baseUrl: string): string {
+		return cssText.replace(/url\(\s*(['"]?)([^)'"]+)\1\s*\)/g, (match, quote, urlVal) => {
+			if (!urlVal || urlVal.indexOf("data:") === 0 || urlVal.indexOf("blob:") === 0 || urlVal.indexOf("#") === 0) {
+				return match;
+			}
+			try {
+				let absolute = new URL(urlVal, baseUrl).href;
+				return "url(" + quote + absolute + quote + ")";
+			} catch (e) {
+				return match;
+			}
+		});
+	}
+
 	private static isLocalReferenceUrl(url: string): Boolean {
 		return !(url.indexOf("https://") === 0 || url.indexOf("http://") === 0);
+	}
+
+	private static isNonWebScheme(url: string): Boolean {
+		return /^(chrome-extension|moz-extension|ms-browser-extension|file|blob|javascript):/i.test(url);
 	}
 }

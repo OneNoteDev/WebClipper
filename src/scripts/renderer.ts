@@ -1,7 +1,11 @@
 // Renderer page script - connects to service worker via port
 // and handles scroll/capture commands. Reads HTML directly from
 // chrome.storage.session to avoid large data through message channels.
+//
+// Content is rendered inside an iframe for CSS isolation — the renderer's
+// own styles (scrollbar hiding, overflow) don't interfere with the page's CSS.
 let port = chrome.runtime.connect({ name: "renderer" });
+let iframe = document.getElementById("content-frame") as HTMLIFrameElement;
 
 // Set title bar as status indicator — no overlay needed
 chrome.storage.session.get(["fullPageStatusText"], (stored: any) => {
@@ -10,10 +14,11 @@ chrome.storage.session.get(["fullPageStatusText"], (stored: any) => {
 
 port.onMessage.addListener((message: any) => {
 	if (message.action === "loadContent") {
-		// Read HTML and base URL directly from session storage
-		chrome.storage.session.get(["fullPageHtmlContent", "fullPageBaseUrl"], (stored: any) => {
+		// Read HTML, base URL, and cached stylesheets from session storage
+		chrome.storage.session.get(["fullPageHtmlContent", "fullPageBaseUrl", "fullPageStylesheets"], (stored: any) => {
 			let rawHtml = stored && stored.fullPageHtmlContent ? stored.fullPageHtmlContent : "";
 			let baseUrl = stored && stored.fullPageBaseUrl ? stored.fullPageBaseUrl : "";
+			let cachedStylesheets: { [url: string]: { cssText: string; media: string } } = stored && stored.fullPageStylesheets ? stored.fullPageStylesheets : {};
 
 			// Strip scripts only — keep iframes (some sites use them for content)
 			let cleanHtml = rawHtml
@@ -24,7 +29,7 @@ port.onMessage.addListener((message: any) => {
 			let parser = new DOMParser();
 			let doc = parser.parseFromString(cleanHtml, "text/html");
 
-			// Rewrite relative URLs to absolute (CSP blocks <base href> on extension pages)
+			// Rewrite relative URLs to absolute
 			if (baseUrl) {
 				let resolveUrl = (relative: string): string => {
 					try {
@@ -97,107 +102,200 @@ port.onMessage.addListener((message: any) => {
 				}
 			}
 
-			// Copy <html> and <body> attributes (classes, data-* for themes, etc.)
-			let srcHtml = doc.documentElement;
-			let srcBody = doc.body;
-			for (let i = 0; i < srcHtml.attributes.length; i++) {
-				let attr = srcHtml.attributes[i];
-				document.documentElement.setAttribute(attr.name, attr.value);
-			}
-			for (let i = 0; i < srcBody.attributes.length; i++) {
-				let attr = srcBody.attributes[i];
-				document.body.setAttribute(attr.name, attr.value);
-			}
+			// Replace <link rel="stylesheet"> tags with cached CSS from session storage
+			let stylesheetLinks = doc.querySelectorAll('link[rel="stylesheet"]');
+			for (let i = stylesheetLinks.length - 1; i >= 0; i--) {
+				let link = stylesheetLinks[i] as HTMLLinkElement;
+				let href = link.getAttribute("href");
+				if (!href) { continue; }
 
-			// Copy meta tags (color-scheme, viewport, etc.) and stylesheets
-			let headElements = doc.querySelectorAll('link[rel="stylesheet"], style, meta');
-			for (let i = 0; i < headElements.length; i++) {
-				document.head.appendChild(headElements[i].cloneNode(true));
-			}
+				let resolvedHref: string;
+				try {
+					resolvedHref = baseUrl ? new URL(href, baseUrl).href : href;
+				} catch (e) {
+					continue;
+				}
 
-			document.body.innerHTML = srcBody.innerHTML;
-
-			// Wait for images and stylesheets to load before neutralizing positioning
-			let imgs = document.querySelectorAll("img");
-			let pending = 0;
-			let resolved = false;
-
-			let onReady = () => {
-				if (resolved) { return; }
-				resolved = true;
-
-				// Neutralize fixed/sticky positioning AFTER stylesheets load
-				// so getComputedStyle reflects the actual CSS rules.
-				// Fixed → absolute: anchors at initial position, appears once (not repeated per viewport).
-				// Sticky → static: removes stickiness, stays in document flow.
-				let viewportH = window.innerHeight;
-				let allElements = document.body.querySelectorAll("*");
-				for (let i = 0; i < allElements.length; i++) {
-					let el = allElements[i] as HTMLElement;
-					let computed = window.getComputedStyle(el);
-					if (computed.position === "fixed") {
-						el.style.position = "absolute";
-					} else if (computed.position === "sticky") {
-						el.style.position = "static";
+				if (cachedStylesheets[resolvedHref] && link.parentNode) {
+					let styleEl = doc.createElement("style");
+					styleEl.textContent = cachedStylesheets[resolvedHref].cssText;
+					if (cachedStylesheets[resolvedHref].media) {
+						styleEl.setAttribute("media", cachedStylesheets[resolvedHref].media);
 					}
-					// Reset viewport-relative min-heights that create blank space
-					let minH = parseInt(computed.minHeight, 10);
-					if (minH >= viewportH) {
-						el.style.minHeight = "auto";
+					link.parentNode.replaceChild(styleEl, link);
+				}
+			}
+
+			// For remaining <link> tags without cached CSS, fetch directly
+			let remainingLinks = doc.querySelectorAll('link[rel="stylesheet"]');
+			let fetchPromises: Promise<void>[] = [];
+
+			let resolveCssUrls = (cssText: string, sheetUrl: string): string => {
+				return cssText.replace(/url\(\s*(['"]?)([^)'"]+)\1\s*\)/g, (match: string, quote: string, urlVal: string) => {
+					if (!urlVal || urlVal.indexOf("data:") === 0 || urlVal.indexOf("blob:") === 0 || urlVal.indexOf("#") === 0) {
+						return match;
 					}
-				}
-
-				// Remove top padding/margin that sites add to compensate for fixed headers
-				let bodyComputed = window.getComputedStyle(document.body);
-				if (parseInt(bodyComputed.paddingTop, 10) > 0) {
-					document.body.style.paddingTop = "0";
-				}
-				if (parseInt(bodyComputed.marginTop, 10) > 0) {
-					document.body.style.marginTop = "0";
-				}
-				let htmlComputed = window.getComputedStyle(document.documentElement);
-				if (parseInt(htmlComputed.paddingTop, 10) > 0) {
-					document.documentElement.style.paddingTop = "0";
-				}
-				if (parseInt(htmlComputed.marginTop, 10) > 0) {
-					document.documentElement.style.marginTop = "0";
-				}
-
-				port.postMessage({
-					action: "dimensions",
-					viewportHeight: window.innerHeight,
-					pageHeight: document.documentElement.scrollHeight
+					try {
+						return "url(" + quote + new URL(urlVal, sheetUrl).href + quote + ")";
+					} catch (e) {
+						return match;
+					}
 				});
 			};
 
-			for (let i = 0; i < imgs.length; i++) {
-				if (!imgs[i].complete) {
-					pending++;
-					imgs[i].onload = imgs[i].onerror = () => {
-						pending--;
-						if (pending <= 0) {
-							setTimeout(onReady, 200);
-						}
-					};
+			for (let i = remainingLinks.length - 1; i >= 0; i--) {
+				let link = remainingLinks[i] as HTMLLinkElement;
+				let href = link.getAttribute("href");
+				if (!href) { continue; }
+
+				let absoluteHref: string;
+				try {
+					absoluteHref = baseUrl ? new URL(href, baseUrl).href : href;
+				} catch (e) {
+					continue;
 				}
+
+				if (absoluteHref.indexOf("http") !== 0) { continue; }
+
+				let capturedLink = link;
+				let capturedHref = absoluteHref;
+				fetchPromises.push(
+					fetch(capturedHref)
+						.then(function(r) { return r.ok ? r.text() : ""; })
+						.then(function(cssText) {
+							if (cssText && capturedLink.parentNode) {
+								cssText = resolveCssUrls(cssText, capturedHref);
+								cssText = cssText.replace(/@import\s+(?:url\([^)]*\)|['"][^'"]*['"])[^;]*;?/gi, "");
+								let styleEl = doc.createElement("style");
+								styleEl.textContent = cssText;
+								let media = capturedLink.getAttribute("media");
+								if (media) {
+									styleEl.setAttribute("media", media);
+								}
+								capturedLink.parentNode.replaceChild(styleEl, capturedLink);
+							}
+						})
+						.catch(function() {})
+				);
 			}
 
-			if (pending === 0) {
-				// No pending images — wait briefly for stylesheets
-				setTimeout(onReady, 500);
-			}
+			// Inject a scrollbar-hiding style into the captured document's head
+			let scrollbarStyle = doc.createElement("style");
+			scrollbarStyle.textContent = "::-webkit-scrollbar{display:none}html{scrollbar-width:none;overflow-x:hidden!important}";
+			doc.head.appendChild(scrollbarStyle);
 
-			// Safety timeout — don't wait longer than 3 seconds
-			setTimeout(onReady, 3000);
+			// Wait for CSS fetches, then render into iframe
+			let renderContent = function() {
+				// Serialize the processed DOM to a complete HTML string
+				let doctype = doc.doctype ? "<!DOCTYPE " + doc.doctype.name + ">" : "<!DOCTYPE html>";
+				let fullHtml = doctype + doc.documentElement.outerHTML;
+
+				// Write into the iframe — CSS isolation, no style conflicts
+				let iframeDoc = iframe.contentDocument;
+				iframeDoc.open();
+				iframeDoc.write(fullHtml);
+				iframeDoc.close();
+
+				let iframeWin = iframe.contentWindow;
+
+				// Wait for images to load before neutralizing positioning
+				let iframeImgs = iframeDoc.querySelectorAll("img");
+				let pending = 0;
+				let resolved = false;
+
+				let onReady = function() {
+					if (resolved) { return; }
+					resolved = true;
+
+					// Neutralize fixed/sticky positioning AFTER stylesheets load
+					let viewportH = iframeWin.innerHeight;
+					let allElements = iframeDoc.body.querySelectorAll("*");
+					for (let i = 0; i < allElements.length; i++) {
+						let el = allElements[i] as HTMLElement;
+						let computed = iframeWin.getComputedStyle(el);
+						if (computed.position === "fixed") {
+							el.style.position = "absolute";
+						} else if (computed.position === "sticky") {
+							// Capture the element's current rendered height BEFORE un-sticking
+							let stickyHeight = el.getBoundingClientRect().height;
+							el.style.position = "static";
+							// If the element expands significantly when un-stuck (e.g., a sidebar
+							// with many nav items), cap its height to prevent layout stretching
+							if (el.scrollHeight > stickyHeight * 1.5 && stickyHeight > 0) {
+								el.style.maxHeight = stickyHeight + "px";
+								el.style.overflow = "hidden";
+							}
+						}
+						// Reset viewport-relative min-heights (but use 0, not auto —
+						// auto on flex/grid items prevents shrinking and can expand layout)
+						let minH = parseInt(computed.minHeight, 10);
+						if (minH >= viewportH) {
+							el.style.setProperty("min-height", "0", "important");
+						}
+						// Reset viewport-relative heights that create blank space
+						let h = parseInt(computed.height, 10);
+						if (h >= viewportH && el.scrollHeight < h * 0.9) {
+							el.style.height = "auto";
+						}
+					}
+
+					// Remove padding/margin that compensate for fixed headers/footers
+					let bodyEl = iframeDoc.body;
+					let htmlEl = iframeDoc.documentElement;
+					let bodyComputed = iframeWin.getComputedStyle(bodyEl);
+					if (parseInt(bodyComputed.paddingTop, 10) > 0) { bodyEl.style.paddingTop = "0"; }
+					if (parseInt(bodyComputed.marginTop, 10) > 0) { bodyEl.style.marginTop = "0"; }
+					let htmlComputed = iframeWin.getComputedStyle(htmlEl);
+					if (parseInt(htmlComputed.paddingTop, 10) > 0) { htmlEl.style.paddingTop = "0"; }
+					if (parseInt(htmlComputed.marginTop, 10) > 0) { htmlEl.style.marginTop = "0"; }
+
+					port.postMessage({
+						action: "dimensions",
+						viewportHeight: iframeWin.innerHeight,
+						pageHeight: iframeDoc.documentElement.scrollHeight
+					});
+				};
+
+				for (let i = 0; i < iframeImgs.length; i++) {
+					if (!iframeImgs[i].complete) {
+						pending++;
+						iframeImgs[i].onload = iframeImgs[i].onerror = function() {
+							pending--;
+							if (pending <= 0) {
+								setTimeout(onReady, 200);
+							}
+						};
+					}
+				}
+
+				if (pending === 0) {
+					setTimeout(onReady, 500);
+				}
+
+				// Safety timeout
+				setTimeout(onReady, 3000);
+			};
+
+			if (fetchPromises.length > 0) {
+				Promise.race([
+					Promise.all(fetchPromises),
+					new Promise(function(resolve) { setTimeout(resolve, 5000); })
+				]).then(renderContent);
+			} else {
+				renderContent();
+			}
 		});
 	}
 
 	if (message.action === "scroll") {
-		window.scrollTo(0, message.scrollTo);
+		// Scroll inside the iframe, not the host page
+		let iframeWin = iframe.contentWindow;
+		let iframeDoc = iframe.contentDocument;
+		iframeWin.scrollTo(0, message.scrollTo);
 		port.postMessage({
 			action: "scrollResult",
-			scrollY: window.scrollY,
-			pageHeight: document.documentElement.scrollHeight
+			scrollY: iframeWin.scrollY,
+			pageHeight: iframeDoc.documentElement.scrollHeight
 		});
 	}
 });

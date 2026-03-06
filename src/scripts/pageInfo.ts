@@ -8,4 +8,5 @@ export interface PageInfo {
 	contentTitle: string;
 	contentType: OneNoteApi.ContentType;
 	rawUrl: string;
+	stylesheetCache?: { [url: string]: { cssText: string; media: string } };
 }

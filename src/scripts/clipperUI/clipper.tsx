@@ -246,7 +246,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		} else {
 			this.state.setState({ fullPageResult: { status: Status.InProgress } });
 
-			FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData, this.state.pageInfo.rawUrl).then((result) => {
+			FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData, this.state.pageInfo.rawUrl, this.state.pageInfo.stylesheetCache).then((result) => {
 				this.state.setState({ fullPageResult: { data: result, status: Status.Succeeded } });
 			}, () => {
 				this.state.setState({

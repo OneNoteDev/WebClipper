@@ -178,13 +178,17 @@ clipper.tsx                    extensionWorkerBase.ts           webExtensionWork
 
 ## Known Issues / Remaining Work
 
-### 1. CSS Fidelity — Inline External Stylesheets (Next Priority)
-- **Root cause:** The renderer re-fetches external stylesheets from the origin server. Some fail due to CORS, CSP, or timing — causing missing logos, broken layouts, blank space
-- **The content script has full access** to `document.styleSheets` with all parsed CSS rules from loaded stylesheets. These could be inlined into `<style>` blocks during DOM capture in `getCleanDomOfCurrentPage()` (`domUtils.ts`)
-- **Proposed approach:** In the content script (before sending to renderer), iterate `document.styleSheets`, extract `cssRules` from each accessible sheet, and inject them as inline `<style>` blocks. Remove the corresponding `<link>` tags. This makes the HTML self-contained — no external CSS fetches needed
-- **Impact:** Would fix MDN logo, GitHub theme colors, Bing sprites, and most CSS fidelity issues in one change
-- **Files to modify:** `src/scripts/domParsers/domUtils.ts` (`getCleanDomOfCurrentPage`), `src/scripts/extensions/clipperInject.ts`
-- **Constraint:** `contentData` is truncated to 2MB (`maxPartLength = 2097152`). Inlining CSS will increase the HTML size. May need to increase this limit or compress
+### 1. CSS Fidelity (Implemented)
+- **CSS caching:** Content script extracts CSS from `document.styleSheets` (CSSOM), passes via `PageInfo.stylesheetCache` through communicator, stored in `chrome.storage.session` by clipper UI, injected by renderer as `<style>` blocks
+- **Fetch fallback:** Cross-origin sheets (SecurityError on `cssRules`) are fetched directly by the renderer via `fetch()` — extension pages have `host_permissions: <all_urls>`
+- **Iframe isolation:** Renderer uses `<iframe id="content-frame">` — page CSS and renderer styles never conflict
+- **`removeUnsupportedHrefs` fix:** Uses `getAttribute("href")` instead of `linkElement.href` (DOM property doesn't resolve on cloned documents)
+- **Shadow DOM:** `flattenShadowDomSlots()` detects shadow hosts via `element.shadowRoot` on live document, hides non-button `[slot]` content (shadow roots lost during `cloneNode`)
+- **Hidden elements:** `inlineHiddenElements()` captures computed `display:none` state from live page
+- **Sticky sidebar cap:** Caps height when un-sticking expands element significantly (prevents nav sidebar from stretching grid)
+- **Viewport height reset:** `min-height >= viewportH` reset to `0` (not `auto`); `height >= viewportH` reset when content is shorter
+- **Files:** `domUtils.ts`, `clipperInject.ts`, `clipper.tsx`, `fullPageScreenshotHelper.ts`, `pageInfo.ts`, `renderer.ts`, `renderer.html`
+- **Remaining:** Bottom void on some grid-layout sites (MDN); cross-origin CSS image assets (mask-image, background-image)
 
 ### 2. Renderer Window Visibility
 - `captureVisibleTab` requires the window to be painted — occluded/off-screen windows produce blank captures
