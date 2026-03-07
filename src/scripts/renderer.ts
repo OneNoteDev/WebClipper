@@ -198,14 +198,6 @@ port.onMessage.addListener((message: any) => {
 
 				let iframeWin = iframe.contentWindow;
 
-				// Block all user interaction inside the iframe during capture
-				let blockIframeEvent = function(e: Event) { e.preventDefault(); e.stopPropagation(); };
-				for (let evt of ["keydown", "mousedown", "click", "pointerdown", "contextmenu", "selectstart"]) {
-					iframeDoc.addEventListener(evt, blockIframeEvent, true);
-				}
-				iframeDoc.addEventListener("wheel", blockIframeEvent, { capture: true, passive: false } as any);
-				iframeDoc.addEventListener("touchstart", blockIframeEvent, { capture: true, passive: false } as any);
-
 				// Wait for images to load before neutralizing positioning
 				let iframeImgs = iframeDoc.querySelectorAll("img");
 				let pending = 0;
@@ -299,12 +291,9 @@ port.onMessage.addListener((message: any) => {
 	}
 });
 
-// Block all user interaction on host page
-let blockEvent = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
-for (let evt of ["keydown", "mousedown", "click", "pointerdown", "contextmenu", "selectstart"]) {
-	document.addEventListener(evt, blockEvent, true);
-}
-document.addEventListener("wheel", blockEvent, { capture: true, passive: false } as any);
+// Block keyboard and scroll — mouse/touch/pointer blocked by #interaction-shield overlay
+document.addEventListener("keydown", (e) => { e.preventDefault(); }, true);
+document.addEventListener("wheel", (e) => { e.preventDefault(); }, { capture: true, passive: false } as any);
 
 // Signal that the renderer is ready
 port.postMessage({ action: "ready" });
