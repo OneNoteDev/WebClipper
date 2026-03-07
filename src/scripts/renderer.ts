@@ -216,6 +216,9 @@ port.onMessage.addListener((message: any) => {
 					let viewportH = iframeWin.innerHeight;
 					let htmlEl = iframeDoc.documentElement;
 
+					// Measure content height BEFORE position conversions inflate it
+					let contentHeight = htmlEl.scrollHeight;
+
 					// Neutralize fixed/sticky positioning AFTER stylesheets load
 					let allElements = iframeDoc.body.querySelectorAll("*");
 					for (let i = 0; i < allElements.length; i++) {
@@ -245,7 +248,8 @@ port.onMessage.addListener((message: any) => {
 					port.postMessage({
 						action: "dimensions",
 						viewportHeight: viewportH,
-						pageHeight: htmlEl.scrollHeight
+						pageHeight: htmlEl.scrollHeight,
+						contentHeight: contentHeight
 					});
 				};
 

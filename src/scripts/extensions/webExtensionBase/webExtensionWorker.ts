@@ -236,8 +236,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 			let startCapture = (port: chrome.runtime.Port) => {
 				let viewportHeight: number;
+				let contentHeight: number;
 				let captureCount = 0;
 				let scrollPositions: number[] = [];
+				let lastScrollY: number = -1;
 
 				let cleaned = false;
 				let cleanup = () => {
@@ -247,8 +249,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					try { port.disconnect(); } catch (e) { /* ignore */ }
 					WebExtension.browser.windows.remove(renderWindowId);
 					chrome.storage.session.remove([
-						"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText",
-						"fullPageScreenshots", "fullPageScrollData"
+						"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText"
 					]);
 				};
 				this.activeRendererCleanup = cleanup;
@@ -275,6 +276,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 					if (message.action === "dimensions") {
 						viewportHeight = message.viewportHeight;
+						contentHeight = message.contentHeight;
 
 						if (!viewportHeight) {
 							cleanup();
@@ -295,6 +297,12 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									return;
 								}
 
+									// Detect scroll stall: if scrollY didn't change, we've hit the
+								// real bottom even if scrollHeight is inflated (e.g., from
+								// fixed→absolute conversion expanding the document).
+								let scrollStalled = captureCount > 0 && message.scrollY === lastScrollY;
+								lastScrollY = message.scrollY;
+
 								dataUrls.push(dataUrl);
 								scrollPositions.push(message.scrollY);
 								captureCount++;
@@ -302,6 +310,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								// Stop at bottom or when captures would exceed canvas height limit (16384px)
 								let maxCaptureHeight = 16384;
 								let atBottom = message.scrollY + viewportHeight >= message.pageHeight
+									|| scrollStalled
 									|| (captureCount * viewportHeight) >= maxCaptureHeight;
 
 								if (atBottom) {
@@ -313,7 +322,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 											viewportHeight: viewportHeight
 										}
 									}, () => {
-										resolve({ success: true, count: dataUrls.length, format: "jpeg", cssWidth: renderWidth } as any);
+										resolve({ success: true, count: dataUrls.length, format: "jpeg", cssWidth: renderWidth, contentHeight: contentHeight } as any);
 									});
 								} else {
 									port.postMessage({ action: "scroll", scrollTo: captureCount * viewportHeight });

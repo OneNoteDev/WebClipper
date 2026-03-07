@@ -56,7 +56,8 @@ export class FullPageScreenshotHelper {
 							]);
 
 								if (dataUrls.length > 0) {
-									FullPageScreenshotHelper.stitchImages(dataUrls, scrollData).then((imageBlob) => {
+									let cropHeight = signal.contentHeight || undefined;
+									FullPageScreenshotHelper.stitchImages(dataUrls, scrollData, cropHeight).then((imageBlob) => {
 										let result: FullPageScreenshotResult = {
 											ImageFormat: signal.format || "jpeg",
 											ImageBlob: imageBlob,
@@ -89,7 +90,7 @@ export class FullPageScreenshotHelper {
 	 * Uses scroll position data to detect where captures overlap (last capture is
 	 * typically clamped by the browser, causing duplication with the previous one).
 	 */
-	private static stitchImages(dataUrls: string[], scrollData: ScrollData): Promise<Blob> {
+	private static stitchImages(dataUrls: string[], scrollData: ScrollData, cropHeight?: number): Promise<Blob> {
 		return new Promise<Blob>((resolve, reject) => {
 			let images: HTMLImageElement[] = [];
 			let loaded = 0;
@@ -133,8 +134,8 @@ export class FullPageScreenshotHelper {
 					}
 				}
 
-				// Calculate total stitched height, capped at 16384px (canvas/API limit)
-				let maxCanvasHeight = 16384;
+				// Calculate total stitched height, capped at content height and 16384px (canvas/API limit)
+				let maxCanvasHeight = cropHeight ? Math.min(Math.round(cropHeight * dpr), 16384) : 16384;
 				let totalHeight = 0;
 				for (let i = 0; i < slices.length; i++) {
 					if (totalHeight + slices[i].height > maxCanvasHeight) {
