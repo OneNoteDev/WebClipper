@@ -51,11 +51,11 @@ The server-side approach used Puppeteer to render sanitized HTML and produce a f
 1. **Store HTML in `chrome.storage.session`** — The page's HTML content, base URL, and localized status text are written to session storage (avoids JSON serialization bottleneck with large payloads)
 2. **Open a renderer popup window** — An extension page (`renderer.html`) is opened at the same position/size as the user's browser with `focused: true`. Width is capped at 1280px. Zoom is forced to 100% via `chrome.tabs.setZoom`. Title bar shows localized "Clipping Page" status text
 3. **Port-based communication** — The renderer page connects to the service worker via `chrome.runtime.connect({ name: "renderer" })`. Commands (loadContent, scroll) are exchanged over this port
-4. **Renderer loads content** — Reads HTML from `chrome.storage.session`, strips `<script>` tags, preserves `<style>`, `<link rel="stylesheet">`, and `<meta>` tags. Rewrites relative URLs (images, stylesheets, srcset) to absolute using `new URL(relative, baseUrl)` (CSP blocks `<base href>` on extension pages). Copies `<html>` and `<body>` attributes for theme support. Hides `position: fixed` elements and unsticks `position: sticky` elements after stylesheets load. User interaction (keyboard, mouse, scroll) is blocked
-5. **Scroll-capture loop** — The service worker tells the renderer to scroll to each viewport position, waits 500ms (Chrome's `MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND` rate limit = 2/sec), then calls `captureVisibleTab()` to take a PNG screenshot (lossless). No artificial capture cap — continues until scroll bottom is reached. If capture fails (window occluded), aborts immediately
-6. **Canvas stitching to Blob** — All viewport captures are stitched into a single image using `<canvas>` with DPR-aware overlap detection. Output is a binary `Blob` via `canvas.toBlob()` (not base64)
+4. **Renderer loads content** — Reads HTML from `chrome.storage.session`, strips `<script>` tags, preserves `<style>`, `<link rel="stylesheet">`, and `<meta>` tags. Rewrites relative URLs (images, stylesheets, srcset) to absolute using `new URL(relative, baseUrl)` (CSP blocks `<base href>` on extension pages). Injects cached CSS as `<style>` blocks, fetches remaining cross-origin sheets via `fetch()`. Renders content inside an iframe for CSS isolation. Neutralizes fixed/sticky positioning after stylesheets load. User interaction blocked by transparent overlay div (`#interaction-shield`) + keyboard/wheel JS listeners
+5. **Scroll-capture with incremental stitching** — The service worker tells the renderer to scroll to each viewport position, waits 500ms (Chrome's `MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND` rate limit = 2/sec), then calls `captureVisibleTab()` to take a PNG screenshot (lossless). Each capture is sent back to the renderer via port for immediate drawing onto a hidden canvas (`display:none`, invisible to captureVisibleTab). Scroll stall detection stops capture when `scrollY` stops changing. Canvas height capped at pre-conversion `contentHeight` or 16,384px
+6. **Finalize to Blob** — When capture is complete, the renderer trims the canvas to actual content height, converts to JPEG 90% via `canvas.toBlob()`, stores the single final data URL in `chrome.storage.session`. The helper reads this single image and converts to Blob via `fetch(dataUrl).then(r => r.blob())`
 7. **Binary MIME part upload** — The Blob is sent as a binary MIME part in the multipart Graph API request (`<img src="name:FullPageImageXXXX" />`), eliminating ~33% base64 encoding overhead
-8. **Cleanup** — Renderer window closed, session storage cleaned up
+8. **Cleanup** — Renderer window closed, session storage cleaned up (input keys by worker, output key by helper)
 
 ### Why This Architecture (Evolution)
 
@@ -94,9 +94,9 @@ The `onenoteapi` library's `TypedFormData.asBlob()` already handles mixed string
 | File | Change |
 |------|--------|
 | `src/renderer.html` | NEW — Extension page for offscreen rendering |
-| `src/scripts/renderer.ts` | NEW — Renderer script: port communication, reads HTML from storage, sets title bar status, blocks user interaction |
-| `src/scripts/contentCapture/fullPageScreenshotHelper.ts` | REWRITTEN — Client-side screenshot with canvas stitching, returns Blob via `canvas.toBlob()` |
-| `src/scripts/extensions/webExtensionBase/webExtensionWorker.ts` | Added `takeFullPageScreenshot()` — renderer window creation, scroll-capture, storage communication |
+| `src/scripts/renderer.ts` | NEW — Renderer script: port communication, reads HTML from storage, iframe CSS isolation, incremental canvas stitching, interaction shield |
+| `src/scripts/contentCapture/fullPageScreenshotHelper.ts` | REWRITTEN — Reads single final JPEG from session storage, converts to Blob |
+| `src/scripts/extensions/webExtensionBase/webExtensionWorker.ts` | Added `takeFullPageScreenshot()` — renderer window creation, scroll-capture loop, sends captures to renderer for stitching |
 | `src/scripts/extensions/extensionWorkerBase.ts` | Added abstract `takeFullPageScreenshot()` method + registered function key |
 | `src/scripts/extensions/safari/safariWorker.ts` | Fallback: single viewport capture via `takeTabScreenshot()` |
 | `src/scripts/extensions/bookmarklet/inlineWorker.ts` | Fallback: throws not-implemented |
@@ -114,7 +114,8 @@ clipper.tsx                    extensionWorkerBase.ts           webExtensionWork
     |                                |                                |
     |-- getFullPageScreenshot() -->  |                                |
     |   (stores HTML + URL +         |                                |
-    |    statusText in storage)      |                                |
+    |    statusText + CSS cache      |                                |
+    |    in session storage)         |                                |
     |                                |-- takeFullPageScreenshot() --> |
     |                                |                                |-- windows.create(renderer.html)
     |                                |                                |   (focused, max 1280px wide, user height)
@@ -124,28 +125,37 @@ clipper.tsx                    extensionWorkerBase.ts           webExtensionWork
     |                                |                                |-- sets document.title from storage
     |                                |                                |-- port.postMessage("ready")
     |                                |                                |<- "loadContent"
-    |                                |                                |-- reads HTML from storage
+    |                                |                                |-- reads HTML + CSS cache from storage
     |                                |                                |-- strips scripts, rewrites URLs
+    |                                |                                |-- injects cached CSS, fetches remaining
+    |                                |                                |-- renders into iframe (CSS isolation)
+    |                                |                                |-- measures contentHeight BEFORE
+    |                                |                                |   position conversions
     |                                |                                |-- port.postMessage("dimensions")
     |                                |                                |
+    |                                |                                |<- "initCanvas" (creates hidden canvas)
     |                                |                          [scroll-capture loop]
     |                                |                                |<- "scroll" to position N
-    |                                |                                |-- window.scrollTo()
+    |                                |                                |-- iframe.scrollTo()
     |                                |                                |-- port.postMessage("scrollResult")
     |                                |                                |-- 500ms delay (rate limit)
-    |                                |                                |-- captureVisibleTab()
-    |                                |                                |-- repeat until atBottom
+    |                                |                                |-- captureVisibleTab(PNG)
+    |                                |                                |<- "drawCapture" (data URL + scrollY)
+    |                                |                                |-- draws onto hidden canvas
+    |                                |                                |-- port.postMessage("drawComplete")
+    |                                |                                |-- repeat until atBottom/stall
     |                                |                                |
-    |                                |                                |-- store screenshots + scroll
-    |                                |                                |   data in chrome.storage.session
+    |                                |                                |<- "finalize"
+    |                                |                                |-- trim canvas, toBlob(JPEG 90%)
+    |                                |                                |-- store final image in session storage
+    |                                |                                |-- port.postMessage("finalizeComplete")
     |                                |                                |-- windows.remove(popup)
     |                                |                                |
     |<-- signal {success, count} ----|------- resolve() --------------|
     |                                |                                |
-    |-- reads screenshots from       |                                |
-    |   chrome.storage.session       |                                |
-    |-- stitchImages() → canvas      |                                |
-    |-- canvas.toBlob() → Blob       |                                |
+    |-- reads single final JPEG      |                                |
+    |   from chrome.storage.session  |                                |
+    |-- fetch(dataUrl) → Blob        |                                |
     |-- resolve(FullPageResult)      |                                |
     |                                |                                |
     [Save to OneNote]                |                                |
@@ -164,11 +174,13 @@ clipper.tsx                    extensionWorkerBase.ts           webExtensionWork
 | `@mozilla/readability` for article extraction | Apache 2.0, used by Firefox Reader View, well-maintained |
 | FullPage as default clip mode | Augmentation is no longer server-gated; FullPage is more universally useful |
 | Renderer popup window (not direct page scroll) | Avoids visible scrolling, scrollbar artifacts, and clipper UI in screenshots |
-| `chrome.storage.session` as data bus | Port/communicator JSON serialization chokes on multi-MB base64 data |
+| `chrome.storage.session` as data bus | Port/communicator JSON serialization chokes on multi-MB base64 data; session storage used for HTML input and single final JPEG output |
 | Port-based messaging (`runtime.connect`) | `scripting.executeScript` blocked on extension pages in MV3 |
-| PNG capture, JPEG 90% final output, 1280px width cap | PNG captures avoid double-compression; single JPEG encode at stitch time; 1280px balances fidelity vs size |
-| Canvas-based stitching with DPR-aware overlap detection | Last viewport capture overlaps when page height isn't a multiple of viewport; DPR scaling needed for high-DPI screens |
-| No artificial capture cap | Capture continues until scroll bottom is reached; relies on actual page height vs viewport height |
+| PNG capture, JPEG 90% final output, 1280px width cap | PNG captures are lossless; single JPEG encode at finalize; no double compression; 1280px balances fidelity vs size |
+| Renderer-side incremental stitching | Each PNG capture sent to renderer via port (~1-3MB each, within port limits), drawn onto hidden canvas immediately; avoids storing N captures in session storage (was 4-8MB, now ~1-2MB for single final JPEG) |
+| Scroll stall detection | Stops capturing when `scrollY` doesn't change between captures; handles inflated `scrollHeight` from fixed→absolute conversion |
+| Content height cropping | Measures `scrollHeight` before position conversions; uses pre-conversion height to cap canvas, trimming blank space |
+| Interaction shield overlay | Transparent `div` at max z-index blocks all mouse/touch/pointer; keyboard/wheel blocked via JS listeners |
 | Binary Blob output (not base64) | Eliminates ~33% base64 encoding overhead; sent as binary MIME part per Graph API multipart spec |
 | Title bar for status (not overlay) | Overlay caused flashing during capture; title bar is never part of captured content |
 | `focused: true` for renderer window | `captureVisibleTab` requires the window to be painted; unfocused/occluded windows produce blank captures |
@@ -185,10 +197,10 @@ clipper.tsx                    extensionWorkerBase.ts           webExtensionWork
 - **`removeUnsupportedHrefs` fix:** Uses `getAttribute("href")` instead of `linkElement.href` (DOM property doesn't resolve on cloned documents)
 - **Shadow DOM:** `flattenShadowDomSlots()` detects shadow hosts via `element.shadowRoot` on live document, hides non-button `[slot]` content (shadow roots lost during `cloneNode`)
 - **Hidden elements:** `inlineHiddenElements()` captures computed `display:none` state from live page
-- **Sticky sidebar cap:** Caps height when un-sticking expands element significantly (prevents nav sidebar from stretching grid)
-- **Viewport height reset:** `min-height >= viewportH` reset to `0` (not `auto`); `height >= viewportH` reset when content is shorter
+- **Position neutralization:** `fixed → absolute`, `sticky → static`, viewport-height `min-height` reset
+- **Content height cropping:** `scrollHeight` measured before position conversions to avoid inflated canvas height
 - **Files:** `domUtils.ts`, `clipperInject.ts`, `clipper.tsx`, `fullPageScreenshotHelper.ts`, `pageInfo.ts`, `renderer.ts`, `renderer.html`
-- **Remaining:** Bottom void on some grid-layout sites (MDN); cross-origin CSS image assets (mask-image, background-image)
+- **Remaining:** Bottom void on some grid-layout sites (MDN); right-edge clipping on zero-margin pages; cross-origin CSS image assets
 
 ### 2. Renderer Window Visibility
 - `captureVisibleTab` requires the window to be painted — occluded/off-screen windows produce blank captures
@@ -196,9 +208,10 @@ clipper.tsx                    extensionWorkerBase.ts           webExtensionWork
 - **Future improvement:** CDP via `chrome.debugger` would allow invisible capture but requires `debugger` permission (shows warning banner)
 
 ### 3. Capture Limits
-- JPEG 95% captures to stay within 10MB `chrome.storage.session` quota
-- Canvas height capped at 16,384px to avoid Chrome canvas dimension limit
-- Capture loop also stops at 16,384px CSS height worth of viewports
+- PNG captures sent individually to renderer via port (no session storage for intermediates)
+- Canvas height capped at pre-conversion `contentHeight` or 16,384px (Chrome canvas dimension limit)
+- Scroll stall detection stops capture when page can't scroll further
+- Final JPEG 90% stored in session storage (~1-2MB); session storage only holds HTML + CSS cache + final image
 - Very long pages get bottom truncated; OneNote API would likely reject larger images anyway
 
 ### 4. Right-Edge Content
