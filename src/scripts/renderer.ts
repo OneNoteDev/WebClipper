@@ -198,6 +198,12 @@ port.onMessage.addListener((message: any) => {
 
 				let iframeWin = iframe.contentWindow;
 
+				// Block user interaction inside the iframe to prevent scrolling during capture
+				iframeDoc.addEventListener("keydown", function(e: Event) { e.preventDefault(); }, true);
+				iframeDoc.addEventListener("mousedown", function(e: Event) { e.preventDefault(); }, true);
+				iframeDoc.addEventListener("wheel", function(e: Event) { e.preventDefault(); }, { capture: true, passive: false } as any);
+				iframeDoc.addEventListener("touchstart", function(e: Event) { e.preventDefault(); }, { capture: true, passive: false } as any);
+
 				// Wait for images to load before neutralizing positioning
 				let iframeImgs = iframeDoc.querySelectorAll("img");
 				let pending = 0;
@@ -207,8 +213,10 @@ port.onMessage.addListener((message: any) => {
 					if (resolved) { return; }
 					resolved = true;
 
-					// Neutralize fixed/sticky positioning AFTER stylesheets load
 					let viewportH = iframeWin.innerHeight;
+					let htmlEl = iframeDoc.documentElement;
+
+					// Neutralize fixed/sticky positioning AFTER stylesheets load
 					let allElements = iframeDoc.body.querySelectorAll("*");
 					for (let i = 0; i < allElements.length; i++) {
 						let el = allElements[i] as HTMLElement;
@@ -216,32 +224,17 @@ port.onMessage.addListener((message: any) => {
 						if (computed.position === "fixed") {
 							el.style.position = "absolute";
 						} else if (computed.position === "sticky") {
-							// Capture the element's current rendered height BEFORE un-sticking
-							let stickyHeight = el.getBoundingClientRect().height;
 							el.style.position = "static";
-							// If the element expands significantly when un-stuck (e.g., a sidebar
-							// with many nav items), cap its height to prevent layout stretching
-							if (el.scrollHeight > stickyHeight * 1.5 && stickyHeight > 0) {
-								el.style.maxHeight = stickyHeight + "px";
-								el.style.overflow = "hidden";
-							}
 						}
-						// Reset viewport-relative min-heights (but use 0, not auto —
-						// auto on flex/grid items prevents shrinking and can expand layout)
+						// Reset viewport-relative min-heights that create blank space
 						let minH = parseInt(computed.minHeight, 10);
 						if (minH >= viewportH) {
-							el.style.setProperty("min-height", "0", "important");
-						}
-						// Reset viewport-relative heights that create blank space
-						let h = parseInt(computed.height, 10);
-						if (h >= viewportH && el.scrollHeight < h * 0.9) {
-							el.style.height = "auto";
+							el.style.minHeight = "auto";
 						}
 					}
 
-					// Remove padding/margin that compensate for fixed headers/footers
+					// Remove top padding/margin that sites add to compensate for fixed headers
 					let bodyEl = iframeDoc.body;
-					let htmlEl = iframeDoc.documentElement;
 					let bodyComputed = iframeWin.getComputedStyle(bodyEl);
 					if (parseInt(bodyComputed.paddingTop, 10) > 0) { bodyEl.style.paddingTop = "0"; }
 					if (parseInt(bodyComputed.marginTop, 10) > 0) { bodyEl.style.marginTop = "0"; }
@@ -251,8 +244,8 @@ port.onMessage.addListener((message: any) => {
 
 					port.postMessage({
 						action: "dimensions",
-						viewportHeight: iframeWin.innerHeight,
-						pageHeight: iframeDoc.documentElement.scrollHeight
+						viewportHeight: viewportH,
+						pageHeight: htmlEl.scrollHeight
 					});
 				};
 
