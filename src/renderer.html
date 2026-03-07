@@ -6,14 +6,11 @@
 /* Host page: just the iframe container. No styles leak into captured content. */
 ::-webkit-scrollbar { display: none; }
 html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; }
-iframe#content-frame { width: 100%; height: 100%; border: none; display: block; }
-/* Transparent overlay blocks all mouse/touch/pointer interaction */
-#interaction-shield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2147483647; cursor: default; }
+iframe#content-frame { width: 100%; height: 100%; border: none; display: block; pointer-events: none; }
 </style>
 </head>
 <body>
 <iframe id="content-frame"></iframe>
-<div id="interaction-shield"></div>
 <script src="renderer.js"></script>
 </body>
 </html>

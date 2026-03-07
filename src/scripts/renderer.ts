@@ -289,7 +289,6 @@ port.onMessage.addListener((message: any) => {
 	}
 
 	if (message.action === "scroll") {
-		// Scroll inside the iframe, not the host page
 		let iframeWin = iframe.contentWindow;
 		let iframeDoc = iframe.contentDocument;
 		iframeWin.scrollTo(0, message.scrollTo);
@@ -324,6 +323,7 @@ port.onMessage.addListener((message: any) => {
 				stitchCanvas.width = imgWidth;
 				stitchCanvas.height = maxHeight;
 				stitchCtx = stitchCanvas.getContext("2d") as CanvasRenderingContext2D;
+				stitchCtx.imageSmoothingEnabled = false;
 				stitchYOffset = 0;
 
 				// Draw full first capture
@@ -372,11 +372,12 @@ port.onMessage.addListener((message: any) => {
 			trimmed.width = stitchCanvas.width;
 			trimmed.height = stitchYOffset;
 			let trimCtx = trimmed.getContext("2d") as CanvasRenderingContext2D;
+			trimCtx.imageSmoothingEnabled = false;
 			trimCtx.drawImage(stitchCanvas, 0, 0, stitchCanvas.width, stitchYOffset, 0, 0, stitchCanvas.width, stitchYOffset);
 			stitchCanvas = trimmed;
 		}
 
-		// Convert to JPEG data URL and store in session storage
+		// Convert to JPEG 95% data URL and store in session storage
 		stitchCanvas.toBlob(((blob: Blob) => {
 			let reader = new FileReader();
 			reader.onloadend = function() {
@@ -385,13 +386,22 @@ port.onMessage.addListener((message: any) => {
 				});
 			};
 			reader.readAsDataURL(blob);
-		}) as BlobCallback, "image/jpeg", 0.9);
+		}) as BlobCallback, "image/jpeg", 0.95);
 	}
 });
 
-// Block keyboard and scroll — mouse/touch/pointer blocked by #interaction-shield overlay
+// Block keyboard and scroll — pointer events blocked by iframe pointer-events:none
 document.addEventListener("keydown", (e) => { e.preventDefault(); }, true);
 document.addEventListener("wheel", (e) => { e.preventDefault(); }, { capture: true, passive: false } as any);
+
+// Prevent resize/maximize — snap back to original size
+let origWidth = window.outerWidth;
+let origHeight = window.outerHeight;
+window.addEventListener("resize", () => {
+	if (window.outerWidth !== origWidth || window.outerHeight !== origHeight) {
+		window.resizeTo(origWidth, origHeight);
+	}
+});
 
 // Signal that the renderer is ready
 port.postMessage({ action: "ready" });

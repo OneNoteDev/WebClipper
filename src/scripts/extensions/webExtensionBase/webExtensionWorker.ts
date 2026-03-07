@@ -253,6 +253,14 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				};
 				this.activeRendererCleanup = cleanup;
 
+				// Handle renderer window being closed by user
+				port.onDisconnect.addListener(() => {
+					if (!cleaned) {
+						cleanup();
+						resolve({ success: false } as any);
+					}
+				});
+
 				port.onMessage.addListener((message: any) => {
 					if (message.action === "ready") {
 						// Set zoom to 100% before loading content, then load
