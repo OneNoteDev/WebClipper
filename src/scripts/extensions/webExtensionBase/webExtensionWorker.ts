@@ -222,7 +222,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		let rendererUrl = WebExtension.browser.runtime.getURL("renderer.html");
 
 		return new Promise<string[]>((resolve) => {
-			let dataUrls: string[] = [];
 			let renderWindowId: number;
 			let pendingPort: chrome.runtime.Port;
 			let windowReady = false;
@@ -238,25 +237,21 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				let viewportHeight: number;
 				let contentHeight: number;
 				let captureCount = 0;
-				let scrollPositions: number[] = [];
 				let lastScrollY: number = -1;
+				let lastScrollData: { scrollY: number; pageHeight: number };
 
 				let cleaned = false;
-				let cleanup = (removeOutputKeys?: boolean) => {
+				let cleanup = () => {
 					if (cleaned) { return; }
 					cleaned = true;
 					this.activeRendererCleanup = () => { /* no-op */ };
 					try { port.disconnect(); } catch (e) { /* ignore */ }
 					WebExtension.browser.windows.remove(renderWindowId);
-					let keysToRemove = [
+					chrome.storage.session.remove([
 						"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText"
-					];
-					if (removeOutputKeys) {
-						keysToRemove.push("fullPageScreenshots", "fullPageScrollData");
-					}
-					chrome.storage.session.remove(keysToRemove);
+					]);
 				};
-				this.activeRendererCleanup = () => { cleanup(true); };
+				this.activeRendererCleanup = cleanup;
 
 				port.onMessage.addListener((message: any) => {
 					if (message.action === "ready") {
@@ -283,58 +278,67 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						contentHeight = message.contentHeight;
 
 						if (!viewportHeight) {
-							cleanup(true);
+							cleanup();
 							resolve([]);
 							return;
 						}
+
+						// Initialize the renderer's stitch canvas
+						port.postMessage({
+							action: "initCanvas",
+							viewportHeight: viewportHeight,
+							contentHeight: contentHeight,
+							pageHeight: message.pageHeight
+						});
 
 						port.postMessage({ action: "scroll", scrollTo: 0 });
 					}
 
 					if (message.action === "scrollResult") {
+						lastScrollData = { scrollY: message.scrollY, pageHeight: message.pageHeight };
 						setTimeout(() => {
-							WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "jpeg", quality: 95 }, (dataUrl: string) => {
+							WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "png" }, (dataUrl: string) => {
 								if (!dataUrl) {
-									// Capture failed (window occluded/unfocused) — abort and fail
-									cleanup(true);
+									cleanup();
 									resolve({ success: false } as any);
 									return;
 								}
 
-									// Detect scroll stall: if scrollY didn't change, we've hit the
-								// real bottom even if scrollHeight is inflated (e.g., from
-								// fixed→absolute conversion expanding the document).
-								let scrollStalled = captureCount > 0 && message.scrollY === lastScrollY;
-								lastScrollY = message.scrollY;
-
-								dataUrls.push(dataUrl);
-								scrollPositions.push(message.scrollY);
-								captureCount++;
-
-								// Stop at bottom or when captures would exceed canvas height limit (16384px)
-								let maxCaptureHeight = 16384;
-								let atBottom = message.scrollY + viewportHeight >= message.pageHeight
-									|| scrollStalled
-									|| (captureCount * viewportHeight) >= maxCaptureHeight;
-
-								if (atBottom) {
-									// Write output BEFORE cleanup — cleanup async-removes
-									// these same keys, so set() must complete first.
-									chrome.storage.session.set({
-										fullPageScreenshots: dataUrls,
-										fullPageScrollData: {
-											scrollPositions: scrollPositions,
-											viewportHeight: viewportHeight
-										}
-									}, () => {
-										cleanup();
-										resolve({ success: true, count: dataUrls.length, format: "jpeg", cssWidth: renderWidth, contentHeight: contentHeight } as any);
-									});
-								} else {
-									port.postMessage({ action: "scroll", scrollTo: captureCount * viewportHeight });
-								}
+								// Send capture to renderer for incremental stitching
+								port.postMessage({
+									action: "drawCapture",
+									dataUrl: dataUrl,
+									index: captureCount,
+									scrollY: lastScrollData.scrollY,
+									viewportHeight: viewportHeight
+								});
 							});
 						}, 500);
+					}
+
+					if (message.action === "drawComplete") {
+						// Detect scroll stall: if scrollY didn't change, we've hit the
+						// real bottom even if scrollHeight is inflated
+						let scrollStalled = captureCount > 0 && lastScrollData.scrollY === lastScrollY;
+						lastScrollY = lastScrollData.scrollY;
+						captureCount++;
+
+						let maxCaptureHeight = 16384;
+						let atBottom = lastScrollData.scrollY + viewportHeight >= lastScrollData.pageHeight
+							|| scrollStalled
+							|| (captureCount * viewportHeight) >= maxCaptureHeight;
+
+						if (atBottom) {
+							port.postMessage({ action: "finalize" });
+						} else {
+							port.postMessage({ action: "scroll", scrollTo: captureCount * viewportHeight });
+						}
+					}
+
+					if (message.action === "finalizeComplete") {
+						let count = captureCount;
+						cleanup();
+						resolve({ success: true, count: count, format: "jpeg", cssWidth: renderWidth } as any);
 					}
 				});
 			};

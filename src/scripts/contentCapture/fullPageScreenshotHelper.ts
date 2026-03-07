@@ -14,11 +14,6 @@ export interface FullPageScreenshotResult extends CaptureFailureInfo {
 	ImageWidth?: number;
 }
 
-interface ScrollData {
-	scrollPositions: number[];
-	viewportHeight: number;
-}
-
 export class FullPageScreenshotHelper {
 	public static getFullPageScreenshot(pageInfoContentData: string, pageUrl?: string, stylesheetCache?: { [url: string]: { cssText: string; media: string } }): Promise<FullPageScreenshotResult> {
 		return new Promise<FullPageScreenshotResult>((resolve, reject) => {
@@ -46,18 +41,18 @@ export class FullPageScreenshotHelper {
 								return;
 							}
 
-							chrome.storage.session.get(["fullPageScreenshots", "fullPageScrollData"], (stored: any) => {
-								let dataUrls: string[] = stored && stored.fullPageScreenshots ? stored.fullPageScreenshots : [];
-								let scrollData: ScrollData = stored && stored.fullPageScrollData ? stored.fullPageScrollData : undefined;
-
+							// Read single final JPEG from session storage (stitched by renderer)
+							chrome.storage.session.get(["fullPageFinalImage"], (stored: any) => {
 								chrome.storage.session.remove([
-								"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText",
-								"fullPageScreenshots", "fullPageScrollData", "fullPageStylesheets"
-							]);
+									"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText",
+									"fullPageFinalImage", "fullPageStylesheets"
+								]);
 
-								if (dataUrls.length > 0) {
-									let cropHeight = signal.contentHeight || undefined;
-									FullPageScreenshotHelper.stitchImages(dataUrls, scrollData, cropHeight).then((imageBlob) => {
+								let dataUrl: string = stored && stored.fullPageFinalImage ? stored.fullPageFinalImage : "";
+
+								if (dataUrl) {
+									// Convert data URL to Blob
+									fetch(dataUrl).then(function(r) { return r.blob(); }).then(function(imageBlob) {
 										let result: FullPageScreenshotResult = {
 											ImageFormat: signal.format || "jpeg",
 											ImageBlob: imageBlob,
@@ -67,7 +62,7 @@ export class FullPageScreenshotHelper {
 										fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, true);
 										Clipper.logger.logEvent(fullPageScreenshotEvent);
 										resolve(result);
-									}, () => {
+									}, function() {
 										fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.FullPageScreenshotContentFound, false);
 										Clipper.logger.logEvent(fullPageScreenshotEvent);
 										reject();
@@ -82,102 +77,6 @@ export class FullPageScreenshotHelper {
 					}
 				);
 			});
-		});
-	}
-
-	/**
-	 * Stitches multiple viewport screenshots into a single image, cropping overlaps.
-	 * Uses scroll position data to detect where captures overlap (last capture is
-	 * typically clamped by the browser, causing duplication with the previous one).
-	 */
-	private static stitchImages(dataUrls: string[], scrollData: ScrollData, cropHeight?: number): Promise<Blob> {
-		return new Promise<Blob>((resolve, reject) => {
-			let images: HTMLImageElement[] = [];
-			let loaded = 0;
-
-			let onAllLoaded = () => {
-				let totalWidth = images[0].naturalWidth;
-				let imgHeight = images[0].naturalHeight;
-
-				// Device pixel ratio: captured images may be larger than CSS viewport
-				let dpr = scrollData ? imgHeight / scrollData.viewportHeight : 1;
-
-				// Calculate the visible (non-overlapping) portion of each capture
-				let slices: { img: HTMLImageElement; srcY: number; height: number }[] = [];
-
-				if (scrollData && scrollData.scrollPositions.length === images.length) {
-					let positions = scrollData.scrollPositions;
-
-					for (let i = 0; i < images.length; i++) {
-						if (i === 0) {
-							// First capture: full image
-							slices.push({ img: images[i], srcY: 0, height: imgHeight });
-						} else {
-							// Calculate overlap in CSS pixels, then scale to image pixels
-							let expectedScroll = i * scrollData.viewportHeight;
-							let actualScroll = positions[i];
-							let overlapCss = expectedScroll - actualScroll;
-							let overlapPx = Math.round(overlapCss * dpr);
-
-							if (overlapPx > 0 && overlapPx < imgHeight) {
-								// Crop the overlapping top portion
-								slices.push({ img: images[i], srcY: overlapPx, height: imgHeight - overlapPx });
-							} else {
-								slices.push({ img: images[i], srcY: 0, height: imgHeight });
-							}
-						}
-					}
-				} else {
-					// No scroll data — stitch naively
-					for (let i = 0; i < images.length; i++) {
-						slices.push({ img: images[i], srcY: 0, height: imgHeight });
-					}
-				}
-
-				// Calculate total stitched height, capped at content height and 16384px (canvas/API limit)
-				let maxCanvasHeight = cropHeight ? Math.min(Math.round(cropHeight * dpr), 16384) : 16384;
-				let totalHeight = 0;
-				for (let i = 0; i < slices.length; i++) {
-					if (totalHeight + slices[i].height > maxCanvasHeight) {
-						slices[i].height = maxCanvasHeight - totalHeight;
-						totalHeight = maxCanvasHeight;
-						slices.length = i + 1;
-						break;
-					}
-					totalHeight += slices[i].height;
-				}
-
-				let canvas = document.createElement("canvas");
-				canvas.width = totalWidth;
-				canvas.height = totalHeight;
-				let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-
-				let yOffset = 0;
-				for (let i = 0; i < slices.length; i++) {
-					let s = slices[i];
-					ctx.drawImage(s.img, 0, s.srcY, totalWidth, s.height, 0, yOffset, totalWidth, s.height);
-					yOffset += s.height;
-				}
-
-				canvas.toBlob(((blob: Blob) => {
-					resolve(blob);
-				}) as BlobCallback, "image/jpeg", 0.9);
-			};
-
-			for (let i = 0; i < dataUrls.length; i++) {
-				let img = new Image();
-				img.onload = () => {
-					loaded++;
-					if (loaded === dataUrls.length) {
-						onAllLoaded();
-					}
-				};
-				img.onerror = () => {
-					reject();
-				};
-				images.push(img);
-				img.src = dataUrls[i];
-			}
 		});
 	}
 }

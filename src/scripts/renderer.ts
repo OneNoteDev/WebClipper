@@ -7,6 +7,16 @@
 let port = chrome.runtime.connect({ name: "renderer" });
 let iframe = document.getElementById("content-frame") as HTMLIFrameElement;
 
+// Hidden canvas for incremental stitching — display:none keeps it out of captureVisibleTab
+let stitchCanvas = document.createElement("canvas");
+stitchCanvas.style.display = "none";
+document.body.appendChild(stitchCanvas);
+let stitchCtx: CanvasRenderingContext2D;
+let stitchYOffset = 0;
+let stitchDpr = 0;
+let stitchViewportHeight = 0;
+let stitchContentHeight = 0;
+
 // Set title bar as status indicator — no overlay needed
 chrome.storage.session.get(["fullPageStatusText"], (stored: any) => {
 	document.title = stored && stored.fullPageStatusText ? stored.fullPageStatusText : "Capturing page...";
@@ -288,6 +298,94 @@ port.onMessage.addListener((message: any) => {
 			scrollY: iframeWin.scrollY,
 			pageHeight: iframeDoc.documentElement.scrollHeight
 		});
+	}
+
+	if (message.action === "initCanvas") {
+		stitchViewportHeight = message.viewportHeight;
+		stitchContentHeight = message.contentHeight;
+		stitchYOffset = 0;
+		stitchDpr = 0;
+		// Canvas dimensions set on first drawCapture when we know image size
+	}
+
+	if (message.action === "drawCapture") {
+		let img = new Image();
+		img.onload = function() {
+			let imgWidth = img.naturalWidth;
+			let imgHeight = img.naturalHeight;
+
+			if (message.index === 0) {
+				// First capture: initialize canvas dimensions
+				stitchDpr = imgHeight / stitchViewportHeight;
+				let maxHeight = 16384;
+				if (stitchContentHeight > 0) {
+					maxHeight = Math.min(Math.round(stitchContentHeight * stitchDpr), 16384);
+				}
+				stitchCanvas.width = imgWidth;
+				stitchCanvas.height = maxHeight;
+				stitchCtx = stitchCanvas.getContext("2d") as CanvasRenderingContext2D;
+				stitchYOffset = 0;
+
+				// Draw full first capture
+				let drawH = Math.min(imgHeight, stitchCanvas.height);
+				stitchCtx.drawImage(img, 0, 0, imgWidth, drawH, 0, 0, imgWidth, drawH);
+				stitchYOffset = drawH;
+			} else {
+				// Calculate overlap: expected vs actual scroll position
+				let expectedScroll = message.index * stitchViewportHeight;
+				let overlapCss = expectedScroll - message.scrollY;
+				let overlapPx = Math.round(overlapCss * stitchDpr);
+
+				let srcY = 0;
+				let srcH = imgHeight;
+				if (overlapPx > 0 && overlapPx < imgHeight) {
+					srcY = overlapPx;
+					srcH = imgHeight - overlapPx;
+				}
+
+				// Cap at canvas height
+				let remaining = stitchCanvas.height - stitchYOffset;
+				if (remaining <= 0) {
+					port.postMessage({ action: "drawComplete" });
+					return;
+				}
+				if (srcH > remaining) {
+					srcH = remaining;
+				}
+
+				stitchCtx.drawImage(img, 0, srcY, imgWidth, srcH, 0, stitchYOffset, imgWidth, srcH);
+				stitchYOffset += srcH;
+			}
+
+			port.postMessage({ action: "drawComplete" });
+		};
+		img.onerror = function() {
+			port.postMessage({ action: "drawComplete" });
+		};
+		img.src = message.dataUrl;
+	}
+
+	if (message.action === "finalize") {
+		// Trim canvas if content was shorter than estimated
+		if (stitchYOffset < stitchCanvas.height && stitchYOffset > 0) {
+			let trimmed = document.createElement("canvas");
+			trimmed.width = stitchCanvas.width;
+			trimmed.height = stitchYOffset;
+			let trimCtx = trimmed.getContext("2d") as CanvasRenderingContext2D;
+			trimCtx.drawImage(stitchCanvas, 0, 0, stitchCanvas.width, stitchYOffset, 0, 0, stitchCanvas.width, stitchYOffset);
+			stitchCanvas = trimmed;
+		}
+
+		// Convert to JPEG data URL and store in session storage
+		stitchCanvas.toBlob(((blob: Blob) => {
+			let reader = new FileReader();
+			reader.onloadend = function() {
+				chrome.storage.session.set({ fullPageFinalImage: reader.result }, function() {
+					port.postMessage({ action: "finalizeComplete" });
+				});
+			};
+			reader.readAsDataURL(blob);
+		}) as BlobCallback, "image/jpeg", 0.9);
 	}
 });
 
