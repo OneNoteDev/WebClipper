@@ -242,17 +242,21 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				let lastScrollY: number = -1;
 
 				let cleaned = false;
-				let cleanup = () => {
+				let cleanup = (removeOutputKeys?: boolean) => {
 					if (cleaned) { return; }
 					cleaned = true;
 					this.activeRendererCleanup = () => { /* no-op */ };
 					try { port.disconnect(); } catch (e) { /* ignore */ }
 					WebExtension.browser.windows.remove(renderWindowId);
-					chrome.storage.session.remove([
+					let keysToRemove = [
 						"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText"
-					]);
+					];
+					if (removeOutputKeys) {
+						keysToRemove.push("fullPageScreenshots", "fullPageScrollData");
+					}
+					chrome.storage.session.remove(keysToRemove);
 				};
-				this.activeRendererCleanup = cleanup;
+				this.activeRendererCleanup = () => { cleanup(true); };
 
 				port.onMessage.addListener((message: any) => {
 					if (message.action === "ready") {
@@ -279,7 +283,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						contentHeight = message.contentHeight;
 
 						if (!viewportHeight) {
-							cleanup();
+							cleanup(true);
 							resolve([]);
 							return;
 						}
@@ -292,7 +296,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 							WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "jpeg", quality: 95 }, (dataUrl: string) => {
 								if (!dataUrl) {
 									// Capture failed (window occluded/unfocused) — abort and fail
-									cleanup();
+									cleanup(true);
 									resolve({ success: false } as any);
 									return;
 								}
@@ -314,7 +318,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									|| (captureCount * viewportHeight) >= maxCaptureHeight;
 
 								if (atBottom) {
-									cleanup();
+									// Write output BEFORE cleanup — cleanup async-removes
+									// these same keys, so set() must complete first.
 									chrome.storage.session.set({
 										fullPageScreenshots: dataUrls,
 										fullPageScrollData: {
@@ -322,6 +327,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 											viewportHeight: viewportHeight
 										}
 									}, () => {
+										cleanup();
 										resolve({ success: true, count: dataUrls.length, format: "jpeg", cssWidth: renderWidth, contentHeight: contentHeight } as any);
 									});
 								} else {

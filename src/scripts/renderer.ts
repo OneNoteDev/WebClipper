@@ -198,11 +198,13 @@ port.onMessage.addListener((message: any) => {
 
 				let iframeWin = iframe.contentWindow;
 
-				// Block user interaction inside the iframe to prevent scrolling during capture
-				iframeDoc.addEventListener("keydown", function(e: Event) { e.preventDefault(); }, true);
-				iframeDoc.addEventListener("mousedown", function(e: Event) { e.preventDefault(); }, true);
-				iframeDoc.addEventListener("wheel", function(e: Event) { e.preventDefault(); }, { capture: true, passive: false } as any);
-				iframeDoc.addEventListener("touchstart", function(e: Event) { e.preventDefault(); }, { capture: true, passive: false } as any);
+				// Block all user interaction inside the iframe during capture
+				let blockIframeEvent = function(e: Event) { e.preventDefault(); e.stopPropagation(); };
+				for (let evt of ["keydown", "mousedown", "click", "pointerdown", "contextmenu", "selectstart"]) {
+					iframeDoc.addEventListener(evt, blockIframeEvent, true);
+				}
+				iframeDoc.addEventListener("wheel", blockIframeEvent, { capture: true, passive: false } as any);
+				iframeDoc.addEventListener("touchstart", blockIframeEvent, { capture: true, passive: false } as any);
 
 				// Wait for images to load before neutralizing positioning
 				let iframeImgs = iframeDoc.querySelectorAll("img");
@@ -297,10 +299,12 @@ port.onMessage.addListener((message: any) => {
 	}
 });
 
-// Block all user interaction
-document.addEventListener("keydown", (e) => { e.preventDefault(); }, true);
-document.addEventListener("mousedown", (e) => { e.preventDefault(); }, true);
-document.addEventListener("wheel", (e) => { e.preventDefault(); }, { capture: true, passive: false } as any);
+// Block all user interaction on host page
+let blockEvent = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
+for (let evt of ["keydown", "mousedown", "click", "pointerdown", "contextmenu", "selectstart"]) {
+	document.addEventListener(evt, blockEvent, true);
+}
+document.addEventListener("wheel", blockEvent, { capture: true, passive: false } as any);
 
 // Signal that the renderer is ready
 port.postMessage({ action: "ready" });
