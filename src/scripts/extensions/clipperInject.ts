@@ -83,6 +83,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 		try {
 			this.updateUiSizeAttributes();
 			this.overrideTransformStyles(document.documentElement);
+			this.setBackgroundAccessibility(true);
 
 			this.logger = new CommunicatorLoggerPure(this.uiCommunicator);
 
@@ -316,6 +317,7 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.hideUi, () => {
 			this.frame.style.display = "none";
+			this.setBackgroundAccessibility(false);
 		});
 
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.refreshPage, () => {
@@ -375,8 +377,23 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 	private toggleClipper() {
 		if (this.frame.style.display === "none") {
 			this.frame.style.display = "";
+			this.setBackgroundAccessibility(true);
 		}
 		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.toggleClipper);
+	}
+
+	/**
+	 * Sets the accessibility state of the background page content.
+	 * When the clipper is open, background content should be hidden from assistive technologies
+	 * to prevent Voice Access and other AT tools from interacting with background elements.
+	 * @param hideFromAT - If true, hides background from assistive technologies; if false, restores accessibility
+	 */
+	private setBackgroundAccessibility(hideFromAT: boolean) {
+		if (hideFromAT) {
+			document.body.setAttribute("aria-hidden", "true");
+		} else {
+			document.body.removeAttribute("aria-hidden");
+		}
 	}
 
 	private toScrubbedHtml(content: string): string {
