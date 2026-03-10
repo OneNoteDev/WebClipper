@@ -21,8 +21,20 @@ export class FullPageScreenshotHelper {
 			let correlationId = StringUtils.generateGuid();
 			fullPageScreenshotEvent.setCustomProperty(Log.PropertyName.Custom.CorrelationId, correlationId);
 
-			let statusText = Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.ProgressLabel") || "Capturing page...";
-			let storageData: any = { fullPageHtmlContent: pageInfoContentData, fullPageStatusText: statusText };
+			let storageData: any = {
+				fullPageHtmlContent: pageInfoContentData,
+				fullPageStatusText: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.ProgressLabel") || "Capturing page...",
+				fullPageStrings: {
+					clipperTitle: Localization.getLocalizedString("WebClipper.Label.OneNoteWebClipper") || "OneNote Web Clipper",
+					capturing: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.ProgressLabel") || "Capturing page...",
+					cancel: Localization.getLocalizedString("WebClipper.Action.Cancel") || "Cancel",
+					close: Localization.getLocalizedString("WebClipper.Action.CloseTheClipper") || "Close",
+					captureComplete: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button") || "Capture complete",
+					saveToOneNote: Localization.getLocalizedString("WebClipper.Action.ViewInOneNote") || "Save to OneNote",
+					viewportProgress: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.IncrementalProgress") || "Capturing {0} of {1}...",
+					saving: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Saving") || "Saving..."
+				}
+			};
 			if (pageUrl) {
 				storageData.fullPageBaseUrl = pageUrl;
 			}
@@ -45,7 +57,7 @@ export class FullPageScreenshotHelper {
 							chrome.storage.session.get(["fullPageFinalImage"], (stored: any) => {
 								chrome.storage.session.remove([
 									"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText",
-									"fullPageFinalImage", "fullPageStylesheets"
+									"fullPageFinalImage", "fullPageStylesheets", "fullPageStrings"
 								]);
 
 								let dataUrl: string = stored && stored.fullPageFinalImage ? stored.fullPageFinalImage : "";

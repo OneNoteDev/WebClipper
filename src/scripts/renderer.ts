@@ -6,6 +6,14 @@
 // own styles (scrollbar hiding, overflow) don't interfere with the page's CSS.
 let port = chrome.runtime.connect({ name: "renderer" });
 let iframe = document.getElementById("content-frame") as HTMLIFrameElement;
+let previewContainer = document.getElementById("preview-container") as HTMLDivElement;
+
+// Sidebar elements
+let statusText = document.getElementById("status-text") as HTMLDivElement;
+let progressInfo = document.getElementById("progress-info") as HTMLDivElement;
+let progressFill = document.getElementById("progress-bar-fill") as HTMLDivElement;
+let cancelBtn = document.getElementById("cancel-btn") as HTMLButtonElement;
+let saveBtn = document.getElementById("save-btn") as HTMLButtonElement;
 
 // Hidden canvas for incremental stitching — display:none keeps it out of captureVisibleTab
 let stitchCanvas = document.createElement("canvas");
@@ -16,10 +24,25 @@ let stitchYOffset = 0;
 let stitchDpr = 0;
 let stitchViewportHeight = 0;
 let stitchContentHeight = 0;
+let sidebarCssWidth = 322;
+let contentPixelWidth = 0; // set on first capture, excludes sidebar
 
-// Set title bar as status indicator — no overlay needed
-chrome.storage.session.get(["fullPageStatusText"], (stored: any) => {
+let sidebarTitle = document.getElementById("sidebar-title") as HTMLSpanElement;
+
+// Localized strings — loaded from session storage, set by fullPageScreenshotHelper
+let strings: any = { clipperTitle: "OneNote Web Clipper", capturing: "Capturing page...", cancel: "Cancel", close: "Close", captureComplete: "Capture complete", saveToOneNote: "Save to OneNote", viewportProgress: "Capturing {0} of {1}...", saving: "Saving..." };
+
+// Cancel button closes the window (port disconnect triggers cleanup in worker)
+cancelBtn.addEventListener("click", () => { window.close(); });
+
+// Load localized strings and set title bar
+chrome.storage.session.get(["fullPageStatusText", "fullPageStrings"], (stored: any) => {
 	document.title = stored && stored.fullPageStatusText ? stored.fullPageStatusText : "Capturing page...";
+	if (stored && stored.fullPageStrings) {
+		strings = stored.fullPageStrings;
+		sidebarTitle.textContent = strings.clipperTitle;
+		cancelBtn.textContent = strings.cancel;
+	}
 });
 
 port.onMessage.addListener((message: any) => {
@@ -313,10 +336,19 @@ port.onMessage.addListener((message: any) => {
 		stitchContentHeight = message.contentHeight;
 		stitchYOffset = 0;
 		stitchDpr = 0;
-		// Canvas dimensions set on first drawCapture when we know image size
+		contentPixelWidth = 0;
+		statusText.textContent = strings.capturing;
 	}
 
 	if (message.action === "drawCapture") {
+		// Update sidebar progress
+		if (message.totalViewports) {
+			let current = message.index + 1;
+			let total = message.totalViewports;
+			progressInfo.textContent = strings.viewportProgress.replace("{0}", current).replace("{1}", total);
+			progressFill.style.width = Math.round((current / total) * 100) + "%";
+		}
+
 		let img = new Image();
 		img.onload = function() {
 			let imgWidth = img.naturalWidth;
@@ -325,19 +357,22 @@ port.onMessage.addListener((message: any) => {
 			if (message.index === 0) {
 				// First capture: initialize canvas dimensions
 				stitchDpr = imgHeight / stitchViewportHeight;
+				// Exclude sidebar pixels from the canvas — only keep content area
+				contentPixelWidth = imgWidth - Math.round(sidebarCssWidth * stitchDpr);
+				if (contentPixelWidth <= 0) { contentPixelWidth = imgWidth; }
 				let maxHeight = 16384;
 				if (stitchContentHeight > 0) {
 					maxHeight = Math.min(Math.round(stitchContentHeight * stitchDpr), 16384);
 				}
-				stitchCanvas.width = imgWidth;
+				stitchCanvas.width = contentPixelWidth;
 				stitchCanvas.height = maxHeight;
 				stitchCtx = stitchCanvas.getContext("2d") as CanvasRenderingContext2D;
 				stitchCtx.imageSmoothingEnabled = false;
 				stitchYOffset = 0;
 
-				// Draw full first capture
+				// Draw first capture (content area only, excluding sidebar)
 				let drawH = Math.min(imgHeight, stitchCanvas.height);
-				stitchCtx.drawImage(img, 0, 0, imgWidth, drawH, 0, 0, imgWidth, drawH);
+				stitchCtx.drawImage(img, 0, 0, contentPixelWidth, drawH, 0, 0, contentPixelWidth, drawH);
 				stitchYOffset = drawH;
 			} else {
 				// Calculate overlap: expected vs actual scroll position
@@ -362,7 +397,7 @@ port.onMessage.addListener((message: any) => {
 					srcH = remaining;
 				}
 
-				stitchCtx.drawImage(img, 0, srcY, imgWidth, srcH, 0, stitchYOffset, imgWidth, srcH);
+				stitchCtx.drawImage(img, 0, srcY, contentPixelWidth, srcH, 0, stitchYOffset, contentPixelWidth, srcH);
 				stitchYOffset += srcH;
 			}
 
@@ -390,13 +425,36 @@ port.onMessage.addListener((message: any) => {
 		stitchCanvas.toBlob(((blob: Blob) => {
 			let reader = new FileReader();
 			reader.onloadend = function() {
-				chrome.storage.session.set({ fullPageFinalImage: reader.result }, function() {
+				let dataUrl = reader.result as string;
+				chrome.storage.session.set({ fullPageFinalImage: dataUrl }, function() {
+					// Show preview: swap iframe for scrollable image
+					iframe.style.display = "none";
+					previewContainer.style.display = "block";
+					let previewImg = document.createElement("img");
+					previewImg.src = dataUrl;
+					previewContainer.appendChild(previewImg);
+
+					// Update sidebar to preview mode
+					statusText.textContent = strings.captureComplete;
+					progressInfo.textContent = "";
+					progressFill.style.width = "100%";
+					cancelBtn.textContent = strings.close;
+					saveBtn.textContent = strings.saveToOneNote;
+					saveBtn.style.display = "block";
+
 					port.postMessage({ action: "finalizeComplete" });
 				});
 			};
 			reader.readAsDataURL(blob);
 		}) as BlobCallback, "image/jpeg", 0.95);
 	}
+});
+
+// Save button triggers clip via port
+saveBtn.addEventListener("click", () => {
+	saveBtn.disabled = true;
+	saveBtn.textContent = strings.saving;
+	port.postMessage({ action: "save" });
 });
 
 // Block keyboard and scroll — pointer events blocked by iframe pointer-events:none

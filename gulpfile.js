@@ -83,9 +83,13 @@ gulp.task("clean", ["cleanInternal"], function(callback) {
 // COMPILE CSS
 ////////////////////////////////////////
 gulp.task("compileLess", function() {
-    return gulp.src(PATHS.SRC.ROOT + "styles/clipper.less")
+    var clipperCss = gulp.src(PATHS.SRC.ROOT + "styles/clipper.less")
         .pipe(less())
         .pipe(gulp.dest(PATHS.BUILDROOT + "css"));
+    var rendererCss = gulp.src(PATHS.SRC.ROOT + "styles/renderer.less")
+        .pipe(less())
+        .pipe(gulp.dest(PATHS.BUILDROOT + "css"));
+    return merge(clipperCss, rendererCss);
 });
 
 gulp.task("compileRtlCss", function() {

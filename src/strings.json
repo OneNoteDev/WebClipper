@@ -59,6 +59,8 @@
 	"WebClipper.ClipType.ScreenShot.Button": "Full Page",
 	"WebClipper.ClipType.ScreenShot.Button.Tooltip": "Take a screenshot of the whole page, just like you see it.",
 	"WebClipper.ClipType.ScreenShot.ProgressLabel": "Clipping Page",
+	"WebClipper.ClipType.ScreenShot.IncrementalProgress": "Capturing {0} of {1}...",
+	"WebClipper.ClipType.ScreenShot.Saving": "Saving...",
 	"WebClipper.ClipType.Selection.Button": "Selection",
 	"WebClipper.ClipType.Selection.Button.Tooltip": "Clip the selection you made on the web page.",
 	"WebClipper.ClipType.Selection.ProgressLabel": "Clipping Selection",

@@ -228,7 +228,9 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 			// Position renderer directly behind the user's window to hide it
 			WebExtension.browser.windows.getCurrent((currentWindow: chrome.windows.Window) => {
-			let renderWidth = Math.min(currentWindow ? currentWindow.width : 1280, 1280);
+			let sidebarWidth = 322;
+			let contentWidth = Math.min(currentWindow && currentWindow.width ? currentWindow.width : 1280, 1280);
+			let renderWidth = contentWidth + sidebarWidth;
 			let renderHeight = currentWindow ? currentWindow.height : 768;
 			let renderLeft = currentWindow ? currentWindow.left : 0;
 			let renderTop = currentWindow ? currentWindow.top : 0;
@@ -315,12 +317,14 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									}
 
 									// Send capture to renderer for incremental stitching
+									let estimatedTotal = Math.ceil((contentHeight || lastScrollData.pageHeight) / viewportHeight);
 									port.postMessage({
 										action: "drawCapture",
 										dataUrl: dataUrl,
 										index: captureCount,
 										scrollY: lastScrollData.scrollY,
-										viewportHeight: viewportHeight
+										viewportHeight: viewportHeight,
+										totalViewports: Math.max(estimatedTotal, captureCount + 1)
 									});
 								});
 							});
@@ -349,7 +353,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					if (message.action === "finalizeComplete") {
 						let count = captureCount;
 						cleanup();
-						resolve({ success: true, count: count, format: "jpeg", cssWidth: renderWidth } as any);
+						resolve({ success: true, count: count, format: "jpeg", cssWidth: contentWidth } as any);
 					}
 				});
 			};

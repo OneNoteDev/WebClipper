@@ -1,0 +1,89 @@
+// Renderer window styles — sidebar panel for capture progress and preview
+// Color values match OneNote branding from clipper.less
+
+@OneNotePurple: #7321a6;
+@DarkBackgroundColor: #56197c;
+@DarkHoverColor: #8f4db8;
+
+// Layout
+html, body {
+	margin: 0; padding: 0; overflow: hidden;
+	width: 100%; height: 100%;
+	font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+body { display: flex; }
+
+// Content area — page renders here during capture
+iframe#content-frame {
+	flex: 1; min-width: 0; height: 100%;
+	border: none; display: block; pointer-events: none;
+}
+
+// Preview area — shown after capture with scrollable image
+#preview-container {
+	flex: 1; min-width: 0; height: 100%;
+	overflow-y: auto; display: none;
+	background: #f3f2f1;
+	img { width: 100%; display: block; }
+}
+
+// Sidebar panel
+#sidebar {
+	width: 322px; flex-shrink: 0; height: 100%;
+	background: @DarkBackgroundColor; color: #fff;
+	display: flex; flex-direction: column;
+	box-sizing: border-box; overflow: hidden;
+}
+
+#sidebar-header {
+	padding: 16px 16px 12px;
+	border-bottom: 1px solid rgba(255,255,255,0.12);
+	display: flex; align-items: center; gap: 10px;
+	img { width: 28px; height: 28px; }
+	.title { font-size: 14px; font-weight: 600; }
+}
+
+#sidebar-body {
+	flex: 1; padding: 20px 16px;
+	display: flex; flex-direction: column; gap: 14px;
+}
+
+#status-text { font-size: 14px; font-weight: 400; }
+#progress-info { font-size: 12px; opacity: 0.7; }
+
+#progress-bar-track {
+	height: 3px; background: rgba(255,255,255,0.2);
+	border-radius: 2px; overflow: hidden;
+}
+#progress-bar-fill {
+	height: 100%; background: @DarkHoverColor;
+	border-radius: 2px; width: 0%;
+	transition: width 0.3s ease;
+}
+
+// Buttons
+.sidebar-btn {
+	width: 100%; padding: 10px 0; border: none; border-radius: 3px;
+	font-size: 14px; font-family: inherit; cursor: pointer;
+	font-weight: 600; transition: background 0.15s;
+}
+
+#cancel-btn {
+	background: rgba(255,255,255,0.12); color: #fff;
+	margin-top: auto;
+	&:hover { background: rgba(255,255,255,0.22); }
+}
+
+#save-btn {
+	background: @OneNotePurple; color: #fff; display: none;
+	&:hover { background: @DarkHoverColor; }
+}
+
+#sidebar-footer {
+	padding: 10px 16px;
+	border-top: 1px solid rgba(255,255,255,0.12);
+	font-size: 11px; opacity: 0.4; text-align: center;
+}
+
+// Hide scrollbars globally
+::-webkit-scrollbar { display: none; }

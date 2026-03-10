@@ -2,15 +2,25 @@
 <html>
 <head>
 <title></title>
-<style>
-/* Host page: just the iframe container. No styles leak into captured content. */
-::-webkit-scrollbar { display: none; }
-html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; }
-iframe#content-frame { width: 100%; height: 100%; border: none; display: block; pointer-events: none; }
-</style>
+<link rel="stylesheet" href="renderer.css">
 </head>
 <body>
 <iframe id="content-frame"></iframe>
+<div id="preview-container"></div>
+<div id="sidebar">
+	<div id="sidebar-header">
+		<img src="images/onenote_logo_clipper.png" alt="">
+		<span class="title" id="sidebar-title">OneNote Web Clipper</span>
+	</div>
+	<div id="sidebar-body">
+		<div id="status-text">Preparing capture...</div>
+		<div id="progress-info"></div>
+		<div id="progress-bar-track"><div id="progress-bar-fill"></div></div>
+		<button id="save-btn" class="sidebar-btn">Save to OneNote</button>
+		<button id="cancel-btn" class="sidebar-btn">Cancel</button>
+	</div>
+	<div id="sidebar-footer">OneNote Web Clipper</div>
+</div>
 <script src="renderer.js"></script>
 </body>
 </html>
