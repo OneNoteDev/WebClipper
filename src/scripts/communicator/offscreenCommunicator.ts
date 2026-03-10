@@ -1,7 +1,10 @@
-import {WebExtension} from "../extensions/webExtensionBase/webExtension";
 import {OffscreenMessageTypes} from "./offscreenMessageTypes";
 
 let creating: Promise<void>; // A global promise to avoid concurrency issues
+
+// Use chrome API directly — WebExtension.browser is only initialized in the
+// service worker context, but this module is also imported by the clipper UI.
+let offscreenUrl = chrome.runtime.getURL("offscreen.html");
 
 // This function performs basic filtering and error checking on messages before
 // dispatching the message to a more specific message handler.
@@ -27,17 +30,21 @@ async function handleResponse(message): Promise<string> {
 }
 
 export async function sendToOffscreenDocument(type: string, data: any): Promise<string> {
-	const existingContexts = await WebExtension.browser.runtime.getContexts({
-		contextTypes: [WebExtension.browser.runtime.ContextType.OFFSCREEN_DOCUMENT],
-		documentUrls: [WebExtension.offscreenUrl]
+	// Access newer Chrome APIs via runtime references to avoid hardcoded strings
+	let chromeRuntime = chrome.runtime as any;
+	let chromeOffscreen = (chrome as any).offscreen;
+
+	const existingContexts = await chromeRuntime.getContexts({
+		contextTypes: [chromeRuntime.ContextType.OFFSCREEN_DOCUMENT],
+		documentUrls: [offscreenUrl]
 	});
 
 	if (creating) {
 		await creating;
 	} else if (existingContexts.length === 0) {
-		creating = WebExtension.browser.offscreen.createDocument({
-			url: WebExtension.offscreenUrl,
-			reasons: [WebExtension.browser.offscreen.Reason.DOM_PARSER],
+		creating = chromeOffscreen.createDocument({
+			url: offscreenUrl,
+			reasons: [chromeOffscreen.Reason.DOM_PARSER],
 			justification: "Parse DOM",
 		});
 		await creating;
@@ -45,18 +52,12 @@ export async function sendToOffscreenDocument(type: string, data: any): Promise<
 	}
 
 	return new Promise<string>(resolve => {
-		WebExtension.browser.runtime.sendMessage(JSON.stringify({
+		chrome.runtime.sendMessage(JSON.stringify({
 			type: type,
 			target: "offscreen",
 			data: data
 		}), (message) => {
 			handleResponse(message).then((result) => {
-				/**
-				 * Commenting out the following line in order to always keep 1 offscreen document open
-				 * so as to avoid concurrency issues with multiple offscreen documents.
-				 * TODO: Investigate if there is a better way to handle concurrency issues.
-				 */
-				// WebExtension.browser.offscreen.closeDocument();
 				resolve(result);
 			});
 		});

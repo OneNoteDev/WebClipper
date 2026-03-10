@@ -39,6 +39,15 @@ port.onMessage.addListener((message: any) => {
 			let parser = new DOMParser();
 			let doc = parser.parseFromString(cleanHtml, "text/html");
 
+			// Remove script-related link tags that trigger CSP violations on extension pages
+			let scriptLinks = doc.querySelectorAll('link[rel="preload"][as="script"], link[rel="modulepreload"], link[rel="prefetch"][as="script"]');
+			for (let i = scriptLinks.length - 1; i >= 0; i--) {
+				let parent = scriptLinks[i].parentNode;
+				if (parent) {
+					parent.removeChild(scriptLinks[i]);
+				}
+			}
+
 			// Rewrite relative URLs to absolute
 			if (baseUrl) {
 				let resolveUrl = (relative: string): string => {

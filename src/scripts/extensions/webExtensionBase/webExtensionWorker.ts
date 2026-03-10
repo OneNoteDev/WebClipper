@@ -305,20 +305,23 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					if (message.action === "scrollResult") {
 						lastScrollData = { scrollY: message.scrollY, pageHeight: message.pageHeight };
 						setTimeout(() => {
-							WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "png" }, (dataUrl: string) => {
-								if (!dataUrl) {
-									cleanup();
-									resolve({ success: false } as any);
-									return;
-								}
+							// Re-focus renderer window before capture — handles user clicking away
+							WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+								WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "png" }, (dataUrl: string) => {
+									if (!dataUrl) {
+										cleanup();
+										resolve({ success: false } as any);
+										return;
+									}
 
-								// Send capture to renderer for incremental stitching
-								port.postMessage({
-									action: "drawCapture",
-									dataUrl: dataUrl,
-									index: captureCount,
-									scrollY: lastScrollData.scrollY,
-									viewportHeight: viewportHeight
+									// Send capture to renderer for incremental stitching
+									port.postMessage({
+										action: "drawCapture",
+										dataUrl: dataUrl,
+										index: captureCount,
+										scrollY: lastScrollData.scrollY,
+										viewportHeight: viewportHeight
+									});
 								});
 							});
 						}, 500);
