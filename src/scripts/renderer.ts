@@ -4,8 +4,11 @@
 //
 // Content is rendered inside an iframe for CSS isolation — the renderer's
 // own styles (scrollbar hiding, overflow) don't interfere with the page's CSS.
+import {Readability} from "@mozilla/readability";
+
 let port = chrome.runtime.connect({ name: "renderer" });
 let iframe = document.getElementById("content-frame") as HTMLIFrameElement;
+let previewFrame = document.getElementById("preview-frame") as HTMLIFrameElement;
 let previewContainer = document.getElementById("preview-container") as HTMLDivElement;
 
 // Sidebar elements
@@ -14,6 +17,15 @@ let progressInfo = document.getElementById("progress-info") as HTMLDivElement;
 let progressFill = document.getElementById("progress-bar-fill") as HTMLDivElement;
 let cancelBtn = document.getElementById("cancel-btn") as HTMLButtonElement;
 let saveBtn = document.getElementById("save-btn") as HTMLButtonElement;
+
+// Mode panel elements
+let capturePanel = document.getElementById("capture-panel") as HTMLDivElement;
+
+// Metadata elements
+let titleField = document.getElementById("title-field") as HTMLTextAreaElement;
+let noteField = document.getElementById("note-field") as HTMLTextAreaElement;
+let sourceUrl = document.getElementById("source-url") as HTMLDivElement;
+let sectionDropdown = document.getElementById("section-dropdown") as HTMLSelectElement;
 
 // Hidden canvas for incremental stitching — display:none keeps it out of captureVisibleTab
 let stitchCanvas = document.createElement("canvas");
@@ -29,20 +41,503 @@ let contentPixelWidth = 0; // set on first capture, excludes sidebar
 
 let sidebarTitle = document.getElementById("sidebar-title") as HTMLSpanElement;
 
-// Localized strings — loaded from session storage, set by fullPageScreenshotHelper
-let strings: any = { clipperTitle: "OneNote Web Clipper", capturing: "Capturing page...", cancel: "Cancel", close: "Close", captureComplete: "Capture complete", saveToOneNote: "Save to OneNote", viewportProgress: "Capturing {0} of {1}...", saving: "Saving..." };
+// Mode state
+let currentMode = "fullpage";
+let fullPageComplete = false;
+let saveDone = false;
+let articleLoaded = false;
+let cachedArticleHtml = ""; // Readability result, extracted lazily from content-frame DOM
+let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from content-frame DOM
+let bookmarkLoaded = false;
+let contentDocReady = false; // true once content-frame has loaded HTML
+
+// --- Localization ---
+// Read localized strings directly from localStorage (shared extension origin, populated by extensionBase)
+// Falls back to bundled English defaults if not available
+let locStrings: any = {};
+try {
+	let raw = localStorage.getItem("locStrings");
+	if (raw) { locStrings = JSON.parse(raw); }
+} catch (e) { /* ignore */ }
+
+function loc(key: string, fallback: string): string {
+	return (locStrings && locStrings[key]) || fallback;
+}
+
+let strings = {
+	clipperTitle: loc("WebClipper.Label.OneNoteWebClipper", "OneNote Web Clipper"),
+	capturing: loc("WebClipper.ClipType.ScreenShot.ProgressLabel", "Capturing page..."),
+	cancel: loc("WebClipper.Action.Cancel", "Cancel"),
+	close: loc("WebClipper.Action.CloseTheClipper", "Close"),
+	captureComplete: "Capture complete",
+	saveToOneNote: loc("WebClipper.Action.Clip", "Clip"),
+	viewInOneNote: loc("WebClipper.Action.ViewInOneNote", "View in OneNote"),
+	viewportProgress: loc("WebClipper.ClipType.ScreenShot.IncrementalProgress", "Capturing {0} of {1}..."),
+	saving: loc("WebClipper.ClipType.ScreenShot.Saving", "Saving..."),
+	modeFullPage: loc("WebClipper.ClipType.ScreenShot.Button", "Full Page"),
+	modeArticle: loc("WebClipper.ClipType.Article.Button", "Article"),
+	modeBookmark: loc("WebClipper.ClipType.Bookmark.Button", "Bookmark"),
+	modeRegion: loc("WebClipper.ClipType.Region.Button", "Region"),
+	titlePlaceholder: loc("WebClipper.Label.PageTitlePlaceholder", "Add a page title..."),
+	notePlaceholder: loc("WebClipper.Label.AnnotationPlaceholder", "Add a note..."),
+	sourceLabel: "Source"
+};
 
 // Cancel button closes the window (port disconnect triggers cleanup in worker)
 cancelBtn.addEventListener("click", () => { window.close(); });
 
-// Load localized strings and set title bar
-chrome.storage.session.get(["fullPageStatusText", "fullPageStrings"], (stored: any) => {
-	document.title = stored && stored.fullPageStatusText ? stored.fullPageStatusText : "Capturing page...";
-	if (stored && stored.fullPageStrings) {
-		strings = stored.fullPageStrings;
-		sidebarTitle.textContent = strings.clipperTitle;
-		cancelBtn.textContent = strings.cancel;
+// Apply localized strings to UI elements
+sidebarTitle.textContent = strings.clipperTitle;
+cancelBtn.textContent = strings.cancel;
+let modeMap: any = { fullpage: strings.modeFullPage, article: strings.modeArticle, bookmark: strings.modeBookmark, region: strings.modeRegion };
+document.querySelectorAll(".mode-btn").forEach((btn) => {
+	let mode = btn.getAttribute("data-mode");
+	if (mode && modeMap[mode]) {
+		let span = btn.querySelector("span");
+		if (span) { span.textContent = modeMap[mode]; }
 	}
+});
+titleField.placeholder = strings.titlePlaceholder;
+noteField.placeholder = strings.notePlaceholder;
+let sourceLabelEl = document.getElementById("source-label");
+if (sourceLabelEl) { sourceLabelEl.textContent = strings.sourceLabel; }
+
+// Load page title and URL from session storage (page-specific, still needs session)
+chrome.storage.session.get(["fullPageStatusText", "fullPageTitle", "fullPageUrl"], (stored: any) => {
+	document.title = strings.clipperTitle;
+	if (stored && stored.fullPageTitle) { titleField.value = stored.fullPageTitle; }
+	if (stored && stored.fullPageUrl) { sourceUrl.textContent = stored.fullPageUrl; sourceUrl.title = stored.fullPageUrl; }
+});
+
+// --- Section picker ---
+// Reads cached notebooks from localStorage (shared extension origin, written by sectionPicker.tsx)
+function populateSectionDropdown() {
+	try {
+		let notebooksJson = localStorage.getItem("notebooks");
+		let curSectionJson = localStorage.getItem("curSection");
+		if (!notebooksJson) {
+			let opt = document.createElement("option");
+			opt.textContent = "No notebooks available";
+			opt.value = "";
+			sectionDropdown.appendChild(opt);
+			return;
+		}
+		let notebooks = JSON.parse(notebooksJson);
+		let curSectionId = "";
+		if (curSectionJson) {
+			try {
+				let cur = JSON.parse(curSectionJson);
+				curSectionId = cur.section ? cur.section.id : "";
+			} catch (e) { /* ignore */ }
+		}
+		sectionDropdown.innerHTML = "";
+		flattenSections(notebooks, sectionDropdown, curSectionId);
+	} catch (e) {
+		let opt = document.createElement("option");
+		opt.textContent = "Error loading notebooks";
+		opt.value = "";
+		sectionDropdown.appendChild(opt);
+	}
+}
+
+function flattenSections(notebooks: any[], dropdown: HTMLSelectElement, selectedId: string) {
+	for (let nb of notebooks) {
+		if (nb.sections) {
+			for (let sec of nb.sections) {
+				let opt = document.createElement("option");
+				opt.value = sec.id;
+				opt.textContent = nb.name + " > " + sec.name;
+				if (sec.id === selectedId) { opt.selected = true; }
+				dropdown.appendChild(opt);
+			}
+		}
+		// Handle section groups (nested)
+		if (nb.sectionGroups) {
+			flattenSectionGroups(nb.sectionGroups, nb.name, dropdown, selectedId);
+		}
+	}
+}
+
+function flattenSectionGroups(groups: any[], parentPath: string, dropdown: HTMLSelectElement, selectedId: string) {
+	for (let group of groups) {
+		let path = parentPath + " > " + group.name;
+		if (group.sections) {
+			for (let sec of group.sections) {
+				let opt = document.createElement("option");
+				opt.value = sec.id;
+				opt.textContent = path + " > " + sec.name;
+				if (sec.id === selectedId) { opt.selected = true; }
+				dropdown.appendChild(opt);
+			}
+		}
+		if (group.sectionGroups) {
+			flattenSectionGroups(group.sectionGroups, path, dropdown, selectedId);
+		}
+	}
+}
+
+populateSectionDropdown();
+
+// Disable non-fullpage mode buttons and Clip button until capture completes
+document.querySelectorAll(".mode-btn").forEach((btn) => {
+	if (btn.getAttribute("data-mode") !== "fullpage") {
+		(btn as HTMLButtonElement).disabled = true;
+		btn.classList.add("disabled");
+	}
+});
+saveBtn.disabled = true;
+// Show initial capture progress
+capturePanel.style.display = "flex";
+statusText.textContent = strings.capturing;
+
+// Persist section selection change and reset save state
+sectionDropdown.addEventListener("change", () => {
+	let selectedOption = sectionDropdown.options[sectionDropdown.selectedIndex];
+	if (selectedOption && selectedOption.value) {
+		let curSection = { path: selectedOption.textContent, section: { id: selectedOption.value, name: selectedOption.textContent } };
+		localStorage.setItem("curSection", JSON.stringify(curSection));
+	}
+	resetSaveState();
+	capturePanel.style.display = (currentMode === "fullpage" && !fullPageComplete) ? "flex" : "none";
+});
+
+// --- UI lock during clip/save ---
+
+function lockSidebar() {
+	// Disable all interactive elements during save round-trip
+	document.querySelectorAll(".mode-btn").forEach((b) => { (b as HTMLButtonElement).disabled = true; });
+	titleField.disabled = true;
+	noteField.disabled = true;
+	sectionDropdown.disabled = true;
+	cancelBtn.disabled = true;
+}
+
+function unlockSidebar() {
+	document.querySelectorAll(".mode-btn").forEach((b) => {
+		if (fullPageComplete || b.getAttribute("data-mode") === "fullpage") {
+			(b as HTMLButtonElement).disabled = false;
+		}
+	});
+	titleField.disabled = false;
+	noteField.disabled = false;
+	sectionDropdown.disabled = false;
+	cancelBtn.disabled = false;
+}
+
+// --- Mode switching ---
+
+function resetSaveState() {
+	saveDone = false;
+	saveBtn.onclick = null; // Clear any "View in OneNote" override
+	saveBtn.textContent = strings.saveToOneNote;
+	saveBtn.disabled = false;
+	cancelBtn.textContent = strings.cancel;
+	cancelBtn.disabled = false;
+	// Reset capture panel
+	capturePanel.style.display = "none";
+	statusText.textContent = "";
+	statusText.innerHTML = "";
+	(document.getElementById("progress-bar-track") as HTMLElement).style.display = "";
+	progressInfo.textContent = "";
+}
+
+function switchToFullPage() {
+	resetSaveState();
+	currentMode = "fullpage";
+	previewFrame.style.display = "none";
+	if (fullPageComplete) {
+		iframe.style.display = "none";
+		previewContainer.style.display = "block";
+		capturePanel.style.display = "none";
+	} else {
+		iframe.style.display = "block";
+		previewContainer.style.display = "none";
+		capturePanel.style.display = "flex";
+		statusText.textContent = strings.capturing;
+		saveBtn.disabled = true;
+	}
+}
+
+function switchToArticle() {
+	resetSaveState();
+	currentMode = "article";
+	// Hide full-page content and preview
+	iframe.style.display = "none";
+	previewContainer.style.display = "none";
+	capturePanel.style.display = "none";
+	// Show preview frame
+	previewFrame.style.display = "block";
+
+	if (!articleLoaded) {
+		loadArticleContent();
+	} else {
+		// Re-render — preview-frame may have been overwritten by another mode
+		renderArticleHtml(cachedArticleHtml);
+		saveBtn.disabled = false;
+		saveBtn.textContent = strings.saveToOneNote;
+	}
+}
+
+function loadArticleContent() {
+	if (cachedArticleHtml) {
+		// Already extracted — render immediately
+		renderArticleHtml(cachedArticleHtml);
+		articleLoaded = true;
+		return;
+	}
+
+	if (contentDocReady) {
+		// Content-frame DOM is ready — run Readability on it
+		extractArticle();
+		return;
+	}
+
+	// Content still loading — show loading message and retry when ready
+	let loadingDoc = previewFrame.contentDocument;
+	if (loadingDoc) {
+		loadingDoc.open();
+		loadingDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>Loading article...</div></body></html>");
+		loadingDoc.close();
+	}
+	let attempts = 0;
+	let waitForContent = () => {
+		if (contentDocReady) {
+			extractArticle();
+		} else if (++attempts < 20) {
+			setTimeout(waitForContent, 500);
+		} else {
+			showArticleError();
+		}
+	};
+	setTimeout(waitForContent, 500);
+}
+
+function extractArticle() {
+	try {
+		// Clone content-frame document — Readability mutates the DOM
+		let iframeDoc = iframe.contentDocument;
+		if (!iframeDoc || !iframeDoc.body) {
+			showArticleError();
+			return;
+		}
+		let docClone = iframeDoc.cloneNode(true) as Document;
+		let reader = new Readability(docClone, { charThreshold: 100 });
+		let article = reader.parse();
+
+		if (article && article.content) {
+			cachedArticleHtml = article.content;
+			renderArticleHtml(cachedArticleHtml);
+			articleLoaded = true;
+			if (currentMode === "article") {
+				saveBtn.disabled = false;
+				saveBtn.textContent = strings.saveToOneNote;
+			}
+		} else {
+			showArticleError();
+		}
+	} catch (e) {
+		showArticleError();
+	}
+}
+
+function showArticleError() {
+	let errDoc = previewFrame.contentDocument;
+	if (errDoc) {
+		errDoc.open();
+		errDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#999;}</style></head><body><div>Article content not available for this page.</div></body></html>");
+		errDoc.close();
+	}
+}
+
+function renderArticleHtml(html: string) {
+	let pDoc = previewFrame.contentDocument;
+	if (!pDoc) { return; }
+	// Wrap article HTML in a styled document for readable preview
+	// Styles match the existing clipper article preview: Verdana 16px, OneNote heading colors
+	let articleCss = "body { font-family: Verdana, sans-serif; font-size: 16px; line-height: 1.6; "
+		+ "max-width: 684px; margin: 24px auto; padding: 0 20px 0 20px; color: #1a1a1a; }"
+		+ "img { max-width: 100%; height: auto; }"
+		+ "a { color: #2e75b5; text-decoration: underline; }"
+		+ "h2 { font-size: 18px; color: rgb(46,117,181); }"
+		+ "h3, h4, h5, h6 { color: rgb(91,155,213); margin-top: 14pt; margin-bottom: 14pt; }"
+		+ "figure { margin-left: 0; }"
+		+ "pre, code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 14px; }"
+		+ "pre { padding: 12px; overflow-x: auto; }"
+		+ "blockquote { border-left: 3px solid rgb(46,117,181); margin-left: 0; padding-left: 16px; color: #555; }"
+		+ "table { border-collapse: collapse; width: 100%; }"
+		+ "td, th { border: 1px solid #ddd; padding: 8px; }";
+	let fullHtml = "<!DOCTYPE html><html><head><style>" + articleCss + "</style></head><body>"
+		+ html
+		+ "</body></html>";
+	pDoc.open();
+	pDoc.write(fullHtml);
+	pDoc.close();
+}
+
+// --- Bookmark mode ---
+
+function switchToBookmark() {
+	resetSaveState();
+	currentMode = "bookmark";
+	iframe.style.display = "none";
+	previewContainer.style.display = "none";
+	capturePanel.style.display = "none";
+	previewFrame.style.display = "block";
+
+	if (!bookmarkLoaded) {
+		loadBookmarkContent();
+	} else {
+		renderBookmarkHtml(cachedBookmarkHtml);
+		saveBtn.disabled = false;
+		saveBtn.textContent = strings.saveToOneNote;
+	}
+}
+
+function loadBookmarkContent() {
+	if (contentDocReady) {
+		extractBookmark();
+		return;
+	}
+	// Content still loading — show loading and retry
+	let loadingDoc = previewFrame.contentDocument;
+	if (loadingDoc) {
+		loadingDoc.open();
+		loadingDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>Loading bookmark...</div></body></html>");
+		loadingDoc.close();
+	}
+	let attempts = 0;
+	let waitForContent = () => {
+		if (contentDocReady) {
+			extractBookmark();
+		} else if (++attempts < 20) {
+			setTimeout(waitForContent, 500);
+		}
+	};
+	setTimeout(waitForContent, 500);
+}
+
+function extractBookmark() {
+	let iframeDoc = iframe.contentDocument;
+	if (!iframeDoc) { return; }
+
+	// Extract metadata from the content-frame DOM (same sources as BookmarkHelper)
+	let pageTitle = titleField.value || iframeDoc.title || "";
+	let pageUrl = sourceUrl.textContent || "";
+
+	// Description: og:description → meta description → twitter:description
+	let description = getMetaContent(iframeDoc, "og:description", "property")
+		|| getMetaContent(iframeDoc, "description", "name")
+		|| getMetaContent(iframeDoc, "twitter:description", "name")
+		|| "";
+	if (description.length > 140) {
+		description = description.substring(0, 140) + "...";
+	}
+
+	// Thumbnail: og:image → twitter:image → first img on page
+	let thumbnailSrc = getMetaContent(iframeDoc, "og:image", "property")
+		|| getMetaContent(iframeDoc, "twitter:image:src", "name")
+		|| getMetaContent(iframeDoc, "twitter:image", "name")
+		|| "";
+	if (!thumbnailSrc) {
+		let firstImg = iframeDoc.querySelector("img[src]");
+		if (firstImg) {
+			let src = firstImg.getAttribute("src");
+			if (src && src.indexOf("data:") !== 0) { thumbnailSrc = src; }
+		}
+	}
+
+	// Build bookmark card HTML
+	let thumbHtml = "";
+	if (thumbnailSrc) {
+		thumbHtml = "<td width=\"112\" style=\"padding-top:9px;vertical-align:top;\">"
+			+ "<img src=\"" + escapeAttr(thumbnailSrc) + "\" width=\"112\" alt=\"thumbnail\" style=\"max-height:112px;object-fit:cover;\">"
+			+ "</td>";
+	}
+
+	let titleHtml = "";
+	if (pageTitle) {
+		titleHtml = "<tr><td><h2 style=\"margin:0;margin-bottom:13px;\">" + escapeHtml(pageTitle) + "</h2></td></tr>";
+	}
+
+	let descHtml = "";
+	if (description) {
+		descHtml = "<tr><td style=\"word-wrap:break-word;\">" + escapeHtml(description) + "</td></tr>";
+	}
+
+	let urlStyle = "white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px;";
+	if (description) { urlStyle += "padding-bottom:13px;"; }
+
+	let secondTdStyle = thumbnailSrc ? "padding-left:16px;" : "";
+
+	cachedBookmarkHtml = "<table style=\"table-layout:auto;border-collapse:collapse;margin-bottom:24px;\">"
+		+ "<tr style=\"vertical-align:top;\">"
+		+ thumbHtml
+		+ "<td style=\"" + secondTdStyle + "\"><table>"
+		+ titleHtml
+		+ "<tr><td style=\"" + urlStyle + "\"><a href=\"" + escapeAttr(pageUrl) + "\" target=\"_blank\" style=\"color:#2e75b5;\">" + escapeHtml(pageUrl) + "</a></td></tr>"
+		+ descHtml
+		+ "</table></td>"
+		+ "</tr></table>";
+
+	bookmarkLoaded = true;
+	renderBookmarkHtml(cachedBookmarkHtml);
+	if (currentMode === "bookmark") {
+		saveBtn.disabled = false;
+		saveBtn.textContent = strings.saveToOneNote;
+	}
+}
+
+function getMetaContent(doc: Document, value: string, attr: string): string {
+	let el = doc.querySelector("meta[" + attr + "=\"" + value + "\"]");
+	return el ? el.getAttribute("content") || "" : "";
+}
+
+function escapeHtml(str: string): string {
+	return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function escapeAttr(str: string): string {
+	return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function renderBookmarkHtml(html: string) {
+	let pDoc = previewFrame.contentDocument;
+	if (!pDoc) { return; }
+	let bookmarkCss = "body { font-family: Verdana, sans-serif; font-size: 16px; line-height: 1.5; "
+		+ "max-width: 684px; margin: 24px auto; padding: 0 20px; color: #1a1a1a; }"
+		+ "a { color: #2e75b5; text-decoration: underline; }"
+		+ "h2 { font-size: 18px; color: rgb(46,117,181); font-weight: normal; }"
+		+ "img { border-radius: 2px; }";
+	let fullHtml = "<!DOCTYPE html><html><head><style>" + bookmarkCss + "</style></head><body>"
+		+ html + "</body></html>";
+	pDoc.open();
+	pDoc.write(fullHtml);
+	pDoc.close();
+}
+
+// Mode button click handlers
+document.querySelectorAll(".mode-btn").forEach((btn) => {
+	btn.addEventListener("click", () => {
+		let mode = btn.getAttribute("data-mode");
+		if (mode === currentMode) { return; }
+		// Block mode switching during active capture — captureVisibleTab needs content-frame visible
+		if (!fullPageComplete && mode !== "fullpage") { return; }
+
+		// Update selected state visually
+		document.querySelectorAll(".mode-btn").forEach((b) => b.classList.remove("selected"));
+		btn.classList.add("selected");
+
+		if (mode === "fullpage") {
+			switchToFullPage();
+		} else if (mode === "article") {
+			switchToArticle();
+		} else if (mode === "bookmark") {
+			switchToBookmark();
+		} else {
+			// Region not yet implemented — don't switch
+			return;
+		}
+	});
 });
 
 port.onMessage.addListener((message: any) => {
@@ -238,6 +733,9 @@ port.onMessage.addListener((message: any) => {
 				iframeDoc.write(fullHtml);
 				iframeDoc.close();
 
+				// DOM is now parsed — Readability can extract article content
+				contentDocReady = true;
+
 				let iframeWin = iframe.contentWindow;
 
 				// Wait for images to load before neutralizing positioning
@@ -427,20 +925,32 @@ port.onMessage.addListener((message: any) => {
 			reader.onloadend = function() {
 				let dataUrl = reader.result as string;
 				chrome.storage.session.set({ fullPageFinalImage: dataUrl }, function() {
-					// Show preview: swap iframe for scrollable image
-					iframe.style.display = "none";
-					previewContainer.style.display = "block";
-					let previewImg = document.createElement("img");
-					previewImg.src = dataUrl;
-					previewContainer.appendChild(previewImg);
+					fullPageComplete = true;
 
-					// Update sidebar to preview mode
-					statusText.textContent = strings.captureComplete;
-					progressInfo.textContent = "";
-					progressFill.style.width = "100%";
-					cancelBtn.textContent = strings.close;
+					// Only update left panel if still viewing Full Page mode
+					if (currentMode === "fullpage") {
+						iframe.style.display = "none";
+						previewContainer.style.display = "block";
+						let previewImg = document.createElement("img");
+						previewImg.src = dataUrl;
+						previewContainer.appendChild(previewImg);
+					} else {
+						// Still create the preview image for later switching
+						let previewImg = document.createElement("img");
+						previewImg.src = dataUrl;
+						previewContainer.appendChild(previewImg);
+					}
+
+					// Update sidebar to preview mode — hide progress, show Clip button
+					capturePanel.style.display = "none";
 					saveBtn.textContent = strings.saveToOneNote;
-					saveBtn.style.display = "block";
+					saveBtn.disabled = false;
+
+					// Re-enable mode buttons now that capture is complete
+					document.querySelectorAll(".mode-btn").forEach((b: Element) => {
+						(b as HTMLButtonElement).disabled = false;
+						b.classList.remove("disabled");
+					});
 
 					port.postMessage({ action: "finalizeComplete" });
 				});
@@ -448,18 +958,83 @@ port.onMessage.addListener((message: any) => {
 			reader.readAsDataURL(blob);
 		}) as BlobCallback, "image/jpeg", 0.95);
 	}
+
+	if (message.action === "saveResult") {
+		if (message.success) {
+			saveDone = true;
+			unlockSidebar();
+			capturePanel.style.display = "none";
+			// Replace Clip with "View in OneNote", keep Cancel as Close
+			if (message.pageUrl) {
+				saveBtn.textContent = strings.viewInOneNote;
+				saveBtn.disabled = false;
+				saveBtn.onclick = () => { window.open(message.pageUrl, "_blank"); window.close(); };
+			} else {
+				saveBtn.textContent = strings.saveToOneNote;
+				saveBtn.disabled = true;
+			}
+			cancelBtn.disabled = false;
+		} else {
+			unlockSidebar();
+			let errorDetail = message.error || "Unknown error";
+			capturePanel.style.display = "flex";
+			progressInfo.textContent = "";
+			progressFill.style.width = "0%";
+			// Hide progress bar in error state — the track line looks like a separator
+			(document.getElementById("progress-bar-track") as HTMLElement).style.display = "none";
+			// Error message first, then expandable diagnostics
+			statusText.innerHTML = escapeHtml(loc("WebClipper.Error.GenericError", "Something went wrong. Please try clipping the page again."))
+				+ "<details style=\"margin-top:8px;font-size:12px;\">"
+				+ "<summary style=\"cursor:pointer;color:rgba(255,255,255,0.8);\">" + escapeHtml(loc("WebClipper.Label.SignInUnsuccessfulMoreInformation", "More information")) + "</summary>"
+				+ "<pre style=\"margin-top:6px;font-size:11px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.2);padding:8px;border-radius:3px;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;\">"
+				+ escapeHtml(errorDetail) + "</pre></details>";
+			saveBtn.textContent = strings.saveToOneNote;
+			saveBtn.disabled = false;
+		}
+	}
 });
 
-// Save button triggers clip via port
+// Save button triggers clip via port — includes title, annotation, mode, and content for OneNote page creation
 saveBtn.addEventListener("click", () => {
+	if (saveDone) { return; } // Post-save: "View in OneNote" onclick handles this
+	lockSidebar();
 	saveBtn.disabled = true;
 	saveBtn.textContent = strings.saving;
-	port.postMessage({ action: "save" });
+	// Show saving status below the buttons
+	capturePanel.style.display = "flex";
+	statusText.textContent = strings.saving;
+	progressInfo.textContent = "";
+	let saveMsg: any = {
+		action: "save",
+		title: titleField.value,
+		annotation: noteField.value,
+		mode: currentMode,
+		sectionId: sectionDropdown.value
+	};
+	// For article/bookmark, include the rendered HTML
+	if (currentMode === "article" && cachedArticleHtml) {
+		saveMsg.contentHtml = cachedArticleHtml;
+	} else if (currentMode === "bookmark" && cachedBookmarkHtml) {
+		saveMsg.contentHtml = cachedBookmarkHtml;
+	}
+	port.postMessage(saveMsg);
 });
 
-// Block keyboard and scroll — pointer events blocked by iframe pointer-events:none
-document.addEventListener("keydown", (e) => { e.preventDefault(); }, true);
-document.addEventListener("wheel", (e) => { e.preventDefault(); }, { capture: true, passive: false } as any);
+// Block keyboard and scroll on non-interactive elements — sidebar inputs stay usable
+document.addEventListener("keydown", (e) => {
+	let tag = (e.target as HTMLElement).tagName;
+	if (tag !== "TEXTAREA" && tag !== "INPUT" && tag !== "BUTTON") {
+		e.preventDefault();
+	}
+}, true);
+document.addEventListener("wheel", (e) => {
+	// Allow scrolling in preview container, preview frame, and sidebar body
+	let target = e.target as HTMLElement;
+	if (target.closest("#preview-container") || target.closest("#sidebar-body")) {
+		return;
+	}
+	e.preventDefault();
+}, { capture: true, passive: false } as any);
 
 // Prevent resize/maximize — snap back to original size
 let origWidth = window.outerWidth;
@@ -468,6 +1043,12 @@ window.addEventListener("resize", () => {
 	if (window.outerWidth !== origWidth || window.outerHeight !== origHeight) {
 		window.resizeTo(origWidth, origHeight);
 	}
+});
+
+// Keep renderer focused — re-focus when user tries to switch away
+window.addEventListener("blur", () => {
+	if (saveDone) { return; } // Don't fight focus after save (user may be viewing in OneNote)
+	setTimeout(() => { window.focus(); }, 100);
 });
 
 // Signal that the renderer is ready

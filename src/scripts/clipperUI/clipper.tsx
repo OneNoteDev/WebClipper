@@ -176,6 +176,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.captureAugmentedContent();
 				this.captureBookmarkContent();
 
+				// If user is signed in, hide the injected sidebar — unified renderer window takes over
+				try {
+					if (localStorage.getItem("isUserLoggedIn") === "true") {
+						Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi);
+					}
+				} catch (e) { /* ignore */ }
+
 				Clipper.logger.setContextProperty(Log.Context.Custom.ContentType, OneNoteApi.ContentType[updatedPageInfo.contentType]);
 			}
 		});
@@ -246,7 +253,7 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 		} else {
 			this.state.setState({ fullPageResult: { status: Status.InProgress } });
 
-			FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData, this.state.pageInfo.rawUrl, this.state.pageInfo.stylesheetCache).then((result) => {
+			FullPageScreenshotHelper.getFullPageScreenshot(this.state.pageInfo.contentData, this.state.pageInfo.rawUrl, this.state.pageInfo.stylesheetCache, this.state.pageInfo ? this.state.pageInfo.contentTitle : "").then((result) => {
 				this.state.setState({ fullPageResult: { data: result, status: Status.Succeeded } });
 			}, () => {
 				this.state.setState({

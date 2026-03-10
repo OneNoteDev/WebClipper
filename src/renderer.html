@@ -6,20 +6,49 @@
 </head>
 <body>
 <iframe id="content-frame"></iframe>
+<iframe id="preview-frame"></iframe>
 <div id="preview-container"></div>
 <div id="sidebar">
 	<div id="sidebar-header">
-		<img src="images/onenote_logo_clipper.png" alt="">
+		<img src="images/onenote_logo_clipper_small.png" alt="">
 		<span class="title" id="sidebar-title">OneNote Web Clipper</span>
 	</div>
 	<div id="sidebar-body">
-		<div id="status-text">Preparing capture...</div>
-		<div id="progress-info"></div>
-		<div id="progress-bar-track"><div id="progress-bar-fill"></div></div>
-		<button id="save-btn" class="sidebar-btn">Save to OneNote</button>
-		<button id="cancel-btn" class="sidebar-btn">Cancel</button>
+		<div id="mode-panel">
+			<button class="mode-btn selected" data-mode="fullpage">
+				<img src="images/fullpage.svg" alt=""><span>Full Page</span>
+			</button>
+			<button class="mode-btn" data-mode="article">
+				<img src="images/article.svg" alt=""><span>Article</span>
+			</button>
+			<button class="mode-btn" data-mode="bookmark">
+				<img src="images/bookmark.svg" alt=""><span>Bookmark</span>
+			</button>
+			<button class="mode-btn" data-mode="region">
+				<img src="images/region.svg" alt=""><span>Region</span>
+			</button>
+		</div>
+		<hr class="sidebar-divider">
+		<div id="meta-panel">
+			<label class="field-label" id="title-label">Title</label>
+			<textarea id="title-field" rows="2" placeholder="Add a page title..."></textarea>
+			<label class="field-label" id="note-label">Note</label>
+			<textarea id="note-field" rows="2" placeholder="Add a note..."></textarea>
+			<label class="field-label" id="source-label">Source</label>
+			<div id="source-url" class="source-url"></div>
+			<label class="field-label" id="section-label">Save to</label>
+			<select id="section-dropdown"></select>
+		</div>
+		<div id="button-row">
+			<button id="cancel-btn">Cancel</button>
+			<button id="save-btn">Clip</button>
+		</div>
+		<div id="capture-panel">
+			<div id="status-text"></div>
+			<div id="progress-info"></div>
+			<div id="progress-bar-track"><div id="progress-bar-fill"></div></div>
+		</div>
 	</div>
-	<div id="sidebar-footer">OneNote Web Clipper</div>
 </div>
 <script src="renderer.js"></script>
 </body>

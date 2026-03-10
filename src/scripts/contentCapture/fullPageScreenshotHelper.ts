@@ -15,7 +15,7 @@ export interface FullPageScreenshotResult extends CaptureFailureInfo {
 }
 
 export class FullPageScreenshotHelper {
-	public static getFullPageScreenshot(pageInfoContentData: string, pageUrl?: string, stylesheetCache?: { [url: string]: { cssText: string; media: string } }): Promise<FullPageScreenshotResult> {
+	public static getFullPageScreenshot(pageInfoContentData: string, pageUrl?: string, stylesheetCache?: { [url: string]: { cssText: string; media: string } }, pageTitle?: string): Promise<FullPageScreenshotResult> {
 		return new Promise<FullPageScreenshotResult>((resolve, reject) => {
 			let fullPageScreenshotEvent = new Log.Event.PromiseEvent(Log.Event.Label.FullPageScreenshotCall);
 			let correlationId = StringUtils.generateGuid();
@@ -29,11 +29,22 @@ export class FullPageScreenshotHelper {
 					capturing: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.ProgressLabel") || "Capturing page...",
 					cancel: Localization.getLocalizedString("WebClipper.Action.Cancel") || "Cancel",
 					close: Localization.getLocalizedString("WebClipper.Action.CloseTheClipper") || "Close",
-					captureComplete: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button") || "Capture complete",
-					saveToOneNote: Localization.getLocalizedString("WebClipper.Action.ViewInOneNote") || "Save to OneNote",
+					captureComplete: "Capture complete",
+					saveToOneNote: Localization.getLocalizedString("WebClipper.Action.Clip") || "Clip",
+					viewInOneNote: Localization.getLocalizedString("WebClipper.Action.ViewInOneNote") || "View in OneNote",
 					viewportProgress: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.IncrementalProgress") || "Capturing {0} of {1}...",
-					saving: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Saving") || "Saving..."
-				}
+					saving: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Saving") || "Saving...",
+					selectClipMode: Localization.getLocalizedString("WebClipper.Label.SelectClipMode") || "Select a clipping mode",
+					modeFullPage: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button") || "Full Page",
+					modeArticle: Localization.getLocalizedString("WebClipper.ClipType.Article.Button") || "Article",
+					modeBookmark: Localization.getLocalizedString("WebClipper.ClipType.Bookmark.Button") || "Bookmark",
+					modeRegion: Localization.getLocalizedString("WebClipper.ClipType.Region.Button") || "Region",
+					titlePlaceholder: Localization.getLocalizedString("WebClipper.Label.PageTitlePlaceholder") || "Add a page title...",
+					notePlaceholder: Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder") || "Add a note...",
+					sourceLabel: "Source"
+				},
+				fullPageTitle: pageTitle || "",
+				fullPageUrl: pageUrl || ""
 			};
 			if (pageUrl) {
 				storageData.fullPageBaseUrl = pageUrl;
@@ -57,7 +68,8 @@ export class FullPageScreenshotHelper {
 							chrome.storage.session.get(["fullPageFinalImage"], (stored: any) => {
 								chrome.storage.session.remove([
 									"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText",
-									"fullPageFinalImage", "fullPageStylesheets", "fullPageStrings"
+									"fullPageFinalImage", "fullPageStylesheets", "fullPageStrings",
+									"fullPageTitle", "fullPageUrl"
 								]);
 
 								let dataUrl: string = stored && stored.fullPageFinalImage ? stored.fullPageFinalImage : "";

@@ -61,6 +61,7 @@
 	"WebClipper.ClipType.ScreenShot.ProgressLabel": "Clipping Page",
 	"WebClipper.ClipType.ScreenShot.IncrementalProgress": "Capturing {0} of {1}...",
 	"WebClipper.ClipType.ScreenShot.Saving": "Saving...",
+	"WebClipper.Label.SelectClipMode": "Select a clipping mode",
 	"WebClipper.ClipType.Selection.Button": "Selection",
 	"WebClipper.ClipType.Selection.Button.Tooltip": "Clip the selection you made on the web page.",
 	"WebClipper.ClipType.Selection.ProgressLabel": "Clipping Selection",

@@ -18,6 +18,8 @@ import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InjectHelper} from "../injectHelper";
 
+import {InvokeInfo} from "../invokeInfo";
+import {InvokeOptions} from "../invokeOptions";
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
@@ -30,6 +32,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private injectUrls: InjectUrls;
 	private noOpTrackerInvoked: boolean;
 	private activeRendererCleanup: () => void;
+	private activeRendererWindowId: number;
 
 	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
 		let messageHandlerThunk = () => { return new WebExtensionBackgroundMessageHandler(tab.id); };
@@ -41,6 +44,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.noOpTrackerInvoked = false;
 
 		this.activeRendererCleanup = () => { /* no-op */ };
+		this.activeRendererWindowId = 0;
 
 		let isPrivateWindow: Boolean = !!tab.incognito || !!tab.inPrivate;
 
@@ -76,6 +80,21 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
 		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
 		fetch(signOutUrl);
+	}
+
+	/**
+	 * Override: if a renderer window is already open, focus it and skip the entire invoke flow.
+	 */
+	public closeAllFramesAndInvokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
+		if (this.activeRendererWindowId) {
+			WebExtension.browser.windows.update(this.activeRendererWindowId, { focused: true }, () => {
+				if (WebExtension.browser.runtime.lastError) {
+					this.activeRendererWindowId = 0;
+				}
+			});
+			return;
+		}
+		super.closeAllFramesAndInvokeClipper(invokeInfo, options);
 	}
 
 	/**
@@ -219,6 +238,17 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 * communicates via chrome.runtime port, then scroll-captures it.
 	 */
 	protected takeFullPageScreenshot(htmlContent: string): Promise<string[]> {
+		// If a renderer window is already open, focus it instead of opening a new one
+		if (this.activeRendererWindowId) {
+			WebExtension.browser.windows.update(this.activeRendererWindowId, { focused: true }, () => {
+				if (WebExtension.browser.runtime.lastError) {
+					// Window no longer exists — clear the ID so next click opens a new one
+					this.activeRendererWindowId = 0;
+				}
+			});
+			return new Promise<string[]>(() => { /* no-op — existing window handles it */ });
+		}
+
 		let rendererUrl = WebExtension.browser.runtime.getURL("renderer.html");
 
 		return new Promise<string[]>((resolve) => {
@@ -247,8 +277,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					if (cleaned) { return; }
 					cleaned = true;
 					this.activeRendererCleanup = () => { /* no-op */ };
+					this.activeRendererWindowId = 0;
 					try { port.disconnect(); } catch (e) { /* ignore */ }
-					WebExtension.browser.windows.remove(renderWindowId);
+					WebExtension.browser.windows.remove(renderWindowId, () => {
+						if (WebExtension.browser.runtime.lastError) { /* window may already be closed */ }
+					});
 					chrome.storage.session.remove([
 						"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText"
 					]);
@@ -351,9 +384,153 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					}
 
 					if (message.action === "finalizeComplete") {
-						let count = captureCount;
-						cleanup();
-						resolve({ success: true, count: count, format: "jpeg", cssWidth: contentWidth } as any);
+						// Keep window alive — user can switch modes, edit title, then save
+						// Window closes when user clicks Cancel/Close (port disconnect) or after save
+					}
+
+					if (message.action === "save") {
+						// Save to OneNote API from unified renderer window
+						let saveMode = message.mode || "fullpage";
+						let saveTitle = message.title || "";
+						let saveAnnotation = message.annotation || "";
+						let saveSectionId = message.sectionId || "";
+						let saveUrl = "";
+
+						// Get page URL from session storage
+						chrome.storage.session.get(["fullPageUrl"], (urlStored: any) => {
+							saveUrl = urlStored && urlStored.fullPageUrl ? urlStored.fullPageUrl : "";
+
+							// Get access token from local storage via offscreen
+							this.clipperData.getValue("userInformation").then((userInfoJson: string) => {
+								let accessToken = "";
+								try {
+									let userInfo = JSON.parse(userInfoJson);
+									accessToken = userInfo && userInfo.data ? userInfo.data.accessToken : "";
+								} catch (e) { /* ignore */ }
+
+								if (!accessToken) {
+									port.postMessage({ action: "saveResult", success: false, error: "Not signed in" });
+									return;
+								}
+
+								// Build OneNote page content based on mode
+								let buildPage = (bodyOnml: string, imageParts: { name: string; blob: Blob; type: string }[]) => {
+									let boundary = "OneNoteRendererBoundary" + Date.now();
+									// UTC offset string — same format as OneNoteApi.OneNotePage.formUtcOffsetString
+									let now = new Date();
+									let offset = now.getTimezoneOffset();
+									let offsetSign = offset >= 0 ? "-" : "+";
+									offset = Math.abs(offset);
+									let offsetHours = Math.floor(offset / 60).toString();
+									let offsetMins = Math.round(offset % 60).toString();
+									if (parseInt(offsetHours, 10) < 10) { offsetHours = "0" + offsetHours; }
+									if (parseInt(offsetMins, 10) < 10) { offsetMins = "0" + offsetMins; }
+									let createdTime = offsetSign + offsetHours + ":" + offsetMins;
+									// Font styling matches OneNoteSaveableFactory.createPostProcessessedHtml
+									let fontStyle = "font-size: 16px; font-family: Verdana;";
+									let presentationHtml = "<!DOCTYPE html><html><head>"
+										+ "<title>" + saveTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</title>"
+										+ "<meta name=\"created\" content=\"" + createdTime + " \">"
+										+ "</head><body>";
+									// Order matches OneNoteSaveableFactory: annotation → citation → content
+									if (saveAnnotation) {
+										let escaped = saveAnnotation.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+										presentationHtml += "<div style=\"" + fontStyle + "\">&quot;" + escaped + "&quot;</div>";
+									}
+									if (saveUrl && saveMode !== "bookmark") {
+										presentationHtml += "<div style=\"" + fontStyle + "\">Clipped from: <a href=\"" + saveUrl + "\">" + saveUrl + "</a></div>";
+									}
+									presentationHtml += bodyOnml;
+									presentationHtml += "</body></html>";
+
+									// Build multipart body
+									let parts: (string | Blob)[] = [];
+									parts.push("--" + boundary + "\r\n");
+									parts.push("Content-Type: application/xhtml+xml\r\n");
+									parts.push("Content-Disposition: form-data; name=\"Presentation\"\r\n\r\n");
+									parts.push(presentationHtml);
+									for (let img of imageParts) {
+										parts.push("\r\n--" + boundary + "\r\n");
+										parts.push("Content-Type: " + img.type + "\r\n");
+										parts.push("Content-Disposition: form-data; name=\"" + img.name + "\"\r\n\r\n");
+										parts.push(img.blob);
+									}
+									parts.push("\r\n--" + boundary + "--\r\n");
+
+									let body = new Blob(parts);
+									let apiUrl = "https://www.onenote.com/api/v1.0/me/notes"
+										+ (saveSectionId ? "/sections/" + encodeURIComponent(saveSectionId) : "")
+										+ "/pages";
+
+									let correlationId = "ON-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+									let requestDate = new Date().toISOString();
+
+									fetch(apiUrl, {
+										method: "POST",
+										headers: {
+											"Authorization": "Bearer " + accessToken,
+											"Content-Type": "multipart/form-data; boundary=" + boundary,
+											"X-CorrelationId": correlationId
+										},
+										body: body
+									}).then((response) => {
+										let serverCorrelation = response.headers.get("X-CorrelationId") || correlationId;
+										let serverRequestId = response.headers.get("X-UserSessionId") || "";
+										if (response.ok) {
+											response.json().then((data) => {
+												let pageUrl = "";
+												try {
+													pageUrl = data && data.links && data.links.oneNoteWebUrl ? data.links.oneNoteWebUrl.href : "";
+												} catch (e) { /* ignore */ }
+												port.postMessage({ action: "saveResult", success: true, pageUrl: pageUrl });
+											}).catch(() => {
+												port.postMessage({ action: "saveResult", success: true, pageUrl: "" });
+											});
+										} else {
+											response.text().then((text) => {
+												let errorMsg = "";
+												try { errorMsg = JSON.parse(text).error.message || text.substring(0, 200); } catch (e) { errorMsg = text.substring(0, 200); }
+												let debugInfo = errorMsg
+													+ "\n\nDate: " + requestDate
+													+ "\nStatus: " + response.status
+													+ "\nX-CorrelationId: " + serverCorrelation
+													+ (serverRequestId ? "\nX-UserSessionId: " + serverRequestId : "");
+												port.postMessage({ action: "saveResult", success: false, error: debugInfo });
+											});
+										}
+									}).catch((err) => {
+										let debugInfo = "Network error: " + (err.message || "Unknown")
+											+ "\nX-CorrelationId: " + correlationId
+											+ "\nDate: " + requestDate;
+										port.postMessage({ action: "saveResult", success: false, error: debugInfo });
+									});
+								};
+
+								if (saveMode === "fullpage") {
+									// Read JPEG from session storage
+									chrome.storage.session.get(["fullPageFinalImage"], (imgStored: any) => {
+										let dataUrl = imgStored && imgStored.fullPageFinalImage ? imgStored.fullPageFinalImage : "";
+										if (dataUrl) {
+											fetch(dataUrl).then((r) => r.blob()).then((blob) => {
+												let imgName = "fullPageImage";
+												let bodyOnml = "<p><img src=\"name:" + imgName + "\" width=\"" + contentWidth + "\" /></p>";
+												buildPage(bodyOnml, [{ name: imgName, blob: blob, type: "image/jpeg" }]);
+											});
+										} else {
+											port.postMessage({ action: "saveResult", success: false, error: "No screenshot data" });
+										}
+									});
+								} else if (saveMode === "article") {
+									let articleHtml = message.contentHtml || "";
+									buildPage(articleHtml, []);
+								} else if (saveMode === "bookmark") {
+									let bookmarkHtml = message.contentHtml || "";
+									buildPage(bookmarkHtml, []);
+								} else {
+									port.postMessage({ action: "saveResult", success: false, error: "Unsupported mode" });
+								}
+							});
+						});
 					}
 				});
 			};
@@ -392,7 +569,17 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					return;
 				}
 				renderWindowId = renderWindow.id;
+				this.activeRendererWindowId = renderWindowId;
 				windowReady = true;
+
+				// Close renderer if the source tab navigates away
+				let onTabUpdated = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
+					if (tabId === this.tab.id && changeInfo.url) {
+						WebExtension.browser.tabs.onUpdated.removeListener(onTabUpdated);
+						this.activeRendererCleanup();
+					}
+				};
+				WebExtension.browser.tabs.onUpdated.addListener(onTabUpdated);
 
 				// If port connected before window.create callback, start now
 				if (pendingPort) {
