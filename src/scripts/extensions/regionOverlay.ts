@@ -8,25 +8,16 @@
 
 	let root = document.createElement("div");
 	root.id = "__regionOverlayRoot";
-	root.style.cssText = "position:fixed;inset:0;z-index:2147483647;cursor:crosshair;";
+	root.style.cssText = "position:fixed;inset:0;z-index:2147483647;cursor:crosshair;overflow:hidden;";
 
 	// Dark overlay canvas — fills viewport, draws "hole" around selection
 	let canvas = document.createElement("canvas");
 	canvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;";
 	root.appendChild(canvas);
 
-	// Selection border
-	let selBox = document.createElement("div");
-	selBox.style.cssText = "position:absolute;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,0.3);display:none;pointer-events:none;";
-	root.appendChild(selBox);
+	// Selection border drawn on canvas (no separate div — avoids alignment gaps)
 
 	document.body.appendChild(root);
-
-	// Hide scrollbar visually but keep scroll functionality (prevents gray bar on right edge)
-	let scrollbarStyle = document.createElement("style");
-	scrollbarStyle.id = "__regionOverlayScrollbarHide";
-	scrollbarStyle.textContent = "html::-webkit-scrollbar{display:none!important}html{scrollbar-width:none!important}";
-	document.head.appendChild(scrollbarStyle);
 
 	let ctx = canvas.getContext("2d")!;
 	let dpr = window.devicePixelRatio || 1;
@@ -63,11 +54,10 @@
 		ctx.fillRect(xMax, 0, w - xMax, h);       // right
 		ctx.fillRect(xMin, yMax, xMax - xMin, h - yMax); // bottom
 
-		selBox.style.display = "block";
-		selBox.style.left = xMin + "px";
-		selBox.style.top = yMin + "px";
-		selBox.style.width = (xMax - xMin) + "px";
-		selBox.style.height = (yMax - yMin) + "px";
+		// Draw selection border directly on canvas (no div — avoids subpixel gaps)
+		ctx.strokeStyle = "#fff";
+		ctx.lineWidth = 2;
+		ctx.strokeRect(xMin + 1, yMin + 1, (xMax - xMin) - 2, (yMax - yMin) - 2);
 	}
 	draw();
 
@@ -130,8 +120,6 @@
 		root.removeEventListener("mouseup", onMouseUp);
 		document.removeEventListener("keydown", onKeyDown, true);
 		window.removeEventListener("resize", resize);
-		let hideStyle = document.getElementById("__regionOverlayScrollbarHide");
-		if (hideStyle) { hideStyle.remove(); }
 		if (root.parentNode) { root.parentNode.removeChild(root); }
 	}
 

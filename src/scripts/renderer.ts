@@ -23,7 +23,12 @@ let capturePanel = document.getElementById("capture-panel") as HTMLDivElement;
 let titleField = document.getElementById("title-field") as HTMLTextAreaElement;
 let noteField = document.getElementById("note-field") as HTMLTextAreaElement;
 let sourceUrl = document.getElementById("source-url") as HTMLDivElement;
-let sectionDropdown = document.getElementById("section-dropdown") as HTMLSelectElement;
+let sectionPicker = document.getElementById("section-picker") as HTMLDivElement;
+let sectionSelected = document.getElementById("section-selected") as HTMLDivElement;
+let sectionListContainer = document.getElementById("section-list-container") as HTMLDivElement;
+let sectionList = document.getElementById("section-list") as HTMLUListElement;
+let selectedSectionId = "";
+let sectionPickerOpen = false;
 
 // Hidden canvas for incremental stitching — display:none keeps it out of captureVisibleTab
 let stitchCanvas = document.createElement("canvas");
@@ -91,7 +96,7 @@ cancelBtn.addEventListener("click", () => { window.close(); });
 
 // Apply localized strings to UI elements
 sidebarTitle.textContent = strings.clipperTitle;
-cancelBtn.textContent = strings.cancel;
+cancelBtn.textContent = strings.close;
 let modeMap: any = { fullpage: strings.modeFullPage, article: strings.modeArticle, bookmark: strings.modeBookmark, region: strings.modeRegion };
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	let mode = btn.getAttribute("data-mode");
@@ -112,17 +117,61 @@ chrome.storage.session.get(["fullPageStatusText", "fullPageTitle", "fullPageUrl"
 	if (stored && stored.fullPageUrl) { sourceUrl.textContent = stored.fullPageUrl; sourceUrl.title = stored.fullPageUrl; }
 });
 
-// --- Section picker ---
-// Reads cached notebooks from localStorage (shared extension origin, written by sectionPicker.tsx)
+// --- Section picker (custom dropdown with scrollable list) ---
+function selectSection(id: string, label: string) {
+	selectedSectionId = id;
+	sectionSelected.textContent = label;
+	sectionSelected.title = label;
+	// Persist selection
+	if (id) {
+		let curSection = { path: label, section: { id: id, name: label } };
+		try { localStorage.setItem("curSection", JSON.stringify(curSection)); } catch (e) { /* ignore */ }
+	}
+	closeSectionPicker();
+	resetSaveState();
+	capturePanel.style.display = (currentMode === "fullpage" && !fullPageComplete) ? "flex" : "none";
+}
+
+function toggleSectionPicker() {
+	if (sectionPickerOpen) {
+		closeSectionPicker();
+	} else {
+		openSectionPicker();
+	}
+}
+
+function openSectionPicker() {
+	sectionListContainer.style.display = "block";
+	sectionPickerOpen = true;
+	// Scroll selected item into view
+	let sel = sectionList.querySelector(".section-item-selected");
+	if (sel) { sel.scrollIntoView({ block: "nearest" }); }
+}
+
+function closeSectionPicker() {
+	sectionListContainer.style.display = "none";
+	sectionPickerOpen = false;
+}
+
+sectionSelected.addEventListener("click", toggleSectionPicker);
+sectionSelected.addEventListener("keydown", (e) => {
+	if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSectionPicker(); }
+});
+// Close dropdown when clicking outside
+document.addEventListener("click", (e) => {
+	if (sectionPickerOpen && !sectionPicker.contains(e.target as Node)) {
+		closeSectionPicker();
+	}
+});
+
 function populateSectionDropdown() {
+	sectionList.innerHTML = "";
 	try {
 		let notebooksJson = localStorage.getItem("notebooks");
 		let curSectionJson = localStorage.getItem("curSection");
 		if (!notebooksJson) {
-			let opt = document.createElement("option");
-			opt.textContent = "No notebooks available";
-			opt.value = "";
-			sectionDropdown.appendChild(opt);
+			sectionSelected.textContent = "No notebooks available";
+			selectedSectionId = "";
 			return;
 		}
 		let notebooks = JSON.parse(notebooksJson);
@@ -133,50 +182,67 @@ function populateSectionDropdown() {
 				curSectionId = cur.section ? cur.section.id : "";
 			} catch (e) { /* ignore */ }
 		}
-		sectionDropdown.innerHTML = "";
-		flattenSections(notebooks, sectionDropdown, curSectionId);
+		flattenSections(notebooks, curSectionId);
+		// If no section was selected, select the first one
+		if (!selectedSectionId) {
+			let first = sectionList.querySelector("li") as HTMLElement;
+			if (first) {
+				selectSection(first.getAttribute("data-id") || "", first.textContent || "");
+			}
+		}
 	} catch (e) {
-		let opt = document.createElement("option");
-		opt.textContent = "Error loading notebooks";
-		opt.value = "";
-		sectionDropdown.appendChild(opt);
+		sectionSelected.textContent = "Error loading notebooks";
+		selectedSectionId = "";
 	}
 }
 
-function flattenSections(notebooks: any[], dropdown: HTMLSelectElement, selectedId: string) {
+function flattenSections(notebooks: any[], preselectedId: string) {
 	for (let nb of notebooks) {
 		if (nb.sections) {
 			for (let sec of nb.sections) {
-				let opt = document.createElement("option");
-				opt.value = sec.id;
-				opt.textContent = nb.name + " > " + sec.name;
-				if (sec.id === selectedId) { opt.selected = true; }
-				dropdown.appendChild(opt);
+				addSectionItem(sec.id, nb.name + " > " + sec.name, preselectedId);
 			}
 		}
-		// Handle section groups (nested)
 		if (nb.sectionGroups) {
-			flattenSectionGroups(nb.sectionGroups, nb.name, dropdown, selectedId);
+			flattenSectionGroups(nb.sectionGroups, nb.name, preselectedId);
 		}
 	}
 }
 
-function flattenSectionGroups(groups: any[], parentPath: string, dropdown: HTMLSelectElement, selectedId: string) {
+function flattenSectionGroups(groups: any[], parentPath: string, preselectedId: string) {
 	for (let group of groups) {
 		let path = parentPath + " > " + group.name;
 		if (group.sections) {
 			for (let sec of group.sections) {
-				let opt = document.createElement("option");
-				opt.value = sec.id;
-				opt.textContent = path + " > " + sec.name;
-				if (sec.id === selectedId) { opt.selected = true; }
-				dropdown.appendChild(opt);
+				addSectionItem(sec.id, path + " > " + sec.name, preselectedId);
 			}
 		}
 		if (group.sectionGroups) {
-			flattenSectionGroups(group.sectionGroups, path, dropdown, selectedId);
+			flattenSectionGroups(group.sectionGroups, path, preselectedId);
 		}
 	}
+}
+
+function addSectionItem(id: string, label: string, preselectedId: string) {
+	let li = document.createElement("li");
+	li.className = "section-item";
+	li.setAttribute("data-id", id);
+	li.textContent = label;
+	li.title = label;
+	if (id === preselectedId) {
+		li.classList.add("section-item-selected");
+		selectedSectionId = id;
+		sectionSelected.textContent = label;
+		sectionSelected.title = label;
+	}
+	li.addEventListener("click", () => {
+		// Remove old selection
+		let prev = sectionList.querySelector(".section-item-selected");
+		if (prev) { prev.classList.remove("section-item-selected"); }
+		li.classList.add("section-item-selected");
+		selectSection(id, label);
+	});
+	sectionList.appendChild(li);
 }
 
 populateSectionDropdown();
@@ -205,6 +271,62 @@ signoutLink.textContent = strings.signOut;
 signoutLink.addEventListener("click", (e) => {
 	e.preventDefault();
 	port.postMessage({ action: "signOut", authType: userAuthType });
+});
+
+// --- Sign-in state detection ---
+let isSignedIn = false;
+try {
+	let uiRaw = localStorage.getItem("userInformation");
+	if (uiRaw) {
+		let ui = JSON.parse(uiRaw);
+		isSignedIn = !!(ui && ui.data && ui.data.accessToken);
+	}
+} catch (e) { /* not signed in */ }
+
+let signinOverlay = document.getElementById("signin-overlay") as HTMLDivElement;
+let sidebarBody = document.getElementById("sidebar-body") as HTMLDivElement;
+let signinError = document.getElementById("signin-error") as HTMLDivElement;
+let signinProgress = document.getElementById("signin-progress") as HTMLDivElement;
+let signinMsaBtn = document.getElementById("signin-msa-btn") as HTMLButtonElement;
+let signinOrgIdBtn = document.getElementById("signin-orgid-btn") as HTMLButtonElement;
+
+function showSignInPanel() {
+	signinOverlay.style.display = "flex";
+}
+
+function hideSignInPanel() {
+	signinOverlay.style.display = "none";
+}
+
+function showSignInProgress() {
+	signinMsaBtn.disabled = true;
+	signinOrgIdBtn.disabled = true;
+	signinProgress.style.display = "block";
+	signinError.style.display = "none";
+}
+
+function showSignInError(msg: string) {
+	signinMsaBtn.disabled = false;
+	signinOrgIdBtn.disabled = false;
+	signinProgress.style.display = "none";
+	signinError.textContent = msg;
+	signinError.style.display = "block";
+}
+
+if (!isSignedIn) {
+	showSignInPanel();
+}
+
+// Sign-in button handlers
+signinMsaBtn.addEventListener("click", () => {
+	signingIn = true;
+	showSignInProgress();
+	port.postMessage({ action: "signIn", authType: "Msa" });
+});
+signinOrgIdBtn.addEventListener("click", () => {
+	signingIn = true;
+	showSignInProgress();
+	port.postMessage({ action: "signIn", authType: "OrgId" });
 });
 
 // --- Auto-fetch fresh notebooks (runs in background during capture) ---
@@ -238,19 +360,16 @@ async function fetchFreshNotebooks() {
 
 		// Store fresh notebooks and repopulate dropdown
 		localStorage.setItem("notebooks", freshJson);
-		let previousSectionId = sectionDropdown.value;
-		sectionDropdown.innerHTML = "";
-		flattenSections(freshNotebooks, sectionDropdown, previousSectionId);
+		let previousSectionId = selectedSectionId;
+		sectionList.innerHTML = "";
+		selectedSectionId = "";
+		flattenSections(freshNotebooks, previousSectionId);
 
-		// If previously selected section no longer exists, persist the new default
-		if (sectionDropdown.value !== previousSectionId) {
-			let selectedOption = sectionDropdown.options[sectionDropdown.selectedIndex];
-			if (selectedOption && selectedOption.value) {
-				let curSection = {
-					path: selectedOption.textContent,
-					section: { id: selectedOption.value, name: selectedOption.textContent }
-				};
-				localStorage.setItem("curSection", JSON.stringify(curSection));
+		// If previously selected section no longer exists, select the first one
+		if (!selectedSectionId) {
+			let first = sectionList.querySelector("li") as HTMLElement;
+			if (first) {
+				selectSection(first.getAttribute("data-id") || "", first.textContent || "");
 			}
 		}
 	} catch (e) {
@@ -259,7 +378,8 @@ async function fetchFreshNotebooks() {
 }
 fetchFreshNotebooks();
 
-// Disable non-fullpage mode buttons and Clip button until capture completes
+// Lock all interactive controls during initial capture — prevents race conditions
+// (e.g., clicking sign-out mid-capture corrupts state)
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	if (btn.getAttribute("data-mode") !== "fullpage") {
 		(btn as HTMLButtonElement).disabled = true;
@@ -267,20 +387,13 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 	}
 });
 saveBtn.disabled = true;
+signoutLink.style.pointerEvents = "none";
+signoutLink.style.opacity = "0.4";
 // Show initial capture progress
 capturePanel.style.display = "flex";
 statusText.textContent = strings.capturing;
 
-// Persist section selection change and reset save state
-sectionDropdown.addEventListener("change", () => {
-	let selectedOption = sectionDropdown.options[sectionDropdown.selectedIndex];
-	if (selectedOption && selectedOption.value) {
-		let curSection = { path: selectedOption.textContent, section: { id: selectedOption.value, name: selectedOption.textContent } };
-		localStorage.setItem("curSection", JSON.stringify(curSection));
-	}
-	resetSaveState();
-	capturePanel.style.display = (currentMode === "fullpage" && !fullPageComplete) ? "flex" : "none";
-});
+// Section selection persistence is handled by selectSection() in the custom dropdown
 
 // --- UI lock during clip/save ---
 
@@ -289,7 +402,7 @@ function lockSidebar() {
 	document.querySelectorAll(".mode-btn").forEach((b) => { (b as HTMLButtonElement).disabled = true; });
 	titleField.disabled = true;
 	noteField.disabled = true;
-	sectionDropdown.disabled = true;
+	sectionPicker.classList.add("disabled");
 	cancelBtn.disabled = true;
 	signoutLink.style.pointerEvents = "none";
 	signoutLink.style.opacity = "0.4";
@@ -303,7 +416,7 @@ function unlockSidebar() {
 	});
 	titleField.disabled = false;
 	noteField.disabled = false;
-	sectionDropdown.disabled = false;
+	sectionPicker.classList.remove("disabled");
 	cancelBtn.disabled = false;
 	signoutLink.style.pointerEvents = "";
 	signoutLink.style.opacity = "";
@@ -316,7 +429,7 @@ function resetSaveState() {
 	saveBtn.onclick = null; // Clear any "View in OneNote" override
 	saveBtn.textContent = strings.saveToOneNote;
 	saveBtn.disabled = false;
-	cancelBtn.textContent = strings.cancel;
+	cancelBtn.textContent = strings.close;
 	cancelBtn.disabled = false;
 	// Reset capture panel
 	capturePanel.style.display = "none";
@@ -450,7 +563,8 @@ function renderArticleHtml(html: string) {
 	let articleCss = "body { font-family: Verdana, sans-serif; font-size: 16px; line-height: 1.6; "
 		+ "max-width: 684px; margin: 24px auto; padding: 0 20px 0 20px; color: #1a1a1a; }"
 		+ "img { max-width: 100%; height: auto; }"
-		+ "a { color: #2e75b5; text-decoration: underline; }"
+		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
+		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
 		+ "h2 { font-size: 18px; color: rgb(46,117,181); }"
 		+ "h3, h4, h5, h6 { color: rgb(91,155,213); margin-top: 14pt; margin-bottom: 14pt; }"
 		+ "figure { margin-left: 0; }"
@@ -598,7 +712,8 @@ function renderBookmarkHtml(html: string) {
 	if (!pDoc) { return; }
 	let bookmarkCss = "body { font-family: Verdana, sans-serif; font-size: 16px; line-height: 1.5; "
 		+ "max-width: 684px; margin: 24px auto; padding: 0 20px; color: #1a1a1a; }"
-		+ "a { color: #2e75b5; text-decoration: underline; }"
+		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
+		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
 		+ "h2 { font-size: 18px; color: rgb(46,117,181); font-weight: normal; }"
 		+ "img { border-radius: 2px; }";
 	let fullHtml = "<!DOCTYPE html><html><head><style>" + bookmarkCss + "</style></head><body>"
@@ -616,7 +731,7 @@ function startRegionCapture() {
 	capturePanel.style.display = "flex";
 	statusText.textContent = loc("WebClipper.ClipType.Region.ProgressLabel", "Select a region on the page...");
 	saveBtn.disabled = true;
-	previewContainer.style.display = "none";
+	// Keep previewContainer visible (display:block) to hold flex space — sidebar stays right
 	port.postMessage({ action: "startRegion" });
 }
 
@@ -625,7 +740,9 @@ function switchToRegion() {
 	currentMode = "region";
 	iframe.style.display = "none";
 	previewFrame.style.display = "none";
-	previewContainer.style.display = "none";
+	// Keep previewContainer visible (even if empty) so sidebar stays right in flex layout
+	previewContainer.innerHTML = "";
+	previewContainer.style.display = "block";
 	// If we already have captured regions, show them instead of starting a new capture
 	if (regionImages.length > 0) {
 		renderRegionThumbnails();
@@ -724,11 +841,15 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 
 port.onMessage.addListener((message: any) => {
 	if (message.action === "loadContent") {
-		// Read HTML, base URL, and cached stylesheets from session storage
-		chrome.storage.session.get(["fullPageHtmlContent", "fullPageBaseUrl", "fullPageStylesheets"], (stored: any) => {
+		// Read HTML, base URL, cached stylesheets, and page metadata from session storage
+		chrome.storage.session.get(["fullPageHtmlContent", "fullPageBaseUrl", "fullPageStylesheets", "fullPageTitle", "fullPageUrl"], (stored: any) => {
 			let rawHtml = stored && stored.fullPageHtmlContent ? stored.fullPageHtmlContent : "";
 			let baseUrl = stored && stored.fullPageBaseUrl ? stored.fullPageBaseUrl : "";
 			let cachedStylesheets: { [url: string]: { cssText: string; media: string } } = stored && stored.fullPageStylesheets ? stored.fullPageStylesheets : {};
+
+			// Populate title and source URL (may not have been available on initial page load)
+			if (stored && stored.fullPageTitle && !titleField.value) { titleField.value = stored.fullPageTitle; }
+			if (stored && stored.fullPageUrl && !sourceUrl.textContent) { sourceUrl.textContent = stored.fullPageUrl; sourceUrl.title = stored.fullPageUrl; }
 
 			// Strip scripts only — keep iframes (some sites use them for content)
 			let cleanHtml = rawHtml
@@ -1129,11 +1250,13 @@ port.onMessage.addListener((message: any) => {
 					saveBtn.textContent = strings.saveToOneNote;
 					saveBtn.disabled = false;
 
-					// Re-enable mode buttons now that capture is complete
+					// Re-enable mode buttons and sign-out now that capture is complete
 					document.querySelectorAll(".mode-btn").forEach((b: Element) => {
 						(b as HTMLButtonElement).disabled = false;
 						b.classList.remove("disabled");
 					});
+					signoutLink.style.pointerEvents = "";
+					signoutLink.style.opacity = "";
 
 					port.postMessage({ action: "finalizeComplete" });
 				});
@@ -1146,11 +1269,17 @@ port.onMessage.addListener((message: any) => {
 		// Worker sends full tab screenshot + selection coords via port (same as drawCapture)
 		let fullImg = new Image();
 		fullImg.onload = () => {
+			// Calculate effective DPR from actual image vs reported viewport
+			// (captureVisibleTab may differ from window.devicePixelRatio on scaled displays)
 			let dpr = message.dpr || 1;
 			let sx = Math.round(message.x * dpr);
 			let sy = Math.round(message.y * dpr);
 			let sw = Math.round(message.width * dpr);
 			let sh = Math.round(message.height * dpr);
+			// Clamp to actual image bounds — prevents grabbing gray/empty pixels beyond content
+			if (sx + sw > fullImg.naturalWidth) { sw = fullImg.naturalWidth - sx; }
+			if (sy + sh > fullImg.naturalHeight) { sh = fullImg.naturalHeight - sy; }
+			if (sw <= 0 || sh <= 0) { return; }
 			let cropCanvas = document.createElement("canvas");
 			cropCanvas.width = sw;
 			cropCanvas.height = sh;
@@ -1209,6 +1338,105 @@ port.onMessage.addListener((message: any) => {
 			saveBtn.disabled = false;
 		}
 	}
+
+	// --- Sign-in result from worker ---
+	if (message.action === "signInResult") {
+		signingIn = false;
+		if (message.success) {
+			// Transition from sign-in to capture mode
+			isSignedIn = true;
+			hideSignInPanel();
+			// Show iframe immediately so flex layout keeps sidebar on the right
+			// (it'll be blank until loadContent arrives, but prevents sidebar snap-left)
+			iframe.style.display = "block";
+			// Update user info footer
+			if (message.user) {
+				userEmailSpan.textContent = message.user.email || message.user.name || "";
+				userEmailSpan.title = message.user.email || "";
+				userAuthType = message.user.authType || "";
+				userInfoDiv.style.display = "";
+			}
+			// Reset capture state for fresh capture
+			fullPageComplete = false;
+			fullPageDataUrl = "";
+			articleLoaded = false;
+			cachedArticleHtml = "";
+			bookmarkLoaded = false;
+			cachedBookmarkHtml = "";
+			contentDocReady = false;
+			// Populate section dropdown — delay slightly to ensure localStorage is written by offscreen
+			populateSectionDropdown();
+			setTimeout(fetchFreshNotebooks, 300);
+			// Show capture progress — content capture + loadContent will follow from worker
+			capturePanel.style.display = "flex";
+			statusText.textContent = strings.capturing;
+			saveBtn.disabled = true;
+		} else {
+			showSignInError(message.error || "Sign-in failed. Please try again.");
+		}
+	}
+
+	// --- Sign-out complete from worker ---
+	if (message.action === "signOutComplete") {
+		isSignedIn = false;
+		signingIn = false;
+		// Reset sign-in panel state
+		signinMsaBtn.disabled = false;
+		signinOrgIdBtn.disabled = false;
+		signinProgress.style.display = "none";
+		signinError.style.display = "none";
+		// Reset sidebar state fully — unlock all controls
+		saveDone = false;
+		fullPageComplete = false;
+		fullPageDataUrl = "";
+		articleLoaded = false;
+		cachedArticleHtml = "";
+		bookmarkLoaded = false;
+		cachedBookmarkHtml = "";
+		contentDocReady = false;
+		regionImages.length = 0;
+		currentMode = "fullpage";
+		// Unlock sidebar (clears disabled state from lockSidebar during save)
+		unlockSidebar();
+		signoutLink.style.pointerEvents = "";
+		signoutLink.style.opacity = "";
+		userEmailSpan.textContent = "";
+		userAuthType = "";
+		userInfoDiv.style.display = "none";
+		// Clear section dropdown and notebook cache so next user gets fresh data
+		sectionList.innerHTML = "";
+		selectedSectionId = "";
+		sectionSelected.textContent = "";
+		try {
+			localStorage.removeItem("notebooks");
+			localStorage.removeItem("curSection");
+		} catch (e) { /* ignore */ }
+		// Reset metadata fields
+		titleField.value = "";
+		noteField.value = "";
+		sourceUrl.textContent = "";
+		sourceUrl.title = "";
+		// Clear stale capture content from DOM
+		previewContainer.innerHTML = "";
+		previewContainer.style.display = "none";
+		iframe.style.display = "none";
+		previewFrame.style.display = "none";
+		capturePanel.style.display = "none";
+		// Reset mode buttons to initial state (disabled until capture completes)
+		document.querySelectorAll(".mode-btn").forEach((b) => {
+			b.classList.remove("selected");
+			(b as HTMLButtonElement).disabled = true;
+			b.classList.add("disabled");
+		});
+		let fpBtn = document.querySelector('.mode-btn[data-mode="fullpage"]');
+		if (fpBtn) { fpBtn.classList.add("selected"); }
+		saveBtn.disabled = true;
+		saveBtn.textContent = strings.saveToOneNote;
+		saveBtn.onclick = null;
+		cancelBtn.textContent = strings.close;
+		// Show sign-in overlay
+		showSignInPanel();
+	}
 });
 
 // Save button triggers clip via port — includes title, annotation, mode, and content for OneNote page creation
@@ -1227,7 +1455,7 @@ saveBtn.addEventListener("click", () => {
 		annotation: noteField.value,
 		url: sourceUrl.textContent || "",
 		mode: currentMode,
-		sectionId: sectionDropdown.value
+		sectionId: selectedSectionId
 	};
 	// For article/bookmark, include the rendered HTML
 	if (currentMode === "article" && cachedArticleHtml) {
@@ -1259,14 +1487,28 @@ let origWidth = window.outerWidth;
 let origHeight = window.outerHeight;
 window.addEventListener("resize", () => {
 	if (window.outerWidth !== origWidth || window.outerHeight !== origHeight) {
-		window.resizeTo(origWidth, origHeight);
+		// Check for maximized state — window.resizeTo is ignored when maximized
+		// Use chrome.windows API to un-maximize first, then resize
+		try {
+			chrome.windows.getCurrent({}, (w: any) => {
+				if (w && w.state === "maximized") {
+					chrome.windows.update(w.id, { state: "normal", width: origWidth, height: origHeight });
+				} else {
+					window.resizeTo(origWidth, origHeight);
+				}
+			});
+		} catch (e) {
+			window.resizeTo(origWidth, origHeight);
+		}
 	}
 });
 
 // Keep renderer focused — re-focus when user tries to switch away
+let signingIn = false; // Disable blur handler during sign-in popup
 window.addEventListener("blur", () => {
 	if (saveDone) { return; } // Don't fight focus after save (user may be viewing in OneNote)
 	if (currentMode === "region") { return; } // Don't fight focus during region selection on original tab
+	if (signingIn) { return; } // Don't fight focus during sign-in popup
 	setTimeout(() => { window.focus(); }, 100);
 });
 

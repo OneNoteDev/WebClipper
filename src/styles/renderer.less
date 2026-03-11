@@ -59,6 +59,11 @@ iframe#preview-frame {
 	flex: 1; padding: 12px 16px;
 	display: flex; flex-direction: column; gap: 0;
 	overflow-y: auto;
+	// Visible scrollbar so user can see there's more content below
+	// !important overrides the global ::-webkit-scrollbar { display: none } at bottom of file
+	&::-webkit-scrollbar { display: block !important; width: 5px !important; }
+	&::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2) !important; border-radius: 3px; }
+	&::-webkit-scrollbar-track { background: transparent; }
 }
 
 // Mode buttons
@@ -129,22 +134,65 @@ iframe#preview-frame {
 	margin-bottom: 2px;
 }
 
-#section-dropdown {
+// Custom section picker dropdown
+#section-picker {
+	position: relative;
+	width: 100%; box-sizing: border-box;
+	&.disabled { opacity: 0.5; pointer-events: none; }
+}
+
+#section-selected {
 	width: 100%; box-sizing: border-box;
 	background: rgba(255,255,255,0.1); color: #fff;
 	border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
 	padding: 7px 10px; font-size: 13px; font-family: inherit;
-	appearance: none; -webkit-appearance: none;
+	cursor: pointer;
+	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+	// Down arrow
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
 	background-position: right 10px center;
-	cursor: pointer;
+	padding-right: 28px;
 	&:focus {
 		outline: none;
 		border-color: rgba(255,255,255,0.5);
 		background-color: rgba(255,255,255,0.14);
 	}
-	option { background: @DarkBackgroundColor; color: #fff; }
+	min-height: 18px; // ensure clickable area even when empty
+}
+
+#section-list-container {
+	display: none;
+	position: absolute; left: 0; right: 0;
+	top: 100%; // open downward (natural dropdown behavior)
+	margin-top: 2px;
+	max-height: 200px;
+	overflow-y: auto;
+	background: #3d1259; // slightly lighter than sidebar
+	border: 1px solid rgba(255,255,255,0.25);
+	border-radius: 4px;
+	z-index: 50;
+	// Visible scrollbar
+	&::-webkit-scrollbar { display: block !important; width: 5px !important; }
+	&::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25) !important; border-radius: 3px; }
+	&::-webkit-scrollbar-track { background: transparent; }
+}
+
+#section-list {
+	list-style: none;
+	margin: 0; padding: 4px 0;
+}
+
+.section-item {
+	padding: 6px 10px;
+	font-size: 12px; color: rgba(255,255,255,0.85);
+	cursor: pointer;
+	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+	&:hover { background: rgba(255,255,255,0.12); }
+	&.section-item-selected {
+		background: @OneNotePurple;
+		color: #fff;
+	}
 }
 
 // Button row — Cancel and Clip side by side (like print preview dialog)
@@ -263,6 +311,72 @@ iframe#preview-frame {
 	cursor: pointer;
 	text-align: center;
 	&:hover { border-color: #888; color: #333; background: rgba(0,0,0,0.03); }
+}
+
+// --- Sign-in overlay (full-window, covers everything) ---
+#signin-overlay {
+	position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+	z-index: 100;
+	background: @DarkBackgroundColor;
+	display: flex; align-items: center; justify-content: center;
+}
+
+#signin-panel {
+	display: flex; flex-direction: column;
+	align-items: center;
+	max-width: 320px; width: 100%;
+	padding: 0 24px;
+	text-align: center;
+	color: #fff;
+}
+
+.signin-logo {
+	width: 56px; height: 56px;
+	margin-bottom: 12px;
+}
+
+.signin-title {
+	font-size: 18px; font-weight: 600;
+	margin: 0 0 8px 0;
+	opacity: 0.95;
+}
+
+.signin-description {
+	font-size: 14px;
+	opacity: 0.75;
+	margin: 0 0 28px 0;
+	line-height: 1.5;
+}
+
+.signin-btn {
+	width: 100%;
+	padding: 11px 16px;
+	border: none; border-radius: 4px;
+	font-size: 14px; font-family: inherit; font-weight: 600;
+	cursor: pointer;
+	margin-bottom: 10px;
+	transition: background 0.15s;
+	background: @OneNotePurple; color: #fff;
+	&:hover { background: @DarkHoverColor; }
+	&:disabled { opacity: 0.5; cursor: default; }
+}
+
+.signin-btn-secondary {
+	background: rgba(255,255,255,0.12);
+	&:hover { background: rgba(255,255,255,0.22); }
+}
+
+.signin-error {
+	font-size: 12px;
+	color: #ff6b6b;
+	margin-top: 8px;
+	line-height: 1.4;
+}
+
+.signin-progress {
+	font-size: 13px;
+	opacity: 0.7;
+	margin-top: 12px;
 }
 
 // Hide scrollbars globally

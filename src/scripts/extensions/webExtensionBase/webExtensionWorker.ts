@@ -1,4 +1,4 @@
-import {AuthType} from "../../userInfo";
+import {AuthType, UpdateReason, UserInfo} from "../../userInfo";
 import {ClientInfo} from "../../clientInfo";
 import {ClientType} from "../../clientType";
 import {ClipperUrls} from "../../clipperUrls";
@@ -83,7 +83,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	}
 
 	/**
-	 * Override: if a renderer window is already open, focus it and skip the entire invoke flow.
+	 * Override: open the renderer window directly instead of injecting clipperInject.ts.
+	 * If a renderer window is already open, focus it.
 	 */
 	public closeAllFramesAndInvokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
 		if (this.activeRendererWindowId) {
@@ -94,7 +95,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 			});
 			return;
 		}
-		super.closeAllFramesAndInvokeClipper(invokeInfo, options);
+		this.openRendererWindow();
 	}
 
 	/**
@@ -233,475 +234,545 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	}
 
 	/**
-	 * Renders HTML in a temporary popup window and captures full-page screenshots.
-	 * Mirrors the server-side DomEnhancer approach: opens an extension renderer page,
-	 * communicates via chrome.runtime port, then scroll-captures it.
+	 * Legacy: called by clipper.tsx via communicator. In the new flow, openRendererWindow() is used instead.
 	 */
 	protected takeFullPageScreenshot(htmlContent: string): Promise<string[]> {
-		// If a renderer window is already open, focus it instead of opening a new one
+		this.openRendererWindow();
+		return new Promise<string[]>(() => { /* renderer window handles everything */ });
+	}
+
+	/**
+	 * Opens the renderer window directly (no clipperInject.ts injection).
+	 * Checks sign-in state: if signed in, injects content capture and starts capture.
+	 * If not signed in, renderer shows sign-in panel and waits.
+	 */
+	private openRendererWindow() {
 		if (this.activeRendererWindowId) {
 			WebExtension.browser.windows.update(this.activeRendererWindowId, { focused: true }, () => {
 				if (WebExtension.browser.runtime.lastError) {
-					// Window no longer exists — clear the ID so next click opens a new one
 					this.activeRendererWindowId = 0;
 				}
 			});
-			return new Promise<string[]>(() => { /* no-op — existing window handles it */ });
+			return;
 		}
 
+		this.clipperData.getValue("isUserLoggedIn").then((val: string) => {
+			let signedIn = val === "true";
+			this.launchRenderer(signedIn);
+		}, () => {
+			this.launchRenderer(false);
+		});
+	}
+
+	private launchRenderer(signedIn: boolean) {
 		let rendererUrl = WebExtension.browser.runtime.getURL("renderer.html");
+		let renderWindowId: number;
+		let pendingPort: chrome.runtime.Port;
+		let windowReady = false;
+		let contentCaptured = false;
+		let activePort: chrome.runtime.Port;
 
-		return new Promise<string[]>((resolve) => {
-			let renderWindowId: number;
-			let pendingPort: chrome.runtime.Port;
-			let windowReady = false;
+		// Listener for contentCaptureInject.ts messages — stores page data in session storage
+		let captureListener = (rawMsg: any, sender: any) => {
+			if (!sender.tab || sender.tab.id !== this.tab.id) { return; }
+			let msg: any;
+			try { msg = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg; } catch (e) { return; }
+			if (msg.action !== "contentCaptureComplete") { return; }
+			chrome.runtime.onMessage.removeListener(captureListener);
 
-			// Position renderer directly behind the user's window to hide it
-			WebExtension.browser.windows.getCurrent((currentWindow: chrome.windows.Window) => {
-			let sidebarWidth = 322;
-			let contentWidth = Math.min(currentWindow && currentWindow.width ? currentWindow.width : 1280, 1280);
-			let renderWidth = contentWidth + sidebarWidth;
-			let renderHeight = currentWindow ? currentWindow.height : 768;
-			let renderLeft = currentWindow ? currentWindow.left : 0;
-			let renderTop = currentWindow ? currentWindow.top : 0;
+			let storageData: any = {
+				fullPageHtmlContent: msg.html || "",
+				fullPageBaseUrl: msg.baseUrl || "",
+				fullPageTitle: msg.title || "",
+				fullPageUrl: msg.url || "",
+				fullPageStatusText: "Capturing page..."
+			};
+			if (msg.sheets) { storageData.fullPageStylesheets = msg.sheets; }
 
-			let startCapture = (port: chrome.runtime.Port) => {
-				let viewportHeight: number;
-				let contentHeight: number;
-				let captureCount = 0;
-				let lastScrollY: number = -1;
-				let lastScrollData: { scrollY: number; pageHeight: number };
+			chrome.storage.session.set(storageData, () => {
+				contentCaptured = true;
+				if (activePort) {
+					activePort.postMessage({ action: "loadContent" });
+				}
+			});
+		};
 
-				let cleaned = false;
-				let cleanup = () => {
-					if (cleaned) { return; }
-					cleaned = true;
-					this.activeRendererCleanup = () => { /* no-op */ };
-					this.activeRendererWindowId = 0;
-					try { port.disconnect(); } catch (e) { /* ignore */ }
-					WebExtension.browser.windows.remove(renderWindowId, () => {
-						if (WebExtension.browser.runtime.lastError) { /* window may already be closed */ }
-					});
-					// Clean up all session storage from this capture session
-					chrome.storage.session.get(null, (all: any) => {
-						let keys = Object.keys(all || {}).filter(function(k) {
-							return k.indexOf("fullPage") === 0 || k.indexOf("regionImage") === 0;
-						});
-						if (keys.length > 0) { chrome.storage.session.remove(keys); }
-					});
-				};
-				this.activeRendererCleanup = cleanup;
+		// If signed in, inject content capture script immediately (runs in parallel with window opening)
+		if (signedIn) {
+			chrome.runtime.onMessage.addListener(captureListener);
+			WebExtension.browser.scripting.executeScript({
+				target: { tabId: this.tab.id },
+				files: ["contentCaptureInject.js"]
+			});
+		}
 
+		WebExtension.browser.windows.getCurrent((currentWindow: chrome.windows.Window) => {
+		let sidebarWidth = 322;
+		let contentWidth = Math.min(currentWindow && currentWindow.width ? currentWindow.width : 1280, 1280);
+		let renderWidth = contentWidth + sidebarWidth;
+		let renderHeight = currentWindow ? currentWindow.height : 768;
+		let renderLeft = currentWindow ? currentWindow.left : 0;
+		let renderTop = currentWindow ? currentWindow.top : 0;
 
-				// Handle renderer window being closed by user
-				port.onDisconnect.addListener(() => {
-					if (!cleaned) {
-						cleanup();
-						resolve({ success: false } as any);
-					}
+		let setupPort = (port: chrome.runtime.Port) => {
+			activePort = port;
+			let viewportHeight: number;
+			let captureContentHeight: number;
+			let captureCount = 0;
+			let lastScrollY: number = -1;
+			let lastScrollData: { scrollY: number; pageHeight: number };
+
+			let cleaned = false;
+			let cleanup = () => {
+				if (cleaned) { return; }
+				cleaned = true;
+				this.activeRendererCleanup = () => { /* no-op */ };
+				this.activeRendererWindowId = 0;
+				try { port.disconnect(); } catch (e) { /* ignore */ }
+				WebExtension.browser.windows.remove(renderWindowId, () => {
+					if (WebExtension.browser.runtime.lastError) { /* window may already be closed */ }
 				});
+				// Clean up all session storage from this capture session
+				chrome.storage.session.get(null, (all: any) => {
+					let keys = Object.keys(all || {}).filter(function(k) {
+						return k.indexOf("fullPage") === 0 || k.indexOf("regionImage") === 0;
+					});
+					if (keys.length > 0) { chrome.storage.session.remove(keys); }
+				});
+				try { chrome.runtime.onMessage.removeListener(captureListener); } catch (e) { /* ignore */ }
+			};
+			this.activeRendererCleanup = cleanup;
 
-				port.onMessage.addListener((message: any) => {
-					if (message.action === "ready") {
-						// Set zoom to 100% before loading content, then load
-						let rendererTabId: number;
-						try {
-							WebExtension.browser.tabs.query({ windowId: renderWindowId }, (tabs: chrome.tabs.Tab[]) => {
-								if (tabs && tabs.length > 0 && tabs[0].id) {
-									rendererTabId = tabs[0].id;
-									WebExtension.browser.tabs.setZoom(rendererTabId, 1, () => {
+			// Handle renderer window being closed by user
+			port.onDisconnect.addListener(() => {
+				if (!cleaned) { cleanup(); }
+			});
+
+			port.onMessage.addListener((message: any) => {
+				if (message.action === "ready") {
+					// Set zoom to 100% before loading content
+					try {
+						WebExtension.browser.tabs.query({ windowId: renderWindowId }, (tabs: chrome.tabs.Tab[]) => {
+							if (tabs && tabs.length > 0 && tabs[0].id) {
+								WebExtension.browser.tabs.setZoom(tabs[0].id, 1, () => {
+									// Only send loadContent if content capture already completed
+									if (contentCaptured) {
 										port.postMessage({ action: "loadContent" });
-									});
-								} else {
-									port.postMessage({ action: "loadContent" });
-								}
-							});
-						} catch (e) {
+									}
+								});
+							} else if (contentCaptured) {
+								port.postMessage({ action: "loadContent" });
+							}
+						});
+					} catch (e) {
+						if (contentCaptured) {
 							port.postMessage({ action: "loadContent" });
 						}
 					}
+				}
 
-					if (message.action === "dimensions") {
-						viewportHeight = message.viewportHeight;
-						contentHeight = message.contentHeight;
-
-						if (!viewportHeight) {
-							cleanup();
-							resolve([]);
-							return;
-						}
-
-						// Initialize the renderer's stitch canvas
-						port.postMessage({
-							action: "initCanvas",
-							viewportHeight: viewportHeight,
-							contentHeight: contentHeight,
-							pageHeight: message.pageHeight
-						});
-
-						port.postMessage({ action: "scroll", scrollTo: 0 });
-					}
-
-					if (message.action === "scrollResult") {
-						lastScrollData = { scrollY: message.scrollY, pageHeight: message.pageHeight };
-						setTimeout(() => {
-							// Re-focus renderer window before capture — handles user clicking away
-							WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
-								WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "png" }, (dataUrl: string) => {
-									if (!dataUrl) {
-										cleanup();
-										resolve({ success: false } as any);
-										return;
-									}
-
-									// Send capture to renderer for incremental stitching
-									let estimatedTotal = Math.ceil((contentHeight || lastScrollData.pageHeight) / viewportHeight);
-									port.postMessage({
-										action: "drawCapture",
-										dataUrl: dataUrl,
-										index: captureCount,
-										scrollY: lastScrollData.scrollY,
-										viewportHeight: viewportHeight,
-										totalViewports: Math.max(estimatedTotal, captureCount + 1)
-									});
-								});
+				// --- Sign-in from renderer (self-contained sign-in) ---
+				if (message.action === "signIn") {
+					let authType: AuthType = (AuthType as any)[message.authType];
+					this.doSignInAction(authType).then(() => {
+						return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.SignInAttempt);
+					}).then((updatedUser: UserInfo) => {
+						if (updatedUser && updatedUser.user) {
+							this.clipperData.setValue("isUserLoggedIn", "true");
+							port.postMessage({
+								action: "signInResult",
+								success: true,
+								user: {
+									email: updatedUser.user.emailAddress || "",
+									name: updatedUser.user.fullName || "",
+									authType: updatedUser.user.authType || ""
+								}
 							});
-						}, 500);
-					}
-
-					if (message.action === "drawComplete") {
-						// Detect scroll stall: if scrollY didn't change, we've hit the
-						// real bottom even if scrollHeight is inflated
-						let scrollStalled = captureCount > 0 && lastScrollData.scrollY === lastScrollY;
-						lastScrollY = lastScrollData.scrollY;
-						captureCount++;
-
-						let maxCaptureHeight = 16384;
-						let atBottom = lastScrollData.scrollY + viewportHeight >= lastScrollData.pageHeight
-							|| scrollStalled
-							|| (captureCount * viewportHeight) >= maxCaptureHeight;
-
-						if (atBottom) {
-							port.postMessage({ action: "finalize" });
+							// Now inject content capture into original tab
+							chrome.runtime.onMessage.addListener(captureListener);
+							WebExtension.browser.scripting.executeScript({
+								target: { tabId: this.tab.id },
+								files: ["contentCaptureInject.js"]
+							});
 						} else {
-							port.postMessage({ action: "scroll", scrollTo: captureCount * viewportHeight });
+							port.postMessage({ action: "signInResult", success: false, error: "Sign-in cancelled" });
 						}
+					}).catch((errorObject: any) => {
+						let errMsg = errorObject.errorDescription || errorObject.error || "Sign-in failed";
+						port.postMessage({ action: "signInResult", success: false, error: errMsg });
+					});
+				}
+
+				if (message.action === "dimensions") {
+					viewportHeight = message.viewportHeight;
+					captureContentHeight = message.contentHeight;
+					// Reset capture loop state — handles re-capture after sign-out/sign-in
+					captureCount = 0;
+					lastScrollY = -1;
+					lastScrollData = { scrollY: 0, pageHeight: 0 };
+
+					if (!viewportHeight) {
+						cleanup();
+						return;
 					}
 
-					if (message.action === "finalizeComplete") {
-						// Keep window alive — user can switch modes, edit title, then save
-						// Window closes when user clicks Cancel/Close (port disconnect) or after save
-						// Resolve the takeFullPageScreenshot promise so clipper.tsx isn't left waiting
-						resolve({ success: true, format: "jpeg", cssWidth: contentWidth } as any);
-					}
+					// Initialize the renderer's stitch canvas
+					port.postMessage({
+						action: "initCanvas",
+						viewportHeight: viewportHeight,
+						contentHeight: captureContentHeight,
+						pageHeight: message.pageHeight
+					});
 
-					if (message.action === "save") {
-						// Save to OneNote API from unified renderer window
-						let saveMode = message.mode || "fullpage";
-						let saveTitle = message.title || "";
-						let saveAnnotation = message.annotation || "";
-						let saveSectionId = message.sectionId || "";
-						let saveUrl = message.url || "";
+					port.postMessage({ action: "scroll", scrollTo: 0 });
+				}
 
-						// Get access token from local storage via offscreen
-						this.clipperData.getValue("userInformation").then((userInfoJson: string) => {
-								let accessToken = "";
-								try {
-									let userInfo = JSON.parse(userInfoJson);
-									accessToken = userInfo && userInfo.data ? userInfo.data.accessToken : "";
-								} catch (e) { /* ignore */ }
-
-								if (!accessToken) {
-									port.postMessage({ action: "saveResult", success: false, error: "Not signed in" });
+				if (message.action === "scrollResult") {
+					lastScrollData = { scrollY: message.scrollY, pageHeight: message.pageHeight };
+					setTimeout(() => {
+						// Re-focus renderer window before capture — handles user clicking away
+						WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+							WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "png" }, (dataUrl: string) => {
+								if (!dataUrl) {
+									cleanup();
 									return;
 								}
 
-								// Build OneNote page content based on mode
-								let buildPage = (bodyOnml: string, imageParts: { name: string; blob: Blob; type: string }[]) => {
-									let boundary = "OneNoteRendererBoundary" + Date.now();
-									// UTC offset string — same format as OneNoteApi.OneNotePage.formUtcOffsetString
-									let now = new Date();
-									let offset = now.getTimezoneOffset();
-									let offsetSign = offset >= 0 ? "-" : "+";
-									offset = Math.abs(offset);
-									let offsetHours = Math.floor(offset / 60).toString();
-									let offsetMins = Math.round(offset % 60).toString();
-									if (parseInt(offsetHours, 10) < 10) { offsetHours = "0" + offsetHours; }
-									if (parseInt(offsetMins, 10) < 10) { offsetMins = "0" + offsetMins; }
-									let createdTime = offsetSign + offsetHours + ":" + offsetMins;
-									// Font styling matches OneNoteSaveableFactory.createPostProcessessedHtml
-									let fontStyle = "font-size: 16px; font-family: Verdana;";
-									let presentationHtml = "<!DOCTYPE html><html><head>"
-										+ "<title>" + saveTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</title>"
-										+ "<meta name=\"created\" content=\"" + createdTime + " \">"
-										+ "</head><body>";
-									// Order matches OneNoteSaveableFactory: annotation → citation → content
-									if (saveAnnotation) {
-										let escaped = saveAnnotation.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-										presentationHtml += "<div style=\"" + fontStyle + "\">&quot;" + escaped + "&quot;</div>";
-									}
-									if (saveUrl && saveMode !== "bookmark") {
-										presentationHtml += "<div style=\"" + fontStyle + "\">Clipped from: <a href=\"" + saveUrl + "\">" + saveUrl + "</a></div>";
-									}
-									presentationHtml += bodyOnml;
-									presentationHtml += "</body></html>";
-
-									// Build multipart body
-									let parts: (string | Blob)[] = [];
-									parts.push("--" + boundary + "\r\n");
-									parts.push("Content-Type: application/xhtml+xml\r\n");
-									parts.push("Content-Disposition: form-data; name=\"Presentation\"\r\n\r\n");
-									parts.push(presentationHtml);
-									for (let img of imageParts) {
-										parts.push("\r\n--" + boundary + "\r\n");
-										parts.push("Content-Type: " + img.type + "\r\n");
-										parts.push("Content-Disposition: form-data; name=\"" + img.name + "\"\r\n\r\n");
-										parts.push(img.blob);
-									}
-									parts.push("\r\n--" + boundary + "--\r\n");
-
-									let body = new Blob(parts);
-									let apiUrl = "https://www.onenote.com/api/v1.0/me/notes"
-										+ (saveSectionId ? "/sections/" + encodeURIComponent(saveSectionId) : "")
-										+ "/pages";
-
-									let correlationId = "ON-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
-									let requestDate = new Date().toISOString();
-
-									fetch(apiUrl, {
-										method: "POST",
-										headers: {
-											"Authorization": "Bearer " + accessToken,
-											"Content-Type": "multipart/form-data; boundary=" + boundary,
-											"X-CorrelationId": correlationId
-										},
-										body: body
-									}).then((response) => {
-										let serverCorrelation = response.headers.get("X-CorrelationId") || correlationId;
-										let serverRequestId = response.headers.get("X-UserSessionId") || "";
-										if (response.ok) {
-											response.json().then((data) => {
-												let pageUrl = "";
-												try {
-													pageUrl = data && data.links && data.links.oneNoteWebUrl ? data.links.oneNoteWebUrl.href : "";
-												} catch (e) { /* ignore */ }
-												port.postMessage({ action: "saveResult", success: true, pageUrl: pageUrl });
-											}).catch(() => {
-												port.postMessage({ action: "saveResult", success: true, pageUrl: "" });
-											});
-										} else {
-											response.text().then((text) => {
-												let errorMsg = "";
-												try { errorMsg = JSON.parse(text).error.message || text.substring(0, 200); } catch (e) { errorMsg = text.substring(0, 200); }
-												let debugInfo = errorMsg
-													+ "\n\nDate: " + requestDate
-													+ "\nStatus: " + response.status
-													+ "\nX-CorrelationId: " + serverCorrelation
-													+ (serverRequestId ? "\nX-UserSessionId: " + serverRequestId : "");
-												port.postMessage({ action: "saveResult", success: false, error: debugInfo });
-											});
-										}
-									}).catch((err) => {
-										let debugInfo = "Network error: " + (err.message || "Unknown")
-											+ "\nX-CorrelationId: " + correlationId
-											+ "\nDate: " + requestDate;
-										port.postMessage({ action: "saveResult", success: false, error: debugInfo });
-									});
-								};
-
-								if (saveMode === "fullpage") {
-									// Read JPEG from session storage
-									chrome.storage.session.get(["fullPageFinalImage"], (imgStored: any) => {
-										let dataUrl = imgStored && imgStored.fullPageFinalImage ? imgStored.fullPageFinalImage : "";
-										if (dataUrl) {
-											fetch(dataUrl).then((r) => r.blob()).then((blob) => {
-												let imgName = "fullPageImage";
-												let bodyOnml = "<p><img src=\"name:" + imgName + "\" width=\"" + contentWidth + "\" /></p>";
-												buildPage(bodyOnml, [{ name: imgName, blob: blob, type: "image/jpeg" }]);
-											});
-										} else {
-											port.postMessage({ action: "saveResult", success: false, error: "No screenshot data" });
-										}
-									});
-								} else if (saveMode === "region") {
-									// Read region images from separate session storage keys (avoids size limits)
-									chrome.storage.session.get(["regionImageCount"], (countStored: any) => {
-										let count = countStored && countStored.regionImageCount ? countStored.regionImageCount : 0;
-										if (count === 0) {
-											port.postMessage({ action: "saveResult", success: false, error: "No region data" });
-											return;
-										}
-										let keys: string[] = [];
-										for (let i = 0; i < count; i++) { keys.push("regionImage_" + i); }
-										chrome.storage.session.get(keys, (imgStored: any) => {
-											let images: string[] = [];
-											for (let i = 0; i < count; i++) {
-												if (imgStored["regionImage_" + i]) { images.push(imgStored["regionImage_" + i]); }
-											}
-											if (images.length === 0) {
-												port.postMessage({ action: "saveResult", success: false, error: "No region data" });
-												return;
-											}
-											Promise.all(images.map((dataUrl: string, idx: number) =>
-												fetch(dataUrl).then((r) => r.blob()).then((blob) => ({
-													name: "regionImage" + idx,
-													blob: blob,
-													type: dataUrl.indexOf("image/png") !== -1 ? "image/png" : "image/jpeg"
-												}))
-											)).then((imageParts) => {
-												let bodyOnml = imageParts.map((p) =>
-													"<p><img src=\"name:" + p.name + "\" /></p>"
-												).join("&nbsp;");
-												buildPage(bodyOnml, imageParts);
-											});
-										});
-									});
-								} else if (saveMode === "article") {
-									let articleHtml = message.contentHtml || "";
-									buildPage(articleHtml, []);
-								} else if (saveMode === "bookmark") {
-									let bookmarkHtml = message.contentHtml || "";
-									buildPage(bookmarkHtml, []);
-								} else {
-									port.postMessage({ action: "saveResult", success: false, error: "Unsupported mode" });
-								}
-							});
-					}
-
-					if (message.action === "startRegion") {
-						// Focus original tab, inject standalone overlay, listen for result
-						let regionTabId = this.tab.id;
-						let regionWindowId = 0;
-						WebExtension.browser.tabs.get(regionTabId, (t: any) => {
-							if (!t || !t.windowId) { return; }
-							regionWindowId = t.windowId;
-							WebExtension.browser.windows.update(regionWindowId, { focused: true }, () => {
-								if (WebExtension.browser.runtime.lastError) { /* ignore */ }
-								WebExtension.browser.scripting.executeScript({
-									target: { tabId: regionTabId },
-									files: ["regionOverlay.js"]
+								// Send capture to renderer for incremental stitching
+								let estimatedTotal = Math.ceil((captureContentHeight || lastScrollData.pageHeight) / viewportHeight);
+								port.postMessage({
+									action: "drawCapture",
+									dataUrl: dataUrl,
+									index: captureCount,
+									scrollY: lastScrollData.scrollY,
+									viewportHeight: viewportHeight,
+									totalViewports: Math.max(estimatedTotal, captureCount + 1)
 								});
 							});
 						});
+					}, 500);
+				}
 
-						// Listen for overlay messages (regionSelected / regionCancelled)
-						// Messages are JSON strings (required by offscreen.ts message handler)
-						let regionListener = (rawMsg: any, sender: any) => {
-							if (!sender.tab || sender.tab.id !== regionTabId) { return; }
-							let msg: any;
-							try { msg = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg; } catch (e) { return; }
+				if (message.action === "drawComplete") {
+					// Detect scroll stall: if scrollY didn't change, we've hit the
+					// real bottom even if scrollHeight is inflated
+					let scrollStalled = captureCount > 0 && lastScrollData.scrollY === lastScrollY;
+					lastScrollY = lastScrollData.scrollY;
+					captureCount++;
 
-							if (msg.action === "regionSelected") {
-								WebExtension.browser.runtime.onMessage.removeListener(regionListener);
-								// Brief delay for overlay DOM removal, then capture
-								setTimeout(() => {
-									WebExtension.browser.tabs.captureVisibleTab(regionWindowId, { format: "jpeg", quality: 95 }, (dataUrl: string) => {
-										if (!dataUrl) {
-											port.postMessage({ action: "regionCancelled" });
-										} else {
-											// Send full image + coords via port (same pattern as drawCapture in fullpage)
-											port.postMessage({
-												action: "regionCaptured",
-												dataUrl: dataUrl,
-												x: msg.x, y: msg.y, width: msg.width, height: msg.height, dpr: msg.dpr
-											});
+					let maxCaptureHeight = 16384;
+					let atBottom = lastScrollData.scrollY + viewportHeight >= lastScrollData.pageHeight
+						|| scrollStalled
+						|| (captureCount * viewportHeight) >= maxCaptureHeight;
+
+					if (atBottom) {
+						port.postMessage({ action: "finalize" });
+					} else {
+						port.postMessage({ action: "scroll", scrollTo: captureCount * viewportHeight });
+					}
+				}
+
+				if (message.action === "finalizeComplete") {
+					// Keep window alive — user can switch modes, edit title, then save
+				}
+
+				if (message.action === "save") {
+					// Save to OneNote API from unified renderer window
+					let saveMode = message.mode || "fullpage";
+					let saveTitle = message.title || "";
+					let saveAnnotation = message.annotation || "";
+					let saveSectionId = message.sectionId || "";
+					let saveUrl = message.url || "";
+
+					// Get access token from local storage via offscreen
+					this.clipperData.getValue("userInformation").then((userInfoJson: string) => {
+							let accessToken = "";
+							try {
+								let userInfo = JSON.parse(userInfoJson);
+								accessToken = userInfo && userInfo.data ? userInfo.data.accessToken : "";
+							} catch (e) { /* ignore */ }
+
+							if (!accessToken) {
+								port.postMessage({ action: "saveResult", success: false, error: "Not signed in" });
+								return;
+							}
+
+							// Build OneNote page content based on mode
+							let buildPage = (bodyOnml: string, imageParts: { name: string; blob: Blob; type: string }[]) => {
+								let boundary = "OneNoteRendererBoundary" + Date.now();
+								// UTC offset string — same format as OneNoteApi.OneNotePage.formUtcOffsetString
+								let now = new Date();
+								let offset = now.getTimezoneOffset();
+								let offsetSign = offset >= 0 ? "-" : "+";
+								offset = Math.abs(offset);
+								let offsetHours = Math.floor(offset / 60).toString();
+								let offsetMins = Math.round(offset % 60).toString();
+								if (parseInt(offsetHours, 10) < 10) { offsetHours = "0" + offsetHours; }
+								if (parseInt(offsetMins, 10) < 10) { offsetMins = "0" + offsetMins; }
+								let createdTime = offsetSign + offsetHours + ":" + offsetMins;
+								// Font styling matches OneNoteSaveableFactory.createPostProcessessedHtml
+								let fontStyle = "font-size: 16px; font-family: Verdana;";
+								let presentationHtml = "<!DOCTYPE html><html><head>"
+									+ "<title>" + saveTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</title>"
+									+ "<meta name=\"created\" content=\"" + createdTime + " \">"
+									+ "</head><body>";
+								// Order matches OneNoteSaveableFactory: annotation → citation → content
+								if (saveAnnotation) {
+									let escaped = saveAnnotation.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+									presentationHtml += "<div style=\"" + fontStyle + "\">&quot;" + escaped + "&quot;</div>";
+								}
+								if (saveUrl && saveMode !== "bookmark") {
+									presentationHtml += "<div style=\"" + fontStyle + "\">Clipped from: <a href=\"" + saveUrl + "\">" + saveUrl + "</a></div>";
+								}
+								presentationHtml += bodyOnml;
+								presentationHtml += "</body></html>";
+
+								// Build multipart body
+								let parts: (string | Blob)[] = [];
+								parts.push("--" + boundary + "\r\n");
+								parts.push("Content-Type: application/xhtml+xml\r\n");
+								parts.push("Content-Disposition: form-data; name=\"Presentation\"\r\n\r\n");
+								parts.push(presentationHtml);
+								for (let img of imageParts) {
+									parts.push("\r\n--" + boundary + "\r\n");
+									parts.push("Content-Type: " + img.type + "\r\n");
+									parts.push("Content-Disposition: form-data; name=\"" + img.name + "\"\r\n\r\n");
+									parts.push(img.blob);
+								}
+								parts.push("\r\n--" + boundary + "--\r\n");
+
+								let body = new Blob(parts);
+								let apiUrl = "https://www.onenote.com/api/v1.0/me/notes"
+									+ (saveSectionId ? "/sections/" + encodeURIComponent(saveSectionId) : "")
+									+ "/pages";
+
+								let correlationId = "ON-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+								let requestDate = new Date().toISOString();
+
+								fetch(apiUrl, {
+									method: "POST",
+									headers: {
+										"Authorization": "Bearer " + accessToken,
+										"Content-Type": "multipart/form-data; boundary=" + boundary,
+										"X-CorrelationId": correlationId
+									},
+									body: body
+								}).then((response) => {
+									let serverCorrelation = response.headers.get("X-CorrelationId") || correlationId;
+									let serverRequestId = response.headers.get("X-UserSessionId") || "";
+									if (response.ok) {
+										response.json().then((data) => {
+											let pageUrl = "";
+											try {
+												pageUrl = data && data.links && data.links.oneNoteWebUrl ? data.links.oneNoteWebUrl.href : "";
+											} catch (e) { /* ignore */ }
+											port.postMessage({ action: "saveResult", success: true, pageUrl: pageUrl });
+										}).catch(() => {
+											port.postMessage({ action: "saveResult", success: true, pageUrl: "" });
+										});
+									} else {
+										response.text().then((text) => {
+											let errorMsg = "";
+											try { errorMsg = JSON.parse(text).error.message || text.substring(0, 200); } catch (e) { errorMsg = text.substring(0, 200); }
+											let debugInfo = errorMsg
+												+ "\n\nDate: " + requestDate
+												+ "\nStatus: " + response.status
+												+ "\nX-CorrelationId: " + serverCorrelation
+												+ (serverRequestId ? "\nX-UserSessionId: " + serverRequestId : "");
+											port.postMessage({ action: "saveResult", success: false, error: debugInfo });
+										});
+									}
+								}).catch((err) => {
+									let debugInfo = "Network error: " + (err.message || "Unknown")
+										+ "\nX-CorrelationId: " + correlationId
+										+ "\nDate: " + requestDate;
+									port.postMessage({ action: "saveResult", success: false, error: debugInfo });
+								});
+							};
+
+							if (saveMode === "fullpage") {
+								// Read JPEG from session storage
+								chrome.storage.session.get(["fullPageFinalImage"], (imgStored: any) => {
+									let dataUrl = imgStored && imgStored.fullPageFinalImage ? imgStored.fullPageFinalImage : "";
+									if (dataUrl) {
+										fetch(dataUrl).then((r) => r.blob()).then((blob) => {
+											let imgName = "fullPageImage";
+											let bodyOnml = "<p><img src=\"name:" + imgName + "\" width=\"" + contentWidth + "\" /></p>";
+											buildPage(bodyOnml, [{ name: imgName, blob: blob, type: "image/jpeg" }]);
+										});
+									} else {
+										port.postMessage({ action: "saveResult", success: false, error: "No screenshot data" });
+									}
+								});
+							} else if (saveMode === "region") {
+								// Read region images from separate session storage keys (avoids size limits)
+								chrome.storage.session.get(["regionImageCount"], (countStored: any) => {
+									let count = countStored && countStored.regionImageCount ? countStored.regionImageCount : 0;
+									if (count === 0) {
+										port.postMessage({ action: "saveResult", success: false, error: "No region data" });
+										return;
+									}
+									let keys: string[] = [];
+									for (let i = 0; i < count; i++) { keys.push("regionImage_" + i); }
+									chrome.storage.session.get(keys, (imgStored: any) => {
+										let images: string[] = [];
+										for (let i = 0; i < count; i++) {
+											if (imgStored["regionImage_" + i]) { images.push(imgStored["regionImage_" + i]); }
 										}
-										WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
-											if (WebExtension.browser.runtime.lastError) { /* ignore */ }
+										if (images.length === 0) {
+											port.postMessage({ action: "saveResult", success: false, error: "No region data" });
+											return;
+										}
+										Promise.all(images.map((dataUrl: string, idx: number) =>
+											fetch(dataUrl).then((r) => r.blob()).then((blob) => ({
+												name: "regionImage" + idx,
+												blob: blob,
+												type: dataUrl.indexOf("image/png") !== -1 ? "image/png" : "image/jpeg"
+											}))
+										)).then((imageParts) => {
+											let bodyOnml = imageParts.map((p) =>
+												"<p><img src=\"name:" + p.name + "\" /></p>"
+											).join("&nbsp;");
+											buildPage(bodyOnml, imageParts);
 										});
 									});
-								}, 150);
-							}
-
-							if (msg.action === "regionCancelled") {
-								WebExtension.browser.runtime.onMessage.removeListener(regionListener);
-								port.postMessage({ action: "regionCancelled" });
-								WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
-									if (WebExtension.browser.runtime.lastError) { /* ignore */ }
 								});
+							} else if (saveMode === "article") {
+								let articleHtml = message.contentHtml || "";
+								buildPage(articleHtml, []);
+							} else if (saveMode === "bookmark") {
+								let bookmarkHtml = message.contentHtml || "";
+								buildPage(bookmarkHtml, []);
+							} else {
+								port.postMessage({ action: "saveResult", success: false, error: "Unsupported mode" });
 							}
-						};
-						WebExtension.browser.runtime.onMessage.addListener(regionListener);
-					}
+						});
+				}
 
-					if (message.action === "signOut") {
-						let authType: AuthType = (AuthType as any)[message.authType];
-						if (authType !== undefined) {
-							this.doSignOutAction(authType);
+				if (message.action === "startRegion") {
+					// Focus original tab, inject standalone overlay, listen for result
+					let regionTabId = this.tab.id;
+					let regionWindowId = 0;
+					WebExtension.browser.tabs.get(regionTabId, (t: any) => {
+						if (!t || !t.windowId) { return; }
+						regionWindowId = t.windowId;
+						WebExtension.browser.windows.update(regionWindowId, { focused: true }, () => {
+							if (WebExtension.browser.runtime.lastError) { /* ignore */ }
+							WebExtension.browser.scripting.executeScript({
+								target: { tabId: regionTabId },
+								files: ["regionOverlay.js"]
+							});
+						});
+					});
+
+					// Listen for overlay messages (regionSelected / regionCancelled)
+					// Messages are JSON strings (required by offscreen.ts message handler)
+					let regionListener = (rawMsg: any, sender: any) => {
+						if (!sender.tab || sender.tab.id !== regionTabId) { return; }
+						let msg: any;
+						try { msg = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg; } catch (e) { return; }
+
+						if (msg.action === "regionSelected") {
+							WebExtension.browser.runtime.onMessage.removeListener(regionListener);
+							// Brief delay for overlay DOM removal, then capture
+							setTimeout(() => {
+								WebExtension.browser.tabs.captureVisibleTab(regionWindowId, { format: "jpeg", quality: 95 }, (dataUrl: string) => {
+									if (!dataUrl) {
+										port.postMessage({ action: "regionCancelled" });
+									} else {
+										// Send full image + coords via port (same pattern as drawCapture in fullpage)
+										port.postMessage({
+											action: "regionCaptured",
+											dataUrl: dataUrl,
+											x: msg.x, y: msg.y, width: msg.width, height: msg.height, dpr: msg.dpr
+										});
+									}
+									WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+										if (WebExtension.browser.runtime.lastError) { /* ignore */ }
+									});
+								});
+							}, 150);
 						}
-						// Clear user data from storage
-						this.clipperData.removeKey("userInformation");
-						this.clipperData.removeKey("curSection");
-						this.clipperData.removeKey("notebooks");
-						this.clipperData.removeKey("isUserLoggedIn");
 
-						// Close renderer window and show sign-in panel via messaging
-						let renderId = this.activeRendererWindowId;
-						this.activeRendererWindowId = 0;
-						if (renderId) {
-							WebExtension.browser.windows.remove(renderId, () => {
-								// Tell the old clipper UI to reset state and show sign-in
-								// via existing communicator — no re-injection needed
-								this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.showSignInPanel);
+						if (msg.action === "regionCancelled") {
+							WebExtension.browser.runtime.onMessage.removeListener(regionListener);
+							port.postMessage({ action: "regionCancelled" });
+							WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+								if (WebExtension.browser.runtime.lastError) { /* ignore */ }
 							});
 						}
+					};
+					WebExtension.browser.runtime.onMessage.addListener(regionListener);
+				}
+
+				if (message.action === "signOut") {
+					let authType: AuthType = (AuthType as any)[message.authType];
+					if (authType !== undefined) {
+						this.doSignOutAction(authType);
 					}
-				});
-			};
+					// Clear user data from storage
+					this.clipperData.removeKey("userInformation");
+					this.clipperData.removeKey("curSection");
+					this.clipperData.removeKey("notebooks");
+					this.clipperData.removeKey("isUserLoggedIn");
 
-			// Listen for the renderer page to connect via port
-			let onConnect = (port: chrome.runtime.Port) => {
-				if (port.name !== "renderer") {
-					return;
-				}
-				WebExtension.browser.runtime.onConnect.removeListener(onConnect);
-
-				if (windowReady) {
-					startCapture(port);
-				} else {
-					// Window.create callback hasn't fired yet, defer
-					pendingPort = port;
-				}
-			};
-
-			WebExtension.browser.runtime.onConnect.addListener(onConnect);
-
-			// Create the renderer window. Must be focused so Chrome paints it
-			// for captureVisibleTab. It auto-closes when capture completes.
-			WebExtension.browser.windows.create({
-				url: rendererUrl,
-				type: "popup",
-				width: renderWidth,
-				height: renderHeight,
-				left: renderLeft,
-				top: renderTop,
-				focused: true
-			}, (renderWindow: chrome.windows.Window) => {
-				if (!renderWindow) {
-					WebExtension.browser.runtime.onConnect.removeListener(onConnect);
-					resolve([]);
-					return;
-				}
-				renderWindowId = renderWindow.id;
-				this.activeRendererWindowId = renderWindowId;
-				windowReady = true;
-
-				// Close renderer if the source tab navigates away
-				let onTabUpdated = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
-					if (tabId === this.tab.id && changeInfo.url) {
-						WebExtension.browser.tabs.onUpdated.removeListener(onTabUpdated);
-						this.activeRendererCleanup();
-					}
-				};
-				WebExtension.browser.tabs.onUpdated.addListener(onTabUpdated);
-
-				// If port connected before window.create callback, start now
-				if (pendingPort) {
-					startCapture(pendingPort);
+					// Tell renderer to show sign-in panel (keep window open)
+					port.postMessage({ action: "signOutComplete" });
 				}
 			});
-			}); // end getCurrent
+		};
+
+		// Listen for the renderer page to connect via port
+		let onConnect = (port: chrome.runtime.Port) => {
+			if (port.name !== "renderer") {
+				return;
+			}
+			WebExtension.browser.runtime.onConnect.removeListener(onConnect);
+
+			if (windowReady) {
+				setupPort(port);
+			} else {
+				// Window.create callback hasn't fired yet, defer
+				pendingPort = port;
+			}
+		};
+
+		WebExtension.browser.runtime.onConnect.addListener(onConnect);
+
+		// Create the renderer window. Must be focused so Chrome paints it
+		// for captureVisibleTab.
+		WebExtension.browser.windows.create({
+			url: rendererUrl,
+			type: "popup",
+			width: renderWidth,
+			height: renderHeight,
+			left: renderLeft,
+			top: renderTop,
+			focused: true
+		}, (renderWindow: chrome.windows.Window) => {
+			if (!renderWindow) {
+				WebExtension.browser.runtime.onConnect.removeListener(onConnect);
+				return;
+			}
+			renderWindowId = renderWindow.id;
+			this.activeRendererWindowId = renderWindowId;
+			windowReady = true;
+
+			// Close renderer if the source tab navigates away
+			let onTabUpdated = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
+				if (tabId === this.tab.id && changeInfo.url) {
+					WebExtension.browser.tabs.onUpdated.removeListener(onTabUpdated);
+					this.activeRendererCleanup();
+				}
+			};
+			WebExtension.browser.tabs.onUpdated.addListener(onTabUpdated);
+
+			// If port connected before window.create callback, start now
+			if (pendingPort) {
+				setupPort(pendingPort);
+			}
 		});
+		}); // end getCurrent
 	}
 
 	private launchWebExtensionPopupAndWaitForClose(url: string, autoCloseDestinationUrl: string): Promise<boolean> {
