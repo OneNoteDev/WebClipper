@@ -287,8 +287,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				fullPageUrl: msg.url || "",
 				fullPageStatusText: "Capturing page..."
 			};
-			if (msg.sheets) { storageData.fullPageStylesheets = msg.sheets; }
-
 			chrome.storage.session.set(storageData, () => {
 				contentCaptured = true;
 				if (activePort) {

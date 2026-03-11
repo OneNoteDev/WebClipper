@@ -9,6 +9,13 @@ import {Session} from "./logging/submodules/session";
 // Content is rendered inside an iframe for CSS isolation — the renderer's
 // own styles (scrollbar hiding, overflow) don't interfere with the page's CSS.
 let port = chrome.runtime.connect({ name: "renderer" });
+let portDisconnected = false;
+port.onDisconnect.addListener(() => { portDisconnected = true; });
+function safeSend(msg: any) {
+	if (!portDisconnected) {
+		try { port.postMessage(msg); } catch (e) { portDisconnected = true; }
+	}
+}
 let iframe = document.getElementById("content-frame") as HTMLIFrameElement;
 let previewFrame = document.getElementById("preview-frame") as HTMLIFrameElement;
 let previewContainer = document.getElementById("preview-container") as HTMLDivElement;
@@ -98,13 +105,13 @@ let strings = {
 // --- Telemetry helpers ---
 // Send telemetry via port to worker's logger using the same LogDataPackage format
 function logFunnel(label: Funnel.Label) {
-	port.postMessage({ action: "telemetry", data: { methodName: LogMethods.LogFunnel, methodArgs: [label] } });
+	safeSend({ action: "telemetry", data: { methodName: LogMethods.LogFunnel, methodArgs: [label] } });
 }
 function logSessionEnd(trigger: Session.EndTrigger) {
-	port.postMessage({ action: "telemetry", data: { methodName: LogMethods.LogSessionEnd, methodArgs: [trigger] } });
+	safeSend({ action: "telemetry", data: { methodName: LogMethods.LogSessionEnd, methodArgs: [trigger] } });
 }
 function logSessionStart() {
-	port.postMessage({ action: "telemetry", data: { methodName: LogMethods.LogSessionStart, methodArgs: [] } });
+	safeSend({ action: "telemetry", data: { methodName: LogMethods.LogSessionStart, methodArgs: [] } });
 }
 
 // Cancel button closes the window (port disconnect triggers cleanup in worker)
@@ -289,7 +296,7 @@ signoutLink.addEventListener("click", (e) => {
 	logFunnel(Funnel.Label.SignOut);
 	logSessionEnd(Session.EndTrigger.SignOut);
 	logSessionStart();
-	port.postMessage({ action: "signOut", authType: userAuthType });
+	safeSend({ action: "signOut", authType: userAuthType });
 });
 
 // --- Sign-in state detection ---
@@ -345,13 +352,13 @@ signinMsaBtn.addEventListener("click", () => {
 	signingIn = true;
 	logFunnel(Funnel.Label.AuthAttempted);
 	showSignInProgress();
-	port.postMessage({ action: "signIn", authType: "Msa" });
+	safeSend({ action: "signIn", authType: "Msa" });
 });
 signinOrgIdBtn.addEventListener("click", () => {
 	signingIn = true;
 	logFunnel(Funnel.Label.AuthAttempted);
 	showSignInProgress();
-	port.postMessage({ action: "signIn", authType: "OrgId" });
+	safeSend({ action: "signIn", authType: "OrgId" });
 });
 
 // --- Auto-fetch fresh notebooks (runs in background during capture) ---
@@ -757,7 +764,7 @@ function startRegionCapture() {
 	statusText.textContent = loc("WebClipper.ClipType.Region.ProgressLabel", "Select a region on the page...");
 	saveBtn.disabled = true;
 	// Keep previewContainer visible (display:block) to hold flex space — sidebar stays right
-	port.postMessage({ action: "startRegion" });
+	safeSend({ action: "startRegion" });
 }
 
 function switchToRegion() {
@@ -867,10 +874,9 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 port.onMessage.addListener((message: any) => {
 	if (message.action === "loadContent") {
 		// Read HTML, base URL, cached stylesheets, and page metadata from session storage
-		chrome.storage.session.get(["fullPageHtmlContent", "fullPageBaseUrl", "fullPageStylesheets", "fullPageTitle", "fullPageUrl"], (stored: any) => {
+		chrome.storage.session.get(["fullPageHtmlContent", "fullPageBaseUrl", "fullPageTitle", "fullPageUrl"], (stored: any) => {
 			let rawHtml = stored && stored.fullPageHtmlContent ? stored.fullPageHtmlContent : "";
 			let baseUrl = stored && stored.fullPageBaseUrl ? stored.fullPageBaseUrl : "";
-			let cachedStylesheets: { [url: string]: { cssText: string; media: string } } = stored && stored.fullPageStylesheets ? stored.fullPageStylesheets : {};
 
 			// Populate title and source URL (may not have been available on initial page load)
 			if (stored && stored.fullPageTitle && !titleField.value) { titleField.value = stored.fullPageTitle; }
@@ -967,31 +973,8 @@ port.onMessage.addListener((message: any) => {
 				}
 			}
 
-			// Replace <link rel="stylesheet"> tags with cached CSS from session storage
-			let stylesheetLinks = doc.querySelectorAll('link[rel="stylesheet"]');
-			for (let i = stylesheetLinks.length - 1; i >= 0; i--) {
-				let link = stylesheetLinks[i] as HTMLLinkElement;
-				let href = link.getAttribute("href");
-				if (!href) { continue; }
+			// Fetch external stylesheets and inline them (browser fetches via absolute URLs)
 
-				let resolvedHref: string;
-				try {
-					resolvedHref = baseUrl ? new URL(href, baseUrl).href : href;
-				} catch (e) {
-					continue;
-				}
-
-				if (cachedStylesheets[resolvedHref] && link.parentNode) {
-					let styleEl = doc.createElement("style");
-					styleEl.textContent = cachedStylesheets[resolvedHref].cssText;
-					if (cachedStylesheets[resolvedHref].media) {
-						styleEl.setAttribute("media", cachedStylesheets[resolvedHref].media);
-					}
-					link.parentNode.replaceChild(styleEl, link);
-				}
-			}
-
-			// For remaining <link> tags without cached CSS, fetch directly
 			let remainingLinks = doc.querySelectorAll('link[rel="stylesheet"]');
 			let fetchPromises: Promise<void>[] = [];
 
@@ -1046,7 +1029,7 @@ port.onMessage.addListener((message: any) => {
 
 			// Inject a scrollbar-hiding style into the captured document's head
 			let scrollbarStyle = doc.createElement("style");
-			scrollbarStyle.textContent = "::-webkit-scrollbar{display:none}html{scrollbar-width:none;overflow-x:hidden!important}";
+			scrollbarStyle.textContent = "::-webkit-scrollbar{display:none}html{scrollbar-width:none;overflow-x:hidden!important}[hidden]{display:none!important}";
 			doc.head.appendChild(scrollbarStyle);
 
 			// Wait for CSS fetches, then render into iframe
@@ -1087,9 +1070,9 @@ port.onMessage.addListener((message: any) => {
 						let el = allElements[i] as HTMLElement;
 						let computed = iframeWin.getComputedStyle(el);
 						if (computed.position === "fixed") {
-							el.style.position = "absolute";
+							el.style.setProperty("position", "absolute", "important");
 						} else if (computed.position === "sticky") {
-							el.style.position = "static";
+							el.style.setProperty("position", "static", "important");
 						}
 						// Reset viewport-relative min-heights that create blank space
 						let minH = parseInt(computed.minHeight, 10);
@@ -1107,7 +1090,7 @@ port.onMessage.addListener((message: any) => {
 					if (parseInt(htmlComputed.paddingTop, 10) > 0) { htmlEl.style.paddingTop = "0"; }
 					if (parseInt(htmlComputed.marginTop, 10) > 0) { htmlEl.style.marginTop = "0"; }
 
-					port.postMessage({
+					safeSend({
 						action: "dimensions",
 						viewportHeight: viewportH,
 						pageHeight: htmlEl.scrollHeight,
@@ -1150,7 +1133,7 @@ port.onMessage.addListener((message: any) => {
 		let iframeWin = iframe.contentWindow;
 		let iframeDoc = iframe.contentDocument;
 		iframeWin.scrollTo(0, message.scrollTo);
-		port.postMessage({
+		safeSend({
 			action: "scrollResult",
 			scrollY: iframeWin.scrollY,
 			pageHeight: iframeDoc.documentElement.scrollHeight
@@ -1216,7 +1199,7 @@ port.onMessage.addListener((message: any) => {
 				// Cap at canvas height
 				let remaining = stitchCanvas.height - stitchYOffset;
 				if (remaining <= 0) {
-					port.postMessage({ action: "drawComplete" });
+					safeSend({ action: "drawComplete" });
 					return;
 				}
 				if (srcH > remaining) {
@@ -1227,10 +1210,10 @@ port.onMessage.addListener((message: any) => {
 				stitchYOffset += srcH;
 			}
 
-			port.postMessage({ action: "drawComplete" });
+			safeSend({ action: "drawComplete" });
 		};
 		img.onerror = function() {
-			port.postMessage({ action: "drawComplete" });
+			safeSend({ action: "drawComplete" });
 		};
 		img.src = message.dataUrl;
 	}
@@ -1283,7 +1266,7 @@ port.onMessage.addListener((message: any) => {
 					signoutLink.style.pointerEvents = "";
 					signoutLink.style.opacity = "";
 
-					port.postMessage({ action: "finalizeComplete" });
+					safeSend({ action: "finalizeComplete" });
 				});
 			};
 			reader.readAsDataURL(blob);
@@ -1491,7 +1474,7 @@ saveBtn.addEventListener("click", () => {
 	} else if (currentMode === "bookmark" && cachedBookmarkHtml) {
 		saveMsg.contentHtml = cachedBookmarkHtml;
 	}
-	port.postMessage(saveMsg);
+	safeSend(saveMsg);
 });
 
 // Block keyboard and scroll on non-interactive elements — sidebar inputs stay usable
@@ -1541,4 +1524,4 @@ window.addEventListener("blur", () => {
 });
 
 // Signal that the renderer is ready
-port.postMessage({ action: "ready" });
+safeSend({ action: "ready" });

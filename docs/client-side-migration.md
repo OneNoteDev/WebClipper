@@ -51,7 +51,7 @@ The server-side approach used Puppeteer to render sanitized HTML and produce a f
 1. **Store HTML in `chrome.storage.session`** — The page's HTML content, base URL, and localized status text are written to session storage (avoids JSON serialization bottleneck with large payloads)
 2. **Open a renderer popup window** — An extension page (`renderer.html`) is opened at the same position/size as the user's browser with `focused: true`. Width is capped at 1280px. Zoom is forced to 100% via `chrome.tabs.setZoom`. Title bar shows localized "Clipping Page" status text
 3. **Port-based communication** — The renderer page connects to the service worker via `chrome.runtime.connect({ name: "renderer" })`. Commands (loadContent, scroll) are exchanged over this port
-4. **Renderer loads content** — Reads HTML from `chrome.storage.session`, strips `<script>` tags, preserves `<style>`, `<link rel="stylesheet">`, and `<meta>` tags. Rewrites relative URLs (images, stylesheets, srcset) to absolute using `new URL(relative, baseUrl)` (CSP blocks `<base href>` on extension pages). Injects cached CSS as `<style>` blocks, fetches remaining cross-origin sheets via `fetch()`. Renders content inside an iframe for CSS isolation. Neutralizes fixed/sticky positioning after stylesheets load. User interaction blocked by transparent overlay div (`#interaction-shield`) + keyboard/wheel JS listeners
+4. **Renderer loads content** — Reads HTML from `chrome.storage.session`, strips `<script>` tags, preserves `<style>`, `<link rel="stylesheet">`, and `<meta>` tags. Rewrites relative URLs (images, stylesheets, srcset) to absolute using `new URL(relative, baseUrl)` (CSP blocks `<base href>` on extension pages). Fetches external stylesheets via `fetch()` and inlines as `<style>` blocks. Renders content inside an iframe for CSS isolation. Injects `[hidden]{display:none!important}` to enforce HTML hidden attribute. Neutralizes fixed/sticky positioning with `!important` after stylesheets load. User interaction blocked by transparent overlay div (`#interaction-shield`) + keyboard/wheel JS listeners
 5. **Scroll-capture with incremental stitching** — The service worker tells the renderer to scroll to each viewport position, waits 500ms (Chrome's `MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND` rate limit = 2/sec), then calls `captureVisibleTab()` to take a PNG screenshot (lossless). Each capture is sent back to the renderer via port for immediate drawing onto a hidden canvas (`display:none`, invisible to captureVisibleTab). Scroll stall detection stops capture when `scrollY` stops changing. Canvas height capped at pre-conversion `contentHeight` or 16,384px
 6. **Finalize to Blob** — When capture is complete, the renderer trims the canvas to actual content height, converts to JPEG 90% via `canvas.toBlob()`, stores the single final data URL in `chrome.storage.session`. The helper reads this single image and converts to Blob via `fetch(dataUrl).then(r => r.blob())`
 7. **Binary MIME part upload** — The Blob is sent as a binary MIME part in the multipart Graph API request (`<img src="name:FullPageImageXXXX" />`), eliminating ~33% base64 encoding overhead
@@ -141,11 +141,13 @@ User clicks extension button
     → opens renderer.html as popup window
 
 contentCaptureInject.ts (content script on original tab)
-    → reads document.documentElement.outerHTML + document.styleSheets
-    → chrome.runtime.sendMessage(JSON.stringify({...})) to worker
+    → clones DOM, inlines hidden elements, neutralizes sticky/fixed (!important),
+      flattens shadow DOM, converts canvas→img, adds base tag, image sizes,
+      removes unwanted items, resolves lazy images
+    → chrome.runtime.sendMessage(JSON.stringify({html, baseUrl, title, url}))
 
 Worker receives contentCaptureComplete
-    → stores HTML/CSS/title/URL in chrome.storage.session
+    → stores HTML/title/URL in chrome.storage.session
     → sends "loadContent" to renderer via port
 
 Renderer loads content into iframe, sends "dimensions"
@@ -186,14 +188,14 @@ User clicks Clip
 ## Known Issues / Remaining Work
 
 ### 1. CSS Fidelity (Implemented)
-- **DOM cleaning:** `contentCaptureInject.ts` runs the full DomUtils-equivalent pipeline as self-contained inline functions (no imports): clone → inline hidden elements → flatten shadow DOM → canvas→image → base tag → image sizes → remove unwanted items (scripts, noscript, clipper elements, non-web links, binary styles) → remove srcset → lazy image resolution (data-src → src)
-- **CSS caching:** `contentCaptureInject.ts` extracts CSS from `document.styleSheets` (CSSOM), sends to worker, stored in `chrome.storage.session`, injected by renderer as `<style>` blocks
-- **Fetch fallback:** Cross-origin sheets (SecurityError on `cssRules`) are fetched directly by the renderer via `fetch()` — extension pages have `host_permissions: <all_urls>`
-- **Iframe isolation:** Renderer uses `<iframe id="content-frame">` — page CSS and renderer styles never conflict
-- **Position neutralization:** `fixed → absolute`, `sticky → static`, viewport-height `min-height` reset
+- **DOM cleaning:** `contentCaptureInject.ts` runs the master DomUtils-compatible pipeline plus enhancements as self-contained inline functions (no imports): clone → inline hidden elements (computed display:none) → neutralize positioning (sticky→relative, fixed→absolute, all with !important) → flatten shadow DOM → canvas→image → base tag → image sizes → remove unwanted items (base64 binary styles [data:application], clipper elements + local-ref iframes, scripts/noscript, srcset, non-http/https link hrefs) → full DOCTYPE serialization → lazy image resolution (data-src → src)
+- **CSS delivery:** Renderer fetches external stylesheets directly via `fetch()` and inlines as `<style>` blocks — no CSSOM caching or session storage intermediary. Extension pages have `host_permissions: <all_urls>`
+- **Iframe isolation:** Renderer uses `<iframe id="content-frame">` — page CSS and renderer styles never conflict. Injects `[hidden]{display:none!important}` to enforce HTML hidden attribute against CSS overrides
+- **Position neutralization:** `sticky → relative !important`, `fixed → absolute !important` at both capture time (contentCaptureInject.ts) and render time (renderer.ts backup). Prevents sticky element repetition in stitched multi-viewport captures
 - **Content height cropping:** `scrollHeight` measured before position conversions to avoid inflated canvas height
+- **Port safety:** All `port.postMessage` calls wrapped in `safeSend()` to handle disconnected port errors (e.g., from devtools inspection)
 - **Files:** `contentCaptureInject.ts`, `renderer.ts`, `renderer.html`, `webExtensionWorker.ts`
-- **Remaining:** Bottom void on some grid-layout sites; right-edge clipping on zero-margin pages; sticky element duplication
+- **Remaining:** Bottom void on some grid-layout sites; right-edge clipping on zero-margin pages
 
 ### 2. Renderer Window Visibility
 - `captureVisibleTab` requires the window to be painted — occluded/off-screen windows produce blank captures
@@ -205,7 +207,7 @@ User clicks Clip
 - PNG captures sent individually to renderer via port (no session storage for intermediates)
 - Canvas height capped at pre-conversion `contentHeight` or 16,384px (Chrome canvas dimension limit)
 - Scroll stall detection stops capture when page can't scroll further
-- Final JPEG 95% stored in session storage (~1-2MB); session storage only holds HTML + CSS cache + final image
+- Final JPEG 95% stored in session storage (~1-2MB); session storage only holds HTML + metadata + final image
 - Very long pages get bottom truncated; OneNote API would likely reject larger images anyway
 
 ### 4. Right-Edge Content

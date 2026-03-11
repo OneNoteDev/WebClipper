@@ -2,16 +2,28 @@
 // Injected by worker via chrome.scripting.executeScript.
 // Messages are JSON strings (required by offscreen.ts message handler).
 //
-// DOM cleaning functions extracted from DomUtils.getCleanDomOfCurrentPage to avoid
-// importing the full DomUtils module (which pulls in Constants, ObjectUtils, VideoUtils).
-// These run in the content script context with access to the live page DOM.
+// DOM cleaning pipeline: master's DomUtils.getCleanDomOfCurrentPage baseline +
+// enhancements for multi-viewport screenshot stitching:
+//   clone → inlineHiddenElements → neutralizePositioning → flattenShadowDomSlots →
+//   convertCanvasToImages → addBaseTag → addImageSizes → removeUnwantedItems
+//   (removeStylesWithBase64, removeClipperElements + iframe filter,
+//   removeUnwantedElements, removeUnwantedAttributes, removeUnsupportedHrefs) →
+//   getDomString → resolveLazyImages
 
 (function() {
-	// --- DOM cleaning (extracted from DomUtils) ---
+	// --- Helpers ---
+
+	function isLocalReferenceUrl(url: string): boolean {
+		return !(url.indexOf("https://") === 0 || url.indexOf("http://") === 0);
+	}
+
+	// --- DOM cleaning (master DomUtils baseline) ---
 
 	function cloneDocument(originalDoc: Document): Document {
 		return originalDoc.cloneNode(true) as Document;
 	}
+
+	// --- Enhancements (not in master, run on clone before master steps) ---
 
 	function inlineHiddenElements(doc: Document, originalDoc: Document): void {
 		if (!originalDoc.body || !doc.body) { return; }
@@ -32,6 +44,23 @@
 		}
 	}
 
+	function neutralizePositioning(doc: Document, originalDoc: Document): void {
+		if (!originalDoc.body || !doc.body) { return; }
+		let originalElements = originalDoc.body.querySelectorAll("*");
+		let clonedElements = doc.body.querySelectorAll("*");
+		for (let i = 0; i < originalElements.length && i < clonedElements.length; i++) {
+			try {
+				let computed = window.getComputedStyle(originalElements[i]);
+				let pos = computed.position;
+				if (pos === "sticky") {
+					(clonedElements[i] as HTMLElement).style.setProperty("position", "relative", "important");
+				} else if (pos === "fixed") {
+					(clonedElements[i] as HTMLElement).style.setProperty("position", "absolute", "important");
+				}
+			} catch (e) { /* skip */ }
+		}
+	}
+
 	function flattenShadowDomSlots(doc: Document, originalDoc: Document): void {
 		let templates = doc.querySelectorAll("template[shadowroot], template[shadowrootmode]");
 		for (let i = 0; i < templates.length; i++) {
@@ -48,87 +77,6 @@
 					(slots[j] as HTMLElement).style.setProperty("display", "none", "important");
 				}
 			}
-		}
-	}
-
-	function convertCanvasElementsToImages(doc: Document, originalDoc: Document): void {
-		let originalCanvases = originalDoc.querySelectorAll("canvas");
-		let clonedCanvases = doc.querySelectorAll("canvas");
-		for (let i = 0; i < originalCanvases.length && i < clonedCanvases.length; i++) {
-			try {
-				let img = doc.createElement("img");
-				img.src = (originalCanvases[i] as HTMLCanvasElement).toDataURL();
-				img.style.cssText = window.getComputedStyle(originalCanvases[i]).cssText;
-				if (clonedCanvases[i].parentNode) {
-					clonedCanvases[i].parentNode.replaceChild(img, clonedCanvases[i]);
-				}
-			} catch (e) { /* tainted canvas — skip */ }
-		}
-	}
-
-	function addBaseTagIfNecessary(doc: Document): void {
-		if (!doc.head) {
-			let headEl = doc.createElement("head");
-			let htmlEl = doc.getElementsByTagName("html")[0] as HTMLHtmlElement;
-			if (htmlEl) { htmlEl.insertBefore(headEl, htmlEl.children[0]); }
-		}
-		let bases = doc.head.querySelectorAll("base");
-		if (bases.length === 0) {
-			let baseUrl = document.location.href.split("#")[0].split("?")[0];
-			baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/") + 1);
-			let baseTag = doc.createElement("base") as HTMLBaseElement;
-			baseTag.href = baseUrl;
-			doc.head.insertBefore(baseTag, doc.head.firstChild);
-		}
-	}
-
-	function addImageSizeInformation(doc: Document): void {
-		let imgs = doc.getElementsByTagName("img");
-		for (let i = 0; i < imgs.length; i++) {
-			let img = imgs[i];
-			if (!img.hasAttribute("data-height")) { img.setAttribute("data-height", img.height.toString()); }
-			if (!img.hasAttribute("data-width")) { img.setAttribute("data-width", img.width.toString()); }
-		}
-	}
-
-	function removeUnwantedItems(doc: Document): void {
-		// Remove script and noscript elements
-		let scripts = doc.querySelectorAll("script, noscript");
-		for (let i = scripts.length - 1; i >= 0; i--) {
-			if (scripts[i].parentNode) { scripts[i].parentNode.removeChild(scripts[i]); }
-		}
-		// Remove clipper-injected elements (legacy — may not exist in V3 flow)
-		let clipperIds = ["clipperRootScript", "clipperUiFrame", "clipperExtFrame"];
-		for (let j = 0; j < clipperIds.length; j++) {
-			let el = doc.getElementById(clipperIds[j]);
-			if (el && el.parentNode) { el.parentNode.removeChild(el); }
-		}
-		// Remove links with non-web schemes (chrome-extension://, file://, etc.)
-		let links = doc.querySelectorAll("link");
-		for (let i = links.length - 1; i >= 0; i--) {
-			let href = links[i].getAttribute("href") || "";
-			if (href.length === 0) { continue; }
-			// Keep http, https, protocol-relative, and relative paths
-			if (href.indexOf("http://") === 0 || href.indexOf("https://") === 0 || href.indexOf("//") === 0) { continue; }
-			if (href.indexOf("/") === 0 || href.indexOf(".") === 0 || /^[a-zA-Z0-9]/.test(href)) {
-				// Relative path or filename — keep
-				if (href.indexOf(":") === -1 || href.indexOf(":") > 5) { continue; }
-			}
-			// Non-web scheme — remove
-			if (links[i].parentNode) { links[i].parentNode.removeChild(links[i]); }
-		}
-		// Remove base64-encoded binary styles (large, cause issues)
-		let styles = doc.querySelectorAll("style");
-		for (let i = styles.length - 1; i >= 0; i--) {
-			let text = styles[i].textContent || "";
-			if (text.indexOf("data:application/") !== -1 || text.indexOf("data:font/") !== -1) {
-				if (styles[i].parentNode) { styles[i].parentNode.removeChild(styles[i]); }
-			}
-		}
-		// Remove srcset from images — forces browser to use src only (matches old DomUtils behavior)
-		let imgs = doc.getElementsByTagName("img");
-		for (let i = 0; i < imgs.length; i++) {
-			imgs[i].removeAttribute("srcset");
 		}
 	}
 
@@ -152,46 +100,146 @@
 		});
 	}
 
-	// --- Main capture flow ---
+	// --- Master DomUtils steps ---
 
-	// Clone and clean the DOM (same pipeline as old clipperInject.ts → DomUtils)
+	function convertCanvasElementsToImages(doc: Document, originalDoc: Document): void {
+		let originalCanvases = originalDoc.querySelectorAll("canvas");
+		let clonedCanvases = doc.querySelectorAll("canvas");
+		for (let i = 0; i < originalCanvases.length && i < clonedCanvases.length; i++) {
+			try {
+				let img = doc.createElement("img");
+				img.src = (originalCanvases[i] as HTMLCanvasElement).toDataURL();
+				img.style.cssText = window.getComputedStyle(originalCanvases[i]).cssText;
+				if (clonedCanvases[i].parentNode) {
+					clonedCanvases[i].parentNode.replaceChild(img, clonedCanvases[i]);
+				}
+			} catch (e) { /* tainted canvas — skip */ }
+		}
+	}
+
+	function addBaseTagIfNecessary(doc: Document, location: Location): void {
+		if (!doc.head) {
+			let headEl = doc.createElement("head");
+			let htmlEl = doc.getElementsByTagName("html")[0] as HTMLHtmlElement;
+			if (htmlEl) { htmlEl.insertBefore(headEl, htmlEl.children[0]); }
+		}
+		let bases = doc.head.querySelectorAll("base");
+		if (bases.length === 0) {
+			let baseUrl = location.href.split("#")[0].split("?")[0];
+			baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/") + 1);
+			let baseTag = doc.createElement("base") as HTMLBaseElement;
+			baseTag.href = baseUrl;
+			doc.head.insertBefore(baseTag, doc.head.firstChild);
+		}
+	}
+
+	function addImageSizeInformationToDom(doc: Document): void {
+		let imgs = doc.getElementsByTagName("img");
+		for (let i = 0; i < imgs.length; i++) {
+			let img = imgs[i];
+			if (!img.hasAttribute("data-height")) { img.setAttribute("data-height", img.height.toString()); }
+			if (!img.hasAttribute("data-width")) { img.setAttribute("data-width", img.width.toString()); }
+		}
+	}
+
+	// --- removeUnwantedItems sub-functions (master order) ---
+
+	function removeStylesWithBase64EncodedBinaries(doc: Document): void {
+		let styles = doc.querySelectorAll("style");
+		for (let i = styles.length - 1; i >= 0; i--) {
+			let text = (styles[i] as HTMLElement).innerHTML;
+			if (text.indexOf("data:application") !== -1) {
+				if (styles[i].parentNode) { styles[i].parentNode.removeChild(styles[i]); }
+			}
+		}
+	}
+
+	function removeClipperElements(doc: Document): void {
+		// Remove clipper-injected elements by ID
+		let clipperIds = ["clipperRootScript", "clipperUiFrame", "clipperExtFrame"];
+		for (let j = 0; j < clipperIds.length; j++) {
+			let el = doc.getElementById(clipperIds[j]);
+			if (el && el.parentNode) { el.parentNode.removeChild(el); }
+		}
+		// Remove iframes that point to local (non-http/https) URLs
+		let iframes = doc.querySelectorAll("iframe");
+		for (let i = iframes.length - 1; i >= 0; i--) {
+			let src = (iframes[i] as HTMLIFrameElement).src;
+			if (isLocalReferenceUrl(src)) {
+				if (iframes[i].parentNode) { iframes[i].parentNode.removeChild(iframes[i]); }
+			}
+		}
+	}
+
+	function removeUnwantedElements(doc: Document): void {
+		let scripts = doc.querySelectorAll("script, noscript");
+		for (let i = scripts.length - 1; i >= 0; i--) {
+			if (scripts[i].parentNode) { scripts[i].parentNode.removeChild(scripts[i]); }
+		}
+	}
+
+	function removeUnwantedAttributes(doc: Document): void {
+		let images = doc.getElementsByTagName("IMG");
+		for (let i = 0; i < images.length; i++) {
+			let image = images[i] as HTMLImageElement;
+			(image as any).srcset = undefined;
+			image.removeAttribute("srcset");
+		}
+	}
+
+	function removeUnsupportedHrefs(doc: Document): void {
+		let links = doc.querySelectorAll("link");
+		for (let i = links.length - 1; i >= 0; i--) {
+			let href = (links[i] as HTMLLinkElement).href;
+			if (isLocalReferenceUrl(href)) {
+				if (links[i].parentNode) { links[i].parentNode.removeChild(links[i]); }
+			}
+		}
+	}
+
+	function removeUnwantedItems(doc: Document): void {
+		removeStylesWithBase64EncodedBinaries(doc);
+		removeClipperElements(doc);
+		removeUnwantedElements(doc);
+		removeUnwantedAttributes(doc);
+		removeUnsupportedHrefs(doc);
+	}
+
+	// --- Serialization ---
+
+	function getDoctype(doc: Document): string {
+		let doctype = doc.doctype;
+		if (!doctype) { return ""; }
+		return "<!DOCTYPE "
+			+ doctype.name
+			+ (doctype.publicId ? " PUBLIC \"" + doctype.publicId + "\"" : "")
+			+ (!doctype.publicId && doctype.systemId ? " SYSTEM" : "")
+			+ (doctype.systemId ? " \"" + doctype.systemId + "\"" : "")
+			+ ">";
+	}
+
+	function getDomString(doc: Document): string {
+		return getDoctype(doc) + doc.documentElement.outerHTML;
+	}
+
+	// --- Main capture flow (matches DomUtils.getCleanDomOfCurrentPage) ---
+
 	let doc = cloneDocument(document);
 	inlineHiddenElements(doc, document);
+	neutralizePositioning(doc, document);
 	flattenShadowDomSlots(doc, document);
 	convertCanvasElementsToImages(doc, document);
-	addBaseTagIfNecessary(doc);
-	addImageSizeInformation(doc);
+	addBaseTagIfNecessary(doc, document.location);
+	addImageSizeInformationToDom(doc);
 	removeUnwantedItems(doc);
 
-	// Serialize to HTML string
-	let doctype = doc.doctype ? "<!DOCTYPE " + doc.doctype.name + ">" : "<!DOCTYPE html>";
-	let html = doctype + doc.documentElement.outerHTML;
-
-	// Resolve lazy-loaded images (data-src → src) on the serialized HTML
-	html = resolveLazyImages(html);
-
-	// Extract external stylesheet CSS from CSSOM
-	let sheets: { [url: string]: { cssText: string; media: string } } = {};
-	try {
-		for (let i = 0; i < document.styleSheets.length; i++) {
-			let s = document.styleSheets[i] as CSSStyleSheet;
-			if (!s.href) { continue; }
-			try {
-				let rules = s.cssRules;
-				if (!rules || rules.length === 0) { continue; }
-				let css = "";
-				for (let j = 0; j < rules.length; j++) { css += rules[j].cssText + "\n"; }
-				sheets[s.href] = { cssText: css, media: s.media ? s.media.mediaText : "" };
-			} catch (e) { /* cross-origin — skip */ }
-		}
-	} catch (e) { /* ignore */ }
+	let html = resolveLazyImages(getDomString(doc));
 
 	chrome.runtime.sendMessage(JSON.stringify({
 		action: "contentCaptureComplete",
 		html: html,
 		baseUrl: document.baseURI || document.URL,
 		title: document.title || "",
-		url: document.URL || "",
-		sheets: Object.keys(sheets).length > 0 ? sheets : undefined
+		url: document.URL || ""
 	}));
 })();
