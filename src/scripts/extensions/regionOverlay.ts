@@ -22,6 +22,12 @@
 
 	document.body.appendChild(root);
 
+	// Hide scrollbar visually but keep scroll functionality (prevents gray bar on right edge)
+	let scrollbarStyle = document.createElement("style");
+	scrollbarStyle.id = "__regionOverlayScrollbarHide";
+	scrollbarStyle.textContent = "html::-webkit-scrollbar{display:none!important}html{scrollbar-width:none!important}";
+	document.head.appendChild(scrollbarStyle);
+
 	let ctx = canvas.getContext("2d")!;
 	let dpr = window.devicePixelRatio || 1;
 	let startX = 0, startY = 0, endX = 0, endY = 0;
@@ -124,6 +130,8 @@
 		root.removeEventListener("mouseup", onMouseUp);
 		document.removeEventListener("keydown", onKeyDown, true);
 		window.removeEventListener("resize", resize);
+		let hideStyle = document.getElementById("__regionOverlayScrollbarHide");
+		if (hideStyle) { hideStyle.remove(); }
 		if (root.parentNode) { root.parentNode.removeChild(root); }
 	}
 

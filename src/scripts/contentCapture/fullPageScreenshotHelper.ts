@@ -24,25 +24,6 @@ export class FullPageScreenshotHelper {
 			let storageData: any = {
 				fullPageHtmlContent: pageInfoContentData,
 				fullPageStatusText: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.ProgressLabel") || "Capturing page...",
-				fullPageStrings: {
-					clipperTitle: Localization.getLocalizedString("WebClipper.Label.OneNoteWebClipper") || "OneNote Web Clipper",
-					capturing: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.ProgressLabel") || "Capturing page...",
-					cancel: Localization.getLocalizedString("WebClipper.Action.Cancel") || "Cancel",
-					close: Localization.getLocalizedString("WebClipper.Action.CloseTheClipper") || "Close",
-					captureComplete: "Capture complete",
-					saveToOneNote: Localization.getLocalizedString("WebClipper.Action.Clip") || "Clip",
-					viewInOneNote: Localization.getLocalizedString("WebClipper.Action.ViewInOneNote") || "View in OneNote",
-					viewportProgress: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.IncrementalProgress") || "Capturing {0} of {1}...",
-					saving: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Saving") || "Saving...",
-					selectClipMode: Localization.getLocalizedString("WebClipper.Label.SelectClipMode") || "Select a clipping mode",
-					modeFullPage: Localization.getLocalizedString("WebClipper.ClipType.ScreenShot.Button") || "Full Page",
-					modeArticle: Localization.getLocalizedString("WebClipper.ClipType.Article.Button") || "Article",
-					modeBookmark: Localization.getLocalizedString("WebClipper.ClipType.Bookmark.Button") || "Bookmark",
-					modeRegion: Localization.getLocalizedString("WebClipper.ClipType.Region.Button") || "Region",
-					titlePlaceholder: Localization.getLocalizedString("WebClipper.Label.PageTitlePlaceholder") || "Add a page title...",
-					notePlaceholder: Localization.getLocalizedString("WebClipper.Label.AnnotationPlaceholder") || "Add a note...",
-					sourceLabel: "Source"
-				},
 				fullPageTitle: pageTitle || "",
 				fullPageUrl: pageUrl || ""
 			};
@@ -66,10 +47,11 @@ export class FullPageScreenshotHelper {
 
 							// Read single final JPEG from session storage (stitched by renderer)
 							chrome.storage.session.get(["fullPageFinalImage"], (stored: any) => {
-								chrome.storage.session.remove([
+								// Keep fullPageFinalImage — worker needs it for save flow
+							// (URL now passed via port message, no longer read from session)
+							chrome.storage.session.remove([
 									"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText",
-									"fullPageFinalImage", "fullPageStylesheets", "fullPageStrings",
-									"fullPageTitle", "fullPageUrl"
+									"fullPageStylesheets", "fullPageTitle", "fullPageUrl"
 								]);
 
 								let dataUrl: string = stored && stored.fullPageFinalImage ? stored.fullPageFinalImage : "";

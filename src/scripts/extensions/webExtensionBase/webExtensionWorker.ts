@@ -282,9 +282,13 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					WebExtension.browser.windows.remove(renderWindowId, () => {
 						if (WebExtension.browser.runtime.lastError) { /* window may already be closed */ }
 					});
-					chrome.storage.session.remove([
-						"fullPageHtmlContent", "fullPageBaseUrl", "fullPageStatusText"
-					]);
+					// Clean up all session storage from this capture session
+					chrome.storage.session.get(null, (all: any) => {
+						let keys = Object.keys(all || {}).filter(function(k) {
+							return k.indexOf("fullPage") === 0 || k.indexOf("regionImage") === 0;
+						});
+						if (keys.length > 0) { chrome.storage.session.remove(keys); }
+					});
 				};
 				this.activeRendererCleanup = cleanup;
 
@@ -387,6 +391,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					if (message.action === "finalizeComplete") {
 						// Keep window alive — user can switch modes, edit title, then save
 						// Window closes when user clicks Cancel/Close (port disconnect) or after save
+						// Resolve the takeFullPageScreenshot promise so clipper.tsx isn't left waiting
+						resolve({ success: true, format: "jpeg", cssWidth: contentWidth } as any);
 					}
 
 					if (message.action === "save") {
@@ -395,14 +401,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						let saveTitle = message.title || "";
 						let saveAnnotation = message.annotation || "";
 						let saveSectionId = message.sectionId || "";
-						let saveUrl = "";
+						let saveUrl = message.url || "";
 
-						// Get page URL from session storage
-						chrome.storage.session.get(["fullPageUrl"], (urlStored: any) => {
-							saveUrl = urlStored && urlStored.fullPageUrl ? urlStored.fullPageUrl : "";
-
-							// Get access token from local storage via offscreen
-							this.clipperData.getValue("userInformation").then((userInfoJson: string) => {
+						// Get access token from local storage via offscreen
+						this.clipperData.getValue("userInformation").then((userInfoJson: string) => {
 								let accessToken = "";
 								try {
 									let userInfo = JSON.parse(userInfoJson);
@@ -564,7 +566,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									port.postMessage({ action: "saveResult", success: false, error: "Unsupported mode" });
 								}
 							});
-						});
 					}
 
 					if (message.action === "startRegion") {

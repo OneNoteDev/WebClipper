@@ -4,8 +4,6 @@
 //
 // Content is rendered inside an iframe for CSS isolation — the renderer's
 // own styles (scrollbar hiding, overflow) don't interfere with the page's CSS.
-import {Readability} from "@mozilla/readability";
-
 let port = chrome.runtime.connect({ name: "renderer" });
 let iframe = document.getElementById("content-frame") as HTMLIFrameElement;
 let previewFrame = document.getElementById("preview-frame") as HTMLIFrameElement;
@@ -47,6 +45,7 @@ let signoutLink = document.getElementById("signout-link") as HTMLAnchorElement;
 // Mode state
 let currentMode = "fullpage";
 let fullPageComplete = false;
+let fullPageDataUrl = ""; // Cached full-page screenshot data URL for mode switching
 let saveDone = false;
 let articleLoaded = false;
 let cachedArticleHtml = ""; // Readability result, extracted lazily from content-frame DOM
@@ -333,17 +332,13 @@ function switchToFullPage() {
 	previewFrame.style.display = "none";
 	if (fullPageComplete) {
 		iframe.style.display = "none";
-		// Restore full-page screenshot from session storage (container may have been
-		// cleared by region mode or other mode switches)
+		// Restore full-page screenshot from cached data URL
 		previewContainer.innerHTML = "";
-		chrome.storage.session.get(["fullPageFinalImage"], (stored: any) => {
-			let dataUrl = stored && stored.fullPageFinalImage ? stored.fullPageFinalImage : "";
-			if (dataUrl) {
-				let img = document.createElement("img");
-				img.src = dataUrl;
-				previewContainer.appendChild(img);
-			}
-		});
+		if (fullPageDataUrl) {
+			let img = document.createElement("img");
+			img.src = fullPageDataUrl;
+			previewContainer.appendChild(img);
+		}
 		previewContainer.style.display = "block";
 		capturePanel.style.display = "none";
 	} else {
@@ -410,15 +405,16 @@ function loadArticleContent() {
 }
 
 function extractArticle() {
-	try {
-		// Clone content-frame document — Readability mutates the DOM
-		let iframeDoc = iframe.contentDocument;
-		if (!iframeDoc || !iframeDoc.body) {
-			showArticleError();
-			return;
-		}
-		let docClone = iframeDoc.cloneNode(true) as Document;
-		let reader = new Readability(docClone, { charThreshold: 100 });
+	// Clone content-frame document — Readability mutates the DOM
+	let iframeDoc = iframe.contentDocument;
+	if (!iframeDoc || !iframeDoc.body) {
+		showArticleError();
+		return;
+	}
+	let docClone = iframeDoc.cloneNode(true) as Document;
+	// Lazy-load Readability only when Article mode is used (~90KB saved from initial bundle)
+	(import("@mozilla/readability") as any).then(function(mod: any) {
+		let reader = new mod.Readability(docClone, { charThreshold: 100 });
 		let article = reader.parse();
 
 		if (article && article.content) {
@@ -432,9 +428,9 @@ function extractArticle() {
 		} else {
 			showArticleError();
 		}
-	} catch (e) {
+	})["catch"](function() {
 		showArticleError();
-	}
+	});
 }
 
 function showArticleError() {
@@ -655,15 +651,10 @@ function renderRegionThumbnails() {
 		removeBtn.addEventListener("click", ((idx: number) => () => {
 			regionImages.splice(idx, 1);
 			if (regionImages.length === 0) {
-				// No regions left — return to fullpage
-				if (fullPageComplete) {
-					document.querySelectorAll(".mode-btn").forEach((b) => b.classList.remove("selected"));
-					let fpBtn = document.querySelector('.mode-btn[data-mode="fullpage"]');
-					if (fpBtn) { fpBtn.classList.add("selected"); }
-					switchToFullPage();
-				} else {
-					previewContainer.style.display = "none";
-				}
+				// No regions left — stay in region mode, show just the add button
+				renderRegionThumbnails();
+				updateRegionSessionStorage();
+				saveBtn.disabled = true;
 			} else {
 				renderRegionThumbnails();
 				updateRegionSessionStorage();
@@ -683,8 +674,12 @@ function renderRegionThumbnails() {
 	});
 	previewContainer.appendChild(addBtn);
 
-	saveBtn.disabled = false;
-	saveBtn.textContent = strings.saveToOneNote;
+	if (regionImages.length > 0) {
+		saveBtn.disabled = false;
+		saveBtn.textContent = strings.saveToOneNote;
+	} else {
+		saveBtn.disabled = true;
+	}
 }
 
 function updateRegionSessionStorage() {
@@ -1111,6 +1106,7 @@ port.onMessage.addListener((message: any) => {
 			let reader = new FileReader();
 			reader.onloadend = function() {
 				let dataUrl = reader.result as string;
+				fullPageDataUrl = dataUrl; // Cache for mode switching
 				chrome.storage.session.set({ fullPageFinalImage: dataUrl }, function() {
 					fullPageComplete = true;
 
@@ -1229,6 +1225,7 @@ saveBtn.addEventListener("click", () => {
 		action: "save",
 		title: titleField.value,
 		annotation: noteField.value,
+		url: sourceUrl.textContent || "",
 		mode: currentMode,
 		sectionId: sectionDropdown.value
 	};
