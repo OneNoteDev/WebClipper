@@ -476,6 +476,13 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					// Keep window alive — user can switch modes, edit title, then save
 				}
 
+				// --- Telemetry from renderer — route to worker's logger ---
+				if (message.action === "telemetry") {
+					try {
+						Log.parseAndLogDataPackage(message.data as Log.LogDataPackage, this.logger);
+					} catch (e) { /* ignore malformed telemetry */ }
+				}
+
 				if (message.action === "save") {
 					// Save to OneNote API from unified renderer window
 					let saveMode = message.mode || "fullpage";
@@ -484,8 +491,14 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					let saveSectionId = message.sectionId || "";
 					let saveUrl = message.url || "";
 
-					// Get access token from local storage via offscreen
-					this.clipperData.getValue("userInformation").then((userInfoJson: string) => {
+					// Ensure fresh token before save (matches old clipper.tsx ensureFreshUserBeforeClip)
+					this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.TokenRefreshForPendingClip).then(() => {
+						// Get (now-fresh) access token from local storage via offscreen
+						return this.clipperData.getValue("userInformation");
+					}, () => {
+						// Token refresh failed — try with cached token anyway
+						return this.clipperData.getValue("userInformation");
+					}).then((userInfoJson: string) => {
 							let accessToken = "";
 							try {
 								let userInfo = JSON.parse(userInfoJson);

@@ -1,3 +1,7 @@
+import {Funnel} from "./logging/submodules/funnel";
+import {LogMethods} from "./logging/submodules/logMethods";
+import {Session} from "./logging/submodules/session";
+
 // Renderer page script - connects to service worker via port
 // and handles scroll/capture commands. Reads HTML directly from
 // chrome.storage.session to avoid large data through message channels.
@@ -90,6 +94,18 @@ let strings = {
 	sourceLabel: "Source",
 	signOut: loc("WebClipper.Action.SignOut", "Sign out")
 };
+
+// --- Telemetry helpers ---
+// Send telemetry via port to worker's logger using the same LogDataPackage format
+function logFunnel(label: Funnel.Label) {
+	port.postMessage({ action: "telemetry", data: { methodName: LogMethods.LogFunnel, methodArgs: [label] } });
+}
+function logSessionEnd(trigger: Session.EndTrigger) {
+	port.postMessage({ action: "telemetry", data: { methodName: LogMethods.LogSessionEnd, methodArgs: [trigger] } });
+}
+function logSessionStart() {
+	port.postMessage({ action: "telemetry", data: { methodName: LogMethods.LogSessionStart, methodArgs: [] } });
+}
 
 // Cancel button closes the window (port disconnect triggers cleanup in worker)
 cancelBtn.addEventListener("click", () => { window.close(); });
@@ -270,6 +286,9 @@ try {
 signoutLink.textContent = strings.signOut;
 signoutLink.addEventListener("click", (e) => {
 	e.preventDefault();
+	logFunnel(Funnel.Label.SignOut);
+	logSessionEnd(Session.EndTrigger.SignOut);
+	logSessionStart();
 	port.postMessage({ action: "signOut", authType: userAuthType });
 });
 
@@ -313,18 +332,24 @@ function showSignInError(msg: string) {
 	signinError.style.display = "block";
 }
 
+// Log renderer invocation
+logFunnel(Funnel.Label.Invoke);
 if (!isSignedIn) {
 	showSignInPanel();
+} else {
+	logFunnel(Funnel.Label.AuthAlreadySignedIn);
 }
 
 // Sign-in button handlers
 signinMsaBtn.addEventListener("click", () => {
 	signingIn = true;
+	logFunnel(Funnel.Label.AuthAttempted);
 	showSignInProgress();
 	port.postMessage({ action: "signIn", authType: "Msa" });
 });
 signinOrgIdBtn.addEventListener("click", () => {
 	signingIn = true;
+	logFunnel(Funnel.Label.AuthAttempted);
 	showSignInProgress();
 	port.postMessage({ action: "signIn", authType: "OrgId" });
 });
@@ -1343,6 +1368,7 @@ port.onMessage.addListener((message: any) => {
 	if (message.action === "signInResult") {
 		signingIn = false;
 		if (message.success) {
+			logFunnel(Funnel.Label.AuthSignInCompleted);
 			// Transition from sign-in to capture mode
 			isSignedIn = true;
 			hideSignInPanel();
@@ -1372,6 +1398,7 @@ port.onMessage.addListener((message: any) => {
 			statusText.textContent = strings.capturing;
 			saveBtn.disabled = true;
 		} else {
+			logFunnel(Funnel.Label.AuthSignInFailed);
 			showSignInError(message.error || "Sign-in failed. Please try again.");
 		}
 	}
@@ -1442,6 +1469,7 @@ port.onMessage.addListener((message: any) => {
 // Save button triggers clip via port — includes title, annotation, mode, and content for OneNote page creation
 saveBtn.addEventListener("click", () => {
 	if (saveDone) { return; } // Post-save: "View in OneNote" onclick handles this
+	logFunnel(Funnel.Label.ClipAttempted);
 	lockSidebar();
 	saveBtn.disabled = true;
 	saveBtn.textContent = strings.saving;

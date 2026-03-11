@@ -107,9 +107,16 @@ The `onenoteapi` library's `TypedFormData.asBlob()` already handles mixed string
 | `src/scripts/clipperUI/clipper.tsx` | Passes `rawUrl` to `getFullPageScreenshot()` for base URL resolution |
 | `gulpfile.js` | Added `bundleRenderer` task to build pipeline |
 
-### Data Flow Diagram
+### Data Flow Diagram (Legacy — Pre-V3)
+
+> **Note:** This diagram shows the original flow via clipper.tsx. As of V3 (self-contained sign-in),
+> clipper.tsx is no longer injected. See `docs/unified-window-plan.md` for the current V3 flow diagram
+> where the worker opens the renderer directly and `contentCaptureInject.ts` replaces the
+> clipper.tsx → fullPageScreenshotHelper.ts chain.
 
 ```
+[Legacy flow — kept for reference]
+
 clipper.tsx                    extensionWorkerBase.ts           webExtensionWorker.ts
     |                                |                                |
     |-- getFullPageScreenshot() -->  |                                |
@@ -118,51 +125,39 @@ clipper.tsx                    extensionWorkerBase.ts           webExtensionWork
     |    in session storage)         |                                |
     |                                |-- takeFullPageScreenshot() --> |
     |                                |                                |-- windows.create(renderer.html)
-    |                                |                                |   (focused, max 1280px wide, user height)
-    |                                |                                |-- runtime.onConnect (port)
-    |                                |                                |
-    |                                |                          renderer.ts (in popup)
-    |                                |                                |-- sets document.title from storage
-    |                                |                                |-- port.postMessage("ready")
-    |                                |                                |<- "loadContent"
-    |                                |                                |-- reads HTML + CSS cache from storage
-    |                                |                                |-- strips scripts, rewrites URLs
-    |                                |                                |-- injects cached CSS, fetches remaining
-    |                                |                                |-- renders into iframe (CSS isolation)
-    |                                |                                |-- measures contentHeight BEFORE
-    |                                |                                |   position conversions
-    |                                |                                |-- port.postMessage("dimensions")
-    |                                |                                |
-    |                                |                                |<- "initCanvas" (creates hidden canvas)
-    |                                |                          [scroll-capture loop]
-    |                                |                                |<- "scroll" to position N
-    |                                |                                |-- iframe.scrollTo()
-    |                                |                                |-- port.postMessage("scrollResult")
-    |                                |                                |-- 500ms delay (rate limit)
-    |                                |                                |-- captureVisibleTab(PNG)
-    |                                |                                |<- "drawCapture" (data URL + scrollY)
-    |                                |                                |-- draws onto hidden canvas
-    |                                |                                |-- port.postMessage("drawComplete")
-    |                                |                                |-- repeat until atBottom/stall
-    |                                |                                |
-    |                                |                                |<- "finalize"
-    |                                |                                |-- trim canvas, toBlob(JPEG 90%)
-    |                                |                                |-- store final image in session storage
-    |                                |                                |-- port.postMessage("finalizeComplete")
-    |                                |                                |-- windows.remove(popup)
-    |                                |                                |
-    |<-- signal {success, count} ----|------- resolve() --------------|
-    |                                |                                |
-    |-- reads single final JPEG      |                                |
-    |   from chrome.storage.session  |                                |
-    |-- fetch(dataUrl) → Blob        |                                |
-    |-- resolve(FullPageResult)      |                                |
-    |                                |                                |
+    ...                              ...                              ...
     [Save to OneNote]                |                                |
     |-- push Blob to page.dataParts  |                                |
-    |-- addOnml(<img src="name:..">) |                                |
     |-- multipart request with       |                                |
     |   binary MIME part             |                                |
+```
+
+### Current Data Flow (V3)
+```
+User clicks extension button
+    → webExtensionWorker.openRendererWindow()
+    → checks isUserLoggedIn via offscreen/localStorage
+    → injects contentCaptureInject.js into original tab (if signed in)
+    → opens renderer.html as popup window
+
+contentCaptureInject.ts (content script on original tab)
+    → reads document.documentElement.outerHTML + document.styleSheets
+    → chrome.runtime.sendMessage(JSON.stringify({...})) to worker
+
+Worker receives contentCaptureComplete
+    → stores HTML/CSS/title/URL in chrome.storage.session
+    → sends "loadContent" to renderer via port
+
+Renderer loads content into iframe, sends "dimensions"
+    → Worker runs scroll-capture loop (scroll → captureVisibleTab → drawCapture)
+    → Renderer stitches on hidden canvas, finalizes to JPEG 95%
+    → Stores fullPageFinalImage in session storage
+
+User clicks Clip
+    → Renderer sends "save" via port
+    → Worker refreshes token (auth.updateUserInfoData)
+    → Worker reads JPEG from session storage, builds multipart form
+    → Worker POSTs to OneNote API, returns saveResult
 ```
 
 ---
@@ -191,27 +186,26 @@ clipper.tsx                    extensionWorkerBase.ts           webExtensionWork
 ## Known Issues / Remaining Work
 
 ### 1. CSS Fidelity (Implemented)
-- **CSS caching:** Content script extracts CSS from `document.styleSheets` (CSSOM), passes via `PageInfo.stylesheetCache` through communicator, stored in `chrome.storage.session` by clipper UI, injected by renderer as `<style>` blocks
+- **CSS caching:** `contentCaptureInject.ts` extracts CSS from `document.styleSheets` (CSSOM), sends to worker, stored in `chrome.storage.session`, injected by renderer as `<style>` blocks
 - **Fetch fallback:** Cross-origin sheets (SecurityError on `cssRules`) are fetched directly by the renderer via `fetch()` — extension pages have `host_permissions: <all_urls>`
 - **Iframe isolation:** Renderer uses `<iframe id="content-frame">` — page CSS and renderer styles never conflict
-- **`removeUnsupportedHrefs` fix:** Uses `getAttribute("href")` instead of `linkElement.href` (DOM property doesn't resolve on cloned documents)
-- **Shadow DOM:** `flattenShadowDomSlots()` detects shadow hosts via `element.shadowRoot` on live document, hides non-button `[slot]` content (shadow roots lost during `cloneNode`)
-- **Hidden elements:** `inlineHiddenElements()` captures computed `display:none` state from live page
 - **Position neutralization:** `fixed → absolute`, `sticky → static`, viewport-height `min-height` reset
 - **Content height cropping:** `scrollHeight` measured before position conversions to avoid inflated canvas height
-- **Files:** `domUtils.ts`, `clipperInject.ts`, `clipper.tsx`, `fullPageScreenshotHelper.ts`, `pageInfo.ts`, `renderer.ts`, `renderer.html`
-- **Remaining:** Bottom void on some grid-layout sites (MDN); right-edge clipping on zero-margin pages; cross-origin CSS image assets
+- **Files:** `contentCaptureInject.ts`, `renderer.ts`, `renderer.html`, `webExtensionWorker.ts`
+- **Note:** V3 uses raw `document.documentElement.outerHTML` (not the cleaned DOM from `domUtils.ts`). Shadow DOM flattening, hidden element inlining, and canvas-to-image conversion are not applied — the renderer handles script stripping and URL rewriting directly.
+- **Remaining:** Bottom void on some grid-layout sites; right-edge clipping on zero-margin pages; sticky element duplication
 
 ### 2. Renderer Window Visibility
 - `captureVisibleTab` requires the window to be painted — occluded/off-screen windows produce blank captures
-- Current approach: renderer opens focused at same position/size as user's browser, auto-closes when done
+- Current approach: renderer opens focused at same position/size as user's browser, **stays open** for mode switching/editing/save
+- Anti-maximize: `chrome.windows` API reverts maximized state; resize handler snaps back to original dimensions
 - **Future improvement:** CDP via `chrome.debugger` would allow invisible capture but requires `debugger` permission (shows warning banner)
 
 ### 3. Capture Limits
 - PNG captures sent individually to renderer via port (no session storage for intermediates)
 - Canvas height capped at pre-conversion `contentHeight` or 16,384px (Chrome canvas dimension limit)
 - Scroll stall detection stops capture when page can't scroll further
-- Final JPEG 90% stored in session storage (~1-2MB); session storage only holds HTML + CSS cache + final image
+- Final JPEG 95% stored in session storage (~1-2MB); session storage only holds HTML + CSS cache + final image
 - Very long pages get bottom truncated; OneNote API would likely reject larger images anyway
 
 ### 4. Right-Edge Content
@@ -230,6 +224,21 @@ clipper.tsx                    extensionWorkerBase.ts           webExtensionWork
 
 ---
 
+## V3 Evolution: Self-Contained Sign-In
+
+The original architecture (described above) required injecting `clipperInject.ts` into the page to show a Mithril-based sign-in sidebar and initiate content capture via `clipper.tsx → fullPageScreenshotHelper.ts`. This failed on pages with strict Content Security Policy (CSP blocks iframe injection).
+
+V3 eliminates this dependency entirely:
+- Worker opens the renderer window directly on button click (no `clipperInject.ts`)
+- Renderer handles sign-in via MSA/OrgId overlay + OAuth popup
+- Content capture via standalone `contentCaptureInject.ts` injected by `scripting.executeScript` (CSP-immune)
+- Save with token refresh, telemetry, region capture, article/bookmark modes — all in the renderer
+- Old sidebar (clipperInject.ts → clipper.tsx → Mithril) is dead code
+
+See `docs/unified-window-plan.md` for the complete V3 architecture, flow diagram, and verification checklist.
+
+---
+
 ## Build & Test
 
 ```sh
@@ -237,6 +246,6 @@ npm install
 npm run build          # Compiles TS, bundles, exports to /target
 ```
 
-Load the extension from `target/chrome` in Chrome developer mode (chrome://extensions/).
+Load the extension from `target/edge/OneNoteWebClipper/edgeextension/manifest/extension/` (Edge) or `target/chrome` (Chrome).
 
-The `bundleRenderer` gulp task (added in `gulpfile.js`) compiles `renderer.ts` into `renderer.js` and copies it alongside `renderer.html` to the target directory.
+Gulp tasks: `bundleRenderer` (renderer.ts), `bundleRegionOverlay` (regionOverlay.ts), `bundleContentCaptureInject` (contentCaptureInject.ts) — all compiled and deployed to Chrome/Edge targets.

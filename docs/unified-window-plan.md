@@ -48,63 +48,130 @@ Window width: 1280 (content) + 322 (sidebar) = ~1602px
 
 ---
 
-## V2 — Implemented: Full Post-Auth UI in Unified Window
+## V2/V3 — Implemented: Full Clipper UI in Unified Window
 
 ### Design Principle
-- **Sign-in stays in the existing injected sidebar** — one-time gate, rarely shown
-- **Everything after sign-in moves to the unified window** — mode selection, preview, clip controls
-- No Mithril.js migration — plain HTML/TS sidebar with port messages to the worker
+- **V2**: Post-auth UI (modes, save, region, section picker) in the renderer window
+- **V3**: Self-contained sign-in — sign-in also moved into the renderer; no clipperInject.ts injection at all
+- No Mithril.js — plain HTML/TS sidebar with port messages to the worker
 - **Self-contained extraction** — Readability and bookmark metadata extracted directly in renderer from content-frame DOM, no round-trip to worker/clipper.tsx
 
-### Flow (As Built)
+### Flow (Current)
+
+**No clipperInject.ts injection. No Mithril sidebar. Everything in the renderer window.**
+
 ```
-1. User clicks extension button
-   → Worker checks activeRendererWindowId — if set, focuses existing window and returns
-   → Otherwise: injects clipperInject.ts into page
+┌─────────────────────────────────────────────────────────────────────┐
+│ 1. USER CLICKS EXTENSION BUTTON                                     │
+│                                                                     │
+│    Worker.closeAllFramesAndInvokeClipper()                          │
+│      ├─ activeRendererWindowId set? → focus existing window, return │
+│      └─ openRendererWindow()                                        │
+│           ├─ clipperData.getValue("isUserLoggedIn")                 │
+│           └─ launchRenderer(signedIn: boolean)                      │
+└─────────────────────────────────────────────────────────────────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+┌──────────────────────┐    ┌──────────────────────────────────┐
+│ NOT SIGNED IN        │    │ SIGNED IN                        │
+│                      │    │                                  │
+│ Opens renderer window│    │ Opens renderer window            │
+│ (no content capture) │    │ + injects contentCaptureInject.js│
+│                      │    │   into original tab (parallel)   │
+│ Renderer detects no  │    │                                  │
+│ userInformation in   │    │ contentCaptureInject reads DOM,  │
+│ localStorage         │    │ stylesheets, title, URL          │
+│   → shows sign-in    │    │   → sendMessage to worker        │
+│     overlay          │    │   → worker stores in             │
+│                      │    │     chrome.storage.session        │
+└──────┬───────────────┘    └──────────────┬───────────────────┘
+       │                                   │
+       ▼                                   ▼
+┌──────────────────────┐    ┌──────────────────────────────────┐
+│ 2. SIGN-IN FLOW      │    │ 3. CAPTURE FLOW                  │
+│                      │    │                                  │
+│ User clicks MSA or   │    │ Renderer port "ready"            │
+│ OrgId button         │    │   → worker sends "loadContent"   │
+│   → port: signIn     │    │     (after content captured)     │
+│   → worker opens     │    │                                  │
+│     OAuth popup via   │    │ Renderer loads HTML into iframe, │
+│     windows.create    │    │ processes CSS, sends "dimensions"│
+│   → webRequest detects│    │                                  │
+│     redirect          │    │ Worker scroll-capture loop:      │
+│   → updateUserInfoData│    │   scroll → captureVisibleTab     │
+│   → port: signInResult│    │   → drawCapture → drawComplete   │
+│                      │    │   → repeat until atBottom         │
+│ Renderer hides overlay│    │   → finalize                     │
+│ shows sidebar + iframe│    │                                  │
+│ injects content       │    │ Renderer stitches JPEG on canvas,│
+│ capture script        │    │ stores in session storage,       │
+│   → proceeds to ──────┼───►│ enables mode buttons + sign-out  │
+│     capture flow      │    │                                  │
+└──────────────────────┘    └──────────────┬───────────────────┘
+                                           │
+                                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ 4. MODE SELECTION                                                   │
+│                                                                     │
+│ Full Page: preview-container shows stitched JPEG (cached)           │
+│ Article:  Readability on content-frame DOM clone → preview-frame    │
+│ Bookmark: og:image/description from DOM → card in preview-frame     │
+│ Region:   overlay injected on original tab → crosshair selection    │
+│           → captureVisibleTab → canvas crop → multi-region support  │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ 5. SAVE (CLIP)                                                      │
+│                                                                     │
+│ lockSidebar() — all controls + sign-out disabled                    │
+│ Renderer → port: { action: "save", title, annotation, url, mode,   │
+│                    sectionId, contentHtml }                         │
+│ Worker reads accessToken from localStorage via offscreen            │
+│ Worker builds multipart form (ONML + image MIME parts)              │
+│ Worker POSTs to https://www.onenote.com/api/v1.0/.../pages         │
+│ Worker → port: { action: "saveResult", success, pageUrl/error }     │
+│                                                                     │
+│ Success: Clip → "View in OneNote" link, Close stays                 │
+│ Error: error message + expandable diagnostics (correlationId, date) │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ 6. SIGN-OUT                                                         │
+│                                                                     │
+│ Renderer → port: { action: "signOut", authType }                    │
+│ Worker: doSignOutAction (hits sign-out URL)                         │
+│ Worker: clears userInformation, notebooks, curSection, isUserLoggedIn│
+│ Worker → port: { action: "signOutComplete" }                        │
+│ Renderer: full UI reset (clears DOM, caches, notebook dropdown)     │
+│ Renderer: shows sign-in overlay (stays in same window)              │
+│                                                                     │
+│ User can sign in again as same or different user without closing    │
+└─────────────────────────────────────────────────────────────────────┘
 
-2a. Not signed in → sidebar shows SignInPanel (existing Mithril flow)
-    → captureFullPageScreenshotContent() NOT called (non-signed-in guard)
-    → No renderer window opens
-2b. Signed in → clipper.tsx checks localStorage isUserLoggedIn, calls hideUi
-    → Sets uiExpanded=false so toggleClipper re-invocation works correctly
-    → clipper.tsx starts fullPageScreenshotContent (stores HTML/CSS in session storage)
-    → Worker opens renderer window, starts capture automatically (Full Page default)
+WINDOW LIFECYCLE:
+  • Duplicate prevention: activeRendererWindowId check
+  • Tab navigation: tabs.onUpdated closes renderer when source tab URL changes
+  • Focus retention: blur handler re-focuses (disabled during sign-in + region)
+  • Resize lock: resize handler + chrome.windows API reverts maximize
+  • UI lock: sign-out + controls disabled during capture and save
+  • Cleanup: port disconnect removes window + session storage keys
 
-2c. Post-sign-in transition: clipper.tsx detects updateReason === SignInAttempt
-    → Hides sidebar, starts capture → opens renderer (same as 2b)
+MESSAGE PROTOCOL (port):
+  Renderer → Worker: ready, dimensions, scrollResult, drawComplete,
+                     finalizeComplete, save, startRegion, signIn, signOut
+  Worker → Renderer: loadContent, scroll, initCanvas, drawCapture,
+                     finalize, saveResult, regionCaptured, regionCancelled,
+                     signInResult, signOutComplete
 
-3. Unified window opens
-   → Left: content-frame (capture, DOM source) + preview-frame (article/bookmark) + preview-container (screenshot/region thumbnails)
-   → Right: sidebar with mode buttons, title/note/source fields, section dropdown, Cancel+Clip buttons, status panel
-   → Bottom of sidebar: user email + sign-out link (pinned footer)
-
-4. During capture: mode buttons disabled, Clip disabled, progress shown below buttons
-   After capture: mode buttons enabled, Clip enabled, preview-container shows screenshot
-   Background: fetchFreshNotebooks() auto-fetches from OneNote API to update section dropdown
-
-5. User selects mode
-   → Full Page: shows preview-container with stitched JPEG
-   → Article: Readability runs on content-frame DOM clone, renders in preview-frame
-   → Bookmark: extracts og:image/description from content-frame DOM, renders card in preview-frame
-   → Region: renderer hides, overlay injected on original tab, user draws selection(s)
-
-6. User clicks Clip
-   → lockSidebar() disables all inputs + sign-out link
-   → Renderer sends { action: "save", title, annotation, mode, sectionId, contentHtml } via port
-   → Worker reads access token from clipperData, builds multipart form, POSTs to OneNote API
-   → Worker sends saveResult back with pageUrl or error details
-   → Success: unlockSidebar(), Clip becomes "View in OneNote", Cancel stays
-   → Error: unlockSidebar(), error message + expandable diagnostics below buttons
-
-7. Sign-out: user clicks sign-out link in sidebar footer
-   → Renderer sends { action: "signOut", authType } via port
-   → Worker clears storage (userInformation, notebooks, curSection, isUserLoggedIn)
-   → Worker closes renderer, calls uiCommunicator.showSignInPanel
-   → clipper.tsx resets state via getSignOutState(), sets uiExpanded=true
-   → clipper.tsx calls injectCommunicator.showUi → sidebar appears with sign-in panel
+MESSAGE PROTOCOL (chrome.runtime.sendMessage — JSON strings):
+  contentCaptureInject → Worker: contentCaptureComplete
+  regionOverlay → Worker: regionSelected, regionCancelled
 ```
 
-### Layout (V2)
+### Layout
 ```
 Window width: 1280 (content) + 322 (sidebar) = ~1602px
 ┌──────────────────────────────────┬──────────────────────┐
@@ -195,7 +262,7 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 - **Resize lock**: `resize` handler snaps back to original dimensions
 - **Cleanup**: port disconnect (Cancel click or window close) triggers worker cleanup
 
-### Files Modified (V2 + V2.5)
+### Files Modified (V2/V3)
 | File | Change |
 |------|--------|
 | `src/renderer.html` | Two iframes + sidebar with mode buttons, metadata fields, button row, status panel, user-info footer |
@@ -222,14 +289,13 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 - [x] All strings localized
 - [x] LESS styles compiled and deployed
 
-### V2 (Done)
+### V2/V3 (Done)
 - [x] Mode buttons switch left panel content (Full Page, Article, Bookmark, Region)
 - [x] Article mode: Readability extracts content directly from content-frame DOM
 - [x] Bookmark mode: metadata card with og:image/description from DOM
 - [x] Title editable, Note field, Source URL display
-- [x] Section picker from cached localStorage notebooks + auto-refresh from API
+- [x] Custom section picker (ul/li dropdown) with scrollbar + auto-refresh from API
 - [x] Clip saves to OneNote via direct fetch to API (multipart form)
-- [x] Injected sidebar auto-hides for signed-in users
 - [x] Window stays open after capture for mode switching
 - [x] Save includes annotation, "Clipped from" citation, timestamp
 - [x] Post-save "View in OneNote" button with page URL from API response
@@ -237,18 +303,21 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 - [x] i18n from localStorage (locStrings) — no session storage dependency
 - [x] Duplicate window prevention (focus existing on re-click)
 - [x] Tab navigation detection closes renderer window
-- [x] Modal-like focus (blur handler re-focuses renderer, disabled during region capture)
-- [x] UI lock during save (all inputs + sign-out disabled during API round-trip)
-- [x] Cancel + Clip side-by-side button row
-- [x] Region capture with crosshair overlay on original tab
+- [x] Modal-like focus (blur handler re-focuses renderer, disabled during sign-in + region)
+- [x] UI lock during capture and save (all inputs + sign-out disabled)
+- [x] Close + Clip side-by-side button row
+- [x] Region capture: canvas-drawn crosshair overlay, overflow:hidden on root
 - [x] Multi-region: thumbnails, ×remove, +add another, cached across mode switches
 - [x] Region save: multiple images as separate MIME parts in ONML
-- [x] Sign-out from renderer sidebar footer → returns to sign-in panel
-- [x] Post-sign-in auto-transition: hide sidebar → start capture → open renderer
-- [x] Non-signed-in guard: no renderer for unauthenticated users
+- [x] Self-contained sign-in: MSA/OrgId overlay, OAuth popup, no clipperInject injection
+- [x] Sign-out from renderer → shows sign-in overlay (stays in same window)
+- [x] Sign-out cleanup: clears notebooks, section cache, stale capture data
+- [x] Content capture via standalone contentCaptureInject.ts (no iframe injection)
 - [x] User info footer pinned to sidebar bottom
-- [x] Preview container scrollbar visible
-- [x] Full-page preview restored from session storage when switching back from region mode
+- [x] Preview container + sidebar-body scrollbars visible
+- [x] Full-page preview restored from cached data URL when switching modes
+- [x] Anti-maximize: chrome.windows API reverts maximized state
+- [x] Article/bookmark preview: links disabled (pointer-events: none), consistent scrollbar
 
 ---
 
@@ -265,7 +334,7 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 6. ~~**Self-contained sign-in**~~ — Implemented. Worker opens renderer directly on button click (no clipperInject.ts injection). Renderer checks `localStorage.userInformation` — shows MSA/OrgId sign-in overlay when not signed in. Sign-in via port messages, OAuth popup via `chrome.windows.create`, `auth.updateUserInfoData` on redirect. Content capture via standalone `contentCaptureInject.ts` (injected by worker via `scripting.executeScript`). Sign-out stays in renderer (shows sign-in overlay, clears storage). Custom section picker with scrollable `<ul>/<li>` dropdown. UI locked during capture to prevent race conditions. Region overlay selection border drawn on canvas (no separate div). Old injected sidebar (clipperInject.ts → clipper.tsx → Mithril) is now dead code.
 
 ### UI Polish (Deferred)
-7. **V3 toolbar layout** — Current sidebar takes 322px width. A top-bar + bottom-bar layout would eliminate the sidebar width tax, making the window narrower and giving content full width.
+7. **Toolbar layout redesign** — Current sidebar takes 322px width. A top-bar + bottom-bar layout would eliminate the sidebar width tax, making the window narrower and giving content full width.
 
 ### Technical Debt
 8. ~~fullPageStrings in session storage~~ — Resolved. Removed legacy i18n passthrough from fullPageScreenshotHelper.ts. Renderer reads from localStorage directly.
@@ -274,3 +343,8 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 11. **Readability bundled in renderer** — Dynamic import pattern added but browserify converts to synchronous require (no code-splitting). True lazy-loading requires bundler upgrade (webpack, rollup, esbuild).
 12. **ES target compatibility** — Project targets old ES version. `String.startsWith()` not available, must use `indexOf`. Silent build failures if modern APIs are used.
 13. **chrome.runtime.sendMessage format** — offscreen.ts does `JSON.parse(message)` on ALL incoming messages. New scripts sending via `chrome.runtime.sendMessage` must use `JSON.stringify(...)` not plain objects.
+
+### Telemetry
+14. **Renderer telemetry** — Renderer sends funnel events via port `{ action: "telemetry", data: LogDataPackage }`. Worker routes to `this.logger` via `Log.parseAndLogDataPackage()`. Uses imported enums: `Funnel.Label`, `LogMethods`, `Session.EndTrigger`.
+15. **Console output requires flag** — `LogManager.createExtLogger()` returns a `StubSessionLogger` (no-op) unless `enable_console_logging` is `"true"` in localStorage. To enable: open any extension page console (renderer, offscreen) and run `localStorage.setItem("enable_console_logging", "true")`, then reload extension. Logs appear in the **service worker console** (edge://extensions → Inspect service worker), not in the renderer or page console.
+16. **No external telemetry endpoint** — All logging goes to `console.log()` via `ConsoleLoggerDecorator → WebConsole`. No HTTP POST, no Application Insights, no Aria SDK. The decorator pattern allows plugging in a real backend later.
