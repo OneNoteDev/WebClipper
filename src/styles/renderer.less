@@ -31,7 +31,12 @@ iframe#preview-frame {
 	flex: 1; min-width: 0; height: 100%;
 	overflow-y: auto; display: none;
 	background: #f3f2f1;
-	img { width: 100%; display: block; }
+	// Full-width for full-page screenshot preview, but not for region thumbnails
+	> img { width: 100%; display: block; }
+	// Show scrollbar to indicate scrollable content
+	&::-webkit-scrollbar { display: block; width: 6px; }
+	&::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+	&::-webkit-scrollbar-track { background: transparent; }
 }
 
 // Sidebar panel
@@ -181,6 +186,83 @@ iframe#preview-frame {
 	height: 100%; background: @DarkHoverColor;
 	border-radius: 2px; width: 0%;
 	transition: width 0.3s ease;
+}
+
+// User info footer — pinned to bottom of sidebar (direct child of #sidebar flex-column)
+#user-info {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 16px;
+	border-top: 1px solid rgba(255,255,255,0.15);
+	font-size: 11px;
+	opacity: 0.75;
+	flex-shrink: 0;
+}
+
+#user-email {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1;
+	min-width: 0;
+}
+
+#signout-link {
+	color: rgba(255,255,255,0.85);
+	text-decoration: none;
+	white-space: nowrap;
+	margin-left: 8px;
+	cursor: pointer;
+	&:hover { text-decoration: underline; color: #fff; }
+}
+
+// Region thumbnails
+.region-thumb {
+	position: relative;
+	margin: 16px 12px;
+	overflow: visible;
+	img {
+		width: 100%;
+		display: block;
+		border: 1px solid #ddd;
+		border-radius: 3px;
+	}
+}
+
+.region-remove-btn {
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	z-index: 10;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	border: none;
+	background: #e74c3c;
+	color: #fff;
+	font-size: 14px;
+	line-height: 22px;
+	text-align: center;
+	padding: 0;
+	cursor: pointer;
+	&:hover { background: #c0392b; }
+}
+
+.region-add-btn {
+	display: block;
+	width: calc(100% - 32px);
+	margin: 16px;
+	padding: 18px 10px;
+	background: none;
+	border: 2px dashed #bbb;
+	border-radius: 6px;
+	color: #666;
+	font-size: 14px;
+	font-family: inherit;
+	cursor: pointer;
+	text-align: center;
+	&:hover { border-color: #888; color: #333; background: rgba(0,0,0,0.03); }
 }
 
 // Hide scrollbars globally

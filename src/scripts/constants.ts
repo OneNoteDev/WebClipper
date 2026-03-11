@@ -314,6 +314,11 @@ export module Constants {
 		export var getMultipleStorageValues = "GET_MULTIPLE_STORAGE_VALUES";
 		export var getTooltipToRenderInPageNav = "GET_TOOLTIP_TO_RENDER_IN_PAGE_NAV";
 		export var hideUi = "HIDE_UI";
+		export var showUi = "SHOW_UI";
+		export var showSignInPanel = "SHOW_SIGN_IN_PANEL";
+		export var startRegionCapture = "START_REGION_CAPTURE";
+		export var regionCaptureComplete = "REGION_CAPTURE_COMPLETE";
+		export var regionCaptureCancelled = "REGION_CAPTURE_CANCELLED";
 		export var invokeClipper = "INVOKE_CLIPPER";
 		export var invokeClipperFromPageNav = "INVOKE_CLIPPER_FROM_PAGE_NAV";
 		export var invokeDebugLogging = "INVOKE_DEBUG_LOGGING";

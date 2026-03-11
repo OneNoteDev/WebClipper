@@ -144,6 +144,13 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 			this.state.setState({ uiExpanded: !this.state.uiExpanded });
 		});
 
+		// Called by worker after sign-out from renderer — reset to sign-in state and show the sidebar
+		Clipper.getExtensionCommunicator().registerFunction(Constants.FunctionKeys.showSignInPanel, () => {
+			this.state.setState(this.getSignOutState());
+			this.state.setState({ uiExpanded: true });
+			Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.showUi);
+		});
+
 		Clipper.getInjectCommunicator().registerFunction(Constants.FunctionKeys.onSpaNavigate, () => {
 			// This could have been called when the UI is already toggled off
 			if (this.state.uiExpanded) {
@@ -172,13 +179,17 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				});
 
 				this.capturePdfScreenshotContent();
-				this.captureFullPageScreenshotContent();
 				this.captureAugmentedContent();
 				this.captureBookmarkContent();
 
-				// If user is signed in, hide the injected sidebar — unified renderer window takes over
+				// If user is signed in, start capture and hide the injected sidebar — unified renderer window takes over
+				// If NOT signed in, skip capture so the renderer window doesn't open — show sign-in panel only
 				try {
 					if (localStorage.getItem("isUserLoggedIn") === "true") {
+						this.captureFullPageScreenshotContent();
+						// Collapse the UI state so that re-invocation (e.g., after sign-out) correctly
+						// toggles it back to expanded, rather than toggling from expanded to collapsed
+						this.state.setState({ uiExpanded: false });
 						Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi);
 					}
 				} catch (e) { /* ignore */ }
@@ -418,6 +429,14 @@ class ClipperClass extends ComponentBase<ClipperState, {}> {
 				this.state.setState({ userResult: { status: Status.Succeeded, data: updatedUser } });
 				Clipper.logger.setContextProperty(Log.Context.Custom.AuthType, updatedUser.user.authType);
 				Clipper.logger.setContextProperty(Log.Context.Custom.UserInfoId, updatedUser.user.cid);
+
+				// After sign-in completes, hide the injected sidebar and launch the unified renderer window
+				if (updatedUser.updateReason === UpdateReason.SignInAttempt) {
+					try {
+						Clipper.getInjectCommunicator().callRemoteFunction(Constants.FunctionKeys.hideUi);
+						this.captureFullPageScreenshotContent();
+					} catch (e) { /* ignore */ }
+				}
 			} else {
 				this.state.setState({ userResult: { status: Status.Failed, data: updatedUser } });
 			}

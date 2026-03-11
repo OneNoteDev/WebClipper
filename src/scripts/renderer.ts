@@ -40,6 +40,9 @@ let sidebarCssWidth = 322;
 let contentPixelWidth = 0; // set on first capture, excludes sidebar
 
 let sidebarTitle = document.getElementById("sidebar-title") as HTMLSpanElement;
+let userInfoDiv = document.getElementById("user-info") as HTMLDivElement;
+let userEmailSpan = document.getElementById("user-email") as HTMLSpanElement;
+let signoutLink = document.getElementById("signout-link") as HTMLAnchorElement;
 
 // Mode state
 let currentMode = "fullpage";
@@ -80,7 +83,8 @@ let strings = {
 	modeRegion: loc("WebClipper.ClipType.Region.Button", "Region"),
 	titlePlaceholder: loc("WebClipper.Label.PageTitlePlaceholder", "Add a page title..."),
 	notePlaceholder: loc("WebClipper.Label.AnnotationPlaceholder", "Add a note..."),
-	sourceLabel: "Source"
+	sourceLabel: "Source",
+	signOut: loc("WebClipper.Action.SignOut", "Sign out")
 };
 
 // Cancel button closes the window (port disconnect triggers cleanup in worker)
@@ -178,6 +182,84 @@ function flattenSectionGroups(groups: any[], parentPath: string, dropdown: HTMLS
 
 populateSectionDropdown();
 
+// --- User info + sign-out ---
+let userAuthType = "";
+try {
+	let userInfoRaw = localStorage.getItem("userInformation");
+	if (userInfoRaw) {
+		let userInfo = JSON.parse(userInfoRaw);
+		if (userInfo && userInfo.data) {
+			let email = userInfo.data.emailAddress || "";
+			let name = userInfo.data.fullName || "";
+			userAuthType = userInfo.data.authType || "";
+			userEmailSpan.textContent = email || name || "";
+			userEmailSpan.title = email || "";
+		}
+	}
+	if (!userEmailSpan.textContent) {
+		userInfoDiv.style.display = "none";
+	}
+} catch (e) {
+	userInfoDiv.style.display = "none";
+}
+signoutLink.textContent = strings.signOut;
+signoutLink.addEventListener("click", (e) => {
+	e.preventDefault();
+	port.postMessage({ action: "signOut", authType: userAuthType });
+});
+
+// --- Auto-fetch fresh notebooks (runs in background during capture) ---
+async function fetchFreshNotebooks() {
+	try {
+		let userInfoRaw = localStorage.getItem("userInformation");
+		if (!userInfoRaw) { return; }
+		let userInfo = JSON.parse(userInfoRaw);
+		let accessToken = userInfo && userInfo.data ? userInfo.data.accessToken : "";
+		let lastUpdated = userInfo ? userInfo.lastUpdated : 0;
+		let tokenExp = userInfo && userInfo.data ? userInfo.data.accessTokenExpiration : 0;
+		if (!accessToken) { return; }
+		// accessTokenExpiration is relative (seconds until expiry), not absolute
+		// Matches CachedHttp.valueHasExpired: (lastUpdated + expiration*1000 - 180000) < Date.now()
+		if (tokenExp && lastUpdated && (lastUpdated + tokenExp * 1000 - 180000) < Date.now()) { return; }
+
+		let apiUrl = "https://www.onenote.com/api/v1.0/me/notes/notebooks"
+			+ "?$expand=sections,sectionGroups($expand=sections,sectionGroups)";
+		let response = await fetch(apiUrl, {
+			headers: { "Authorization": "Bearer " + accessToken }
+		});
+		if (!response.ok) { return; }
+
+		let data = await response.json();
+		let freshNotebooks = data.value || [];
+
+		// Compare with cached — only update if different
+		let cachedJson = localStorage.getItem("notebooks") || "";
+		let freshJson = JSON.stringify(freshNotebooks);
+		if (freshJson === cachedJson) { return; }
+
+		// Store fresh notebooks and repopulate dropdown
+		localStorage.setItem("notebooks", freshJson);
+		let previousSectionId = sectionDropdown.value;
+		sectionDropdown.innerHTML = "";
+		flattenSections(freshNotebooks, sectionDropdown, previousSectionId);
+
+		// If previously selected section no longer exists, persist the new default
+		if (sectionDropdown.value !== previousSectionId) {
+			let selectedOption = sectionDropdown.options[sectionDropdown.selectedIndex];
+			if (selectedOption && selectedOption.value) {
+				let curSection = {
+					path: selectedOption.textContent,
+					section: { id: selectedOption.value, name: selectedOption.textContent }
+				};
+				localStorage.setItem("curSection", JSON.stringify(curSection));
+			}
+		}
+	} catch (e) {
+		// Silently keep cached data
+	}
+}
+fetchFreshNotebooks();
+
 // Disable non-fullpage mode buttons and Clip button until capture completes
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	if (btn.getAttribute("data-mode") !== "fullpage") {
@@ -210,6 +292,8 @@ function lockSidebar() {
 	noteField.disabled = true;
 	sectionDropdown.disabled = true;
 	cancelBtn.disabled = true;
+	signoutLink.style.pointerEvents = "none";
+	signoutLink.style.opacity = "0.4";
 }
 
 function unlockSidebar() {
@@ -222,6 +306,8 @@ function unlockSidebar() {
 	noteField.disabled = false;
 	sectionDropdown.disabled = false;
 	cancelBtn.disabled = false;
+	signoutLink.style.pointerEvents = "";
+	signoutLink.style.opacity = "";
 }
 
 // --- Mode switching ---
@@ -247,6 +333,17 @@ function switchToFullPage() {
 	previewFrame.style.display = "none";
 	if (fullPageComplete) {
 		iframe.style.display = "none";
+		// Restore full-page screenshot from session storage (container may have been
+		// cleared by region mode or other mode switches)
+		previewContainer.innerHTML = "";
+		chrome.storage.session.get(["fullPageFinalImage"], (stored: any) => {
+			let dataUrl = stored && stored.fullPageFinalImage ? stored.fullPageFinalImage : "";
+			if (dataUrl) {
+				let img = document.createElement("img");
+				img.src = dataUrl;
+				previewContainer.appendChild(img);
+			}
+		});
 		previewContainer.style.display = "block";
 		capturePanel.style.display = "none";
 	} else {
@@ -515,6 +612,97 @@ function renderBookmarkHtml(html: string) {
 	pDoc.close();
 }
 
+// --- Region mode ---
+
+let regionImages: string[] = []; // Accumulated region captures
+
+function startRegionCapture() {
+	capturePanel.style.display = "flex";
+	statusText.textContent = loc("WebClipper.ClipType.Region.ProgressLabel", "Select a region on the page...");
+	saveBtn.disabled = true;
+	previewContainer.style.display = "none";
+	port.postMessage({ action: "startRegion" });
+}
+
+function switchToRegion() {
+	resetSaveState();
+	currentMode = "region";
+	iframe.style.display = "none";
+	previewFrame.style.display = "none";
+	previewContainer.style.display = "none";
+	// If we already have captured regions, show them instead of starting a new capture
+	if (regionImages.length > 0) {
+		renderRegionThumbnails();
+	} else {
+		startRegionCapture();
+	}
+}
+
+function renderRegionThumbnails() {
+	previewContainer.innerHTML = "";
+	previewContainer.style.display = "block";
+	capturePanel.style.display = "none";
+
+	for (let i = 0; i < regionImages.length; i++) {
+		let thumb = document.createElement("div");
+		thumb.className = "region-thumb";
+		let img = document.createElement("img");
+		img.src = regionImages[i];
+		let removeBtn = document.createElement("button");
+		removeBtn.className = "region-remove-btn";
+		removeBtn.textContent = "\u00D7"; // × symbol
+		removeBtn.title = loc("WebClipper.Preview.RemoveSelectedRegion", "Remove");
+		removeBtn.addEventListener("click", ((idx: number) => () => {
+			regionImages.splice(idx, 1);
+			if (regionImages.length === 0) {
+				// No regions left — return to fullpage
+				if (fullPageComplete) {
+					document.querySelectorAll(".mode-btn").forEach((b) => b.classList.remove("selected"));
+					let fpBtn = document.querySelector('.mode-btn[data-mode="fullpage"]');
+					if (fpBtn) { fpBtn.classList.add("selected"); }
+					switchToFullPage();
+				} else {
+					previewContainer.style.display = "none";
+				}
+			} else {
+				renderRegionThumbnails();
+				updateRegionSessionStorage();
+			}
+		})(i));
+		thumb.appendChild(img);
+		thumb.appendChild(removeBtn);
+		previewContainer.appendChild(thumb);
+	}
+
+	// "Add Another Region" button
+	let addBtn = document.createElement("button");
+	addBtn.className = "region-add-btn";
+	addBtn.textContent = "+ " + loc("WebClipper.Preview.Header.AddAnotherRegionButtonLabel", "Add another region");
+	addBtn.addEventListener("click", () => {
+		startRegionCapture();
+	});
+	previewContainer.appendChild(addBtn);
+
+	saveBtn.disabled = false;
+	saveBtn.textContent = strings.saveToOneNote;
+}
+
+function updateRegionSessionStorage() {
+	// Store each region as a separate key to avoid session storage size limits
+	// First clear any old region keys
+	chrome.storage.session.get(null, (all: any) => {
+		let keysToRemove = Object.keys(all).filter((k) => k.indexOf("regionImage_") === 0);
+		if (keysToRemove.length > 0) {
+			chrome.storage.session.remove(keysToRemove);
+		}
+		let toSet: any = { regionImageCount: regionImages.length };
+		for (let i = 0; i < regionImages.length; i++) {
+			toSet["regionImage_" + i] = regionImages[i];
+		}
+		chrome.storage.session.set(toSet);
+	});
+}
+
 // Mode button click handlers
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	btn.addEventListener("click", () => {
@@ -533,9 +721,8 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 			switchToArticle();
 		} else if (mode === "bookmark") {
 			switchToBookmark();
-		} else {
-			// Region not yet implemented — don't switch
-			return;
+		} else if (mode === "region") {
+			switchToRegion();
 		}
 	});
 });
@@ -959,6 +1146,40 @@ port.onMessage.addListener((message: any) => {
 		}) as BlobCallback, "image/jpeg", 0.95);
 	}
 
+	if (message.action === "regionCaptured") {
+		// Worker sends full tab screenshot + selection coords via port (same as drawCapture)
+		let fullImg = new Image();
+		fullImg.onload = () => {
+			let dpr = message.dpr || 1;
+			let sx = Math.round(message.x * dpr);
+			let sy = Math.round(message.y * dpr);
+			let sw = Math.round(message.width * dpr);
+			let sh = Math.round(message.height * dpr);
+			let cropCanvas = document.createElement("canvas");
+			cropCanvas.width = sw;
+			cropCanvas.height = sh;
+			let cropCtx = cropCanvas.getContext("2d") as CanvasRenderingContext2D;
+			cropCtx.drawImage(fullImg, sx, sy, sw, sh, 0, 0, sw, sh);
+			let croppedUrl = cropCanvas.toDataURL("image/jpeg", 0.95);
+
+			regionImages.push(croppedUrl);
+			renderRegionThumbnails();
+			updateRegionSessionStorage();
+		};
+		fullImg.src = message.dataUrl || "";
+	}
+
+	if (message.action === "regionCancelled") {
+		if (fullPageComplete) {
+			document.querySelectorAll(".mode-btn").forEach((b) => b.classList.remove("selected"));
+			let fpBtn = document.querySelector('.mode-btn[data-mode="fullpage"]');
+			if (fpBtn) { fpBtn.classList.add("selected"); }
+			switchToFullPage();
+		} else {
+			capturePanel.style.display = "none";
+		}
+	}
+
 	if (message.action === "saveResult") {
 		if (message.success) {
 			saveDone = true;
@@ -1048,6 +1269,7 @@ window.addEventListener("resize", () => {
 // Keep renderer focused — re-focus when user tries to switch away
 window.addEventListener("blur", () => {
 	if (saveDone) { return; } // Don't fight focus after save (user may be viewing in OneNote)
+	if (currentMode === "region") { return; } // Don't fight focus during region selection on original tab
 	setTimeout(() => { window.focus(); }, 100);
 });
 

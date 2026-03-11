@@ -288,6 +288,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				};
 				this.activeRendererCleanup = cleanup;
 
+
 				// Handle renderer window being closed by user
 				port.onDisconnect.addListener(() => {
 					if (!cleaned) {
@@ -520,6 +521,39 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 											port.postMessage({ action: "saveResult", success: false, error: "No screenshot data" });
 										}
 									});
+								} else if (saveMode === "region") {
+									// Read region images from separate session storage keys (avoids size limits)
+									chrome.storage.session.get(["regionImageCount"], (countStored: any) => {
+										let count = countStored && countStored.regionImageCount ? countStored.regionImageCount : 0;
+										if (count === 0) {
+											port.postMessage({ action: "saveResult", success: false, error: "No region data" });
+											return;
+										}
+										let keys: string[] = [];
+										for (let i = 0; i < count; i++) { keys.push("regionImage_" + i); }
+										chrome.storage.session.get(keys, (imgStored: any) => {
+											let images: string[] = [];
+											for (let i = 0; i < count; i++) {
+												if (imgStored["regionImage_" + i]) { images.push(imgStored["regionImage_" + i]); }
+											}
+											if (images.length === 0) {
+												port.postMessage({ action: "saveResult", success: false, error: "No region data" });
+												return;
+											}
+											Promise.all(images.map((dataUrl: string, idx: number) =>
+												fetch(dataUrl).then((r) => r.blob()).then((blob) => ({
+													name: "regionImage" + idx,
+													blob: blob,
+													type: dataUrl.indexOf("image/png") !== -1 ? "image/png" : "image/jpeg"
+												}))
+											)).then((imageParts) => {
+												let bodyOnml = imageParts.map((p) =>
+													"<p><img src=\"name:" + p.name + "\" /></p>"
+												).join("&nbsp;");
+												buildPage(bodyOnml, imageParts);
+											});
+										});
+									});
 								} else if (saveMode === "article") {
 									let articleHtml = message.contentHtml || "";
 									buildPage(articleHtml, []);
@@ -531,6 +565,85 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								}
 							});
 						});
+					}
+
+					if (message.action === "startRegion") {
+						// Focus original tab, inject standalone overlay, listen for result
+						let regionTabId = this.tab.id;
+						let regionWindowId = 0;
+						WebExtension.browser.tabs.get(regionTabId, (t: any) => {
+							if (!t || !t.windowId) { return; }
+							regionWindowId = t.windowId;
+							WebExtension.browser.windows.update(regionWindowId, { focused: true }, () => {
+								if (WebExtension.browser.runtime.lastError) { /* ignore */ }
+								WebExtension.browser.scripting.executeScript({
+									target: { tabId: regionTabId },
+									files: ["regionOverlay.js"]
+								});
+							});
+						});
+
+						// Listen for overlay messages (regionSelected / regionCancelled)
+						// Messages are JSON strings (required by offscreen.ts message handler)
+						let regionListener = (rawMsg: any, sender: any) => {
+							if (!sender.tab || sender.tab.id !== regionTabId) { return; }
+							let msg: any;
+							try { msg = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg; } catch (e) { return; }
+
+							if (msg.action === "regionSelected") {
+								WebExtension.browser.runtime.onMessage.removeListener(regionListener);
+								// Brief delay for overlay DOM removal, then capture
+								setTimeout(() => {
+									WebExtension.browser.tabs.captureVisibleTab(regionWindowId, { format: "jpeg", quality: 95 }, (dataUrl: string) => {
+										if (!dataUrl) {
+											port.postMessage({ action: "regionCancelled" });
+										} else {
+											// Send full image + coords via port (same pattern as drawCapture in fullpage)
+											port.postMessage({
+												action: "regionCaptured",
+												dataUrl: dataUrl,
+												x: msg.x, y: msg.y, width: msg.width, height: msg.height, dpr: msg.dpr
+											});
+										}
+										WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+											if (WebExtension.browser.runtime.lastError) { /* ignore */ }
+										});
+									});
+								}, 150);
+							}
+
+							if (msg.action === "regionCancelled") {
+								WebExtension.browser.runtime.onMessage.removeListener(regionListener);
+								port.postMessage({ action: "regionCancelled" });
+								WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+									if (WebExtension.browser.runtime.lastError) { /* ignore */ }
+								});
+							}
+						};
+						WebExtension.browser.runtime.onMessage.addListener(regionListener);
+					}
+
+					if (message.action === "signOut") {
+						let authType: AuthType = (AuthType as any)[message.authType];
+						if (authType !== undefined) {
+							this.doSignOutAction(authType);
+						}
+						// Clear user data from storage
+						this.clipperData.removeKey("userInformation");
+						this.clipperData.removeKey("curSection");
+						this.clipperData.removeKey("notebooks");
+						this.clipperData.removeKey("isUserLoggedIn");
+
+						// Close renderer window and show sign-in panel via messaging
+						let renderId = this.activeRendererWindowId;
+						this.activeRendererWindowId = 0;
+						if (renderId) {
+							WebExtension.browser.windows.remove(renderId, () => {
+								// Tell the old clipper UI to reset state and show sign-in
+								// via existing communicator — no re-injection needed
+								this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.showSignInPanel);
+							});
+						}
 					}
 				});
 			};

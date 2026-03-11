@@ -240,6 +240,13 @@ gulp.task("bundleOffscreen", function () {
     return merge(tasks);
 });
 
+gulp.task("bundleRegionOverlay", function () {
+    var extensionRoot = PATHS.BUILDROOT + "scripts/extensions/";
+    var files = ["regionOverlay.js"];
+    var tasks = generateBrowserifyTasks(extensionRoot, files);
+    return merge(tasks);
+});
+
 gulp.task("bundleRenderer", function () {
     var scriptsRoot = PATHS.BUILDROOT + "scripts/";
     var files = ["renderer.js"];
@@ -318,6 +325,7 @@ gulp.task("bundle", function(callback) {
     runSequence(
         "bundleAppendIsInstalledMarker",
         "bundleOffscreen",
+        "bundleRegionOverlay",
         "bundleRenderer",
         "bundleClipperUI",
         "bundleLogManager",
@@ -537,6 +545,10 @@ function exportChromeJS() {
         PATHS.BUNDLEROOT + "offscreen.js"
     ]).pipe(concat("offscreen.js")).pipe(gulp.dest(targetDir));
 
+    var regionOverlayTask = gulp.src([
+        PATHS.BUNDLEROOT + "regionOverlay.js"
+    ]).pipe(concat("regionOverlay.js")).pipe(gulp.dest(targetDir));
+
     var rendererTask = gulp.src([
         PATHS.BUNDLEROOT + "renderer.js"
     ]).pipe(concat("renderer.js")).pipe(gulp.dest(targetDir));
@@ -566,9 +578,9 @@ function exportChromeJS() {
     ]).pipe(concat("chromePageNavInject.js")).pipe(gulp.dest(targetDir));
 
     if (commonTask) {
-        return merge(commonTask, appendIsInstalledMarkerTask, offscreenTask, rendererTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
+        return merge(commonTask, appendIsInstalledMarkerTask, offscreenTask, regionOverlayTask, rendererTask, chromeExtensionTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
     }
-    return merge(chromeExtensionTask, appendIsInstalledMarkerTask, offscreenTask, rendererTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
+    return merge(chromeExtensionTask, appendIsInstalledMarkerTask, offscreenTask, regionOverlayTask, rendererTask, chromeDebugLoggingInjectTask, chromeInjectTask, chromePageNavInjectTask);
 }
 
 function exportChromeCSS() {
@@ -611,6 +623,10 @@ function exportEdgeJS() {
         PATHS.BUNDLEROOT + "offscreen.js"
     ]).pipe(concat("offscreen.js")).pipe(gulp.dest(targetDir));
 
+    var regionOverlayTask = gulp.src([
+        PATHS.BUNDLEROOT + "regionOverlay.js"
+    ]).pipe(concat("regionOverlay.js")).pipe(gulp.dest(targetDir));
+
     var rendererTask = gulp.src([
         PATHS.BUNDLEROOT + "renderer.js"
     ]).pipe(concat("renderer.js")).pipe(gulp.dest(targetDir));
@@ -640,9 +656,9 @@ function exportEdgeJS() {
     ]).pipe(concat("edgePageNavInject.js")).pipe(gulp.dest(targetDir));
 
     if (commonTask) {
-        return merge(commonTask, appendIsInstalledMarkerTask, offscreenTask, rendererTask, edgeExtensionTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
+        return merge(commonTask, appendIsInstalledMarkerTask, offscreenTask, regionOverlayTask, rendererTask, edgeExtensionTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
     }
-    return merge(edgeExtensionTask, appendIsInstalledMarkerTask, offscreenTask, rendererTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
+    return merge(edgeExtensionTask, appendIsInstalledMarkerTask, offscreenTask, regionOverlayTask, rendererTask, edgeDebugLoggingInjectTask, edgeInjectTask, edgePageNavInjectTask);
 }
 
 function exportEdgeCSS() {

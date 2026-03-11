@@ -318,6 +318,10 @@ export class ClipperInject extends FrameInjectBase<ClipperInjectOptions> {
 			this.frame.style.display = "none";
 		});
 
+		this.uiCommunicator.registerFunction(Constants.FunctionKeys.showUi, () => {
+			this.frame.style.display = "";
+		});
+
 		this.uiCommunicator.registerFunction(Constants.FunctionKeys.refreshPage, () => {
 			location.reload();
 		});
