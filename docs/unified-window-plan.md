@@ -80,7 +80,7 @@ Window width: 1280 (content) + 322 (sidebar) = ~1602px
 │ (no content capture) │    │ + injects contentCaptureInject.js│
 │                      │    │   into original tab (parallel)   │
 │ Renderer detects no  │    │                                  │
-│ userInformation in   │    │ contentCaptureInject reads DOM,  │
+│ userInformation in   │    │ contentCaptureInject cleans DOM, │
 │ localStorage         │    │ stylesheets, title, URL          │
 │   → shows sign-in    │    │   → sendMessage to worker        │
 │     overlay          │    │   → worker stores in             │
@@ -312,7 +312,7 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 - [x] Self-contained sign-in: MSA/OrgId overlay, OAuth popup, no clipperInject injection
 - [x] Sign-out from renderer → shows sign-in overlay (stays in same window)
 - [x] Sign-out cleanup: clears notebooks, section cache, stale capture data
-- [x] Content capture via standalone contentCaptureInject.ts (no iframe injection)
+- [x] Content capture via standalone contentCaptureInject.ts (full DomUtils pipeline, no imports, no iframe injection)
 - [x] User info footer pinned to sidebar bottom
 - [x] Preview container + sidebar-body scrollbars visible
 - [x] Full-page preview restored from cached data URL when switching modes

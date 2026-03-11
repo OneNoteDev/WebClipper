@@ -186,13 +186,13 @@ User clicks Clip
 ## Known Issues / Remaining Work
 
 ### 1. CSS Fidelity (Implemented)
+- **DOM cleaning:** `contentCaptureInject.ts` runs the full DomUtils-equivalent pipeline as self-contained inline functions (no imports): clone → inline hidden elements → flatten shadow DOM → canvas→image → base tag → image sizes → remove unwanted items (scripts, noscript, clipper elements, non-web links, binary styles) → remove srcset → lazy image resolution (data-src → src)
 - **CSS caching:** `contentCaptureInject.ts` extracts CSS from `document.styleSheets` (CSSOM), sends to worker, stored in `chrome.storage.session`, injected by renderer as `<style>` blocks
 - **Fetch fallback:** Cross-origin sheets (SecurityError on `cssRules`) are fetched directly by the renderer via `fetch()` — extension pages have `host_permissions: <all_urls>`
 - **Iframe isolation:** Renderer uses `<iframe id="content-frame">` — page CSS and renderer styles never conflict
 - **Position neutralization:** `fixed → absolute`, `sticky → static`, viewport-height `min-height` reset
 - **Content height cropping:** `scrollHeight` measured before position conversions to avoid inflated canvas height
 - **Files:** `contentCaptureInject.ts`, `renderer.ts`, `renderer.html`, `webExtensionWorker.ts`
-- **Note:** V3 uses raw `document.documentElement.outerHTML` (not the cleaned DOM from `domUtils.ts`). Shadow DOM flattening, hidden element inlining, and canvas-to-image conversion are not applied — the renderer handles script stripping and URL rewriting directly.
 - **Remaining:** Bottom void on some grid-layout sites; right-edge clipping on zero-margin pages; sticky element duplication
 
 ### 2. Renderer Window Visibility
