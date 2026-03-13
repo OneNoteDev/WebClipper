@@ -195,7 +195,7 @@ User clicks Clip
 - **Content height cropping:** `scrollHeight` measured before position conversions to avoid inflated canvas height
 - **Port safety:** All `port.postMessage` calls wrapped in `safeSend()` to handle disconnected port errors (e.g., from devtools inspection)
 - **Files:** `contentCaptureInject.ts`, `renderer.ts`, `renderer.html`, `webExtensionWorker.ts`
-- **Remaining:** Bottom void on some grid-layout sites; right-edge clipping on zero-margin pages
+- **Remaining:** Right-edge clipping on zero-margin pages; video/streaming iframe embeds show broken players (cross-origin, same as server-side Puppeteer)
 
 ### 2. Renderer Window Visibility
 - `captureVisibleTab` requires the window to be painted — occluded/off-screen windows produce blank captures

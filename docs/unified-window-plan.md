@@ -81,7 +81,7 @@ Window width: 1280 (content) + 322 (sidebar) = ~1602px
 │                      │    │   into original tab (parallel)   │
 │ Renderer detects no  │    │                                  │
 │ userInformation in   │    │ contentCaptureInject cleans DOM, │
-│ localStorage         │    │ stylesheets, title, URL          │
+│ localStorage         │    │ sends HTML, title, URL           │
 │   → shows sign-in    │    │   → sendMessage to worker        │
 │     overlay          │    │   → worker stores in             │
 │                      │    │     chrome.storage.session        │
@@ -159,9 +159,10 @@ WINDOW LIFECYCLE:
   • UI lock: sign-out + controls disabled during capture and save
   • Cleanup: port disconnect removes window + session storage keys
 
-MESSAGE PROTOCOL (port):
+MESSAGE PROTOCOL (port — all renderer sends via safeSend() wrapper):
   Renderer → Worker: ready, dimensions, scrollResult, drawComplete,
-                     finalizeComplete, save, startRegion, signIn, signOut
+                     finalizeComplete, save, startRegion, signIn, signOut,
+                     telemetry
   Worker → Renderer: loadContent, scroll, initCanvas, drawCapture,
                      finalize, saveResult, regionCaptured, regionCancelled,
                      signInResult, signOutComplete
@@ -222,13 +223,12 @@ Standalone `regionOverlay.ts` injected directly into original tab via `scripting
 - **Focus**: Renderer blur handler skips re-focus when `currentMode === "region"`. Worker focuses original tab's window via `tabs.get` + `windows.update`.
 
 ### Sign-Out Flow
-Message-based, no re-injection:
-1. Renderer: `port.postMessage({ action: "signOut", authType })`
+Message-based, stays in renderer window (V3):
+1. Renderer: `safeSend({ action: "signOut", authType })`
 2. Worker: `doSignOutAction(authType)` hits sign-out URL, `clipperData.removeKey()` for userInformation/curSection/notebooks/isUserLoggedIn
-3. Worker: `windows.remove(renderWindowId)` closes renderer
-4. Worker: `uiCommunicator.callRemoteFunction(showSignInPanel)` → clipper.tsx
-5. clipper.tsx: `getSignOutState()` resets Mithril state, `uiExpanded = true`, `injectCommunicator.showUi` shows iframe
-6. Old sidebar appears with sign-in panel
+3. Worker → port: `{ action: "signOutComplete" }`
+4. Renderer: full UI reset (clears DOM, caches, notebook dropdown)
+5. Renderer: shows sign-in overlay (stays in same window, user can sign in again)
 
 ### Section Refresh
 Auto-fetch on renderer open (runs in background during capture):
@@ -312,7 +312,11 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 - [x] Self-contained sign-in: MSA/OrgId overlay, OAuth popup, no clipperInject injection
 - [x] Sign-out from renderer → shows sign-in overlay (stays in same window)
 - [x] Sign-out cleanup: clears notebooks, section cache, stale capture data
-- [x] Content capture via standalone contentCaptureInject.ts (full DomUtils pipeline, no imports, no iframe injection)
+- [x] Content capture via standalone contentCaptureInject.ts (master DomUtils pipeline + enhancements, no imports, no iframe injection)
+- [x] Position neutralization with `!important` prevents sticky element duplication in stitched captures
+- [x] Stylesheet caching removed — renderer fetches CSS directly via `<link>` tags
+- [x] `[hidden]{display:none!important}` CSS override enforces HTML hidden attribute
+- [x] `safeSend()` wrapper on all port.postMessage calls (handles disconnected port from devtools)
 - [x] User info footer pinned to sidebar bottom
 - [x] Preview container + sidebar-body scrollbars visible
 - [x] Full-page preview restored from cached data URL when switching modes
@@ -324,11 +328,12 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 ## Known Limitations
 
 ### Capture Quality
-1. **Viewport width vs responsive breakpoints** — Content-frame renders at 1280px, which causes some sites (e.g., MS Learn) to hide their left navigation sidebar due to CSS media query breakpoints. Widening the viewport was attempted but CSS `zoom` doesn't affect media queries, and removing the 1280px cap created other issues (wider images, sticky element duplication). Needs a different approach — possibly capturing the original tab viewport width and scaling the final image on save.
-2. **Sticky element duplication** — `position: sticky → static` neutralization causes sidebar/TOC elements to render at their natural DOM position AND duplicate when the page grid spans the full height. `sticky → relative` was tried but didn't resolve it. Needs smarter per-element analysis or hiding known duplicate patterns.
+1. **Viewport width vs responsive breakpoints** — Content-frame renders at 1280px. Most sites (including MS Learn at 1088px breakpoint) render correctly, but sites with breakpoints above 1280px may lose sidebars or switch to mobile layout. CSS `zoom` doesn't affect media queries. Widening the cap is possible but creates wider images. A future approach could capture at the original tab viewport width and scale on save.
+2. ~~Sticky element duplication~~ — Resolved. Position neutralization (`sticky → relative`, `fixed → absolute`) now uses `!important` via `setProperty()` in both `contentCaptureInject.ts` and `renderer.ts`, beating CSS utility classes like `.position-sticky{position:sticky!important}`. Hidden duplicate elements (e.g., MS Learn collapsible TOC) handled by `inlineHiddenElements` + `[hidden]{display:none!important}` CSS override.
 3. ~~Bottom void on grid-layout sites~~ — Resolved. Canvas is trimmed to `stitchYOffset` (actual pixels drawn) during finalize, removing any trailing blank space.
 4. **Right-edge clipping** — Pages with 0 margins may get content cut off at the right edge.
 5. **Canvas height cap** — Maximum stitched canvas height is 16384px (browser limitation).
+6. **Video/streaming embeds** — YouTube and other iframe-based video embeds show broken players in the content iframe (cross-origin restrictions, no JS execution). Server-side Puppeteer had the same limitation (showed "Unable to execute Javascript"). Left as-is to avoid accidentally stripping legitimate iframe content.
 
 ### ~~Missing Features~~ Implemented
 6. ~~**Self-contained sign-in**~~ — Implemented. Worker opens renderer directly on button click (no clipperInject.ts injection). Renderer checks `localStorage.userInformation` — shows MSA/OrgId sign-in overlay when not signed in. Sign-in via port messages, OAuth popup via `chrome.windows.create`, `auth.updateUserInfoData` on redirect. Content capture via standalone `contentCaptureInject.ts` (injected by worker via `scripting.executeScript`). Sign-out stays in renderer (shows sign-in overlay, clears storage). Custom section picker with scrollable `<ul>/<li>` dropdown. UI locked during capture to prevent race conditions. Region overlay selection border drawn on canvas (no separate div). Old injected sidebar (clipperInject.ts → clipper.tsx → Mithril) is now dead code.
