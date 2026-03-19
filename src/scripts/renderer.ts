@@ -563,7 +563,7 @@ function extractArticle() {
 		let article = reader.parse();
 
 		if (article && article.content) {
-			cachedArticleHtml = article.content;
+			cachedArticleHtml = cleanArticleHtml(article.content);
 			renderArticleHtml(cachedArticleHtml);
 			articleLoaded = true;
 			if (currentMode === "article") {
@@ -587,13 +587,34 @@ function showArticleError() {
 	}
 }
 
+// Clean Readability output to match ONML (OneNote Markup Language) constraints,
+// mirroring the old toOnml() pipeline: strip styles/classes, event handlers, and
+// unsupported elements. Applied once at extraction time so both preview and save
+// use the same cleaned HTML.
+function cleanArticleHtml(html: string): string {
+	var tempDoc = new DOMParser().parseFromString(html, "text/html");
+	// Remove elements not supported in ONML
+	var unsupported = tempDoc.querySelectorAll("applet, audio, button, canvas, embed, hr, input, link, map, menu, menuitem, meter, noscript, progress, script, source, style, svg, video");
+	for (var i = unsupported.length - 1; i >= 0; i--) {
+		if (unsupported[i].parentNode) { unsupported[i].parentNode.removeChild(unsupported[i]); }
+	}
+	// Strip all style and class attributes (page layout styles leak into preview/OneNote)
+	var allEls = tempDoc.querySelectorAll("*");
+	for (var i = 0; i < allEls.length; i++) {
+		(allEls[i] as HTMLElement).removeAttribute("style");
+		(allEls[i] as HTMLElement).removeAttribute("class");
+	}
+	return tempDoc.body ? tempDoc.body.innerHTML : html;
+}
+
 function renderArticleHtml(html: string) {
 	let pDoc = previewFrame.contentDocument;
 	if (!pDoc) { return; }
-	// Wrap article HTML in a styled document for readable preview
-	// Styles match the existing clipper article preview: Verdana 16px, OneNote heading colors
-	let articleCss = "body { font-family: Verdana, sans-serif; font-size: 16px; line-height: 1.6; "
-		+ "max-width: 684px; margin: 24px auto; padding: 0 20px 0 20px; color: #1a1a1a; }"
+	// Wrap article HTML in a styled document matching OneNote page layout:
+	// 624px content width + 20px left/right padding = 664px total (from @OneNotePageWidth)
+	// Segoe UI font family matches the clipper's existing preview styling
+	let articleCss = "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.6; "
+		+ "max-width: 624px; margin: 24px 0; padding: 0 20px; color: #1a1a1a; margin-bottom: 16px; }"
 		+ "img { max-width: 100%; height: auto; }"
 		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
 		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
@@ -605,6 +626,7 @@ function renderArticleHtml(html: string) {
 		+ "blockquote { border-left: 3px solid rgb(46,117,181); margin-left: 0; padding-left: 16px; color: #555; }"
 		+ "table { border-collapse: collapse; width: 100%; }"
 		+ "td, th { border: 1px solid #ddd; padding: 8px; }";
+
 	let fullHtml = "<!DOCTYPE html><html><head><style>" + articleCss + "</style></head><body>"
 		+ html
 		+ "</body></html>";
@@ -742,8 +764,8 @@ function escapeAttr(str: string): string {
 function renderBookmarkHtml(html: string) {
 	let pDoc = previewFrame.contentDocument;
 	if (!pDoc) { return; }
-	let bookmarkCss = "body { font-family: Verdana, sans-serif; font-size: 16px; line-height: 1.5; "
-		+ "max-width: 684px; margin: 24px auto; padding: 0 20px; color: #1a1a1a; }"
+	let bookmarkCss = "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.5; "
+		+ "max-width: 624px; margin: 24px 0; padding: 0 20px; color: #1a1a1a; }"
 		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
 		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
 		+ "h2 { font-size: 18px; color: rgb(46,117,181); font-weight: normal; }"

@@ -194,8 +194,9 @@ User clicks Clip
 - **Position neutralization:** `sticky → relative !important`, `fixed → absolute !important` at both capture time (contentCaptureInject.ts) and render time (renderer.ts backup). Prevents sticky element repetition in stitched multi-viewport captures
 - **Content height cropping:** `scrollHeight` measured before position conversions to avoid inflated canvas height
 - **Port safety:** All `port.postMessage` calls wrapped in `safeSend()` to handle disconnected port errors (e.g., from devtools inspection)
+- **Article mode ONML cleanup:** Readability output cleaned via `cleanArticleHtml()` before caching — strips ONML-unsupported elements (video, audio, canvas, svg, etc.), removes all `style`/`class` attributes. Same cleaned HTML used for both preview and save, matching the old `toOnml()` pipeline. Preview styled with Segoe UI 11pt, 624px max-width (OneNote page width from `@OneNotePageWidth`)
 - **Files:** `contentCaptureInject.ts`, `renderer.ts`, `renderer.html`, `webExtensionWorker.ts`
-- **Remaining:** Right-edge clipping on zero-margin pages; video/streaming iframe embeds show broken players (cross-origin, same as server-side Puppeteer)
+- **Remaining:** Right-edge clipping on zero-margin pages; video/streaming iframe embeds show broken players (cross-origin, same as server-side Puppeteer); CSR/shadow DOM sites (e.g., MSN.com on FAST framework) produce empty captures — `cloneNode(true)` cannot copy shadow roots per DOM spec, pre-existing limitation shared with server-side Puppeteer (`--disable-javascript`)
 
 ### 2. Renderer Window Visibility
 - `captureVisibleTab` requires the window to be painted — occluded/off-screen windows produce blank captures
