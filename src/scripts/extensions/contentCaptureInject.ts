@@ -233,6 +233,16 @@
 	addImageSizeInformationToDom(doc);
 	removeUnwantedItems(doc);
 
+	// Preserve the original page's computed body font-size on the clone.
+	// CSS reset stylesheets (e.g., "body{font-size:75%}") may not get overridden
+	// correctly in the renderer iframe due to stylesheet loading order differences.
+	try {
+		let bodyFontSize = window.getComputedStyle(document.body).fontSize;
+		if (bodyFontSize && doc.body) {
+			doc.body.style.setProperty("font-size", bodyFontSize, "important");
+		}
+	} catch (e) { /* skip */ }
+
 	let html = resolveLazyImages(getDomString(doc));
 
 	chrome.runtime.sendMessage(JSON.stringify({
