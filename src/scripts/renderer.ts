@@ -56,6 +56,7 @@ let contentPixelWidth = 0; // set on first capture, excludes sidebar
 let sidebarTitle = document.getElementById("sidebar-title") as HTMLSpanElement;
 let userInfoDiv = document.getElementById("user-info") as HTMLDivElement;
 let userEmailSpan = document.getElementById("user-email") as HTMLSpanElement;
+let feedbackLink = document.getElementById("feedback-link") as HTMLAnchorElement;
 let signoutLink = document.getElementById("signout-link") as HTMLAnchorElement;
 
 // Mode state
@@ -99,7 +100,8 @@ let strings = {
 	titlePlaceholder: loc("WebClipper.Label.PageTitlePlaceholder", "Add a page title..."),
 	notePlaceholder: loc("WebClipper.Label.AnnotationPlaceholder", "Add a note..."),
 	sourceLabel: "Source",
-	signOut: loc("WebClipper.Action.SignOut", "Sign out")
+	signOut: loc("WebClipper.Action.SignOut", "Sign out"),
+	feedback: loc("WebClipper.Action.Feedback", "Feedback")
 };
 
 // --- Telemetry helpers ---
@@ -284,19 +286,28 @@ try {
 			userEmailSpan.title = email || "";
 		}
 	}
-	if (!userEmailSpan.textContent) {
-		userInfoDiv.style.display = "none";
+	// Hide feedback for MSA users (matches old sidebar behavior)
+	if (userAuthType === "Msa") {
+		feedbackLink.style.display = "none";
 	}
 } catch (e) {
 	userInfoDiv.style.display = "none";
 }
 signoutLink.textContent = strings.signOut;
+let feedbackLabel = document.getElementById("feedback-label");
+if (feedbackLabel) { feedbackLabel.textContent = strings.feedback; }
 signoutLink.addEventListener("click", (e) => {
 	e.preventDefault();
 	logFunnel(Funnel.Label.SignOut);
 	logSessionEnd(Session.EndTrigger.SignOut);
 	logSessionStart();
 	safeSend({ action: "signOut", authType: userAuthType });
+});
+
+// --- Feedback link ---
+feedbackLink.addEventListener("click", (e) => {
+	e.preventDefault();
+	safeSend({ action: "openFeedback", pageUrl: sourceUrl.textContent || "" });
 });
 
 // --- Sign-in state detection ---
@@ -1359,11 +1370,30 @@ port.onMessage.addListener((message: any) => {
 			// Hide progress bar in error state — the track line looks like a separator
 			(document.getElementById("progress-bar-track") as HTMLElement).style.display = "none";
 			// Error message first, then expandable diagnostics
+			var escapedDetail = escapeHtml(errorDetail);
 			statusText.innerHTML = escapeHtml(loc("WebClipper.Error.GenericError", "Something went wrong. Please try clipping the page again."))
 				+ "<details style=\"margin-top:8px;font-size:12px;\">"
-				+ "<summary style=\"cursor:pointer;color:rgba(255,255,255,0.8);\">" + escapeHtml(loc("WebClipper.Label.SignInUnsuccessfulMoreInformation", "More information")) + "</summary>"
-				+ "<pre style=\"margin-top:6px;font-size:11px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.2);padding:8px;border-radius:3px;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;\">"
-				+ escapeHtml(errorDetail) + "</pre></details>";
+				+ "<summary style=\"cursor:pointer;color:rgba(255,255,255,0.8);\">"
+				+ escapeHtml(loc("WebClipper.Label.SignInUnsuccessfulMoreInformation", "More information"))
+				+ " <button id=\"copy-diagnostics\" style=\"background:none;border:none;cursor:pointer;font-size:12px;padding:0;vertical-align:baseline;\">&#x1F4CB;</button>"
+				+ "</summary>"
+				+ "<pre id=\"error-detail-text\" style=\"margin-top:6px;font-size:11px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.2);padding:8px;border-radius:3px;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;\">"
+				+ escapedDetail + "</pre>"
+				+ "</details>";
+			var copyBtn = document.getElementById("copy-diagnostics");
+			if (copyBtn) {
+				copyBtn.addEventListener("click", function(ev) {
+					ev.stopPropagation();
+					var pre = document.getElementById("error-detail-text");
+					if (pre) {
+						navigator.clipboard.writeText(pre.textContent || "").then(function() {
+							copyBtn.style.color = "#69F0AE";
+							copyBtn.textContent = "\u2713";
+							setTimeout(function() { copyBtn.style.color = ""; copyBtn.innerHTML = "&#x1F4CB;"; }, 1500);
+						});
+					}
+				});
+			}
 			saveBtn.textContent = strings.saveToOneNote;
 			saveBtn.disabled = false;
 		}
@@ -1386,6 +1416,7 @@ port.onMessage.addListener((message: any) => {
 				userEmailSpan.title = message.user.email || "";
 				userAuthType = message.user.authType || "";
 				userInfoDiv.style.display = "";
+				feedbackLink.style.display = (userAuthType === "Msa") ? "none" : "";
 			}
 			// Reset capture state for fresh capture
 			fullPageComplete = false;

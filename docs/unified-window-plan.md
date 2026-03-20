@@ -162,7 +162,7 @@ WINDOW LIFECYCLE:
 MESSAGE PROTOCOL (port — all renderer sends via safeSend() wrapper):
   Renderer → Worker: ready, dimensions, scrollResult, drawComplete,
                      finalizeComplete, save, startRegion, signIn, signOut,
-                     telemetry
+                     telemetry, openFeedback
   Worker → Renderer: loadContent, scroll, initCanvas, drawCapture,
                      finalize, saveResult, regionCaptured, regionCancelled,
                      signInResult, signOutComplete
@@ -322,6 +322,8 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 - [x] Full-page preview restored from cached data URL when switching modes
 - [x] Anti-maximize: chrome.windows API reverts maximized state
 - [x] Article/bookmark preview: links disabled (pointer-events: none), consistent scrollbar
+- [x] Feedback link in footer: smiley icon + i18n label, hidden for MSA users, opens MS Feedback Portal popup with context params (LogCategory, originalUrl, clipperId, usid, version, type). Per-session USID (cccccccc- prefix) sent as X-UserSessionId header in save API calls for log correlation.
+- [x] Error diagnostics copy button: clipboard icon next to "More information", copies error text via navigator.clipboard.writeText
 
 ---
 

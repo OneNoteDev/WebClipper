@@ -264,6 +264,14 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		});
 	}
 
+	// Generate a RFC4122 v4 UUID (matches StringUtils.generateGuid)
+	private static newGuid(): string {
+		return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+			var r = Math.random() * 16 | 0;
+			return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+		});
+	}
+
 	private launchRenderer(signedIn: boolean) {
 		let rendererUrl = WebExtension.browser.runtime.getURL("renderer.html");
 		let renderWindowId: number;
@@ -271,6 +279,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		let windowReady = false;
 		let contentCaptured = false;
 		let activePort: chrome.runtime.Port;
+
+		// Per-session USID for API call correlation and feedback URL.
+		// Matches old logger pattern: "cccccccc-" prefix + v4 UUID tail.
+		let sessionUsid = "cccccccc-" + WebExtensionWorker.newGuid().substring(9);
 
 		// Listener for contentCaptureInject.ts messages — stores page data in session storage
 		let captureListener = (rawMsg: any, sender: any) => {
@@ -557,7 +569,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									+ (saveSectionId ? "/sections/" + encodeURIComponent(saveSectionId) : "")
 									+ "/pages";
 
-								let correlationId = "ON-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+								let correlationId = WebExtensionWorker.newGuid();
 								let requestDate = new Date().toISOString();
 
 								fetch(apiUrl, {
@@ -565,7 +577,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									headers: {
 										"Authorization": "Bearer " + accessToken,
 										"Content-Type": "multipart/form-data; boundary=" + boundary,
-										"X-CorrelationId": correlationId
+										"X-CorrelationId": correlationId,
+										"X-UserSessionId": sessionUsid
 									},
 									body: body
 								}).then((response) => {
@@ -729,6 +742,25 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 					// Tell renderer to show sign-in panel (keep window open)
 					port.postMessage({ action: "signOutComplete" });
+				}
+
+				if (message.action === "openFeedback") {
+					let ci = this.clientInfo.get();
+					let usid = sessionUsid;
+					let feedbackUrl = "https://feedbackportal.microsoft.com/feedback/post/c06dcc30-2e1c-ec11-b6e7-0022481f8472";
+					feedbackUrl += "?LogCategory=OneNoteClipperUsage";
+					if (message.pageUrl) { feedbackUrl += "&originalUrl=" + encodeURIComponent(message.pageUrl); }
+					if (ci.clipperId) { feedbackUrl += "&clipperId=" + encodeURIComponent(ci.clipperId); }
+					if (usid) { feedbackUrl += "&usid=" + encodeURIComponent(usid); }
+					if (ci.clipperVersion) { feedbackUrl += "&version=" + encodeURIComponent(ci.clipperVersion); }
+					feedbackUrl += "&type=" + encodeURIComponent(ClientType[ci.clipperType]);
+					WebExtension.browser.windows.create({
+						url: feedbackUrl,
+						type: "popup",
+						width: 1000,
+						height: 700,
+						focused: true
+					});
 				}
 			});
 		};
