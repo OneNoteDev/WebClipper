@@ -61,7 +61,7 @@
       "256": "icons/icon-256.png"
     },
     "action": {
-      "default_title": "Clip to OneNote",
+      "default_title": "OneNote Web Clipper",
       "default_icon": {
         "19": "icons/icon-19.png",
         "38": "icons/icon-38.png"
