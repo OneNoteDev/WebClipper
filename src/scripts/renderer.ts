@@ -83,12 +83,25 @@ function loc(key: string, fallback: string): string {
 	return (locStrings && locStrings[key]) || fallback;
 }
 
+// Set HTML lang attribute from stored locale (extensionBase stores navigator.language in localStorage.locale)
+try {
+	let storedLocale = localStorage.getItem("displayLocaleOverride") || localStorage.getItem("locale");
+	if (storedLocale) {
+		document.documentElement.lang = storedLocale.replace(/_/g, "-");
+	}
+} catch (e) { /* keep default "en" */ }
+
+// Screen reader announcements via aria-live region
+function announceToScreenReader(text: string) {
+	let el = document.getElementById("aria-status");
+	if (el) { el.textContent = ""; setTimeout(function() { if (el) { el.textContent = text; } }, 100); }
+}
+
 let strings = {
 	clipperTitle: loc("WebClipper.Label.OneNoteWebClipper", "OneNote Web Clipper"),
 	capturing: loc("WebClipper.ClipType.ScreenShot.ProgressLabel", "Capturing page..."),
 	cancel: loc("WebClipper.Action.Cancel", "Cancel"),
 	close: loc("WebClipper.Action.CloseTheClipper", "Close"),
-	captureComplete: "Capture complete",
 	saveToOneNote: loc("WebClipper.Action.Clip", "Clip"),
 	viewInOneNote: loc("WebClipper.Action.ViewInOneNote", "View in OneNote"),
 	viewportProgress: loc("WebClipper.ClipType.ScreenShot.IncrementalProgress", "Capturing {0} of {1}..."),
@@ -99,7 +112,7 @@ let strings = {
 	modeRegion: loc("WebClipper.ClipType.Region.Button", "Region"),
 	titlePlaceholder: loc("WebClipper.Label.PageTitlePlaceholder", "Add a page title..."),
 	notePlaceholder: loc("WebClipper.Label.AnnotationPlaceholder", "Add a note..."),
-	sourceLabel: "Source",
+	sourceLabel: loc("WebClipper.Label.Source", "Source"),
 	signOut: loc("WebClipper.Action.SignOut", "Sign out"),
 	feedback: loc("WebClipper.Action.Feedback", "Feedback")
 };
@@ -134,6 +147,18 @@ titleField.placeholder = strings.titlePlaceholder;
 noteField.placeholder = strings.notePlaceholder;
 let sourceLabelEl = document.getElementById("source-label");
 if (sourceLabelEl) { sourceLabelEl.textContent = strings.sourceLabel; }
+// Field labels
+let titleLabelEl = document.getElementById("title-label");
+if (titleLabelEl) { titleLabelEl.textContent = loc("WebClipper.Label.PageTitle", "Title"); }
+let noteLabelEl = document.getElementById("note-label");
+if (noteLabelEl) { noteLabelEl.textContent = loc("WebClipper.Label.Annotation", "Note"); }
+let sectionLabelEl = document.getElementById("section-label");
+if (sectionLabelEl) { sectionLabelEl.textContent = loc("WebClipper.Label.ClipLocation", "Save to"); }
+// Sign-in panel
+let signinDesc = document.getElementById("signin-description");
+if (signinDesc) { signinDesc.textContent = loc("WebClipper.Label.SignInDescription", "Sign in to clip this page to OneNote"); }
+let signinProgressEl = document.getElementById("signin-progress");
+if (signinProgressEl) { signinProgressEl.textContent = loc("WebClipper.Label.SigningIn", "Signing in..."); }
 
 // Load page title and URL from session storage (page-specific, still needs session)
 chrome.storage.session.get(["fullPageStatusText", "fullPageTitle", "fullPageUrl"], (stored: any) => {
@@ -168,19 +193,23 @@ function toggleSectionPicker() {
 function openSectionPicker() {
 	sectionListContainer.style.display = "block";
 	sectionPickerOpen = true;
-	// Scroll selected item into view
-	let sel = sectionList.querySelector(".section-item-selected");
-	if (sel) { sel.scrollIntoView({ block: "nearest" }); }
+	sectionSelected.setAttribute("aria-expanded", "true");
+	// Scroll selected item into view and focus it
+	let sel = sectionList.querySelector(".section-item-selected") as HTMLElement;
+	if (sel) { sel.scrollIntoView({ block: "nearest" }); sel.focus(); }
 }
 
 function closeSectionPicker() {
 	sectionListContainer.style.display = "none";
 	sectionPickerOpen = false;
+	sectionSelected.setAttribute("aria-expanded", "false");
 }
 
 sectionSelected.addEventListener("click", toggleSectionPicker);
 sectionSelected.addEventListener("keydown", (e) => {
 	if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSectionPicker(); }
+	else if (e.key === "Escape" && sectionPickerOpen) { e.preventDefault(); closeSectionPicker(); }
+	else if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !sectionPickerOpen) { e.preventDefault(); openSectionPicker(); }
 });
 // Close dropdown when clicking outside
 document.addEventListener("click", (e) => {
@@ -195,7 +224,7 @@ function populateSectionDropdown() {
 		let notebooksJson = localStorage.getItem("notebooks");
 		let curSectionJson = localStorage.getItem("curSection");
 		if (!notebooksJson) {
-			sectionSelected.textContent = "No notebooks available";
+			sectionSelected.textContent = loc("WebClipper.SectionPicker.NoNotebooksFound", "No notebooks available");
 			selectedSectionId = "";
 			return;
 		}
@@ -216,7 +245,7 @@ function populateSectionDropdown() {
 			}
 		}
 	} catch (e) {
-		sectionSelected.textContent = "Error loading notebooks";
+		sectionSelected.textContent = loc("WebClipper.SectionPicker.NotebookLoadFailureMessage", "Error loading notebooks");
 		selectedSectionId = "";
 	}
 }
@@ -252,20 +281,45 @@ function addSectionItem(id: string, label: string, preselectedId: string) {
 	let li = document.createElement("li");
 	li.className = "section-item";
 	li.setAttribute("data-id", id);
+	li.setAttribute("role", "option");
+	li.setAttribute("tabindex", "-1");
 	li.textContent = label;
 	li.title = label;
 	if (id === preselectedId) {
 		li.classList.add("section-item-selected");
+		li.setAttribute("aria-selected", "true");
 		selectedSectionId = id;
 		sectionSelected.textContent = label;
 		sectionSelected.title = label;
+	} else {
+		li.setAttribute("aria-selected", "false");
 	}
 	li.addEventListener("click", () => {
 		// Remove old selection
 		let prev = sectionList.querySelector(".section-item-selected");
-		if (prev) { prev.classList.remove("section-item-selected"); }
+		if (prev) { prev.classList.remove("section-item-selected"); prev.setAttribute("aria-selected", "false"); }
 		li.classList.add("section-item-selected");
+		li.setAttribute("aria-selected", "true");
 		selectSection(id, label);
+	});
+	// Keyboard navigation within section list
+	li.addEventListener("keydown", (e) => {
+		if (e.key === "ArrowDown") {
+			e.preventDefault();
+			let next = li.nextElementSibling as HTMLElement;
+			if (next) { next.focus(); }
+		} else if (e.key === "ArrowUp") {
+			e.preventDefault();
+			let prev = li.previousElementSibling as HTMLElement;
+			if (prev) { prev.focus(); }
+		} else if (e.key === "Enter" || e.key === " ") {
+			e.preventDefault();
+			li.click();
+		} else if (e.key === "Escape") {
+			e.preventDefault();
+			closeSectionPicker();
+			sectionSelected.focus();
+		}
 	});
 	sectionList.appendChild(li);
 }
@@ -326,13 +380,20 @@ let signinError = document.getElementById("signin-error") as HTMLDivElement;
 let signinProgress = document.getElementById("signin-progress") as HTMLDivElement;
 let signinMsaBtn = document.getElementById("signin-msa-btn") as HTMLButtonElement;
 let signinOrgIdBtn = document.getElementById("signin-orgid-btn") as HTMLButtonElement;
+signinMsaBtn.textContent = loc("WebClipper.Action.SigninMsa", "Sign in with a Microsoft account");
+signinOrgIdBtn.textContent = loc("WebClipper.Action.SigninOrgId", "Sign in with a work or school account");
 
 function showSignInPanel() {
 	signinOverlay.style.display = "flex";
+	// Focus first sign-in button for keyboard/screen reader users
+	setTimeout(function() { signinMsaBtn.focus(); }, 100);
 }
 
 function hideSignInPanel() {
 	signinOverlay.style.display = "none";
+	// Move focus to first mode button
+	let firstModeBtn = document.querySelector(".mode-btn") as HTMLElement;
+	if (firstModeBtn) { setTimeout(function() { firstModeBtn.focus(); }, 100); }
 }
 
 function showSignInProgress() {
@@ -430,13 +491,29 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 	}
 });
 saveBtn.disabled = true;
-signoutLink.style.pointerEvents = "none";
-signoutLink.style.opacity = "0.4";
+disableSignout();
 // Show initial capture progress
 capturePanel.style.display = "flex";
 statusText.textContent = strings.capturing;
+announceToScreenReader(strings.capturing);
+// During capture, Cancel is the only actionable control — focus it
+if (isSignedIn) { setTimeout(function() { cancelBtn.focus(); }, 100); }
 
 // Section selection persistence is handled by selectSection() in the custom dropdown
+
+// --- Accessible signout disable/enable ---
+function disableSignout() {
+	signoutLink.style.pointerEvents = "none";
+	signoutLink.style.opacity = "0.4";
+	signoutLink.setAttribute("aria-disabled", "true");
+	signoutLink.setAttribute("tabindex", "-1");
+}
+function enableSignout() {
+	signoutLink.style.pointerEvents = "";
+	signoutLink.style.opacity = "";
+	signoutLink.removeAttribute("aria-disabled");
+	signoutLink.removeAttribute("tabindex");
+}
 
 // --- UI lock during clip/save ---
 
@@ -447,8 +524,7 @@ function lockSidebar() {
 	noteField.disabled = true;
 	sectionPicker.classList.add("disabled");
 	cancelBtn.disabled = true;
-	signoutLink.style.pointerEvents = "none";
-	signoutLink.style.opacity = "0.4";
+	disableSignout();
 }
 
 function unlockSidebar() {
@@ -461,8 +537,7 @@ function unlockSidebar() {
 	noteField.disabled = false;
 	sectionPicker.classList.remove("disabled");
 	cancelBtn.disabled = false;
-	signoutLink.style.pointerEvents = "";
-	signoutLink.style.opacity = "";
+	enableSignout();
 }
 
 // --- Mode switching ---
@@ -544,7 +619,7 @@ function loadArticleContent() {
 	let loadingDoc = previewFrame.contentDocument;
 	if (loadingDoc) {
 		loadingDoc.open();
-		loadingDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>Loading article...</div></body></html>");
+		loadingDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>" + escapeHtml(loc("WebClipper.Preview.LoadingMessage", "Loading article...")) + "</div></body></html>");
 		loadingDoc.close();
 	}
 	let attempts = 0;
@@ -593,7 +668,7 @@ function showArticleError() {
 	let errDoc = previewFrame.contentDocument;
 	if (errDoc) {
 		errDoc.open();
-		errDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#999;}</style></head><body><div>Article content not available for this page.</div></body></html>");
+		errDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#999;}</style></head><body><div>" + escapeHtml(loc("WebClipper.Preview.NoContentFound", "Article content not available for this page.")) + "</div></body></html>");
 		errDoc.close();
 	}
 }
@@ -880,17 +955,36 @@ function updateRegionSessionStorage() {
 	});
 }
 
-// Mode button click handlers
-document.querySelectorAll(".mode-btn").forEach((btn) => {
+// Mode button click handlers + ARIA (role="radio" + aria-checked in radiogroup, arrow keys)
+let modeButtonNodeList = document.querySelectorAll(".mode-btn");
+let modeButtons: HTMLButtonElement[] = [];
+for (let i = 0; i < modeButtonNodeList.length; i++) { modeButtons.push(modeButtonNodeList[i] as HTMLButtonElement); }
+modeButtons.forEach((btn, idx) => {
+	// Arrow key navigation (mirrors old enableAriaInvoke: ArrowUp/Down/Left/Right + Home/End)
+	btn.addEventListener("keydown", (e) => {
+		let target = -1;
+		if (e.key === "ArrowDown" || e.key === "ArrowRight") { target = idx + 1; }
+		else if (e.key === "ArrowUp" || e.key === "ArrowLeft") { target = idx - 1; }
+		else if (e.key === "Home") { target = 0; }
+		else if (e.key === "End") { target = modeButtons.length - 1; }
+		if (target >= 0 && target < modeButtons.length && !modeButtons[target].disabled) {
+			e.preventDefault();
+			modeButtons[target].focus();
+		}
+	});
 	btn.addEventListener("click", () => {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === currentMode) { return; }
 		// Block mode switching during active capture — captureVisibleTab needs content-frame visible
 		if (!fullPageComplete && mode !== "fullpage") { return; }
 
-		// Update selected state visually
-		document.querySelectorAll(".mode-btn").forEach((b) => b.classList.remove("selected"));
+		// Update selected state visually + ARIA
+		document.querySelectorAll(".mode-btn").forEach((b) => {
+			b.classList.remove("selected");
+			b.setAttribute("aria-checked", "false");
+		});
 		btn.classList.add("selected");
+		btn.setAttribute("aria-checked", "true");
 
 		if (mode === "fullpage") {
 			switchToFullPage();
@@ -901,6 +995,9 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 		} else if (mode === "region") {
 			switchToRegion();
 		}
+		// Announce mode change to screen readers
+		let modeLabel = btn.querySelector("span");
+		if (modeLabel) { announceToScreenReader(modeLabel.textContent || ""); }
 	});
 });
 
@@ -1188,7 +1285,9 @@ port.onMessage.addListener((message: any) => {
 			let current = message.index + 1;
 			let total = message.totalViewports;
 			progressInfo.textContent = strings.viewportProgress.replace("{0}", current).replace("{1}", total);
-			progressFill.style.width = Math.round((current / total) * 100) + "%";
+			let pct = Math.round((current / total) * 100);
+			progressFill.style.width = pct + "%";
+			progressFill.setAttribute("aria-valuenow", "" + pct);
 		}
 
 		let img = new Image();
@@ -1296,8 +1395,11 @@ port.onMessage.addListener((message: any) => {
 						(b as HTMLButtonElement).disabled = false;
 						b.classList.remove("disabled");
 					});
-					signoutLink.style.pointerEvents = "";
-					signoutLink.style.opacity = "";
+					enableSignout();
+					announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
+					// Set initial focus on Full Page mode button after capture
+					let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
+					if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
 
 					safeSend({ action: "finalizeComplete" });
 				});
@@ -1361,9 +1463,11 @@ port.onMessage.addListener((message: any) => {
 				saveBtn.disabled = true;
 			}
 			cancelBtn.disabled = false;
+			announceToScreenReader(strings.viewInOneNote);
 		} else {
 			unlockSidebar();
 			let errorDetail = message.error || "Unknown error";
+			announceToScreenReader(loc("WebClipper.Error.GenericError", "Something went wrong."));
 			capturePanel.style.display = "flex";
 			progressInfo.textContent = "";
 			progressFill.style.width = "0%";
@@ -1375,7 +1479,7 @@ port.onMessage.addListener((message: any) => {
 				+ "<details style=\"margin-top:8px;font-size:12px;\">"
 				+ "<summary style=\"cursor:pointer;color:rgba(255,255,255,0.8);\">"
 				+ escapeHtml(loc("WebClipper.Label.SignInUnsuccessfulMoreInformation", "More information"))
-				+ " <button id=\"copy-diagnostics\" style=\"background:none;border:none;cursor:pointer;font-size:12px;padding:0;vertical-align:baseline;\">&#x1F4CB;</button>"
+				+ " <button id=\"copy-diagnostics\" aria-label=\"Copy diagnostic information\" style=\"background:none;border:none;cursor:pointer;font-size:12px;padding:0;vertical-align:baseline;\">&#x1F4CB;</button>"
 				+ "</summary>"
 				+ "<pre id=\"error-detail-text\" style=\"margin-top:6px;font-size:11px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.2);padding:8px;border-radius:3px;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;\">"
 				+ escapedDetail + "</pre>"
@@ -1435,7 +1539,7 @@ port.onMessage.addListener((message: any) => {
 			saveBtn.disabled = true;
 		} else {
 			logFunnel(Funnel.Label.AuthSignInFailed);
-			showSignInError(message.error || "Sign-in failed. Please try again.");
+			showSignInError(message.error || loc("WebClipper.Error.SignInUnsuccessful", "Sign-in failed. Please try again."));
 		}
 	}
 
@@ -1461,8 +1565,7 @@ port.onMessage.addListener((message: any) => {
 		currentMode = "fullpage";
 		// Unlock sidebar (clears disabled state from lockSidebar during save)
 		unlockSidebar();
-		signoutLink.style.pointerEvents = "";
-		signoutLink.style.opacity = "";
+		enableSignout();
 		userEmailSpan.textContent = "";
 		userAuthType = "";
 		userInfoDiv.style.display = "none";
@@ -1513,6 +1616,7 @@ saveBtn.addEventListener("click", () => {
 	capturePanel.style.display = "flex";
 	statusText.textContent = strings.saving;
 	progressInfo.textContent = "";
+	announceToScreenReader(strings.saving);
 	let saveMsg: any = {
 		action: "save",
 		title: titleField.value,
@@ -1530,12 +1634,25 @@ saveBtn.addEventListener("click", () => {
 	safeSend(saveMsg);
 });
 
-// Block keyboard and scroll on non-interactive elements — sidebar inputs stay usable
+// Block keyboard on non-interactive elements — but allow keys needed by screen readers
+// NVDA Browse mode uses arrow keys to navigate the virtual buffer; blocking them prevents NVDA from reading content
 document.addEventListener("keydown", (e) => {
-	let tag = (e.target as HTMLElement).tagName;
-	if (tag !== "TEXTAREA" && tag !== "INPUT" && tag !== "BUTTON") {
-		e.preventDefault();
+	// Allow navigation keys (Tab, Escape, arrows) — screen readers need these
+	if (e.key === "Tab" || e.key === "Escape"
+		|| e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight"
+		|| e.key === "Home" || e.key === "End" || e.key === "PageUp" || e.key === "PageDown") {
+		return;
 	}
+	// Allow keyboard on interactive elements (inputs, buttons, links, tabindex items)
+	let target = e.target as HTMLElement;
+	if (target.tagName === "TEXTAREA" || target.tagName === "INPUT" || target.tagName === "BUTTON"
+		|| target.tagName === "A" || target.tagName === "SELECT"
+		|| target.hasAttribute("tabindex") || target.getAttribute("role") === "option") {
+		return;
+	}
+	// Allow modifier key combinations (NVDA uses Insert+key, Narrator uses CapsLock+key)
+	if (e.altKey || e.ctrlKey || e.metaKey) { return; }
+	e.preventDefault();
 }, true);
 document.addEventListener("wheel", (e) => {
 	// Allow scrolling in preview container, preview frame, and sidebar body
@@ -1567,14 +1684,14 @@ window.addEventListener("resize", () => {
 	}
 });
 
-// Keep renderer focused — re-focus when user tries to switch away
-let signingIn = false; // Disable blur handler during sign-in popup
-window.addEventListener("blur", () => {
-	if (saveDone) { return; } // Don't fight focus after save (user may be viewing in OneNote)
-	if (currentMode === "region") { return; } // Don't fight focus during region selection on original tab
-	if (signingIn) { return; } // Don't fight focus during sign-in popup
-	setTimeout(() => { window.focus(); }, 100);
-});
+// Modal-like focus: renderer opens focused (chrome.windows.create with focused:true).
+// No blur re-focus — it fought Alt+Tab, sign-in popups, and required multiple guard
+// flags (saveDone, region, signingIn). Content area has pointer-events:none and iframes
+// have tabindex="-1", so no functional need for aggressive focus stealing.
+// Note: screen reader testing found Edge disables accessibility API flags for extension
+// popup windows (edge://accessibility shows Screen reader:disabled), so SR compat was
+// not the primary reason for removal — but keeping it removed avoids future conflicts.
+let signingIn = false; // Used by sign-in flow
 
 // Signal that the renderer is ready
 safeSend({ action: "ready" });

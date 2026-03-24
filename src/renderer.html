@@ -1,68 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <title></title>
 <link rel="stylesheet" href="renderer.css">
 </head>
 <body>
-<div id="signin-overlay" style="display:none;">
+<div id="signin-overlay" style="display:none;" role="dialog" aria-label="Sign in">
 	<div id="signin-panel">
 		<img src="images/onenote_logo_clipper.png" alt="OneNote" class="signin-logo">
 		<h2 class="signin-title">OneNote Web Clipper</h2>
 		<p class="signin-description" id="signin-description">Sign in to clip this page to OneNote</p>
 		<button id="signin-msa-btn" class="signin-btn">Sign in with Microsoft account</button>
 		<button id="signin-orgid-btn" class="signin-btn signin-btn-secondary">Sign in with work or school account</button>
-		<div id="signin-error" class="signin-error" style="display:none;"></div>
+		<div id="signin-error" class="signin-error" role="alert" style="display:none;"></div>
 		<div id="signin-progress" class="signin-progress" style="display:none;">Signing in...</div>
 	</div>
 </div>
-<iframe id="content-frame"></iframe>
-<iframe id="preview-frame"></iframe>
-<div id="preview-container"></div>
-<div id="sidebar">
+<iframe id="content-frame" tabindex="-1"></iframe>
+<iframe id="preview-frame" tabindex="-1"></iframe>
+<div id="preview-container" tabindex="-1"></div>
+<div id="sidebar" role="main" aria-label="OneNote Web Clipper">
 	<div id="sidebar-header">
 		<img src="images/onenote_logo_clipper_small.png" alt="">
 		<span class="title" id="sidebar-title">OneNote Web Clipper</span>
 	</div>
 	<div id="sidebar-body">
-		<div id="mode-panel">
-			<button class="mode-btn selected" data-mode="fullpage">
+		<div id="mode-panel" role="radiogroup" aria-label="Clipping mode">
+			<button class="mode-btn selected" data-mode="fullpage" role="radio" aria-checked="true">
 				<img src="images/fullpage.svg" alt=""><span>Full Page</span>
 			</button>
-			<button class="mode-btn" data-mode="article">
+			<button class="mode-btn" data-mode="article" role="radio" aria-checked="false">
 				<img src="images/article.svg" alt=""><span>Article</span>
 			</button>
-			<button class="mode-btn" data-mode="bookmark">
+			<button class="mode-btn" data-mode="bookmark" role="radio" aria-checked="false">
 				<img src="images/bookmark.svg" alt=""><span>Bookmark</span>
 			</button>
-			<button class="mode-btn" data-mode="region">
+			<button class="mode-btn" data-mode="region" role="radio" aria-checked="false">
 				<img src="images/region.svg" alt=""><span>Region</span>
 			</button>
 		</div>
 		<hr class="sidebar-divider">
 		<div id="meta-panel">
-			<label class="field-label" id="title-label">Title</label>
+			<label class="field-label" id="title-label" for="title-field">Title</label>
 			<textarea id="title-field" rows="2" placeholder="Add a page title..."></textarea>
-			<label class="field-label" id="note-label">Note</label>
+			<label class="field-label" id="note-label" for="note-field">Note</label>
 			<textarea id="note-field" rows="2" placeholder="Add a note..."></textarea>
 			<label class="field-label" id="source-label">Source</label>
-			<div id="source-url" class="source-url"></div>
+			<div id="source-url" class="source-url" aria-labelledby="source-label"></div>
 			<label class="field-label" id="section-label">Save to</label>
 			<div id="section-picker">
-				<div id="section-selected" tabindex="0"></div>
-				<div id="section-list-container">
-					<ul id="section-list"></ul>
+				<div id="section-selected" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="section-label"></div>
+				<div id="section-list-container" role="listbox">
+					<ul id="section-list" role="presentation"></ul>
 				</div>
 			</div>
 		</div>
 		<div id="button-row">
-			<button id="cancel-btn">Cancel</button>
 			<button id="save-btn">Clip</button>
+			<button id="cancel-btn">Cancel</button>
 		</div>
 		<div id="capture-panel">
 			<div id="status-text"></div>
 			<div id="progress-info"></div>
-			<div id="progress-bar-track"><div id="progress-bar-fill"></div></div>
+			<div id="progress-bar-track"><div id="progress-bar-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
 		</div>
 	</div>
 	<div id="user-info">
@@ -73,6 +73,7 @@
 		</div>
 	</div>
 </div>
+<div id="aria-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 <script src="renderer.js"></script>
 </body>
 </html>

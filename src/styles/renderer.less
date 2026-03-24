@@ -195,7 +195,7 @@ iframe#preview-frame {
 	}
 }
 
-// Button row — Cancel and Clip side by side (like print preview dialog)
+// Button row — Clip (primary) and Cancel side by side, Clip first in tab order
 #button-row {
 	display: flex; gap: 8px;
 	margin-top: 16px;
@@ -319,14 +319,14 @@ iframe#preview-frame {
 	margin: 16px;
 	padding: 18px 10px;
 	background: none;
-	border: 2px dashed #bbb;
+	border: 2px dashed #999; // ~3.4:1 on #f3f2f1 (was #bbb at ~1.7:1, failed SC 1.4.11)
 	border-radius: 6px;
-	color: #666;
+	color: #555; // ~5.9:1 on #f3f2f1
 	font-size: 14px;
 	font-family: inherit;
 	cursor: pointer;
 	text-align: center;
-	&:hover { border-color: #888; color: #333; background: rgba(0,0,0,0.03); }
+	&:hover { border-color: #777; color: #333; background: rgba(0,0,0,0.03); }
 }
 
 // --- Sign-in overlay (full-window, covers everything) ---
@@ -384,7 +384,7 @@ iframe#preview-frame {
 
 .signin-error {
 	font-size: 12px;
-	color: #ff6b6b;
+	color: #ff9999; // ~5.3:1 on @DarkBackgroundColor (was #ff6b6b at ~3.8:1, failed WCAG AA)
 	margin-top: 8px;
 	line-height: 1.4;
 }
@@ -393,6 +393,39 @@ iframe#preview-frame {
 	font-size: 13px;
 	opacity: 0.7;
 	margin-top: 12px;
+}
+
+// --- Focus outlines (mirrors old clipper.less @FocusOnPurpleBackground pattern) ---
+@FocusOnPurpleBackground: #f8f8f8;
+
+#sidebar button:focus,
+#sidebar a:focus,
+#sidebar textarea:focus,
+#sidebar [tabindex]:focus {
+	outline: solid 2px @FocusOnPurpleBackground !important;
+	outline-offset: 0;
+}
+
+.signin-btn:focus {
+	outline: solid 2px @FocusOnPurpleBackground !important;
+	outline-offset: 0;
+}
+
+// High contrast mode — mirrors old clipper.less
+@media (forced-colors: active) {
+	button:focus,
+	a:focus,
+	[tabindex]:focus {
+		outline: solid 2px Highlight !important;
+		outline-offset: 2px !important;
+	}
+}
+
+// --- Screen reader only (mirrors old .srOnly pattern) ---
+.sr-only {
+	position: absolute; width: 1px; height: 1px;
+	padding: 0; margin: -1px; overflow: hidden;
+	clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
 
 // Hide scrollbars globally
