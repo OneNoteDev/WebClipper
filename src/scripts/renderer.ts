@@ -145,6 +145,17 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 });
 titleField.placeholder = strings.titlePlaceholder;
 noteField.placeholder = strings.notePlaceholder;
+// Mode button tooltips (matches old modeButton.tsx tooltip pattern)
+let tooltipMap: any = {
+	fullpage: loc("WebClipper.ClipType.ScreenShot.Button.Tooltip", "Take a screenshot of the whole page, just like you see it."),
+	article: loc("WebClipper.ClipType.Button.Tooltip", "Clip just the {0} in an easy-to-read format.").replace("{0}", strings.modeArticle.toLowerCase()),
+	bookmark: loc("WebClipper.ClipType.Bookmark.Button.Tooltip", "Clip just the title, thumbnail, synopsis, and link."),
+	region: loc("WebClipper.ClipType.Region.Button.Tooltip", "Take a screenshot of the part of the page you'll select.")
+};
+document.querySelectorAll(".mode-btn").forEach((btn) => {
+	let mode = btn.getAttribute("data-mode");
+	if (mode && tooltipMap[mode]) { (btn as HTMLElement).title = tooltipMap[mode]; }
+});
 let sourceLabelEl = document.getElementById("source-label");
 if (sourceLabelEl) { sourceLabelEl.textContent = strings.sourceLabel; }
 // Field labels
@@ -440,12 +451,10 @@ async function fetchFreshNotebooks() {
 		if (!userInfoRaw) { return; }
 		let userInfo = JSON.parse(userInfoRaw);
 		let accessToken = userInfo && userInfo.data ? userInfo.data.accessToken : "";
-		let lastUpdated = userInfo ? userInfo.lastUpdated : 0;
-		let tokenExp = userInfo && userInfo.data ? userInfo.data.accessTokenExpiration : 0;
 		if (!accessToken) { return; }
-		// accessTokenExpiration is relative (seconds until expiry), not absolute
-		// Matches CachedHttp.valueHasExpired: (lastUpdated + expiration*1000 - 180000) < Date.now()
-		if (tokenExp && lastUpdated && (lastUpdated + tokenExp * 1000 - 180000) < Date.now()) { return; }
+		// Don't skip on token expiry — try the fetch anyway. The API will return 401 if
+		// truly expired, and we silently keep cached data. Skipping here caused stale
+		// notebook lists (newly created sections wouldn't appear).
 
 		let apiUrl = "https://www.onenote.com/api/v1.0/me/notes/notebooks"
 			+ "?$expand=sections,sectionGroups($expand=sections,sectionGroups)";
@@ -872,7 +881,13 @@ function startRegionCapture() {
 	statusText.textContent = loc("WebClipper.ClipType.Region.ProgressLabel", "Select a region on the page...");
 	saveBtn.disabled = true;
 	// Keep previewContainer visible (display:block) to hold flex space — sidebar stays right
-	safeSend({ action: "startRegion" });
+	safeSend({
+		action: "startRegion",
+		regionStrings: {
+			instruction: loc("WebClipper.Label.RegionSelectionMouseInstruction", "Drag a selection with the mouse, and then release to capture."),
+			back: loc("WebClipper.Action.BackToHome", "Back")
+		}
+	});
 }
 
 function switchToRegion() {
@@ -1438,14 +1453,10 @@ port.onMessage.addListener((message: any) => {
 	}
 
 	if (message.action === "regionCancelled") {
-		if (fullPageComplete) {
-			document.querySelectorAll(".mode-btn").forEach((b) => b.classList.remove("selected"));
-			let fpBtn = document.querySelector('.mode-btn[data-mode="fullpage"]');
-			if (fpBtn) { fpBtn.classList.add("selected"); }
-			switchToFullPage();
-		} else {
-			capturePanel.style.display = "none";
-		}
+		// Stay in region mode — user cancelled one selection, not the mode itself.
+		// Show thumbnails (or "Add another region" button if empty).
+		capturePanel.style.display = "none";
+		renderRegionThumbnails();
 	}
 
 	if (message.action === "saveResult") {

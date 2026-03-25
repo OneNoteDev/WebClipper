@@ -214,7 +214,8 @@ Plain HTML + TypeScript — no Mithril dependency:
 ### Region Capture
 Standalone `regionOverlay.ts` injected directly into original tab via `scripting.executeScript`. No Mithril, no clipper.tsx reactivation.
 - **Overlay**: Full-viewport div with crosshair cursor, canvas-based dark overlay with hole-punch selection
-- **Selection**: Mouse drag draws rectangle. Min 5px. Esc cancels.
+- **Instruction bar**: Centered pill at top with i18n instruction text + "Back (Esc)" button. Uses Shadow DOM for CSS isolation from page styles. Hides during drag, reappears on too-small selection. i18n strings passed from renderer → worker → `window.__regionStrings` injection before overlay script.
+- **Selection**: Mouse drag draws rectangle. Min 5px. Esc/Back cancels (stays in region mode, shows thumbnails or "Add another region").
 - **Message format**: JSON string via `chrome.runtime.sendMessage` (required by offscreen.ts message handler)
 - **Capture**: Worker captures original tab as JPEG 95% via `captureVisibleTab`, sends full image + coords via port
 - **Crop**: Renderer crops using canvas with DPR handling, converts to JPEG 95%

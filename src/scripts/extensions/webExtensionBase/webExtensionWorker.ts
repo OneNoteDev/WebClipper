@@ -675,16 +675,24 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 				if (message.action === "startRegion") {
 					// Focus original tab, inject standalone overlay, listen for result
-					let regionTabId = this.tab.id;
+					let regionTabId = this.tab.id as number;
 					let regionWindowId = 0;
 					WebExtension.browser.tabs.get(regionTabId, (t: any) => {
 						if (!t || !t.windowId) { return; }
 						regionWindowId = t.windowId;
 						WebExtension.browser.windows.update(regionWindowId, { focused: true }, () => {
 							if (WebExtension.browser.runtime.lastError) { /* ignore */ }
+							// Inject i18n strings before overlay script so it can read them
+							let regionStrings = message.regionStrings || {};
 							WebExtension.browser.scripting.executeScript({
 								target: { tabId: regionTabId },
-								files: ["regionOverlay.js"]
+								func: function(s: any) { (window as any).__regionStrings = s; },
+								args: [regionStrings]
+							}, () => {
+								WebExtension.browser.scripting.executeScript({
+									target: { tabId: regionTabId },
+									files: ["regionOverlay.js"]
+								});
 							});
 						});
 					});
