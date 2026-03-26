@@ -271,6 +271,24 @@ iframe#preview-frame {
 	&:hover { background: @DarkHoverColor; }
 }
 
+// Success banner — shown below buttons after successful clip
+#success-banner {
+	display: none; margin-top: 12px; padding: 12px;
+	background: rgba(105, 240, 174, 0.15); border: 1px solid rgba(105, 240, 174, 0.3);
+	border-radius: 4px; text-align: center;
+	#success-text {
+		display: block; font-size: 13px; font-weight: 600; color: #69F0AE;
+		margin-bottom: 8px;
+	}
+	#view-onenote-link {
+		display: none; width: 100%; padding: 8px 0; border: none; border-radius: 3px;
+		background: @OneNotePurple; color: #fff; font-size: 14px; font-weight: 600;
+		font-family: inherit; cursor: pointer; transition: background 0.15s;
+		&:hover { background: @DarkHoverColor; }
+		&:focus { outline: 2px solid #f8f8f8 !important; outline-offset: 1px; }
+	}
+}
+
 // Capture/status panel — below buttons, for progress and error messages
 #capture-panel {
 	display: none; flex-direction: column; gap: 6px;

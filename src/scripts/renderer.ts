@@ -594,7 +594,7 @@ function unlockSidebar() {
 
 function resetSaveState() {
 	saveDone = false;
-	saveBtn.onclick = null; // Clear any "View in OneNote" override
+	saveBtn.onclick = null;
 	saveBtn.textContent = strings.saveToOneNote;
 	saveBtn.disabled = false;
 	cancelBtn.textContent = strings.close;
@@ -605,6 +605,9 @@ function resetSaveState() {
 	statusText.innerHTML = "";
 	(document.getElementById("progress-bar-track") as HTMLElement).style.display = "";
 	progressInfo.textContent = "";
+	// Hide success banner
+	let successBanner = document.getElementById("success-banner");
+	if (successBanner) { successBanner.style.display = "none"; }
 }
 
 // Save article working state (highlights, edits) before switching away
@@ -1693,17 +1696,29 @@ port.onMessage.addListener((message: any) => {
 			saveDone = true;
 			unlockSidebar();
 			capturePanel.style.display = "none";
-			// Replace Clip with "View in OneNote", keep Cancel as Close
-			if (message.pageUrl) {
-				saveBtn.textContent = strings.viewInOneNote;
-				saveBtn.disabled = false;
-				saveBtn.onclick = () => { window.open(message.pageUrl, "_blank"); window.close(); };
-			} else {
-				saveBtn.textContent = strings.saveToOneNote;
-				saveBtn.disabled = true;
-			}
+			// Keep Clip button ready for re-clip
+			saveBtn.textContent = strings.saveToOneNote;
+			saveBtn.disabled = false;
+			saveBtn.onclick = null;
 			cancelBtn.disabled = false;
-			announceToScreenReader(strings.viewInOneNote);
+			// Show success banner with optional "View in OneNote" link
+			let successBanner = document.getElementById("success-banner") as HTMLDivElement;
+			let successText = document.getElementById("success-text") as HTMLSpanElement;
+			let viewLink = document.getElementById("view-onenote-link") as HTMLButtonElement;
+			successText.textContent = "\u2713 " + loc("WebClipper.Label.ClipSuccessful", "Clip Successful!");
+			if (message.pageUrl) {
+				viewLink.textContent = strings.viewInOneNote;
+				viewLink.style.display = "block";
+				viewLink.onclick = function() {
+					window.open(message.pageUrl, "_blank");
+					window.close();
+				};
+			} else {
+				viewLink.style.display = "none";
+				viewLink.onclick = null;
+			}
+			successBanner.style.display = "block";
+			announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Clip Successful!"));
 		} else {
 			unlockSidebar();
 			let errorDetail = message.error || "Unknown error";
@@ -1847,7 +1862,10 @@ port.onMessage.addListener((message: any) => {
 
 // Save button triggers clip via port — includes title, annotation, mode, and content for OneNote page creation
 saveBtn.addEventListener("click", () => {
-	if (saveDone) { return; } // Post-save: "View in OneNote" onclick handles this
+	// Clear previous success state if re-clipping
+	saveDone = false;
+	let prevBanner = document.getElementById("success-banner");
+	if (prevBanner) { prevBanner.style.display = "none"; }
 	logFunnel(Funnel.Label.ClipAttempted);
 	lockSidebar();
 	saveBtn.disabled = true;
