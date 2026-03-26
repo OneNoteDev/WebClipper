@@ -17,9 +17,30 @@
 		<div id="signin-progress" class="signin-progress" style="display:none;">Signing in...</div>
 	</div>
 </div>
+<div id="preview-area">
+<div id="article-header" style="display:none;" role="toolbar" aria-label="Article options">
+	<button id="highlight-btn" aria-pressed="false" title="Toggle highlighter">
+		<img src="images/editoroptions/highlight_tool_off.svg" alt="">
+	</button>
+	<div class="header-separator"></div>
+	<div id="font-family-group">
+		<button id="sans-serif-btn" class="font-btn active" aria-pressed="true">Sans-serif</button>
+		<button id="serif-btn" class="font-btn" aria-pressed="false">Serif</button>
+	</div>
+	<div class="header-separator"></div>
+	<div id="font-size-group">
+		<button id="font-decrease-btn" title="Decrease font size">
+			<img src="images/editoroptions/font_down.svg" alt="">
+		</button>
+		<button id="font-increase-btn" title="Increase font size">
+			<img src="images/editoroptions/font_up.svg" alt="">
+		</button>
+	</div>
+</div>
 <iframe id="content-frame" tabindex="-1"></iframe>
 <iframe id="preview-frame" tabindex="-1"></iframe>
 <div id="preview-container" tabindex="-1"></div>
+</div>
 <div id="sidebar" role="main" aria-label="OneNote Web Clipper">
 	<div id="sidebar-header">
 		<img src="images/onenote_logo_clipper_small.png" alt="">

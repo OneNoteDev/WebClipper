@@ -13,22 +13,27 @@ html, body {
 }
 body { display: flex; }
 
+// Preview area wrapper — flex column for article header + content
+#preview-area {
+	flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%;
+}
+
 // Content area — page renders here during capture
 iframe#content-frame {
-	flex: 1; min-width: 0; height: 100%;
+	flex: 1; min-width: 0; min-height: 0;
 	border: none; display: block; pointer-events: none;
 }
 
 // Preview frame — article/bookmark HTML rendered here
 iframe#preview-frame {
-	flex: 1; min-width: 0; height: 100%;
+	flex: 1; min-width: 0; min-height: 0;
 	border: none; display: none;
 	background: #fff;
 }
 
 // Preview area — shown after capture with scrollable image
 #preview-container {
-	flex: 1; min-width: 0; height: 100%;
+	flex: 1; min-width: 0; min-height: 0;
 	overflow-y: auto; display: none;
 	background: #f3f2f1;
 	// Full-width for full-page screenshot preview, but not for region thumbnails
@@ -37,6 +42,55 @@ iframe#preview-frame {
 	&::-webkit-scrollbar { display: block; width: 6px; }
 	&::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
 	&::-webkit-scrollbar-track { background: transparent; }
+}
+
+// Article preview header bar — highlighter, font family, font size controls
+#article-header {
+	flex-shrink: 0; height: 40px;
+	background: rgba(128, 46, 179, 0.95);
+	display: none; // shown by JS when article mode active
+	align-items: center; padding: 0 12px;
+
+	button {
+		background: transparent; border: 1px solid rgba(255,255,255,0.6);
+		color: #fff; cursor: pointer; border-radius: 4px;
+		height: 28px; vertical-align: middle; padding: 0;
+		&:hover:not(.active) { background: @DarkHoverColor; }
+		&:focus { outline: 2px solid #f8f8f8 !important; outline-offset: 1px; }
+		&.active { background: #fff; color: @OneNotePurple; border-color: #fff; }
+		img { width: 18px; height: 18px; vertical-align: middle; }
+	}
+
+	#highlight-btn {
+		width: 28px; height: 28px;
+		display: flex; align-items: center; justify-content: center;
+	}
+
+	.header-separator {
+		width: 1px; height: 20px; background: rgba(255,255,255,0.4);
+		margin: 0 12px; flex-shrink: 0;
+	}
+
+	#font-family-group, #font-size-group {
+		display: flex;
+		button:first-child {
+			border-top-right-radius: 0; border-bottom-right-radius: 0;
+		}
+		button:last-child {
+			border-top-left-radius: 0; border-bottom-left-radius: 0;
+			margin-left: -1px;
+		}
+	}
+
+	.font-btn {
+		font-size: 13px; min-width: 76px; padding: 0 10px;
+	}
+	#sans-serif-btn { font-family: Verdana, sans-serif; }
+	#serif-btn { font-family: Georgia, serif; letter-spacing: 0.5px; }
+
+	#font-decrease-btn, #font-increase-btn {
+		width: 32px; display: flex; align-items: center; justify-content: center;
+	}
 }
 
 // Sidebar panel
@@ -297,7 +351,7 @@ iframe#preview-frame {
 .region-remove-btn {
 	position: absolute;
 	top: -10px;
-	right: -10px;
+	left: -10px;
 	z-index: 10;
 	width: 22px;
 	height: 22px;

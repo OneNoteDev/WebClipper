@@ -70,6 +70,19 @@ let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from conten
 let bookmarkLoaded = false;
 let contentDocReady = false; // true once content-frame has loaded HTML
 
+// Article header controls
+let articleHeader = document.getElementById("article-header") as HTMLDivElement;
+let highlightBtn = document.getElementById("highlight-btn") as HTMLButtonElement;
+let sansSerifBtn = document.getElementById("sans-serif-btn") as HTMLButtonElement;
+let serifBtn = document.getElementById("serif-btn") as HTMLButtonElement;
+let fontDecreaseBtn = document.getElementById("font-decrease-btn") as HTMLButtonElement;
+let fontIncreaseBtn = document.getElementById("font-increase-btn") as HTMLButtonElement;
+let articleSerif = false;
+let articleFontSize = 16;
+let highlighterEnabled = false;
+let textHighlighterInstance: any = null;
+let articleWorkingHtml = ""; // Preserves highlights/edits across mode switches
+
 // --- Localization ---
 // Read localized strings directly from localStorage (shared extension origin, populated by extensionBase)
 // Falls back to bundled English defaults if not available
@@ -114,7 +127,16 @@ let strings = {
 	notePlaceholder: loc("WebClipper.Label.AnnotationPlaceholder", "Add a note..."),
 	sourceLabel: loc("WebClipper.Label.Source", "Source"),
 	signOut: loc("WebClipper.Action.SignOut", "Sign out"),
-	feedback: loc("WebClipper.Action.Feedback", "Feedback")
+	feedback: loc("WebClipper.Action.Feedback", "Feedback"),
+	toggleHighlighter: loc("WebClipper.Accessibility.ScreenReader.ToggleHighlighterModeForArticle", "Toggle highlighter"),
+	changeFontSansSerif: loc("WebClipper.Accessibility.ScreenReader.ChangeFontToSansSerif", "Change font to Sans-Serif"),
+	changeFontSerif: loc("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif", "Change font to Serif"),
+	decreaseFontSize: loc("WebClipper.Accessibility.ScreenReader.DecreaseFontSize", "Decrease font size"),
+	increaseFontSize: loc("WebClipper.Accessibility.ScreenReader.IncreaseFontSize", "Increase font size"),
+	sansSerifLabel: loc("WebClipper.Preview.Header.SansSerifButtonLabel", "Sans-serif"),
+	serifLabel: loc("WebClipper.Preview.Header.SerifButtonLabel", "Serif"),
+	fontFamilySerif: loc("WebClipper.FontFamily.Preview.SerifDefault", "Georgia"),
+	fontFamilySansSerif: loc("WebClipper.FontFamily.Preview.SansSerifDefault", "Verdana")
 };
 
 // --- Telemetry helpers ---
@@ -170,6 +192,24 @@ let signinDesc = document.getElementById("signin-description");
 if (signinDesc) { signinDesc.textContent = loc("WebClipper.Label.SignInDescription", "Sign in to clip this page to OneNote"); }
 let signinProgressEl = document.getElementById("signin-progress");
 if (signinProgressEl) { signinProgressEl.textContent = loc("WebClipper.Label.SigningIn", "Signing in..."); }
+// Article header i18n
+highlightBtn.title = strings.toggleHighlighter;
+highlightBtn.setAttribute("aria-label", strings.toggleHighlighter);
+sansSerifBtn.textContent = strings.sansSerifLabel;
+sansSerifBtn.title = strings.changeFontSansSerif;
+sansSerifBtn.setAttribute("aria-label", strings.changeFontSansSerif);
+serifBtn.textContent = strings.serifLabel;
+serifBtn.title = strings.changeFontSerif;
+serifBtn.setAttribute("aria-label", strings.changeFontSerif);
+fontDecreaseBtn.title = strings.decreaseFontSize;
+fontDecreaseBtn.setAttribute("aria-label", strings.decreaseFontSize);
+fontIncreaseBtn.title = strings.increaseFontSize;
+fontIncreaseBtn.setAttribute("aria-label", strings.increaseFontSize);
+// Parse default font size from i18n
+try {
+	let defaultSize = parseInt(loc("WebClipper.FontSize.Preview.SansSerifDefault", "16px"), 10);
+	if (defaultSize > 0) { articleFontSize = defaultSize; }
+} catch (e) { /* keep default 16 */ }
 
 // Load page title and URL from session storage (page-specific, still needs session)
 chrome.storage.session.get(["fullPageStatusText", "fullPageTitle", "fullPageUrl"], (stored: any) => {
@@ -567,10 +607,20 @@ function resetSaveState() {
 	progressInfo.textContent = "";
 }
 
+// Save article working state (highlights, edits) before switching away
+function saveArticleWorkingState() {
+	if (currentMode === "article") {
+		let pDoc = previewFrame.contentDocument;
+		if (pDoc && pDoc.body) { articleWorkingHtml = pDoc.body.innerHTML; }
+	}
+}
+
 function switchToFullPage() {
+	saveArticleWorkingState();
 	resetSaveState();
 	currentMode = "fullpage";
 	previewFrame.style.display = "none";
+	articleHeader.style.display = "none";
 	if (fullPageComplete) {
 		iframe.style.display = "none";
 		// Restore full-page screenshot from cached data URL
@@ -598,14 +648,15 @@ function switchToArticle() {
 	iframe.style.display = "none";
 	previewContainer.style.display = "none";
 	capturePanel.style.display = "none";
-	// Show preview frame
+	// Show preview frame and article header
 	previewFrame.style.display = "block";
+	articleHeader.style.display = "flex";
 
 	if (!articleLoaded) {
 		loadArticleContent();
 	} else {
-		// Re-render — preview-frame may have been overwritten by another mode
-		renderArticleHtml(cachedArticleHtml);
+		// Re-render — use working HTML (preserves highlights) or clean cached HTML
+		renderArticleHtml(articleWorkingHtml || cachedArticleHtml);
 		saveBtn.disabled = false;
 		saveBtn.textContent = strings.saveToOneNote;
 	}
@@ -708,11 +759,12 @@ function renderArticleHtml(html: string) {
 	if (!pDoc) { return; }
 	// Wrap article HTML in a styled document matching OneNote page layout:
 	// 624px content width + 20px left/right padding = 664px total (from @OneNotePageWidth)
-	// Segoe UI font family matches the clipper's existing preview styling
-	let articleCss = "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.6; "
+	let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
+	let fontSize = articleFontSize + "px";
+	let articleCss = "body { font-family: " + fontFamily + ", 'Segoe UI', sans-serif; font-size: " + fontSize + "; line-height: 1.6; "
 		+ "max-width: 624px; margin: 24px 0; padding: 0 20px; color: #1a1a1a; margin-bottom: 16px; }"
 		+ "img { max-width: 100%; height: auto; }"
-		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
+		+ "a { color: #2e75b5; text-decoration: underline; }"
 		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
 		+ "h2 { font-size: 18px; color: rgb(46,117,181); }"
 		+ "h3, h4, h5, h6 { color: rgb(91,155,213); margin-top: 14pt; margin-bottom: 14pt; }"
@@ -721,7 +773,13 @@ function renderArticleHtml(html: string) {
 		+ "pre { padding: 12px; overflow-x: auto; }"
 		+ "blockquote { border-left: 3px solid rgb(46,117,181); margin-left: 0; padding-left: 16px; color: #555; }"
 		+ "table { border-collapse: collapse; width: 100%; }"
-		+ "td, th { border: 1px solid #ddd; padding: 8px; }";
+		+ "td, th { border: 1px solid #ddd; padding: 8px; }"
+		+ ".highlighted { background: #fefe56; }"
+		+ ".highlight-anchor { position: relative; display: inline-block; }"
+		+ ".delete-highlight { position: absolute; top: -8px; left: -8px; z-index: 10; "
+		+ "width: 18px; height: 18px; border-radius: 50%; background: #e74c3c; color: #fff; "
+		+ "font-size: 12px; line-height: 18px; text-align: center; cursor: pointer; }"
+		+ ".delete-highlight:hover { background: #c0392b; }";
 
 	let fullHtml = "<!DOCTYPE html><html><head><style>" + articleCss + "</style></head><body>"
 		+ html
@@ -729,17 +787,172 @@ function renderArticleHtml(html: string) {
 	pDoc.open();
 	pDoc.write(fullHtml);
 	pDoc.close();
+	// Re-initialize highlighter if enabled
+	if (highlighterEnabled) { initHighlighter(); }
 }
+
+// --- Article header controls ---
+
+function applyArticleFont() {
+	let pDoc = previewFrame.contentDocument;
+	if (!pDoc || !pDoc.body) { return; }
+	let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
+	pDoc.body.style.fontFamily = fontFamily + ", 'Segoe UI', sans-serif";
+}
+
+function applyArticleFontSize() {
+	let pDoc = previewFrame.contentDocument;
+	if (!pDoc || !pDoc.body) { return; }
+	pDoc.body.style.fontSize = articleFontSize + "px";
+}
+
+function initHighlighter() {
+	let pDoc = previewFrame.contentDocument;
+	let pWin = previewFrame.contentWindow as any;
+	if (!pDoc || !pDoc.body || !pWin) { return; }
+
+	// Inject TextHighlighter script if not already present
+	if (!pWin.TextHighlighter) {
+		let script = pDoc.createElement("script");
+		script.src = "textHighlighter.js";
+		script.onload = function() {
+			createHighlighterInstance();
+		};
+		pDoc.head.appendChild(script);
+	} else {
+		createHighlighterInstance();
+	}
+}
+
+function createHighlighterInstance() {
+	let pWin = previewFrame.contentWindow as any;
+	let pDoc = previewFrame.contentDocument;
+	if (!pWin || !pWin.TextHighlighter || !pDoc || !pDoc.body) { return; }
+	textHighlighterInstance = new pWin.TextHighlighter(pDoc.body, {
+		color: "#fefe56",
+		highlightedClass: "highlighted",
+		enabled: true,
+		onAfterHighlight: function(_range: any, highlights: HTMLElement[]) {
+			// Add delete button to first span of each new highlight group
+			if (highlights && highlights.length > 0) {
+				addHighlightDeleteButton(highlights[0], pDoc);
+			}
+		}
+	});
+	// Listen for clicks on delete buttons
+	pDoc.body.addEventListener("click", function(e: MouseEvent) {
+		let target = e.target as HTMLElement;
+		if (target && target.classList && target.classList.contains("delete-highlight")) {
+			e.stopPropagation();
+			let ts = target.getAttribute("data-timestamp");
+			// Remove the delete button itself first
+			if (target.parentNode) { target.parentNode.removeChild(target); }
+			// Unwrap all highlight spans with this timestamp
+			if (ts && pDoc) {
+				let spans = pDoc.querySelectorAll(".highlighted[data-timestamp=\"" + ts + "\"]");
+				for (let i = spans.length - 1; i >= 0; i--) {
+					let span = spans[i] as HTMLElement;
+					let parent = span.parentNode;
+					while (span.firstChild) {
+						if (parent) { parent.insertBefore(span.firstChild, span); }
+					}
+					if (parent) { parent.removeChild(span); }
+				}
+			}
+		}
+	});
+}
+
+function addHighlightDeleteButton(firstSpan: HTMLElement, doc: Document) {
+	if (!firstSpan || !doc) { return; }
+	let ts = firstSpan.getAttribute("data-timestamp");
+	if (!ts) { return; }
+	// Don't add if already exists
+	if (doc.querySelector(".delete-highlight[data-timestamp=\"" + ts + "\"]")) { return; }
+	// Make the first span a positioning anchor for the absolute delete button
+	firstSpan.classList.add("highlight-anchor");
+	let btn = doc.createElement("span");
+	btn.className = "delete-highlight";
+	btn.setAttribute("data-timestamp", ts);
+	btn.setAttribute("role", "button");
+	btn.setAttribute("aria-label", loc("WebClipper.Preview.RemoveSelectedRegion", "Remove"));
+	btn.title = loc("WebClipper.Preview.RemoveSelectedRegion", "Remove");
+	btn.textContent = "\u00D7";
+	firstSpan.appendChild(btn);
+}
+
+function destroyHighlighter() {
+	if (textHighlighterInstance) {
+		textHighlighterInstance.disable();
+		textHighlighterInstance = null;
+	}
+}
+
+// Font family toggle
+sansSerifBtn.addEventListener("click", () => {
+	if (!articleSerif) { return; }
+	articleSerif = false;
+	sansSerifBtn.classList.add("active");
+	sansSerifBtn.setAttribute("aria-pressed", "true");
+	serifBtn.classList.remove("active");
+	serifBtn.setAttribute("aria-pressed", "false");
+	applyArticleFont();
+	announceToScreenReader(strings.changeFontSansSerif);
+});
+serifBtn.addEventListener("click", () => {
+	if (articleSerif) { return; }
+	articleSerif = true;
+	serifBtn.classList.add("active");
+	serifBtn.setAttribute("aria-pressed", "true");
+	sansSerifBtn.classList.remove("active");
+	sansSerifBtn.setAttribute("aria-pressed", "false");
+	applyArticleFont();
+	announceToScreenReader(strings.changeFontSerif);
+});
+
+// Font size +/-
+fontDecreaseBtn.addEventListener("click", () => {
+	if (articleFontSize <= 8) { return; }
+	articleFontSize -= 2;
+	applyArticleFontSize();
+	announceToScreenReader(strings.decreaseFontSize);
+});
+fontIncreaseBtn.addEventListener("click", () => {
+	if (articleFontSize >= 72) { return; }
+	articleFontSize += 2;
+	applyArticleFontSize();
+	announceToScreenReader(strings.increaseFontSize);
+});
+
+// Highlighter toggle
+highlightBtn.addEventListener("click", () => {
+	highlighterEnabled = !highlighterEnabled;
+	let imgEl = highlightBtn.querySelector("img") as HTMLImageElement;
+	if (highlighterEnabled) {
+		highlightBtn.classList.add("active");
+		highlightBtn.setAttribute("aria-pressed", "true");
+		if (imgEl) { imgEl.src = "images/editoroptions/highlight_tool_on.svg"; }
+		initHighlighter();
+	} else {
+		highlightBtn.classList.remove("active");
+		highlightBtn.setAttribute("aria-pressed", "false");
+		if (imgEl) { imgEl.src = "images/editoroptions/highlight_tool_off.svg"; }
+		destroyHighlighter();
+	}
+	announceToScreenReader(strings.toggleHighlighter);
+});
 
 // --- Bookmark mode ---
 
 function switchToBookmark() {
+	saveArticleWorkingState();
 	resetSaveState();
 	currentMode = "bookmark";
 	iframe.style.display = "none";
 	previewContainer.style.display = "none";
 	capturePanel.style.display = "none";
 	previewFrame.style.display = "block";
+	articleHeader.style.display = "none";
 
 	if (!bookmarkLoaded) {
 		loadBookmarkContent();
@@ -892,10 +1105,12 @@ function startRegionCapture() {
 }
 
 function switchToRegion() {
+	saveArticleWorkingState();
 	resetSaveState();
 	currentMode = "region";
 	iframe.style.display = "none";
 	previewFrame.style.display = "none";
+	articleHeader.style.display = "none";
 	// Keep previewContainer visible (even if empty) so sidebar stays right in flex layout
 	previewContainer.innerHTML = "";
 	previewContainer.style.display = "block";
@@ -1644,8 +1859,26 @@ saveBtn.addEventListener("click", () => {
 		saveMsg.imageWidth = Math.round(contentPixelWidth / stitchDpr);
 	}
 	// For article/bookmark, include the rendered HTML
-	if (currentMode === "article" && cachedArticleHtml) {
-		saveMsg.contentHtml = cachedArticleHtml;
+	// Wrap article content with font styling (matches old oneNoteSaveableFactory behavior)
+	// If highlights exist, serialize the iframe body to preserve them
+	if (currentMode === "article") {
+		let pDoc = previewFrame.contentDocument;
+		let articleBody = "";
+		if (pDoc && pDoc.body && pDoc.body.querySelector(".highlighted")) {
+			// Clone body to strip delete buttons without mutating the live preview
+			let clone = pDoc.body.cloneNode(true) as HTMLElement;
+			let delBtns = clone.querySelectorAll(".delete-highlight");
+			for (let i = delBtns.length - 1; i >= 0; i--) {
+				if (delBtns[i].parentNode) { delBtns[i].parentNode.removeChild(delBtns[i]); }
+			}
+			articleBody = clone.innerHTML;
+		} else {
+			articleBody = cachedArticleHtml;
+		}
+		// Apply font family + size as wrapping div (OneNote tables don't inherit from parent)
+		let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
+		let fontStyle = "font-size: " + articleFontSize + "px; font-family: " + fontFamily + ";";
+		saveMsg.contentHtml = "<div style=\"" + fontStyle + "\">" + articleBody + "</div>";
 	} else if (currentMode === "bookmark" && cachedBookmarkHtml) {
 		saveMsg.contentHtml = cachedBookmarkHtml;
 	}
