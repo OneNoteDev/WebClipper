@@ -787,8 +787,14 @@ function renderArticleHtml(html: string) {
 	pDoc.open();
 	pDoc.write(fullHtml);
 	pDoc.close();
-	// Re-initialize highlighter if enabled
-	if (highlighterEnabled) { initHighlighter(); }
+	// Re-initialize highlighter if enabled, including custom cursor
+	if (highlighterEnabled) {
+		initHighlighter();
+		if (pDoc && pDoc.body) {
+			let curUrl = chrome.runtime.getURL("images/editoroptions/highlight_cursor.cur");
+			pDoc.body.style.cursor = "url('" + curUrl + "') 16 16, text";
+		}
+	}
 }
 
 // --- Article header controls ---
@@ -928,16 +934,22 @@ fontIncreaseBtn.addEventListener("click", () => {
 highlightBtn.addEventListener("click", () => {
 	highlighterEnabled = !highlighterEnabled;
 	let imgEl = highlightBtn.querySelector("img") as HTMLImageElement;
+	let pDoc = previewFrame.contentDocument;
 	if (highlighterEnabled) {
 		highlightBtn.classList.add("active");
 		highlightBtn.setAttribute("aria-pressed", "true");
 		if (imgEl) { imgEl.src = "images/editoroptions/highlight_tool_on.svg"; }
 		initHighlighter();
+		if (pDoc && pDoc.body) {
+			let curUrl = chrome.runtime.getURL("images/editoroptions/highlight_cursor.cur");
+			pDoc.body.style.cursor = "url('" + curUrl + "') 16 16, text";
+		}
 	} else {
 		highlightBtn.classList.remove("active");
 		highlightBtn.setAttribute("aria-pressed", "false");
 		if (imgEl) { imgEl.src = "images/editoroptions/highlight_tool_off.svg"; }
 		destroyHighlighter();
+		if (pDoc && pDoc.body) { pDoc.body.style.cursor = ""; }
 	}
 	announceToScreenReader(strings.toggleHighlighter);
 });
