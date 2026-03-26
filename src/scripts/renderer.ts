@@ -99,7 +99,7 @@ function announceToScreenReader(text: string) {
 
 let strings = {
 	clipperTitle: loc("WebClipper.Label.OneNoteWebClipper", "OneNote Web Clipper"),
-	capturing: loc("WebClipper.ClipType.ScreenShot.ProgressLabel", "Capturing page..."),
+	capturing: "", // no heading — progressInfo shows viewport progress directly
 	cancel: loc("WebClipper.Action.Cancel", "Cancel"),
 	close: loc("WebClipper.Action.CloseTheClipper", "Close"),
 	saveToOneNote: loc("WebClipper.Action.Clip", "Clip"),
@@ -501,10 +501,11 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 });
 saveBtn.disabled = true;
 disableSignout();
-// Show initial capture progress
+// Show initial capture progress (bar hidden until first drawCapture with viewport counts)
 capturePanel.style.display = "flex";
 statusText.textContent = strings.capturing;
 announceToScreenReader(strings.capturing);
+(document.getElementById("progress-bar-track") as HTMLElement).style.display = "none";
 // During capture, Cancel is the only actionable control — focus it
 if (isSignedIn) { setTimeout(function() { cancelBtn.focus(); }, 100); }
 
@@ -1297,6 +1298,7 @@ port.onMessage.addListener((message: any) => {
 	if (message.action === "drawCapture") {
 		// Update sidebar progress
 		if (message.totalViewports) {
+			(document.getElementById("progress-bar-track") as HTMLElement).style.display = "";
 			let current = message.index + 1;
 			let total = message.totalViewports;
 			progressInfo.textContent = strings.viewportProgress.replace("{0}", current).replace("{1}", total);
@@ -1636,6 +1638,11 @@ saveBtn.addEventListener("click", () => {
 		mode: currentMode,
 		sectionId: selectedSectionId
 	};
+	// For full page, send the actual CSS width of the captured image
+	// (contentPixelWidth is physical pixels; divide by DPR for CSS pixels)
+	if (currentMode === "fullpage" && contentPixelWidth > 0 && stitchDpr > 0) {
+		saveMsg.imageWidth = Math.round(contentPixelWidth / stitchDpr);
+	}
 	// For article/bookmark, include the rendered HTML
 	if (currentMode === "article" && cachedArticleHtml) {
 		saveMsg.contentHtml = cachedArticleHtml;

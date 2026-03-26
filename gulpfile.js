@@ -461,7 +461,7 @@ function exportCommonLibFiles(targetDir) {
     // The provided TextHighlighter.min.js file has a jQuery dependency so we have to use a sub-file
     var minifyAndExportTask = gulp.src(PATHS.SRC.ROOT + "scripts/highlighting/textHighlighter.js")
         .pipe(uglify({
-            preserveComments: "license"
+            output: { comments: /^!|@license|@preserve|license/i }
         }))
         .pipe(gulp.dest(targetDir));
 

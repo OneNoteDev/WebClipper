@@ -621,7 +621,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									if (dataUrl) {
 										fetch(dataUrl).then((r) => r.blob()).then((blob) => {
 											let imgName = "fullPageImage";
-											let bodyOnml = "<p><img src=\"name:" + imgName + "\" width=\"" + contentWidth + "\" /></p>";
+											let imgCssWidth = message.imageWidth || contentWidth;
+											let bodyOnml = "<p><img src=\"name:" + imgName + "\" width=\"" + imgCssWidth + "\" /></p>";
 											buildPage(bodyOnml, [{ name: imgName, blob: blob, type: "image/jpeg" }]);
 										});
 									} else {
