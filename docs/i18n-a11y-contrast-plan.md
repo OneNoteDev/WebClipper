@@ -91,9 +91,9 @@ Static `lang="en"` in HTML + dynamic override in JS reading `localStorage.locale
 
 ### 3b. Mode buttons — ARIA state
 
-- Container: `role="listbox"` with localized `aria-label`
-- Buttons: `role="option"`, `aria-selected`, `aria-posinset`, `aria-setsize`
-- Mirrors old `modeButton.tsx` pattern exactly
+- Container: `role="toolbar"` with localized `aria-label`
+- Buttons: standard `<button>` elements with `aria-pressed` (toggle button pattern)
+- Reverted from `role="radio"` / radiogroup — buttons are more natural for mode selection
 
 ### 3c. Mode buttons — arrow key navigation
 

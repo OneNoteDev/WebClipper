@@ -971,7 +971,7 @@ function updateRegionSessionStorage() {
 	});
 }
 
-// Mode button click handlers + ARIA (role="radio" + aria-checked in radiogroup, arrow keys)
+// Mode button click handlers + ARIA (aria-pressed in toolbar, arrow keys)
 let modeButtonNodeList = document.querySelectorAll(".mode-btn");
 let modeButtons: HTMLButtonElement[] = [];
 for (let i = 0; i < modeButtonNodeList.length; i++) { modeButtons.push(modeButtonNodeList[i] as HTMLButtonElement); }
@@ -997,10 +997,10 @@ modeButtons.forEach((btn, idx) => {
 		// Update selected state visually + ARIA
 		document.querySelectorAll(".mode-btn").forEach((b) => {
 			b.classList.remove("selected");
-			b.setAttribute("aria-checked", "false");
+			b.setAttribute("aria-pressed", "false");
 		});
 		btn.classList.add("selected");
-		btn.setAttribute("aria-checked", "true");
+		btn.setAttribute("aria-pressed", "true");
 
 		if (mode === "fullpage") {
 			switchToFullPage();
