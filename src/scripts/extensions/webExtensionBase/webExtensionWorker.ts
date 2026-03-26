@@ -572,23 +572,17 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								let correlationId = WebExtensionWorker.newGuid();
 								let requestDate = new Date().toISOString();
 
-								// 30-second timeout via Promise.race (matches old OneNoteApi default)
-								let timeoutPromise: Promise<Response> = new Promise(function(_resolve, reject) {
-									setTimeout(function() { reject(new Error("Request timed out (30s)")); }, 30000);
-								});
-								Promise.race([
-									fetch(apiUrl, {
-										method: "POST",
-										headers: {
-											"Authorization": "Bearer " + accessToken,
-											"Content-Type": "multipart/form-data; boundary=" + boundary,
-											"X-CorrelationId": correlationId,
-											"X-UserSessionId": sessionUsid
-										},
-										body: body
-									}),
-									timeoutPromise
-								]).then((response) => {
+								// Timeout handled renderer-side (service worker setTimeout unreliable)
+								fetch(apiUrl, {
+									method: "POST",
+									headers: {
+										"Authorization": "Bearer " + accessToken,
+										"Content-Type": "multipart/form-data; boundary=" + boundary,
+										"X-CorrelationId": correlationId,
+										"X-UserSessionId": sessionUsid
+									},
+									body: body
+								}).then((response) => {
 									let serverCorrelation = response.headers.get("X-CorrelationId") || correlationId;
 									let serverRequestId = response.headers.get("X-UserSessionId") || "";
 									if (response.ok) {

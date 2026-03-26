@@ -326,13 +326,16 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 - [x] Feedback link in footer: smiley icon + i18n label, hidden for MSA users, opens MS Feedback Portal popup with context params (LogCategory, originalUrl, clipperId, usid, version, type). Per-session USID (cccccccc- prefix) sent as X-UserSessionId header in save API calls for log correlation.
 - [x] Error diagnostics copy button: clipboard icon next to "More information", copies error text via navigator.clipboard.writeText
 - [x] Article preview header bar: highlighter toggle, serif/sans-serif font toggle, font size +/- (2px increments, 8–72px). Purple toolbar above preview-frame, visible only in article mode. TextHighlighter library injected into iframe for drag-to-highlight with yellow (#fefe56) spans. Delete buttons (red circle ×, top-left) on each highlight group. Font/size applied to saved OneNote content via wrapping `<div style>`. Highlight state preserved across mode switches via `articleWorkingHtml`.
-- [x] Save timeout: 30-second timeout via Promise.race on fetch to OneNote API (matches old OneNoteApi default). Shows "Request timed out (30s)" in error diagnostics with retry-enabled Clip button.
+- [x] Save timeout: 30-second client-side timeout in renderer (service worker setTimeout unreliable — SW goes inactive). Shows "Request timed out (30s)" with retry-enabled Clip button.
 - [x] Version bump to 3.11.0, gulp-uglify v2→v3 for ES6+ minification, `<meta charset="utf-8">` in renderer.html
 - [x] Full-page image width fix: renderer sends actual CSS width (contentPixelWidth/DPR) to worker for ONML `<img width>`, fixing aspect ratio distortion
 - [x] Capture progress: removed "Clipping Page" heading (reserved for save phase), progress bar hidden until first viewport capture
 - [x] Mode buttons reverted from role="radio" to role="toolbar" + aria-pressed (more natural toggle button pattern)
 - [x] NVDA screen reader verified working with Edge after devbox reboot
 - [x] Consistent × button positioning: region thumbnails and highlight delete buttons both use top-left corner
+- [x] Success banner: separate from Clip button — "✓ Clip Successful!" banner with purple "View in OneNote" button (opens page + closes window). Clip button stays as Clip for re-clipping. Banner clears on mode switch, re-clip, or section change.
+- [x] Hierarchical section picker: notebook headings (with notebook.png icon) and section group headings (with section_group.png icon) as non-clickable groupings. Sections indented under their parent with section.png icon. Icons inverted to white for dark background contrast. Keyboard nav skips headings.
+- [x] Section selection decoupled from button state: changing section only clears success banner, does not touch Clip button disabled/text state (was causing premature Clip enable during capture).
 
 ---
 

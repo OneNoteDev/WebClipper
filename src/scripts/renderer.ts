@@ -82,6 +82,7 @@ let articleFontSize = 16;
 let highlighterEnabled = false;
 let textHighlighterInstance: any = null;
 let articleWorkingHtml = ""; // Preserves highlights/edits across mode switches
+let saveTimeoutId: any = 0; // Client-side save timeout (service worker setTimeout unreliable)
 
 // --- Localization ---
 // Read localized strings directly from localStorage (shared extension origin, populated by extensionBase)
@@ -229,8 +230,11 @@ function selectSection(id: string, label: string) {
 		try { localStorage.setItem("curSection", JSON.stringify(curSection)); } catch (e) { /* ignore */ }
 	}
 	closeSectionPicker();
-	resetSaveState();
-	capturePanel.style.display = (currentMode === "fullpage" && !fullPageComplete) ? "flex" : "none";
+	// Clear success banner so user can re-clip to the new section
+	// (but don't touch button state — that's managed by capture/save flow)
+	let banner = document.getElementById("success-banner");
+	if (banner) { banner.style.display = "none"; }
+	saveDone = false;
 }
 
 function toggleSectionPicker() {
@@ -303,65 +307,102 @@ function populateSectionDropdown() {
 
 function flattenSections(notebooks: any[], preselectedId: string) {
 	for (let nb of notebooks) {
+		addNotebookHeading(nb.name);
 		if (nb.sections) {
 			for (let sec of nb.sections) {
-				addSectionItem(sec.id, nb.name + " > " + sec.name, preselectedId);
+				addSectionItem(sec.id, sec.name, nb.name + " > " + sec.name, preselectedId, 1);
 			}
 		}
 		if (nb.sectionGroups) {
-			flattenSectionGroups(nb.sectionGroups, nb.name, preselectedId);
+			flattenSectionGroups(nb.sectionGroups, nb.name, preselectedId, 1);
 		}
 	}
 }
 
-function flattenSectionGroups(groups: any[], parentPath: string, preselectedId: string) {
+function flattenSectionGroups(groups: any[], parentPath: string, preselectedId: string, depth: number) {
 	for (let group of groups) {
 		let path = parentPath + " > " + group.name;
+		addGroupHeading(group.name, depth);
 		if (group.sections) {
 			for (let sec of group.sections) {
-				addSectionItem(sec.id, path + " > " + sec.name, preselectedId);
+				addSectionItem(sec.id, sec.name, path + " > " + sec.name, preselectedId, depth + 1);
 			}
 		}
 		if (group.sectionGroups) {
-			flattenSectionGroups(group.sectionGroups, path, preselectedId);
+			flattenSectionGroups(group.sectionGroups, path, preselectedId, depth + 1);
 		}
 	}
 }
 
-function addSectionItem(id: string, label: string, preselectedId: string) {
+function addNotebookHeading(name: string) {
+	let li = document.createElement("li");
+	li.className = "section-heading notebook-heading";
+	let img = document.createElement("img");
+	img.src = "images/notebook.png";
+	img.alt = "";
+	li.appendChild(img);
+	let span = document.createElement("span");
+	span.textContent = name;
+	li.appendChild(span);
+	sectionList.appendChild(li);
+}
+
+function addGroupHeading(name: string, depth: number) {
+	let li = document.createElement("li");
+	li.className = "section-heading group-heading";
+	li.style.paddingLeft = (12 + depth * 16) + "px";
+	let img = document.createElement("img");
+	img.src = "images/section_group.png";
+	img.alt = "";
+	li.appendChild(img);
+	let span = document.createElement("span");
+	span.textContent = name;
+	li.appendChild(span);
+	sectionList.appendChild(li);
+}
+
+function addSectionItem(id: string, displayName: string, fullPath: string, preselectedId: string, depth: number) {
 	let li = document.createElement("li");
 	li.className = "section-item";
 	li.setAttribute("data-id", id);
 	li.setAttribute("role", "option");
 	li.setAttribute("tabindex", "-1");
-	li.textContent = label;
-	li.title = label;
+	li.style.paddingLeft = (12 + depth * 16) + "px";
+	let img = document.createElement("img");
+	img.src = "images/section.png";
+	img.alt = "";
+	li.appendChild(img);
+	let span = document.createElement("span");
+	span.textContent = displayName;
+	li.appendChild(span);
+	li.title = fullPath;
 	if (id === preselectedId) {
 		li.classList.add("section-item-selected");
 		li.setAttribute("aria-selected", "true");
 		selectedSectionId = id;
-		sectionSelected.textContent = label;
-		sectionSelected.title = label;
+		sectionSelected.textContent = fullPath;
+		sectionSelected.title = fullPath;
 	} else {
 		li.setAttribute("aria-selected", "false");
 	}
 	li.addEventListener("click", () => {
-		// Remove old selection
 		let prev = sectionList.querySelector(".section-item-selected");
 		if (prev) { prev.classList.remove("section-item-selected"); prev.setAttribute("aria-selected", "false"); }
 		li.classList.add("section-item-selected");
 		li.setAttribute("aria-selected", "true");
-		selectSection(id, label);
+		selectSection(id, fullPath);
 	});
-	// Keyboard navigation within section list
+	// Keyboard navigation — skip non-clickable headings
 	li.addEventListener("keydown", (e) => {
 		if (e.key === "ArrowDown") {
 			e.preventDefault();
 			let next = li.nextElementSibling as HTMLElement;
+			while (next && next.classList.contains("section-heading")) { next = next.nextElementSibling as HTMLElement; }
 			if (next) { next.focus(); }
 		} else if (e.key === "ArrowUp") {
 			e.preventDefault();
 			let prev = li.previousElementSibling as HTMLElement;
+			while (prev && prev.classList.contains("section-heading")) { prev = prev.previousElementSibling as HTMLElement; }
 			if (prev) { prev.focus(); }
 		} else if (e.key === "Enter" || e.key === " ") {
 			e.preventDefault();
@@ -1692,6 +1733,7 @@ port.onMessage.addListener((message: any) => {
 	}
 
 	if (message.action === "saveResult") {
+		if (saveTimeoutId) { clearTimeout(saveTimeoutId); saveTimeoutId = 0; }
 		if (message.success) {
 			saveDone = true;
 			unlockSidebar();
@@ -1875,6 +1917,21 @@ saveBtn.addEventListener("click", () => {
 	statusText.textContent = strings.saving;
 	progressInfo.textContent = "";
 	announceToScreenReader(strings.saving);
+	// Client-side 30s timeout — service worker setTimeout is unreliable (SW goes inactive)
+	if (saveTimeoutId) { clearTimeout(saveTimeoutId); }
+	saveTimeoutId = setTimeout(function() {
+		if (!saveDone) {
+			unlockSidebar();
+			capturePanel.style.display = "flex";
+			progressInfo.textContent = "";
+			(document.getElementById("progress-bar-track") as HTMLElement).style.display = "none";
+			statusText.innerHTML = escapeHtml(loc("WebClipper.Error.GenericError", "Something went wrong. Please try clipping the page again."))
+				+ "<div style=\"margin-top:6px;font-size:11px;opacity:0.7;\">Request timed out (30s)</div>";
+			saveBtn.textContent = strings.saveToOneNote;
+			saveBtn.disabled = false;
+			announceToScreenReader(loc("WebClipper.Error.GenericError", "Something went wrong."));
+		}
+	}, 30000);
 	let saveMsg: any = {
 		action: "save",
 		title: titleField.value,
