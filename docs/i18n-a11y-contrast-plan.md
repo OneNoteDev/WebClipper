@@ -175,11 +175,10 @@ Replace `pointer-events: none` + opacity with `aria-disabled="true"` + `tabindex
    - Focus outlines: `2px solid #f8f8f8` visible on all sidebar controls
    - Focus management: Cancel focused during capture → Full Page button after capture → sign-in button on overlay
 4. **No functional regressions**: Capture, save, region, article, bookmark modes all work
-5. **Screen reader testing** (implemented but unable to verify):
-   - ARIA roles, states, and aria-live announcements are implemented
+5. **Screen reader testing** (verified with NVDA + Edge):
+   - ARIA roles, states, and aria-live announcements are implemented and working
    - Accessibility tree verified correct via `edge://accessibility` — all nodes present with proper roles
-   - **Platform blocker**: Edge does not activate accessibility API flags (`Native`, `Web`, `Screen reader`) for extension popup windows opened via `chrome.windows.create`. The `edge://accessibility` page shows `Screen reader: disabled` for the renderer window while normal tabs show `Screen reader: true`. This prevents NVDA and Narrator from reading web content in the popup — they only see window chrome (minimize/maximize/close)
+   - NVDA reads sidebar controls, mode buttons, section picker, and aria-live announcements
    - Blur handler was removed to avoid conflicting with screen reader focus management
    - Keydown handler allows navigation keys (arrows, Tab, Escape, Home/End, PageUp/PageDown) and modifier combos to pass through for screen reader compatibility
-   - **NVDA + Edge testing context**: NVDA 2025.3.3 was tested with Edge but was not reliably speaking web content even on normal webpages. The official OneNote Web Clipper from the Edge extension store also does not speak with NVDA — its injected sidebar is equally silent. This suggests the NVDA + Edge combination has broader compatibility issues beyond our extension's popup window architecture.
-   - **Needs further testing** on a setup where NVDA + Edge works reliably for normal web content, or with Chrome, or with an alternative window architecture (e.g., opening renderer as a regular tab instead of popup type)
+   - **Note**: Previous testing on a stale devbox showed Edge not activating accessibility API flags for extension popup windows. A devbox reboot resolved this — NVDA works correctly with the renderer window
