@@ -481,7 +481,7 @@ export class DomUtils {
 	 */
 	public static flattenShadowDomSlots(doc: Document, originalDoc: Document): void {
 		// Remove any leftover shadow root templates in the clone
-		let templates = doc.querySelectorAll('template[shadowroot], template[shadowrootmode]');
+		let templates = doc.querySelectorAll("template[shadowroot], template[shadowrootmode]");
 		for (let i = 0; i < templates.length; i++) {
 			if (templates[i].parentNode) {
 				templates[i].parentNode.removeChild(templates[i]);

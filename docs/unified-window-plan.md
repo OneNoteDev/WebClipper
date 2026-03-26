@@ -336,6 +336,9 @@ Renderer reads `localStorage.locStrings` directly (shared extension origin). Fal
 - [x] Success banner: separate from Clip button — "✓ Clip Successful!" banner with purple "View in OneNote" button (opens page + closes window). Clip button stays as Clip for re-clipping. Banner clears on mode switch, re-clip, or section change.
 - [x] Hierarchical section picker: notebook headings (with notebook.png icon) and section group headings (with section_group.png icon) as non-clickable groupings. Sections indented under their parent with section.png icon. Icons inverted to white for dark background contrast. Keyboard nav skips headings.
 - [x] Section selection decoupled from button state: changing section only clears success banner, does not touch Clip button disabled/text state (was causing premature Clip enable during capture).
+- [x] Lint conformance: fixed all tslint errors in renderer.ts, regionOverlay.ts, webExtensionWorker.ts, domUtils.ts (null→undefined, var→let, quotemark, else placement, shadowed variable). Only pre-existing third-party definition file errors remain.
+- [x] Service worker keepalive: renderer sends keepalive ping every 25s via port to prevent MV3 service worker suspension while popup is open.
+- [x] Inactivity auto-close: renderer closes after 5 minutes without mouse, keyboard, scroll, or focus activity. Timer resets on any interaction.
 
 ---
 

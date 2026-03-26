@@ -21,24 +21,24 @@
 	let instrHost = document.createElement("div");
 	instrHost.style.cssText = "position:absolute;top:16px;left:0;right:0;z-index:1;pointer-events:none;";
 	let shadow = instrHost.attachShadow({ mode: "closed" });
-	shadow.innerHTML = '<style>'
-		+ ':host { all: initial; }'
-		+ '.wrap { display:flex;justify-content:center; }'
-		+ '.bar { display:flex;align-items:center;gap:16px;padding:10px 20px;'
-		+   'background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.3);'
-		+   'border-radius:8px;font:14px/1 -apple-system,Segoe UI,sans-serif;color:#fff;'
-		+   'pointer-events:auto;user-select:none;white-space:nowrap; }'
-		+ '.text { opacity:0.9; }'
-		+ '.back-btn { padding:6px 14px;background:rgba(255,255,255,0.15);color:#fff;'
-		+   'border:1px solid rgba(255,255,255,0.4);border-radius:4px;'
-		+   'font:13px/1 -apple-system,Segoe UI,sans-serif;cursor:pointer;outline:none;'
-		+   'transition:background 0.15s; }'
-		+ '.back-btn:hover { background:rgba(255,255,255,0.3); }'
-		+ '</style>'
-		+ '<div class="wrap"><div class="bar">'
-		+ '<span class="text"></span>'
-		+ '<button class="back-btn"></button>'
-		+ '</div></div>';
+	shadow.innerHTML = "<style>"
+		+ ":host { all: initial; }"
+		+ ".wrap { display:flex;justify-content:center; }"
+		+ ".bar { display:flex;align-items:center;gap:16px;padding:10px 20px;"
+		+   "background:rgba(0,0,0,0.75);border:1px solid rgba(255,255,255,0.3);"
+		+   "border-radius:8px;font:14px/1 -apple-system,Segoe UI,sans-serif;color:#fff;"
+		+   "pointer-events:auto;user-select:none;white-space:nowrap; }"
+		+ ".text { opacity:0.9; }"
+		+ ".back-btn { padding:6px 14px;background:rgba(255,255,255,0.15);color:#fff;"
+		+   "border:1px solid rgba(255,255,255,0.4);border-radius:4px;"
+		+   "font:13px/1 -apple-system,Segoe UI,sans-serif;cursor:pointer;outline:none;"
+		+   "transition:background 0.15s; }"
+		+ ".back-btn:hover { background:rgba(255,255,255,0.3); }"
+		+ "</style>"
+		+ "<div class=\"wrap\"><div class=\"bar\">"
+		+ "<span class=\"text\"></span>"
+		+ "<button class=\"back-btn\"></button>"
+		+ "</div></div>";
 
 	let strings = (window as any).__regionStrings || {};
 	let instrText = shadow.querySelector(".text") as HTMLElement;

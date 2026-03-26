@@ -16,6 +16,21 @@ function safeSend(msg: any) {
 		try { port.postMessage(msg); } catch (e) { portDisconnected = true; }
 	}
 }
+// Keep service worker alive while renderer is open (MV3 SW suspends after ~30s idle)
+setInterval(function() { safeSend({ action: "keepalive" }); }, 25000);
+// Auto-close after 5 minutes of inactivity (no mouse, keyboard, or focus)
+let inactivityTimeoutMs = 5 * 60 * 1000;
+let inactivityTimer = setTimeout(function() { window.close(); }, inactivityTimeoutMs);
+function resetInactivityTimer() {
+	clearTimeout(inactivityTimer);
+	inactivityTimer = setTimeout(function() { window.close(); }, inactivityTimeoutMs);
+}
+document.addEventListener("mousemove", resetInactivityTimer);
+document.addEventListener("mousedown", resetInactivityTimer);
+document.addEventListener("keydown", resetInactivityTimer);
+document.addEventListener("scroll", resetInactivityTimer, true);
+window.addEventListener("focus", resetInactivityTimer);
+
 let iframe = document.getElementById("content-frame") as HTMLIFrameElement;
 let previewFrame = document.getElementById("preview-frame") as HTMLIFrameElement;
 let previewContainer = document.getElementById("preview-container") as HTMLDivElement;
@@ -80,7 +95,7 @@ let fontIncreaseBtn = document.getElementById("font-increase-btn") as HTMLButton
 let articleSerif = false;
 let articleFontSize = 16;
 let highlighterEnabled = false;
-let textHighlighterInstance: any = null;
+let textHighlighterInstance: any = undefined;
 let articleWorkingHtml = ""; // Preserves highlights/edits across mode switches
 let saveTimeoutId: any = 0; // Client-side save timeout (service worker setTimeout unreliable)
 
@@ -262,9 +277,7 @@ function closeSectionPicker() {
 
 sectionSelected.addEventListener("click", toggleSectionPicker);
 sectionSelected.addEventListener("keydown", (e) => {
-	if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSectionPicker(); }
-	else if (e.key === "Escape" && sectionPickerOpen) { e.preventDefault(); closeSectionPicker(); }
-	else if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !sectionPickerOpen) { e.preventDefault(); openSectionPicker(); }
+	if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSectionPicker(); } else if (e.key === "Escape" && sectionPickerOpen) { e.preventDefault(); closeSectionPicker(); } else if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !sectionPickerOpen) { e.preventDefault(); openSectionPicker(); }
 });
 // Close dropdown when clicking outside
 document.addEventListener("click", (e) => {
@@ -635,7 +648,7 @@ function unlockSidebar() {
 
 function resetSaveState() {
 	saveDone = false;
-	saveBtn.onclick = null;
+	saveBtn.onclick = undefined;
 	saveBtn.textContent = strings.saveToOneNote;
 	saveBtn.disabled = false;
 	cancelBtn.textContent = strings.close;
@@ -783,17 +796,17 @@ function showArticleError() {
 // unsupported elements. Applied once at extraction time so both preview and save
 // use the same cleaned HTML.
 function cleanArticleHtml(html: string): string {
-	var tempDoc = new DOMParser().parseFromString(html, "text/html");
+	let tempDoc = new DOMParser().parseFromString(html, "text/html");
 	// Remove elements not supported in ONML
-	var unsupported = tempDoc.querySelectorAll("applet, audio, button, canvas, embed, hr, input, link, map, menu, menuitem, meter, noscript, progress, script, source, style, svg, video");
-	for (var i = unsupported.length - 1; i >= 0; i--) {
+	let unsupported = tempDoc.querySelectorAll("applet, audio, button, canvas, embed, hr, input, link, map, menu, menuitem, meter, noscript, progress, script, source, style, svg, video");
+	for (let i = unsupported.length - 1; i >= 0; i--) {
 		if (unsupported[i].parentNode) { unsupported[i].parentNode.removeChild(unsupported[i]); }
 	}
 	// Strip all style and class attributes (page layout styles leak into preview/OneNote)
-	var allEls = tempDoc.querySelectorAll("*");
-	for (var i = 0; i < allEls.length; i++) {
-		(allEls[i] as HTMLElement).removeAttribute("style");
-		(allEls[i] as HTMLElement).removeAttribute("class");
+	let allEls = tempDoc.querySelectorAll("*");
+	for (let j = 0; j < allEls.length; j++) {
+		(allEls[j] as HTMLElement).removeAttribute("style");
+		(allEls[j] as HTMLElement).removeAttribute("class");
 	}
 	return tempDoc.body ? tempDoc.body.innerHTML : html;
 }
@@ -934,7 +947,7 @@ function addHighlightDeleteButton(firstSpan: HTMLElement, doc: Document) {
 function destroyHighlighter() {
 	if (textHighlighterInstance) {
 		textHighlighterInstance.disable();
-		textHighlighterInstance = null;
+		textHighlighterInstance = undefined;
 	}
 }
 
@@ -1229,7 +1242,7 @@ function renderRegionThumbnails() {
 function updateRegionSessionStorage() {
 	// Store each region as a separate key to avoid session storage size limits
 	// First clear any old region keys
-	chrome.storage.session.get(null, (all: any) => {
+	chrome.storage.session.get(null, (all: any) => { // tslint:disable-line:no-null-keyword
 		let keysToRemove = Object.keys(all).filter((k) => k.indexOf("regionImage_") === 0);
 		if (keysToRemove.length > 0) {
 			chrome.storage.session.remove(keysToRemove);
@@ -1250,10 +1263,7 @@ modeButtons.forEach((btn, idx) => {
 	// Arrow key navigation (mirrors old enableAriaInvoke: ArrowUp/Down/Left/Right + Home/End)
 	btn.addEventListener("keydown", (e) => {
 		let target = -1;
-		if (e.key === "ArrowDown" || e.key === "ArrowRight") { target = idx + 1; }
-		else if (e.key === "ArrowUp" || e.key === "ArrowLeft") { target = idx - 1; }
-		else if (e.key === "Home") { target = 0; }
-		else if (e.key === "End") { target = modeButtons.length - 1; }
+		if (e.key === "ArrowDown" || e.key === "ArrowRight") { target = idx + 1; } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") { target = idx - 1; } else if (e.key === "Home") { target = 0; } else if (e.key === "End") { target = modeButtons.length - 1; }
 		if (target >= 0 && target < modeButtons.length && !modeButtons[target].disabled) {
 			e.preventDefault();
 			modeButtons[target].focus();
@@ -1741,7 +1751,7 @@ port.onMessage.addListener((message: any) => {
 			// Keep Clip button ready for re-clip
 			saveBtn.textContent = strings.saveToOneNote;
 			saveBtn.disabled = false;
-			saveBtn.onclick = null;
+			saveBtn.onclick = undefined;
 			cancelBtn.disabled = false;
 			// Show success banner with optional "View in OneNote" link
 			let successBanner = document.getElementById("success-banner") as HTMLDivElement;
@@ -1757,7 +1767,7 @@ port.onMessage.addListener((message: any) => {
 				};
 			} else {
 				viewLink.style.display = "none";
-				viewLink.onclick = null;
+				viewLink.onclick = undefined;
 			}
 			successBanner.style.display = "block";
 			announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Clip Successful!"));
@@ -1771,7 +1781,7 @@ port.onMessage.addListener((message: any) => {
 			// Hide progress bar in error state — the track line looks like a separator
 			(document.getElementById("progress-bar-track") as HTMLElement).style.display = "none";
 			// Error message first, then expandable diagnostics
-			var escapedDetail = escapeHtml(errorDetail);
+			let escapedDetail = escapeHtml(errorDetail);
 			statusText.innerHTML = escapeHtml(loc("WebClipper.Error.GenericError", "Something went wrong. Please try clipping the page again."))
 				+ "<details style=\"margin-top:8px;font-size:12px;\">"
 				+ "<summary style=\"cursor:pointer;color:rgba(255,255,255,0.8);\">"
@@ -1781,11 +1791,11 @@ port.onMessage.addListener((message: any) => {
 				+ "<pre id=\"error-detail-text\" style=\"margin-top:6px;font-size:11px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.2);padding:8px;border-radius:3px;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;\">"
 				+ escapedDetail + "</pre>"
 				+ "</details>";
-			var copyBtn = document.getElementById("copy-diagnostics");
+			let copyBtn = document.getElementById("copy-diagnostics");
 			if (copyBtn) {
 				copyBtn.addEventListener("click", function(ev) {
 					ev.stopPropagation();
-					var pre = document.getElementById("error-detail-text");
+					let pre = document.getElementById("error-detail-text");
 					if (pre) {
 						navigator.clipboard.writeText(pre.textContent || "").then(function() {
 							copyBtn.style.color = "#69F0AE";
@@ -1895,7 +1905,7 @@ port.onMessage.addListener((message: any) => {
 		if (fpBtn) { fpBtn.classList.add("selected"); }
 		saveBtn.disabled = true;
 		saveBtn.textContent = strings.saveToOneNote;
-		saveBtn.onclick = null;
+		saveBtn.onclick = undefined;
 		cancelBtn.textContent = strings.close;
 		// Show sign-in overlay
 		showSignInPanel();

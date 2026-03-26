@@ -267,7 +267,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	// Generate a RFC4122 v4 UUID (matches StringUtils.generateGuid)
 	private static newGuid(): string {
 		return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-			var r = Math.random() * 16 | 0;
+			let r = Math.random() * 16 | 0;
 			return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
 		});
 	}
@@ -343,7 +343,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					if (WebExtension.browser.runtime.lastError) { /* window may already be closed */ }
 				});
 				// Clean up all session storage from this capture session
-				chrome.storage.session.get(null, (all: any) => {
+				chrome.storage.session.get(null, (all: any) => { // tslint:disable-line:no-null-keyword
 					let keys = Object.keys(all || {}).filter(function(k) {
 						return k.indexOf("fullPage") === 0 || k.indexOf("regionImage") === 0;
 					});
