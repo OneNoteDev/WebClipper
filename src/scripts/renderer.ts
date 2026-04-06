@@ -1072,10 +1072,12 @@ function extractBookmark() {
 		description = description.substring(0, 140) + "...";
 	}
 
-	// Thumbnail: og:image → twitter:image → first img on page
+	// Thumbnail: og:image → twitter:image → link rel="image_src" → link rel="icon" → first img
 	let thumbnailSrc = getMetaContent(iframeDoc, "og:image", "property")
 		|| getMetaContent(iframeDoc, "twitter:image:src", "name")
 		|| getMetaContent(iframeDoc, "twitter:image", "name")
+		|| getLinkHref(iframeDoc, "image_src")
+		|| getLinkHref(iframeDoc, "icon")
 		|| "";
 	if (!thumbnailSrc) {
 		let firstImg = iframeDoc.querySelector("img[src]");
@@ -1108,10 +1110,10 @@ function extractBookmark() {
 
 	let secondTdStyle = thumbnailSrc ? "padding-left:16px;" : "";
 
-	cachedBookmarkHtml = "<table style=\"table-layout:auto;border-collapse:collapse;margin-bottom:24px;\">"
+	cachedBookmarkHtml = "<table style=\"table-layout:fixed;border-collapse:collapse;margin-bottom:24px;max-width:624px;width:100%;\">"
 		+ "<tr style=\"vertical-align:top;\">"
 		+ thumbHtml
-		+ "<td style=\"" + secondTdStyle + "\"><table>"
+		+ "<td style=\"" + secondTdStyle + "\"><table style=\"table-layout:fixed;width:100%;\">"
 		+ titleHtml
 		+ "<tr><td style=\"" + urlStyle + "\"><a href=\"" + escapeAttr(pageUrl) + "\" target=\"_blank\" style=\"color:#2e75b5;\">" + escapeHtml(pageUrl) + "</a></td></tr>"
 		+ descHtml
@@ -1129,6 +1131,11 @@ function extractBookmark() {
 function getMetaContent(doc: Document, value: string, attr: string): string {
 	let el = doc.querySelector("meta[" + attr + "=\"" + value + "\"]");
 	return el ? el.getAttribute("content") || "" : "";
+}
+
+function getLinkHref(doc: Document, relValue: string): string {
+	let el = doc.querySelector("link[rel~=\"" + relValue + "\"]");
+	return el ? el.getAttribute("href") || "" : "";
 }
 
 function escapeHtml(str: string): string {
@@ -1168,7 +1175,15 @@ function startRegionCapture() {
 		action: "startRegion",
 		regionStrings: {
 			instruction: loc("WebClipper.Label.RegionSelectionMouseInstruction", "Drag a selection with the mouse, and then release to capture."),
-			back: loc("WebClipper.Action.BackToHome", "Back")
+			keyboardInstruction: loc("WebClipper.Label.RegionSelectionKeyboardInstruction", "To select with the keyboard, press the arrow keys, and then press Enter."),
+			back: loc("WebClipper.Action.BackToHome", "Back"),
+			canvasLabel: loc("WebClipper.Accessibility.ScreenReader.RegionSelectionCanvas", "Selection canvas"),
+			selectionStarted: loc("WebClipper.Accessibility.ScreenReader.SelectionStarted", "Selection started"),
+			selectionComplete: loc("WebClipper.Accessibility.ScreenReader.SelectionComplete", "Selection complete"),
+			up: loc("WebClipper.Accessibility.ScreenReader.Up", "Up"),
+			down: loc("WebClipper.Accessibility.ScreenReader.Down", "Down"),
+			left: loc("WebClipper.Accessibility.ScreenReader.Left", "Left"),
+			right: loc("WebClipper.Accessibility.ScreenReader.Right", "Right")
 		}
 	});
 }

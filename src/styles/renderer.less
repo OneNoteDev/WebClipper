@@ -497,13 +497,202 @@ iframe#preview-frame {
 	outline-offset: 0;
 }
 
-// High contrast mode — mirrors old clipper.less
+// High contrast mode (Windows Contrast Themes) — forced-colors support
 @media (forced-colors: active) {
+
+	// --- Focus outlines ---
 	button:focus,
 	a:focus,
 	[tabindex]:focus {
 		outline: solid 2px Highlight !important;
 		outline-offset: 2px !important;
+	}
+
+	// --- Mode buttons ---
+	.mode-btn {
+		border: 1px solid ButtonText !important;
+		background: ButtonFace !important;
+		color: ButtonText !important;
+		&:hover { border-color: Highlight !important; color: Highlight !important; }
+		// forced-color-adjust: none prevents the browser from remapping our system
+		// color keywords back to defaults — without it, background: Highlight gets
+		// forced back to ButtonFace/Canvas even though it's already a system color.
+		&.selected {
+			forced-color-adjust: none;
+			background: Highlight !important;
+			color: HighlightText !important;
+			border: 1px solid HighlightText !important;
+		}
+		&.disabled {
+			color: GrayText !important;
+			border-color: GrayText !important;
+			opacity: 1 !important;
+		}
+	}
+
+	// --- Icons (SVG via filter) — preserve with system-color halo ---
+	.mode-btn img,
+	.section-heading img,
+	.section-item img,
+	#article-header button img,
+	.feedback-icon {
+		forced-color-adjust: none;
+		filter: drop-shadow(0 0 1px CanvasText) drop-shadow(0 0 1px CanvasText) !important;
+	}
+	// Selected/active items: icon must contrast with Highlight background
+	.mode-btn.selected img,
+	.section-item.section-item-selected img,
+	.section-item:hover img,
+	#article-header button.active img {
+		filter: drop-shadow(0 0 1px HighlightText) drop-shadow(0 0 1px HighlightText) !important;
+	}
+
+	// --- Input fields ---
+	#title-field, #note-field {
+		background: Field !important;
+		color: FieldText !important;
+		border: 1px solid ButtonText !important;
+		&::placeholder { color: GrayText !important; }
+		&:focus { border-color: Highlight !important; }
+	}
+
+	// --- Field labels & opacity text ---
+	.field-label {
+		opacity: 1 !important;
+		color: CanvasText !important;
+	}
+	.source-url,
+	#status-text,
+	#progress-info,
+	.signin-description,
+	.signin-progress,
+	.signin-title,
+	#sidebar-header .title {
+		opacity: 1 !important;
+	}
+
+	// --- Sidebar dividers & borders ---
+	.sidebar-divider { border-top-color: ButtonText !important; }
+	#sidebar-header { border-bottom-color: ButtonText !important; }
+	// Visible edge between preview area and sidebar
+	#sidebar { border-left: 1px solid ButtonText !important; }
+
+	// --- Section picker ---
+	#section-selected {
+		background: Field !important;
+		color: FieldText !important;
+		border: 1px solid ButtonText !important;
+		// SVG arrow in data: URI gets stripped; add text fallback
+		background-image: none !important;
+		&::after {
+			content: "\25BC"; // ▼ down-pointing triangle
+			position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+			color: FieldText; font-size: 10px;
+		}
+		&:focus { border-color: Highlight !important; }
+	}
+	#section-picker { position: relative; } // ensure ::after positioning
+
+	#section-list-container {
+		background: Canvas !important;
+		border: 1px solid ButtonText !important;
+	}
+
+	.section-heading {
+		color: CanvasText !important;
+	}
+
+	.section-item {
+		color: CanvasText !important;
+		&:hover {
+			forced-color-adjust: none;
+			background: Highlight !important;
+			color: HighlightText !important;
+		}
+		&.section-item-selected {
+			forced-color-adjust: none;
+			background: Highlight !important;
+			color: HighlightText !important;
+		}
+	}
+
+	// --- Buttons ---
+	#save-btn {
+		border: 1px solid ButtonText !important;
+	}
+
+	#cancel-btn {
+		border: 1px solid ButtonText !important;
+		background: ButtonFace !important;
+		color: ButtonText !important;
+		&:hover { border-color: Highlight !important; }
+	}
+
+	// --- Progress bar ---
+	#progress-bar-track {
+		background: ButtonFace !important;
+		border: 1px solid ButtonText !important;
+	}
+	#progress-bar-fill {
+		background: Highlight !important;
+	}
+
+	// --- Article header bar ---
+	#article-header {
+		background: Canvas !important;
+		border-bottom: 1px solid ButtonText !important;
+
+		button {
+			border: 1px solid ButtonText !important;
+			color: ButtonText !important;
+			background: ButtonFace !important;
+			&.active {
+				forced-color-adjust: none;
+				background: Highlight !important;
+				color: HighlightText !important;
+				border-color: HighlightText !important;
+			}
+		}
+
+		.header-separator {
+			background: ButtonText !important;
+		}
+	}
+
+	// --- Success banner ---
+	#success-banner {
+		background: Canvas !important;
+		border: 1px solid ButtonText !important;
+		#success-text { color: CanvasText !important; }
+		#view-onenote-link { border: 1px solid ButtonText !important; }
+	}
+
+	// --- User info footer ---
+	#user-info {
+		opacity: 1 !important;
+		border-top-color: ButtonText !important;
+	}
+	#feedback-link, #signout-link {
+		color: LinkText !important;
+	}
+
+	// --- Region thumbnails ---
+	.region-thumb img { border-color: ButtonText !important; }
+	.region-remove-btn { border: 1px solid ButtonText !important; }
+	.region-add-btn { border-color: ButtonText !important; color: CanvasText !important; }
+
+	// --- Sign-in ---
+	.signin-btn {
+		border: 1px solid ButtonText !important;
+	}
+	.signin-btn-secondary {
+		border: 1px solid ButtonText !important;
+		background: ButtonFace !important;
+		color: ButtonText !important;
+		&:hover { border-color: Highlight !important; }
+	}
+	.signin-error {
+		color: CanvasText !important;
 	}
 }
 
