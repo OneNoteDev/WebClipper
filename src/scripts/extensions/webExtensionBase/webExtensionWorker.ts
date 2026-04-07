@@ -316,7 +316,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				fullPageBaseUrl: msg.baseUrl || "",
 				fullPageTitle: msg.title || "",
 				fullPageUrl: msg.url || "",
-				fullPageStatusText: "Capturing page..."
+				fullPageStatusText: "Capturing page...",
+				fullPageContentType: msg.contentType || "html"
 			};
 			chrome.storage.session.set(storageData, () => {
 				contentCaptured = true;
@@ -364,7 +365,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				// Clean up all session storage from this capture session
 				chrome.storage.session.get(null, (all: any) => { // tslint:disable-line:no-null-keyword
 					let keys = Object.keys(all || {}).filter(function(k) {
-						return k.indexOf("fullPage") === 0 || k.indexOf("regionImage") === 0;
+						return k.indexOf("fullPage") === 0 || k.indexOf("regionImage") === 0 || k.indexOf("pdfPage") === 0 || k === "pdfAttachmentData";
 					});
 					if (keys.length > 0) { chrome.storage.session.remove(keys); }
 				});
@@ -702,6 +703,177 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 							} else if (saveMode === "bookmark") {
 								let bookmarkHtml = message.contentHtml || "";
 								buildPage(bookmarkHtml, []);
+							} else if (saveMode === "pdf") {
+								// Read PDF page images from session storage
+								let pdfPageCount = message.pdfPageCount || 0;
+								let pdfAttachEnabled = message.pdfAttach || false;
+								let pdfDistributeEnabled = message.pdfDistribute || false;
+								let pdfAttachName = message.pdfAttachName || "Original.pdf";
+								let pageLabel = message.pageLabel || "Page";
+
+								if (pdfPageCount === 0) {
+									port.postMessage({ action: "saveResult", success: false, error: "No PDF page data" });
+									return;
+								}
+
+								// Actual 1-indexed page numbers for titles (e.g. [2,3,4,7] for range "2-4,7")
+								let pdfPageNumbers: number[] = message.pdfPageNumbers || [];
+
+								let pdfImgKeys: string[] = [];
+								for (let i = 0; i < pdfPageCount; i++) { pdfImgKeys.push("pdfPageImage_" + i); }
+								if (pdfAttachEnabled) { pdfImgKeys.push("pdfAttachmentData"); }
+
+								chrome.storage.session.get(pdfImgKeys, (pdfStored: any) => {
+									let pageDataUrls: string[] = [];
+									for (let i = 0; i < pdfPageCount; i++) {
+										if (pdfStored["pdfPageImage_" + i]) { pageDataUrls.push(pdfStored["pdfPageImage_" + i]); }
+									}
+									if (pageDataUrls.length === 0) {
+										port.postMessage({ action: "saveResult", success: false, error: "No PDF page data in session" });
+										return;
+									}
+
+									if (pdfDistributeEnabled) {
+										// Distributed: one OneNote page per PDF page (sequential POSTs)
+										let distributeSave = (pageIdx: number, savedCount: number, firstPageUrl: string) => {
+											if (pageIdx >= pageDataUrls.length) {
+												port.postMessage({ action: "saveResult", success: true, pageUrl: firstPageUrl });
+												return;
+											}
+											let pageTitle = saveTitle;
+											if (pageDataUrls.length > 1) {
+												let actualPageNum = pdfPageNumbers[pageIdx] || (pageIdx + 1);
+												pageTitle = saveTitle + ": " + pageLabel + " " + actualPageNum;
+											}
+											let imgDataUrl = pageDataUrls[pageIdx];
+											fetch(imgDataUrl).then((r) => r.blob()).then((blob) => {
+												let imgName = "pdfPage" + pageIdx;
+												let bodyOnml = "<p><img src=\"name:" + imgName + "\" /></p>&nbsp;";
+												// Only first page gets annotation + citation
+												let distBoundary = "OneNoteRendererBoundary" + Date.now() + pageIdx;
+												let now2 = new Date();
+												let offset2 = now2.getTimezoneOffset();
+												let offsetSign2 = offset2 >= 0 ? "-" : "+";
+												offset2 = Math.abs(offset2);
+												let oH = Math.floor(offset2 / 60).toString();
+												let oM = Math.round(offset2 % 60).toString();
+												if (parseInt(oH, 10) < 10) { oH = "0" + oH; }
+												if (parseInt(oM, 10) < 10) { oM = "0" + oM; }
+												let ct = offsetSign2 + oH + ":" + oM;
+												let fStyle = "font-size: 16px; font-family: Verdana;";
+												let distHtml = "<!DOCTYPE html><html><head>"
+													+ "<title>" + pageTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</title>"
+													+ "<meta name=\"created\" content=\"" + ct + " \">"
+													+ "</head><body>";
+												if (pageIdx === 0 && saveAnnotation) {
+													let escaped = saveAnnotation.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+													distHtml += "<div style=\"" + fStyle + "\">&quot;" + escaped + "&quot;</div>";
+												}
+												if (pageIdx === 0 && saveUrl) {
+													distHtml += "<div style=\"" + fStyle + "\">Clipped from: <a href=\"" + saveUrl + "\">" + saveUrl + "</a></div>";
+												}
+												// Attachment <object> goes before page image (matches legacy ordering)
+												let distAttachDataUrl = pdfStored.pdfAttachmentData;
+												if (pageIdx === 0 && pdfAttachEnabled && distAttachDataUrl) {
+													distHtml += "<object data-attachment=\"" + pdfAttachName + "\" data=\"name:Attachment\" type=\"application/pdf\" />";
+												}
+												distHtml += bodyOnml;
+												distHtml += "</body></html>";
+
+												let distParts: (string | Blob)[] = [];
+												distParts.push("--" + distBoundary + "\r\n");
+												distParts.push("Content-Type: application/xhtml+xml\r\n");
+												distParts.push("Content-Disposition: form-data; name=\"Presentation\"\r\n\r\n");
+												distParts.push(distHtml);
+												distParts.push("\r\n--" + distBoundary + "\r\n");
+												distParts.push("Content-Type: image/png\r\n");
+												distParts.push("Content-Disposition: form-data; name=\"" + imgName + "\"\r\n\r\n");
+												distParts.push(blob);
+												// Attach PDF binary on first page if enabled
+												if (pageIdx === 0 && pdfAttachEnabled && distAttachDataUrl) {
+													fetch(distAttachDataUrl).then((ar) => ar.blob()).then((pdfBlob) => {
+														distParts.push("\r\n--" + distBoundary + "\r\n");
+														distParts.push("Content-Type: application/pdf\r\n");
+														distParts.push("Content-Disposition: form-data; name=\"Attachment\"\r\n\r\n");
+														distParts.push(pdfBlob);
+														distParts.push("\r\n--" + distBoundary + "--\r\n");
+														doDistributePost(distParts, distBoundary, pageIdx, savedCount, firstPageUrl);
+													});
+												} else {
+													distParts.push("\r\n--" + distBoundary + "--\r\n");
+													doDistributePost(distParts, distBoundary, pageIdx, savedCount, firstPageUrl);
+												}
+											});
+										};
+
+										let doDistributePost = (parts: (string | Blob)[], boundary: string, pageIdx: number, savedCount: number, firstPageUrl: string) => {
+											let body = new Blob(parts);
+											let apiUrl2 = "https://www.onenote.com/api/v1.0/me/notes"
+												+ (saveSectionId ? "/sections/" + encodeURIComponent(saveSectionId) : "")
+												+ "/pages";
+											let cid2 = WebExtensionWorker.newGuid();
+											fetch(apiUrl2, {
+												method: "POST",
+												headers: {
+													"Authorization": "Bearer " + accessToken,
+													"Content-Type": "multipart/form-data; boundary=" + boundary,
+													"X-CorrelationId": cid2,
+													"X-UserSessionId": sessionUsid
+												},
+												body: body
+											}).then((resp) => {
+												if (resp.ok) {
+													resp.json().then((data) => {
+														let pUrl = firstPageUrl;
+														if (pageIdx === 0) {
+															try { pUrl = data.links.oneNoteWebUrl.href; } catch (e) { /* ignore */ }
+														}
+														// Progress update
+														port.postMessage({ action: "saveProgress", current: savedCount + 1, total: pageDataUrls.length });
+														distributeSave(pageIdx + 1, savedCount + 1, pUrl);
+													}).catch(() => {
+														distributeSave(pageIdx + 1, savedCount + 1, firstPageUrl);
+													});
+												} else {
+													resp.text().then((text) => {
+														port.postMessage({ action: "saveResult", success: false, error: "Failed on page " + (pageIdx + 1) + ": " + text.substring(0, 200) });
+													});
+												}
+											}).catch((err) => {
+												port.postMessage({ action: "saveResult", success: false, error: "Network error on page " + (pageIdx + 1) + ": " + (err.message || "Unknown") });
+											});
+										};
+
+										distributeSave(0, 0, "");
+
+									} else {
+										// Non-distributed: single OneNote page with all PDF page images
+										// First page image in initial POST, remaining via PATCH requests
+										Promise.all(pageDataUrls.map((dataUrl: string, idx: number) =>
+											fetch(dataUrl).then((r) => r.blob()).then((blob) => ({
+												name: "pdfPage" + idx,
+												blob: blob,
+												type: "image/png"
+											}))
+										)).then((imageParts) => {
+											let pageImagesOnml = imageParts.map((p) =>
+												"<p><img src=\"name:" + p.name + "\" /></p>&nbsp;"
+											).join("");
+											// If attaching PDF binary — attachment goes before page images (matches legacy)
+											let attachData = pdfStored.pdfAttachmentData;
+											if (pdfAttachEnabled && attachData) {
+												fetch(attachData).then((r) => r.blob()).then((pdfBlob) => {
+													let attachMimeName = "Attachment";
+													imageParts.push({ name: attachMimeName, blob: pdfBlob, type: "application/pdf" });
+													let bodyOnml = "<object data-attachment=\"" + pdfAttachName + "\" data=\"name:" + attachMimeName + "\" type=\"application/pdf\" />" + pageImagesOnml;
+													buildPage(bodyOnml, imageParts);
+												});
+											} else {
+												buildPage(pageImagesOnml, imageParts);
+											}
+										});
+									}
+								});
 							} else {
 								port.postMessage({ action: "saveResult", success: false, error: "Unsupported mode" });
 							}

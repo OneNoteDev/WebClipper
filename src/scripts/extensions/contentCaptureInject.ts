@@ -243,6 +243,18 @@
 		}
 	} catch (e) { /* skip */ }
 
+	// --- PDF detection (mirrors domUtils.ts getPageContentType) ---
+	function detectContentType(): string {
+		let anchor = document.createElement("a");
+		anchor.href = document.URL;
+		if (/\.pdf$/i.test(anchor.pathname)) { return "pdf"; }
+		let embedEl = document.querySelector("embed") as HTMLEmbedElement;
+		if (embedEl && /application\/pdf/i.test((embedEl as any).type)) { return "pdf"; }
+		if ((window as any).PDFJS) { return "pdf"; }
+		return "html";
+	}
+
+	let contentType = detectContentType();
 	let html = resolveLazyImages(getDomString(doc));
 
 	chrome.runtime.sendMessage(JSON.stringify({
@@ -250,6 +262,7 @@
 		html: html,
 		baseUrl: document.baseURI || document.URL,
 		title: document.title || "",
-		url: document.URL || ""
+		url: document.URL || "",
+		contentType: contentType
 	}));
 })();

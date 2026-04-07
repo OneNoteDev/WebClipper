@@ -90,6 +90,30 @@ let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from conten
 let bookmarkLoaded = false;
 let contentDocReady = false; // true once content-frame has loaded HTML
 
+// PDF state
+let pdfMode = false;               // true when page is a PDF
+let pdfDoc: any;                    // PDFDocumentProxy from pdf.js
+let pdfPageCount = 0;
+let pdfByteLength = 0;
+let pdfBuffer: Uint8Array;          // raw bytes for attachment
+let pdfAllPages = true;
+let pdfSelectedRange = "";
+let pdfAttach = true;
+let pdfDistribute = false;
+let pdfPagesRendered: boolean[] = []; // tracks which pages have been rendered to preview
+let pdfPageDataUrls: string[] = [];   // cached data URLs for save
+let pdfSourceUrl = "";
+let pdfMaxAttachSize = 24900000;      // 24.9MB — matches Constants.Settings.maximumMimeSizeLimit
+
+// PDF UI elements (populated in enterPdfMode)
+let pdfOptionsPanel: HTMLDivElement;
+let pdfRangeInput: HTMLInputElement;
+let pdfRangeError: HTMLDivElement;
+let pdfAttachCheckbox: HTMLInputElement;
+let pdfAttachLabel: HTMLLabelElement;
+let pdfAttachWarning: HTMLDivElement;
+let pdfDistributeCheckbox: HTMLInputElement;
+
 // Article header controls
 let articleHeader = document.getElementById("article-header") as HTMLDivElement;
 let highlightBtn = document.getElementById("highlight-btn") as HTMLButtonElement;
@@ -157,7 +181,21 @@ let strings = {
 	sansSerifLabel: loc("WebClipper.Preview.Header.SansSerifButtonLabel", "Sans-serif"),
 	serifLabel: loc("WebClipper.Preview.Header.SerifButtonLabel", "Serif"),
 	fontFamilySerif: loc("WebClipper.FontFamily.Preview.SerifDefault", "Georgia"),
-	fontFamilySansSerif: loc("WebClipper.FontFamily.Preview.SansSerifDefault", "Verdana")
+	fontFamilySansSerif: loc("WebClipper.FontFamily.Preview.SansSerifDefault", "Verdana"),
+	// PDF strings
+	modePdf: loc("WebClipper.ClipType.Pdf.Button", "PDF"),
+	pdfAllPages: loc("WebClipper.Label.PdfAllPagesRadioButton", "All pages"),
+	pdfPageRange: loc("WebClipper.Label.PdfPageRange", "Page range"),
+	pdfAttachFile: loc("WebClipper.Label.AttachPdfFile", "Attach PDF file"),
+	pdfAttachSubtext: loc("WebClipper.Label.AttachPdfFileSubText", "(all pages)"),
+	pdfTooLarge: loc("WebClipper.Label.PdfTooLargeToAttach", "PDF too large to attach"),
+	pdfDistribute: loc("WebClipper.Label.PdfDistributePagesCheckbox", "New note for each PDF page"),
+	pdfInvalidRange: loc("WebClipper.Popover.PdfInvalidPageRange", "Invalid range: {0}"),
+	pdfProgress: loc("WebClipper.ClipType.Pdf.ProgressLabel", "Clipping PDF file..."),
+	pdfProgressDelay: loc("WebClipper.ClipType.Pdf.ProgressLabelDelay", "PDFs can take a little while to upload. Still clipping."),
+	pdfPageProgress: loc("WebClipper.ClipType.Pdf.IncrementalProgressMessage", "Clipping page {0} of {1}..."),
+	pdfLoading: loc("WebClipper.ClipType.Pdf.Loading", "Loading PDF..."),
+	page: loc("WebClipper.Label.Page", "Page")
 };
 
 // --- Telemetry helpers ---
@@ -1124,6 +1162,7 @@ function switchToBookmark() {
 	capturePanel.style.display = "none";
 	previewFrame.style.display = "block";
 	articleHeader.style.display = "none";
+	if (pdfOptionsPanel) { pdfOptionsPanel.style.display = "none"; }
 
 	if (!bookmarkLoaded) {
 		loadBookmarkContent();
@@ -1372,6 +1411,417 @@ function updateRegionSessionStorage() {
 	});
 }
 
+// --- PDF mode functions ---
+
+// Inline page range parser (mirrors StringUtils.parsePageRange from legacy clipper)
+function parsePageRange(text: string, maxRange: number): { ok: boolean; pages: number[]; error: string } {
+	if (!text || !text.trim()) { return { ok: false, pages: [], error: "" }; }
+	let splitText = text.trim().split(",");
+	let range: number[] = [];
+	for (let i = 0; i < splitText.length; i++) {
+		let cur = splitText[i].trim();
+		if (cur === "") { continue; }
+		if (/^\d+$/.test(cur)) {
+			let digit = parseInt(cur, 10);
+			if (digit === 0 || digit > maxRange) { return { ok: false, pages: [], error: cur }; }
+			range.push(digit);
+		} else {
+			let matches = /^(\d+)\s*-\s*(\d+)$/.exec(cur);
+			if (!matches) { return { ok: false, pages: [], error: cur }; }
+			let lhs = parseInt(matches[1], 10);
+			let rhs = parseInt(matches[2], 10);
+			if (lhs >= rhs || lhs === 0 || rhs === 0 || rhs > maxRange) { return { ok: false, pages: [], error: cur }; }
+			for (let n = lhs; n <= rhs; n++) { range.push(n); }
+		}
+	}
+	// Sort and deduplicate
+	let seen: { [k: number]: boolean } = {};
+	let unique: number[] = [];
+	range.sort(function(a, b) { return a - b; });
+	for (let i = 0; i < range.length; i++) {
+		if (!seen[range[i]]) { seen[range[i]] = true; unique.push(range[i]); }
+	}
+	if (unique.length === 0) { return { ok: false, pages: [], error: text }; }
+	return { ok: true, pages: unique, error: "" };
+}
+
+// Get 0-indexed page indices based on current selection
+function getPdfSelectedIndices(): number[] {
+	if (pdfAllPages) {
+		let all: number[] = [];
+		for (let i = 0; i < pdfPageCount; i++) { all.push(i); }
+		return all;
+	}
+	let result = parsePageRange(pdfSelectedRange, pdfPageCount);
+	if (!result.ok) { return []; }
+	return result.pages.map(function(p) { return p - 1; });
+}
+
+// Render a single PDF page to a data URL via canvas (scale=2 for quality, matching legacy)
+function renderPdfPage(pageIndex: number): Promise<string> {
+	if (pdfPageDataUrls[pageIndex]) { return Promise.resolve(pdfPageDataUrls[pageIndex]); }
+	return new Promise(function(resolve) {
+		pdfDoc.getPage(pageIndex + 1).then(function(page: any) {
+			let viewport = page.getViewport(2);
+			let canvas = document.createElement("canvas");
+			canvas.width = viewport.width;
+			canvas.height = viewport.height;
+			let ctx = canvas.getContext("2d");
+			page.render({ canvasContext: ctx, viewport: viewport }).then(function() {
+				let dataUrl = canvas.toDataURL();
+				pdfPageDataUrls[pageIndex] = dataUrl;
+				resolve(dataUrl);
+			});
+		});
+	});
+}
+
+// Render pages into preview-container with lazy loading
+let pdfInitialPageLoad = 3;
+
+function renderPdfPagesInPreview(startIndex: number, count: number) {
+	for (let i = startIndex; i < Math.min(startIndex + count, pdfPageCount); i++) {
+		if (pdfPagesRendered[i]) { continue; }
+		pdfPagesRendered[i] = true;
+		let idx = i;
+		let wrapper = document.createElement("div");
+		wrapper.className = "pdf-page-wrapper";
+		wrapper.id = "pdf-page-" + idx;
+		wrapper.setAttribute("aria-label", strings.page + " " + (idx + 1));
+		let placeholder = document.createElement("div");
+		placeholder.className = "pdf-loading-indicator";
+		placeholder.textContent = strings.page + " " + (idx + 1) + "...";
+		wrapper.appendChild(placeholder);
+		// Page number overlay
+		let pageNum = document.createElement("div");
+		pageNum.className = "pdf-page-number";
+		pageNum.textContent = (idx + 1) + " / " + pdfPageCount;
+		wrapper.appendChild(pageNum);
+		// Insert in order
+		let inserted = false;
+		let existing = previewContainer.querySelectorAll(".pdf-page-wrapper");
+		for (let j = 0; j < existing.length; j++) {
+			let existingIdx = parseInt(existing[j].id.replace("pdf-page-", ""), 10);
+			if (existingIdx > idx) {
+				previewContainer.insertBefore(wrapper, existing[j]);
+				inserted = true;
+				break;
+			}
+		}
+		if (!inserted) { previewContainer.appendChild(wrapper); }
+
+		renderPdfPage(idx).then(function(dataUrl) {
+			let img = document.createElement("img");
+			img.className = "pdf-page-img";
+			img.src = dataUrl;
+			img.alt = strings.page + " " + (idx + 1);
+			let w = document.getElementById("pdf-page-" + idx);
+			if (w) {
+				let ph = w.querySelector(".pdf-loading-indicator");
+				if (ph) { w.removeChild(ph); }
+				w.insertBefore(img, w.firstChild);
+			}
+		});
+	}
+}
+
+function setupPdfPreviewLazyLoad() {
+	previewContainer.addEventListener("scroll", function() {
+		// Lazy-load pages near visible area
+		let scrollTop = previewContainer.scrollTop;
+		let containerH = previewContainer.clientHeight;
+		let wrappers = previewContainer.querySelectorAll(".pdf-page-wrapper");
+		for (let i = 0; i < wrappers.length; i++) {
+			let w = wrappers[i] as HTMLElement;
+			let top = w.offsetTop - scrollTop;
+			if (top < containerH + 200 && top + w.offsetHeight > -200) {
+				// This page is near viewport — render adjacent pages
+				let pageIdx = parseInt(w.id.replace("pdf-page-", ""), 10);
+				renderPdfPagesInPreview(Math.max(0, pageIdx - 1), 3);
+			}
+		}
+	});
+}
+
+function switchToPdf() {
+	currentMode = "pdf";
+	// Show preview-container, hide others
+	iframe.style.display = "none";
+	previewFrame.style.display = "none";
+	articleHeader.style.display = "none";
+	previewContainer.style.display = "block";
+	// Show PDF options panel
+	pdfOptionsPanel.style.display = "block";
+	// Clear success banner
+	let banner = document.getElementById("success-banner");
+	if (banner) { banner.style.display = "none"; }
+	saveDone = false;
+}
+
+function enterPdfMode(url: string) {
+	pdfMode = true;
+	pdfSourceUrl = url;
+
+	// Ensure title is populated — PDF pages often have empty document.title
+	// Legacy behavior: use filename from URL (with .pdf extension), fall back to document.title then URL
+	if (!titleField.value || titleField.value === url) {
+		let pdfTitle = getPdfFileName(url);
+		if (pdfTitle && pdfTitle !== "Original.pdf") {
+			titleField.value = pdfTitle;
+		} else if (!titleField.value) {
+			titleField.value = url;
+		}
+		originalTitle = titleField.value;
+	}
+
+	// Grab PDF UI elements
+	pdfOptionsPanel = document.getElementById("pdf-options") as HTMLDivElement;
+	pdfRangeInput = document.getElementById("pdf-range-input") as HTMLInputElement;
+	pdfRangeError = document.getElementById("pdf-range-error") as HTMLDivElement;
+	pdfAttachCheckbox = document.getElementById("pdf-attach-checkbox") as HTMLInputElement;
+	pdfAttachLabel = document.getElementById("pdf-attach-label") as HTMLLabelElement;
+	pdfAttachWarning = document.getElementById("pdf-attach-warning") as HTMLDivElement;
+	pdfDistributeCheckbox = document.getElementById("pdf-distribute-checkbox") as HTMLInputElement;
+
+	// i18n — update PDF UI text from localized strings
+	let pdfBtn = document.querySelector('.mode-btn[data-mode="pdf"]');
+	if (pdfBtn) {
+		let span = pdfBtn.querySelector("span");
+		if (span) { span.textContent = strings.modePdf; }
+	}
+	let radioLabels = document.querySelectorAll("#pdf-page-selection .pdf-radio-label span");
+	if (radioLabels.length >= 2) {
+		radioLabels[0].textContent = strings.pdfAllPages;
+		radioLabels[1].textContent = strings.pdfPageRange;
+	}
+	pdfRangeInput.setAttribute("aria-label", strings.pdfPageRange);
+	let checkLabels = document.querySelectorAll("#pdf-checkboxes .pdf-checkbox-label span");
+	if (checkLabels.length >= 3) {
+		checkLabels[0].textContent = strings.pdfAttachFile;
+		checkLabels[1].textContent = strings.pdfAttachSubtext;
+		checkLabels[2].textContent = strings.pdfDistribute;
+	}
+	pdfAttachWarning.textContent = strings.pdfTooLarge;
+
+	// Hide non-PDF mode buttons, show PDF + bookmark
+	document.querySelectorAll(".mode-btn").forEach(function(btn) {
+		let mode = btn.getAttribute("data-mode");
+		if (mode === "pdf") {
+			(btn as HTMLElement).style.display = "";
+			btn.classList.add("selected");
+			btn.setAttribute("aria-pressed", "true");
+		} else if (mode === "bookmark") {
+			(btn as HTMLElement).style.display = "";
+			btn.classList.remove("selected");
+			btn.setAttribute("aria-pressed", "false");
+		} else {
+			(btn as HTMLElement).style.display = "none";
+		}
+	});
+
+	// Show PDF options, hide capture panel
+	pdfOptionsPanel.style.display = "block";
+	capturePanel.style.display = "none";
+
+	// Set mode to PDF
+	currentMode = "pdf";
+	fullPageComplete = true; // allow mode switching to bookmark
+
+	// Show preview container for PDF pages
+	iframe.style.display = "none";
+	previewFrame.style.display = "none";
+	articleHeader.style.display = "none";
+	previewContainer.style.display = "block";
+	previewContainer.innerHTML = "";
+
+	// Show loading indicator
+	let loadingDiv = document.createElement("div");
+	loadingDiv.className = "pdf-loading-indicator";
+	loadingDiv.id = "pdf-initial-loading";
+	loadingDiv.textContent = strings.pdfLoading;
+	loadingDiv.setAttribute("role", "status");
+	loadingDiv.setAttribute("aria-live", "polite");
+	previewContainer.appendChild(loadingDiv);
+	announceToScreenReader(strings.pdfLoading);
+
+	// Enable save button
+	saveBtn.disabled = false;
+	saveBtn.textContent = strings.saveToOneNote;
+
+	// Set up PDF radio/checkbox handlers
+	setupPdfOptions();
+
+	// Fetch and parse PDF
+	loadPdf(url);
+
+	// Telemetry: set content type context
+	setTelemetryContext(Context.Custom.ContentType, "Pdf");
+}
+
+function setupPdfOptions() {
+	let radios = document.querySelectorAll('input[name="pdf-pages"]') as NodeListOf<HTMLInputElement>;
+	radios.forEach(function(radio) {
+		radio.addEventListener("change", function() {
+			pdfAllPages = radio.value === "all";
+			pdfRangeInput.disabled = pdfAllPages;
+			// Update aria-checked
+			radios.forEach(function(r) { r.setAttribute("aria-checked", r.checked ? "true" : "false"); });
+			if (!pdfAllPages) {
+				pdfRangeInput.focus();
+				validatePageRange();
+			} else {
+				pdfRangeError.style.display = "none";
+			}
+			updatePdfPageSelection();
+		});
+	});
+
+	pdfRangeInput.addEventListener("input", function() {
+		pdfSelectedRange = pdfRangeInput.value;
+		validatePageRange();
+		updatePdfPageSelection();
+	});
+
+	pdfAttachCheckbox.addEventListener("change", function() {
+		pdfAttach = pdfAttachCheckbox.checked;
+	});
+
+	pdfDistributeCheckbox.addEventListener("change", function() {
+		pdfDistribute = pdfDistributeCheckbox.checked;
+	});
+}
+
+// Update preview to gray out unselected pages (matches legacy opacity:0.3 behavior)
+function updatePdfPageSelection() {
+	let selectedIndices = getPdfSelectedIndices();
+	let selectedSet: { [k: number]: boolean } = {};
+	for (let i = 0; i < selectedIndices.length; i++) { selectedSet[selectedIndices[i]] = true; }
+	let wrappers = previewContainer.querySelectorAll(".pdf-page-wrapper");
+	for (let i = 0; i < wrappers.length; i++) {
+		let pageIdx = parseInt(wrappers[i].id.replace("pdf-page-", ""), 10);
+		let img = wrappers[i].querySelector(".pdf-page-img");
+		if (img) {
+			if (pdfAllPages || selectedSet[pageIdx]) {
+				img.classList.remove("unselected");
+			} else {
+				img.classList.add("unselected");
+			}
+		}
+	}
+}
+
+function validatePageRange() {
+	if (pdfAllPages || !pdfSelectedRange.trim()) {
+		pdfRangeError.style.display = "none";
+		return true;
+	}
+	let result = parsePageRange(pdfSelectedRange, pdfPageCount);
+	if (!result.ok) {
+		pdfRangeError.textContent = strings.pdfInvalidRange.replace("{0}", result.error);
+		pdfRangeError.style.display = "";
+		return false;
+	}
+	pdfRangeError.style.display = "none";
+	return true;
+}
+
+function loadPdf(url: string) {
+	let isLocal = url.indexOf("file:///") === 0;
+
+	let processPdf = function(source: any, byteLen?: number) {
+		(window as any).PDFJS.getDocument(source).then(function(pdf: any) {
+			pdfDoc = pdf;
+			pdfPageCount = pdf.numPages;
+			pdfPagesRendered = new Array(pdfPageCount);
+			pdfPageDataUrls = new Array(pdfPageCount);
+
+			if (byteLen) {
+				pdfByteLength = byteLen;
+			} else {
+				// For local files, get byte length from pdf.js
+				pdf.getData().then(function(data: Uint8Array) {
+					pdfByteLength = data.length;
+					pdfBuffer = data;
+					updateAttachCheckbox();
+				});
+			}
+
+			// Remove loading indicator
+			let loadEl = document.getElementById("pdf-initial-loading");
+			if (loadEl && loadEl.parentNode) { loadEl.parentNode.removeChild(loadEl); }
+
+			// Render initial pages
+			renderPdfPagesInPreview(0, pdfInitialPageLoad);
+			setupPdfPreviewLazyLoad();
+
+			announceToScreenReader(strings.modePdf + " — " + pdfPageCount + " " + strings.page + (pdfPageCount !== 1 ? "s" : ""));
+		});
+	};
+
+	if (isLocal) {
+		processPdf(url);
+	} else {
+		fetch(url).then(function(response) {
+			if (!response.ok) {
+				showPdfError("Failed to fetch PDF: " + response.status);
+				return;
+			}
+			return response.arrayBuffer();
+		}).then(function(arrayBuffer) {
+			if (!arrayBuffer) { return; }
+			pdfByteLength = arrayBuffer.byteLength;
+			pdfBuffer = new Uint8Array(arrayBuffer);
+			updateAttachCheckbox();
+			processPdf(pdfBuffer, arrayBuffer.byteLength);
+		}).catch(function(err) {
+			showPdfError("Network error loading PDF: " + (err.message || "Unknown"));
+		});
+	}
+}
+
+function updateAttachCheckbox() {
+	if (pdfByteLength > pdfMaxAttachSize) {
+		pdfAttachCheckbox.checked = false;
+		pdfAttachCheckbox.disabled = true;
+		pdfAttach = false;
+		pdfAttachLabel.classList.add("disabled");
+		pdfAttachWarning.style.display = "";
+	}
+}
+
+function showPdfError(msg: string) {
+	let loadEl = document.getElementById("pdf-initial-loading");
+	if (loadEl) {
+		loadEl.textContent = msg;
+		loadEl.setAttribute("role", "alert");
+	}
+	announceToScreenReader(msg);
+}
+
+// Extract filename from URL for PDF attachment (matches legacy UrlUtils.getFileNameFromUrl)
+function getPdfFileName(url: string): string {
+	try {
+		let pathname = new URL(url).pathname;
+		let parts = pathname.split("/");
+		let last = parts[parts.length - 1];
+		if (last && last.indexOf(".") !== -1) {
+			return decodeURIComponent(last);
+		}
+	} catch (e) { /* ignore */ }
+	return "Original.pdf";
+}
+
+// Generate bookmark HTML for PDF pages (no og: tags in PDF viewer DOM)
+function generatePdfBookmarkHtml(title: string, url: string): string {
+	let safeTitle = title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	let safeUrl = url.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	return "<table style=\"table-layout:fixed;max-width:624px;font-family:Verdana;font-size:16px;\" cellpadding=\"0\" cellspacing=\"0\">"
+		+ "<tr><td style=\"padding:10px;\">"
+		+ "<div style=\"font-size:16px;font-weight:bold;\">" + safeTitle + "</div>"
+		+ "<div style=\"font-size:12px;margin-top:6px;\"><a href=\"" + safeUrl + "\">" + safeUrl + "</a></div>"
+		+ "</td></tr></table>";
+}
+
 // Mode button click handlers + ARIA (aria-pressed in toolbar, arrow keys)
 let modeButtonNodeList = document.querySelectorAll(".mode-btn");
 let modeButtons: HTMLButtonElement[] = [];
@@ -1401,7 +1851,7 @@ modeButtons.forEach((btn, idx) => {
 		btn.setAttribute("aria-pressed", "true");
 
 		// Click event — match legacy componentBase.ts logClickEvent(element.id)
-		let modeClickIds: { [key: string]: string } = { fullpage: "fullPageButton", article: "augmentationButton", bookmark: "bookmarkButton", region: "regionButton" };
+		let modeClickIds: { [key: string]: string } = { fullpage: "fullPageButton", article: "augmentationButton", bookmark: "bookmarkButton", region: "regionButton", pdf: "pdfButton" };
 		logClickEvent(modeClickIds[mode as string] || mode as string);
 
 		if (mode === "fullpage") {
@@ -1411,11 +1861,19 @@ modeButtons.forEach((btn, idx) => {
 			switchToArticle();
 			setTelemetryContext(Context.Custom.ContentType, "Article");
 		} else if (mode === "bookmark") {
+			// For PDF pages, generate bookmark from title/URL since DOM has no og: tags
+			if (pdfMode && !cachedBookmarkHtml) {
+				cachedBookmarkHtml = generatePdfBookmarkHtml(titleField.value || originalTitle, sourceUrl.textContent || pdfSourceUrl);
+				bookmarkLoaded = true;
+			}
 			switchToBookmark();
 			setTelemetryContext(Context.Custom.ContentType, "Bookmark");
 		} else if (mode === "region") {
 			switchToRegion();
 			setTelemetryContext(Context.Custom.ContentType, "Region");
+		} else if (mode === "pdf") {
+			switchToPdf();
+			setTelemetryContext(Context.Custom.ContentType, "Pdf");
 		}
 		// Announce mode change to screen readers
 		let modeLabel = btn.querySelector("span");
@@ -1426,13 +1884,20 @@ modeButtons.forEach((btn, idx) => {
 port.onMessage.addListener((message: any) => {
 	if (message.action === "loadContent") {
 		// Read HTML, base URL, cached stylesheets, and page metadata from session storage
-		chrome.storage.session.get(["fullPageHtmlContent", "fullPageBaseUrl", "fullPageTitle", "fullPageUrl"], (stored: any) => {
+		chrome.storage.session.get(["fullPageHtmlContent", "fullPageBaseUrl", "fullPageTitle", "fullPageUrl", "fullPageContentType"], (stored: any) => {
 			let rawHtml = stored && stored.fullPageHtmlContent ? stored.fullPageHtmlContent : "";
 			let baseUrl = stored && stored.fullPageBaseUrl ? stored.fullPageBaseUrl : "";
 
 			// Populate title and source URL (may not have been available on initial page load)
 			if (stored && stored.fullPageTitle && !titleField.value) { titleField.value = stored.fullPageTitle; }
 			if (stored && stored.fullPageUrl && !sourceUrl.textContent) { sourceUrl.textContent = stored.fullPageUrl; sourceUrl.title = stored.fullPageUrl; }
+			if (stored && stored.fullPageTitle) { originalTitle = stored.fullPageTitle; }
+
+			// PDF content type — enter PDF mode instead of normal capture flow
+			if (stored && stored.fullPageContentType === "pdf") {
+				enterPdfMode(stored.fullPageUrl || "");
+				return;
+			}
 
 			// Strip scripts only — keep iframes (some sites use them for content)
 			let cleanHtml = rawHtml
@@ -1880,6 +2345,20 @@ port.onMessage.addListener((message: any) => {
 		renderRegionThumbnails();
 	}
 
+	if (message.action === "saveProgress") {
+		// Distributed PDF save progress
+		let cur = message.current || 0;
+		let total = message.total || 0;
+		if (total > 0) {
+			progressInfo.textContent = strings.pdfPageProgress.replace("{0}", "" + cur).replace("{1}", "" + total);
+			let pct = Math.round((cur / total) * 100);
+			progressFill.style.width = pct + "%";
+			progressFill.setAttribute("aria-valuenow", "" + pct);
+			(document.getElementById("progress-bar-track") as HTMLElement).style.display = "";
+			announceToScreenReader(strings.pdfPageProgress.replace("{0}", "" + cur).replace("{1}", "" + total));
+		}
+	}
+
 	if (message.action === "saveResult") {
 		if (saveTimeoutId) { clearTimeout(saveTimeoutId); saveTimeoutId = 0; }
 		// ClipToOneNoteAction — timer started at save button click
@@ -2101,7 +2580,7 @@ saveBtn.addEventListener("click", () => {
 
 	// ClipCommonOptions — match legacy saveToOneNoteLogger.ts
 	// ClipMode uses legacy enum names: FullPage, Augmentation (not Article), Bookmark, Region
-	let clipModeMap: { [key: string]: string } = { fullpage: "FullPage", article: "Augmentation", bookmark: "Bookmark", region: "Region" };
+	let clipModeMap: { [key: string]: string } = { fullpage: "FullPage", article: "Augmentation", bookmark: "Bookmark", region: "Region", pdf: "Pdf" };
 	let clipCommonEvent = new Event.BaseEvent(Event.Label.ClipCommonOptions);
 	clipCommonEvent.setCustomProperty(PropertyName.Custom.ClipMode, clipModeMap[currentMode] || currentMode);
 	clipCommonEvent.setCustomProperty(PropertyName.Custom.PageTitleModified, titleField.value !== originalTitle);
@@ -2113,6 +2592,24 @@ saveBtn.addEventListener("click", () => {
 		let clipRegionEvent = new Event.BaseEvent(Event.Label.ClipRegionOptions);
 		clipRegionEvent.setCustomProperty(PropertyName.Custom.NumRegions, regionImages.length);
 		logTelemetryEvent(clipRegionEvent);
+	}
+
+	// ClipPdfOptions + PdfByteMetadata — match legacy saveToOneNoteLogger
+	if (currentMode === "pdf" && pdfDoc) {
+		let pdfOptEvent = new Event.BaseEvent(Event.Label.ClipPdfOptions);
+		pdfOptEvent.setCustomProperty(PropertyName.Custom.PdfAllPagesClipped, pdfAllPages);
+		pdfOptEvent.setCustomProperty(PropertyName.Custom.PdfAttachmentClipped, pdfAttach && pdfByteLength <= pdfMaxAttachSize);
+		pdfOptEvent.setCustomProperty(PropertyName.Custom.PdfIsLocalFile, (sourceUrl.textContent || "").indexOf("file:///") === 0);
+		pdfOptEvent.setCustomProperty(PropertyName.Custom.PdfIsBatched, pdfDistribute);
+		let selectedCount = pdfAllPages ? pdfPageCount : getPdfSelectedIndices().length;
+		pdfOptEvent.setCustomProperty(PropertyName.Custom.PdfFileSelectedPageCount, selectedCount);
+		pdfOptEvent.setCustomProperty(PropertyName.Custom.PdfFileTotalPageCount, pdfPageCount);
+		logTelemetryEvent(pdfOptEvent);
+
+		let byteEvent = new Event.BaseEvent(Event.Label.PdfByteMetadata);
+		byteEvent.setCustomProperty(PropertyName.Custom.ByteLength, pdfByteLength);
+		byteEvent.setCustomProperty(PropertyName.Custom.BytesPerPdfPage, pdfPageCount > 0 ? Math.round(pdfByteLength / pdfPageCount) : 0);
+		logTelemetryEvent(byteEvent);
 	}
 
 	lockSidebar();
@@ -2174,6 +2671,75 @@ saveBtn.addEventListener("click", () => {
 		saveMsg.contentHtml = "<div style=\"" + fontStyle + "\">" + articleBody + "</div>";
 	} else if (currentMode === "bookmark" && cachedBookmarkHtml) {
 		saveMsg.contentHtml = cachedBookmarkHtml;
+	} else if (currentMode === "pdf") {
+		// Validate page range before saving
+		if (!pdfAllPages && !validatePageRange()) {
+			unlockSidebar();
+			saveBtn.disabled = false;
+			saveBtn.textContent = strings.saveToOneNote;
+			capturePanel.style.display = "none";
+			return;
+		}
+		// Render selected pages and store in session storage, then send save message
+		let indices = getPdfSelectedIndices();
+		if (indices.length === 0) {
+			unlockSidebar();
+			saveBtn.disabled = false;
+			saveBtn.textContent = strings.saveToOneNote;
+			capturePanel.style.display = "none";
+			return;
+		}
+		statusText.textContent = strings.pdfProgress;
+		announceToScreenReader(strings.pdfProgress);
+		// Extend timeout for large PDFs — 30s base + 5s per page
+		if (saveTimeoutId) { clearTimeout(saveTimeoutId); }
+		let pdfTimeoutMs = Math.max(30000, indices.length * 5000 + 30000);
+		saveTimeoutId = setTimeout(function() {
+			if (!saveDone) {
+				unlockSidebar();
+				capturePanel.style.display = "flex";
+				progressInfo.textContent = "";
+				(document.getElementById("progress-bar-track") as HTMLElement).style.display = "none";
+				statusText.innerHTML = escapeHtml(loc("WebClipper.Error.GenericError", "Something went wrong. Please try clipping the page again."))
+					+ "<div style=\"margin-top:6px;font-size:11px;opacity:0.7;\">Request timed out</div>";
+				saveBtn.textContent = strings.saveToOneNote;
+				saveBtn.disabled = false;
+				announceToScreenReader(loc("WebClipper.Error.GenericError", "Something went wrong."));
+			}
+		}, pdfTimeoutMs);
+		// Render all selected pages to data URLs
+		let renderPromises: Promise<string>[] = [];
+		for (let i = 0; i < indices.length; i++) {
+			renderPromises.push(renderPdfPage(indices[i]));
+		}
+		Promise.all(renderPromises).then(function(dataUrls) {
+			// Store page images in session storage
+			let storageData: any = { pdfPageImageCount: dataUrls.length };
+			for (let i = 0; i < dataUrls.length; i++) {
+				storageData["pdfPageImage_" + i] = dataUrls[i];
+			}
+			// If attaching PDF, store raw bytes as base64 data URL
+			if (pdfAttach && pdfBuffer && pdfByteLength <= pdfMaxAttachSize) {
+				// Convert Uint8Array to base64 string
+				let binary = "";
+				for (let i = 0; i < pdfBuffer.length; i++) {
+					binary += String.fromCharCode(pdfBuffer[i]);
+				}
+				storageData.pdfAttachmentData = "data:application/pdf;base64," + btoa(binary);
+			}
+			chrome.storage.session.set(storageData, function() {
+				saveMsg.pdfPageCount = dataUrls.length;
+				saveMsg.pdfAttach = pdfAttach && pdfByteLength <= pdfMaxAttachSize;
+				saveMsg.pdfDistribute = pdfDistribute;
+				saveMsg.pdfAttachName = getPdfFileName(sourceUrl.textContent || pdfSourceUrl);
+				saveMsg.pdfTotalPages = pdfPageCount;
+				saveMsg.pageLabel = strings.page;
+				// Send actual 1-indexed page numbers for title generation (e.g. [2,3,4,7] not [1,2,3,4])
+				saveMsg.pdfPageNumbers = indices.map(function(i) { return i + 1; });
+				safeSend(saveMsg);
+			});
+		});
+		return; // don't send saveMsg below — it's sent in the callback
 	}
 	safeSend(saveMsg);
 });

@@ -60,6 +60,31 @@
 			<button class="mode-btn" data-mode="region" aria-pressed="false">
 				<img src="images/region.svg" alt=""><span>Region</span>
 			</button>
+			<button class="mode-btn" data-mode="pdf" aria-pressed="false" style="display:none;">
+				<img src="images/pdf.png" alt=""><span>PDF</span>
+			</button>
+		</div>
+		<div id="pdf-options" style="display:none;" role="group" aria-label="PDF options">
+			<div id="pdf-page-selection" role="radiogroup" aria-label="Page selection">
+				<label class="pdf-radio-label">
+					<input type="radio" name="pdf-pages" value="all" checked aria-checked="true"> <span>All pages</span>
+				</label>
+				<label class="pdf-radio-label">
+					<input type="radio" name="pdf-pages" value="range" aria-checked="false"> <span>Page range</span>
+					<input type="text" id="pdf-range-input" class="pdf-range-input" placeholder="e.g. 1-5, 7, 9-12" disabled aria-label="Page range">
+				</label>
+				<div id="pdf-range-error" class="pdf-range-error" role="alert" style="display:none;"></div>
+			</div>
+			<div id="pdf-checkboxes">
+				<label class="pdf-checkbox-label" id="pdf-attach-label">
+					<input type="checkbox" id="pdf-attach-checkbox" checked> <span>Attach PDF file</span>
+					<span class="pdf-checkbox-subtext">(all pages)</span>
+				</label>
+				<div id="pdf-attach-warning" class="pdf-attach-warning" style="display:none;" role="status">PDF too large to attach</div>
+				<label class="pdf-checkbox-label">
+					<input type="checkbox" id="pdf-distribute-checkbox"> <span>New note for each PDF page</span>
+				</label>
+			</div>
 		</div>
 		<hr class="sidebar-divider">
 		<div id="meta-panel">
@@ -100,6 +125,7 @@
 	</div>
 </div>
 <div id="aria-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<script src="pdf.combined.js"></script>
 <script src="renderer.js"></script>
 </body>
 </html>

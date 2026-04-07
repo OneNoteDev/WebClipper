@@ -681,6 +681,18 @@ iframe#preview-frame {
 	.region-remove-btn { border: 1px solid ButtonText !important; }
 	.region-add-btn { border-color: ButtonText !important; color: CanvasText !important; }
 
+	// --- PDF options ---
+	.pdf-radio-label, .pdf-checkbox-label { color: CanvasText !important; }
+	.pdf-range-input {
+		background: Canvas !important; color: CanvasText !important;
+		border-color: ButtonText !important;
+		&:focus { outline: 2px solid Highlight !important; }
+	}
+	.pdf-range-error { color: CanvasText !important; background: Canvas !important; border: 1px solid ButtonText !important; }
+	.pdf-attach-warning { color: CanvasText !important; }
+	.pdf-page-img { border: 1px solid CanvasText !important; }
+	.pdf-page-number { background: Canvas !important; color: CanvasText !important; border: 1px solid CanvasText !important; }
+
 	// --- Sign-in ---
 	.signin-btn {
 		border: 1px solid ButtonText !important;
@@ -693,6 +705,96 @@ iframe#preview-frame {
 	}
 	.signin-error {
 		color: CanvasText !important;
+	}
+}
+
+// --- PDF options panel ---
+#pdf-options {
+	margin-bottom: 8px; padding: 0 2px;
+}
+
+#pdf-page-selection {
+	display: flex; flex-direction: column; gap: 6px;
+	margin-bottom: 8px;
+}
+
+.pdf-radio-label {
+	display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+	font-size: 12px; color: #fff; cursor: pointer;
+	input[type="radio"] {
+		margin: 0; accent-color: @OneNotePurple; cursor: pointer;
+		width: 14px; height: 14px;
+	}
+}
+
+.pdf-range-input {
+	width: 100%; margin-top: 4px;
+	padding: 4px 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 3px;
+	background: rgba(255,255,255,0.08); color: #fff;
+	font-size: 12px; font-family: inherit;
+	box-sizing: border-box;
+	&:focus { outline: 2px solid #f8f8f8 !important; border-color: @OneNotePurple; }
+	&:disabled { opacity: 0.4; cursor: default; }
+	&::placeholder { color: rgba(255,255,255,0.4); }
+}
+
+.pdf-range-error {
+	color: #ff9999; font-size: 11px; margin-top: 2px;
+	padding: 4px 8px; background: rgba(255,60,60,0.15); border-radius: 3px;
+}
+
+#pdf-checkboxes {
+	display: flex; flex-direction: column; gap: 6px;
+}
+
+.pdf-checkbox-label {
+	display: flex; align-items: center; gap: 6px;
+	font-size: 12px; color: #fff; cursor: pointer;
+	input[type="checkbox"] {
+		margin: 0; accent-color: @OneNotePurple; cursor: pointer;
+		width: 14px; height: 14px;
+	}
+	&.disabled { opacity: 0.4; cursor: default; }
+}
+
+.pdf-checkbox-subtext {
+	font-size: 11px; opacity: 0.6;
+}
+
+.pdf-attach-warning {
+	color: #ff9999; font-size: 11px;
+	padding: 2px 0 0 20px;
+}
+
+// PDF preview pages in preview-container
+#preview-container {
+	// PDF page images — centered with shadow, not full-width
+	.pdf-page-wrapper {
+		position: relative; text-align: center;
+		padding: 12px 16px;
+		&:first-child { padding-top: 16px; }
+		&:last-child { padding-bottom: 16px; }
+	}
+	.pdf-page-img {
+		max-width: 100%; height: auto; display: block;
+		margin: 0 auto; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+		background: #fff;
+	}
+	.pdf-page-number {
+		position: absolute; left: 12px; top: 12px;
+		min-width: 36px; height: 36px;
+		background: rgba(0,0,0,0.60); color: #fff;
+		font-size: 15px; font-family: "Segoe UI", sans-serif;
+		display: flex; align-items: center; justify-content: center;
+		pointer-events: none; border-radius: 3px;
+		padding: 0 6px; box-sizing: border-box;
+	}
+	.pdf-page-img.unselected {
+		opacity: 0.3;
+	}
+	.pdf-loading-indicator {
+		text-align: center; padding: 20px; color: #666;
+		font-size: 13px;
 	}
 }
 
