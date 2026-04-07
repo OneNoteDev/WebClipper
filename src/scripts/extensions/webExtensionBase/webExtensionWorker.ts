@@ -50,6 +50,19 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 		this.consoleOutputEnabledFlagProcessed.then(() => {
 			this.logger.setContextProperty(Log.Context.Custom.InPrivateBrowsing, isPrivateWindow.toString());
+
+			// Ensure BrowserLanguage context is set — required by ProductionRequirements for event flush.
+			// The old flow set this via getLocalizedStrings() when the legacy sidebar requested strings,
+			// but the new renderer reads i18n directly from localStorage, bypassing that code path.
+			let locale = navigator.language || (navigator as any).userLanguage || "en";
+			this.logger.setContextProperty(Log.Context.Custom.BrowserLanguage, locale);
+
+			// Ensure FlightInfo is set even if flighting API hasn't responded — empty string satisfies requirement.
+			let clientInfo = this.clientInfo.get();
+			if (!clientInfo.flightingInfo) {
+				this.logger.setContextProperty(Log.Context.Custom.FlightInfo, "");
+			}
+
 			this.invokeDebugLoggingIfEnabled();
 		});
 	}
@@ -87,6 +100,12 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	 * If a renderer window is already open, focus it.
 	 */
 	public closeAllFramesAndInvokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
+		// InvokeClipper event — match legacy extensionWorkerBase.logClipperInvoke()
+		// Logger is set asynchronously — defer if not ready yet
+		this.consoleOutputEnabledFlagProcessed.then(() => {
+			this.logClipperInvoke(invokeInfo, options);
+		});
+
 		if (this.activeRendererWindowId) {
 			WebExtension.browser.windows.update(this.activeRendererWindowId, { focused: true }, () => {
 				if (WebExtension.browser.runtime.lastError) {
@@ -350,8 +369,21 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					if (keys.length > 0) { chrome.storage.session.remove(keys); }
 				});
 				try { chrome.runtime.onMessage.removeListener(captureListener); } catch (e) { /* ignore */ }
+				try { WebExtension.browser.tabs.onUpdated.removeListener(navListener); } catch (e) { /* ignore */ }
 			};
 			this.activeRendererCleanup = cleanup;
+
+			// Detect when user navigates away on the original tab — renderer becomes stale
+			let navListener = (tabId: number, changeInfo: any) => {
+				if (tabId === this.tab.id && changeInfo.url && !cleaned) {
+					// Log equivalent of legacy HideClipperDueToSpaNavigate
+					let navEvent = new Log.Event.BaseEvent(Log.Event.Label.HideClipperDueToSpaNavigate);
+					this.logger.logEvent(navEvent);
+					// Notify renderer so it can close
+					try { port.postMessage({ action: "pageNavigated" }); } catch (e) { /* port may be dead */ }
+				}
+			};
+			WebExtension.browser.tabs.onUpdated.addListener(navListener);
 
 			// Handle renderer window being closed by user
 			port.onDisconnect.addListener(() => {
@@ -395,7 +427,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								user: {
 									email: updatedUser.user.emailAddress || "",
 									name: updatedUser.user.fullName || "",
-									authType: updatedUser.user.authType || ""
+									authType: updatedUser.user.authType || "",
+									cid: updatedUser.user.cid || ""
 								}
 							});
 							// Now inject content capture into original tab

@@ -41,7 +41,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected auth: AuthenticationHelper;
 	protected tooltip: TooltipHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
-	protected static version = "3.10.12";
+	protected static version = "3.11.0";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.setUnhandledExceptionLogging();
@@ -95,7 +95,8 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	}
 
 	public static getExtensionVersion(): string {
-		return ExtensionBase.version;
+		try { return chrome.runtime.getManifest().version; }
+		catch (e) { return ExtensionBase.version; }
 	}
 
 	public static shouldCheckForMajorUpdates(lastSeenVersion: Version, currentVersion: Version) {

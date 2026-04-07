@@ -1,6 +1,11 @@
+import {Context} from "./logging/submodules/context";
+import {Event} from "./logging/submodules/event";
+import {Failure} from "./logging/submodules/failure";
 import {Funnel} from "./logging/submodules/funnel";
 import {LogMethods} from "./logging/submodules/logMethods";
+import {PropertyName} from "./logging/submodules/propertyName";
 import {Session} from "./logging/submodules/session";
+import {Status} from "./logging/submodules/status";
 
 // Renderer page script - connects to service worker via port
 // and handles scroll/capture commands. Reads HTML directly from
@@ -156,7 +161,8 @@ let strings = {
 };
 
 // --- Telemetry helpers ---
-// Send telemetry via port to worker's logger using the same LogDataPackage format
+// Send telemetry via port to worker's logger using the same LogDataPackage format.
+// BaseEvent/PromiseEvent are constructed locally, then serialized as (category, eventData).
 function logFunnel(label: Funnel.Label) {
 	safeSend({ action: "telemetry", data: { methodName: LogMethods.LogFunnel, methodArgs: [label] } });
 }
@@ -166,9 +172,66 @@ function logSessionEnd(trigger: Session.EndTrigger) {
 function logSessionStart() {
 	safeSend({ action: "telemetry", data: { methodName: LogMethods.LogSessionStart, methodArgs: [] } });
 }
+function logTelemetryEvent(event: Event.BaseEvent) {
+	event.stopTimer();
+	safeSend({ action: "telemetry", data: { methodName: LogMethods.LogEvent, methodArgs: [event.getEventCategory(), event.getEventData()] } });
+}
+function logFailure(label: Failure.Label, failureType: Failure.Type, failureInfo?: any, id?: string) {
+	safeSend({ action: "telemetry", data: { methodName: LogMethods.LogFailure, methodArgs: [label, failureType, failureInfo, id] } });
+}
+function logClickEvent(clickId: string) {
+	safeSend({ action: "telemetry", data: { methodName: LogMethods.LogClickEvent, methodArgs: [clickId] } });
+}
+function setTelemetryContext(key: Context.Custom, value: string) {
+	safeSend({ action: "telemetry", data: { methodName: LogMethods.SetContextProperty, methodArgs: [key, value] } });
+}
+
+// Track clip count for CloseClipper logic (only fire when 0 clips)
+let clipSuccessCount = 0;
+let originalTitle = ""; // set after page load to detect title modification
+
+// Pending PromiseEvents — created at action start, completed on result
+let pendingClipEvent: Event.PromiseEvent | undefined;
+let pendingSignInEvent: Event.PromiseEvent | undefined;
+
+// Global error handling — match legacy clipper.tsx UnhandledExceptionThrown
+window.onerror = function(msg, file, line, col, error) {
+	let errorStr = msg + " (" + (file || "") + ":" + (line || 0) + ":" + (col || 0) + ")";
+	if (error && (error as any).stack) { errorStr += " at " + (error as any).stack; }
+	logFailure(Failure.Label.UnhandledExceptionThrown, Failure.Type.Unexpected, { error: errorStr }, "Renderer");
+};
+window.onunhandledrejection = function(e: any) {
+	let reason = e && e.reason ? (e.reason.message || String(e.reason)) : "Unknown rejection";
+	logFailure(Failure.Label.UnhandledExceptionThrown, Failure.Type.Unexpected, { error: reason }, "Renderer");
+};
 
 // Cancel button closes the window (port disconnect triggers cleanup in worker)
-cancelBtn.addEventListener("click", () => { window.close(); });
+cancelBtn.addEventListener("click", () => {
+	fireCloseClipperIfNoClip("CloseButton");
+	window.close();
+});
+
+// CloseClipper — only fires when user closes without any successful clip (abandonment)
+function fireCloseClipperIfNoClip(closeReason: string) {
+	if (clipSuccessCount > 0) { return; }
+	let panelType = "ClipOptions"; // default
+	if (!isSignedIn) { panelType = "SignInNeeded"; }
+	else if (saveDone) { panelType = "ClippingSuccess"; }
+	let evt = new Event.BaseEvent(Event.Label.CloseClipper);
+	evt.setCustomProperty(PropertyName.Custom.CurrentPanel, panelType);
+	evt.setCustomProperty(PropertyName.Custom.CloseReason, closeReason);
+	logTelemetryEvent(evt);
+}
+
+// Also fire CloseClipper on window close (X button, nav-away, inactivity)
+window.addEventListener("beforeunload", () => {
+	fireCloseClipperIfNoClip("CloseButton");
+});
+
+// Handle page navigation on original tab — worker detects URL change and notifies us
+port.onMessage.addListener((msg: any) => {
+	if (msg.action === "pageNavigated") { window.close(); }
+});
 
 // Apply localized strings to UI elements
 sidebarTitle.textContent = strings.clipperTitle;
@@ -230,12 +293,13 @@ try {
 // Load page title and URL from session storage (page-specific, still needs session)
 chrome.storage.session.get(["fullPageStatusText", "fullPageTitle", "fullPageUrl"], (stored: any) => {
 	document.title = strings.clipperTitle;
-	if (stored && stored.fullPageTitle) { titleField.value = stored.fullPageTitle; }
+	if (stored && stored.fullPageTitle) { titleField.value = stored.fullPageTitle; originalTitle = stored.fullPageTitle; }
 	if (stored && stored.fullPageUrl) { sourceUrl.textContent = stored.fullPageUrl; sourceUrl.title = stored.fullPageUrl; }
 });
 
 // --- Section picker (custom dropdown with scrollable list) ---
 function selectSection(id: string, label: string) {
+	logClickEvent("sectionComponent");
 	selectedSectionId = id;
 	sectionSelected.textContent = label;
 	sectionSelected.title = label;
@@ -275,7 +339,10 @@ function closeSectionPicker() {
 	sectionSelected.setAttribute("aria-expanded", "false");
 }
 
-sectionSelected.addEventListener("click", toggleSectionPicker);
+sectionSelected.addEventListener("click", () => {
+	logClickEvent("sectionPickerLocationContainer");
+	toggleSectionPicker();
+});
 sectionSelected.addEventListener("keydown", (e) => {
 	if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSectionPicker(); } else if (e.key === "Escape" && sectionPickerOpen) { e.preventDefault(); closeSectionPicker(); } else if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !sectionPickerOpen) { e.preventDefault(); openSectionPicker(); }
 });
@@ -459,6 +526,9 @@ signoutLink.addEventListener("click", (e) => {
 	e.preventDefault();
 	logFunnel(Funnel.Label.SignOut);
 	logSessionEnd(Session.EndTrigger.SignOut);
+	// Clear user context before new session — prevents next sign-in events from carrying old user's identity
+	setTelemetryContext(Context.Custom.AuthType, "None");
+	setTelemetryContext(Context.Custom.UserInfoId, "");
 	logSessionStart();
 	safeSend({ action: "signOut", authType: userAuthType });
 });
@@ -518,28 +588,43 @@ function showSignInError(msg: string) {
 
 // Log renderer invocation
 logFunnel(Funnel.Label.Invoke);
+setTelemetryContext(Context.Custom.ContentType, "FullPage");
 if (!isSignedIn) {
 	showSignInPanel();
 } else {
 	logFunnel(Funnel.Label.AuthAlreadySignedIn);
+	// Set context properties from cached user info (sign-in already happened in a prior session)
+	if (userAuthType) { setTelemetryContext(Context.Custom.AuthType, userAuthType); }
+	try {
+		let uiRaw = localStorage.getItem("userInformation");
+		if (uiRaw) {
+			let ui = JSON.parse(uiRaw);
+			if (ui && ui.data && ui.data.cid) { setTelemetryContext(Context.Custom.UserInfoId, ui.data.cid); }
+		}
+	} catch (e) { /* ignore */ }
 }
 
 // Sign-in button handlers
 signinMsaBtn.addEventListener("click", () => {
 	signingIn = true;
+	setTelemetryContext(Context.Custom.AuthType, "Msa");
 	logFunnel(Funnel.Label.AuthAttempted);
+	pendingSignInEvent = new Event.PromiseEvent(Event.Label.HandleSignInEvent);
 	showSignInProgress();
 	safeSend({ action: "signIn", authType: "Msa" });
 });
 signinOrgIdBtn.addEventListener("click", () => {
 	signingIn = true;
+	setTelemetryContext(Context.Custom.AuthType, "OrgId");
 	logFunnel(Funnel.Label.AuthAttempted);
+	pendingSignInEvent = new Event.PromiseEvent(Event.Label.HandleSignInEvent);
 	showSignInProgress();
 	safeSend({ action: "signIn", authType: "OrgId" });
 });
 
 // --- Auto-fetch fresh notebooks (runs in background during capture) ---
 async function fetchFreshNotebooks() {
+	let getNotebooksEvent = new Event.PromiseEvent(Event.Label.GetNotebooks);
 	try {
 		let userInfoRaw = localStorage.getItem("userInformation");
 		if (!userInfoRaw) { return; }
@@ -555,7 +640,12 @@ async function fetchFreshNotebooks() {
 		let response = await fetch(apiUrl, {
 			headers: { "Authorization": "Bearer " + accessToken }
 		});
-		if (!response.ok) { return; }
+		if (!response.ok) {
+			getNotebooksEvent.setStatus(Status.Failed);
+			getNotebooksEvent.setFailureInfo({ error: "HTTP " + response.status });
+			logTelemetryEvent(getNotebooksEvent);
+			return;
+		}
 
 		let data = await response.json();
 		let freshNotebooks = data.value || [];
@@ -563,7 +653,12 @@ async function fetchFreshNotebooks() {
 		// Compare with cached — only update if different
 		let cachedJson = localStorage.getItem("notebooks") || "";
 		let freshJson = JSON.stringify(freshNotebooks);
-		if (freshJson === cachedJson) { return; }
+		if (freshJson === cachedJson) {
+			getNotebooksEvent.setStatus(Status.Succeeded);
+			getNotebooksEvent.setCustomProperty(PropertyName.Custom.CurrentSectionStillExists, true);
+			logTelemetryEvent(getNotebooksEvent);
+			return;
+		}
 
 		// Store fresh notebooks and repopulate dropdown
 		localStorage.setItem("notebooks", freshJson);
@@ -573,14 +668,21 @@ async function fetchFreshNotebooks() {
 		flattenSections(freshNotebooks, previousSectionId);
 
 		// If previously selected section no longer exists, select the first one
+		let sectionStillExists = !!selectedSectionId;
 		if (!selectedSectionId) {
 			let first = sectionList.querySelector("li") as HTMLElement;
 			if (first) {
 				selectSection(first.getAttribute("data-id") || "", first.textContent || "");
 			}
 		}
+		getNotebooksEvent.setStatus(Status.Succeeded);
+		getNotebooksEvent.setCustomProperty(PropertyName.Custom.CurrentSectionStillExists, sectionStillExists);
+		logTelemetryEvent(getNotebooksEvent);
 	} catch (e) {
 		// Silently keep cached data
+		getNotebooksEvent.setStatus(Status.Failed);
+		getNotebooksEvent.setFailureInfo({ error: (e as any).message || String(e) });
+		logTelemetryEvent(getNotebooksEvent);
 	}
 }
 fetchFreshNotebooks();
@@ -1298,14 +1400,22 @@ modeButtons.forEach((btn, idx) => {
 		btn.classList.add("selected");
 		btn.setAttribute("aria-pressed", "true");
 
+		// Click event — match legacy componentBase.ts logClickEvent(element.id)
+		let modeClickIds: { [key: string]: string } = { fullpage: "fullPageButton", article: "augmentationButton", bookmark: "bookmarkButton", region: "regionButton" };
+		logClickEvent(modeClickIds[mode as string] || mode as string);
+
 		if (mode === "fullpage") {
 			switchToFullPage();
+			setTelemetryContext(Context.Custom.ContentType, "FullPage");
 		} else if (mode === "article") {
 			switchToArticle();
+			setTelemetryContext(Context.Custom.ContentType, "Article");
 		} else if (mode === "bookmark") {
 			switchToBookmark();
+			setTelemetryContext(Context.Custom.ContentType, "Bookmark");
 		} else if (mode === "region") {
 			switchToRegion();
+			setTelemetryContext(Context.Custom.ContentType, "Region");
 		}
 		// Announce mode change to screen readers
 		let modeLabel = btn.querySelector("span");
@@ -1743,6 +1853,19 @@ port.onMessage.addListener((message: any) => {
 			cropCtx.drawImage(fullImg, sx, sy, sw, sh, 0, 0, sw, sh);
 			let croppedUrl = cropCanvas.toDataURL("image/jpeg", 0.95);
 
+			// RegionSelectionCapturing — match legacy regionSelector.tsx
+			let capEvent = new Event.BaseEvent(Event.Label.RegionSelectionCapturing);
+			capEvent.setCustomProperty(PropertyName.Custom.Width, message.width);
+			capEvent.setCustomProperty(PropertyName.Custom.Height, message.height);
+			logTelemetryEvent(capEvent);
+
+			// RegionSelectionProcessing — match legacy (canvas dimensions + DPI)
+			let procEvent = new Event.BaseEvent(Event.Label.RegionSelectionProcessing);
+			procEvent.setCustomProperty(PropertyName.Custom.Width, cropCanvas.width);
+			procEvent.setCustomProperty(PropertyName.Custom.Height, cropCanvas.height);
+			procEvent.setCustomProperty(PropertyName.Custom.IsHighDpiScreen, (window.devicePixelRatio || 1) > 1);
+			logTelemetryEvent(procEvent);
+
 			regionImages.push(croppedUrl);
 			renderRegionThumbnails();
 			updateRegionSessionStorage();
@@ -1759,6 +1882,21 @@ port.onMessage.addListener((message: any) => {
 
 	if (message.action === "saveResult") {
 		if (saveTimeoutId) { clearTimeout(saveTimeoutId); saveTimeoutId = 0; }
+		// ClipToOneNoteAction — timer started at save button click
+		let clipActionEvent = pendingClipEvent || new Event.PromiseEvent(Event.Label.ClipToOneNoteAction);
+		pendingClipEvent = undefined;
+		if (message.correlationId) {
+			clipActionEvent.setCustomProperty(PropertyName.Custom.CorrelationId, message.correlationId);
+		}
+		if (message.success) {
+			clipActionEvent.setStatus(Status.Succeeded);
+			clipSuccessCount++;
+		} else {
+			clipActionEvent.setStatus(Status.Failed);
+			if (message.error) { clipActionEvent.setFailureInfo({ error: message.error }); }
+		}
+		logTelemetryEvent(clipActionEvent);
+
 		if (message.success) {
 			saveDone = true;
 			unlockSidebar();
@@ -1777,12 +1915,15 @@ port.onMessage.addListener((message: any) => {
 				viewLink.textContent = strings.viewInOneNote;
 				viewLink.style.display = "block";
 				viewLink.onclick = function() {
+					logFunnel(Funnel.Label.ViewInWac);
 					window.open(message.pageUrl, "_blank");
 					window.close();
 				};
 			} else {
 				viewLink.style.display = "none";
 				viewLink.onclick = undefined;
+				logFailure(Failure.Label.OnLaunchOneNoteButton, Failure.Type.Unexpected,
+					{ error: "Page created but missing pageUrl in save response" });
 			}
 			successBanner.style.display = "block";
 			announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Clip Successful!"));
@@ -1828,7 +1969,18 @@ port.onMessage.addListener((message: any) => {
 	// --- Sign-in result from worker ---
 	if (message.action === "signInResult") {
 		signingIn = false;
+		// HandleSignInEvent — timer started at sign-in button click
+		let signInEvent = pendingSignInEvent || new Event.PromiseEvent(Event.Label.HandleSignInEvent);
+		pendingSignInEvent = undefined;
+		if (message.correlationId) {
+			signInEvent.setCustomProperty(PropertyName.Custom.CorrelationId, message.correlationId);
+		}
+		signInEvent.setCustomProperty(PropertyName.Custom.UserInformationReturned, !!message.success);
+		signInEvent.setCustomProperty(PropertyName.Custom.SignInCancelled, !message.success && !message.error);
+
 		if (message.success) {
+			signInEvent.setStatus(Status.Succeeded);
+			logTelemetryEvent(signInEvent);
 			logFunnel(Funnel.Label.AuthSignInCompleted);
 			// Transition from sign-in to capture mode
 			isSignedIn = true;
@@ -1836,13 +1988,21 @@ port.onMessage.addListener((message: any) => {
 			// Show iframe immediately so flex layout keeps sidebar on the right
 			// (it'll be blank until loadContent arrives, but prevents sidebar snap-left)
 			iframe.style.display = "block";
-			// Update user info footer
+			// Update user info footer + set telemetry context
 			if (message.user) {
 				userEmailSpan.textContent = message.user.email || message.user.name || "";
 				userEmailSpan.title = message.user.email || "";
 				userAuthType = message.user.authType || "";
 				userInfoDiv.style.display = "";
 				feedbackLink.style.display = (userAuthType === "Msa") ? "none" : "";
+				// Context properties — match legacy clipper.tsx
+				setTelemetryContext(Context.Custom.AuthType, userAuthType);
+				if (message.user.cid) { setTelemetryContext(Context.Custom.UserInfoId, message.user.cid); }
+				// UserInfoUpdated event — match legacy clipperStateUtilities.ts
+				let uiuEvent = new Event.BaseEvent(Event.Label.UserInfoUpdated);
+				uiuEvent.setCustomProperty(PropertyName.Custom.UserUpdateReason, "SignInAttempt");
+				uiuEvent.setCustomProperty(PropertyName.Custom.LastUpdated, new Date().toUTCString());
+				logTelemetryEvent(uiuEvent);
 			}
 			// Reset capture state for fresh capture
 			fullPageComplete = false;
@@ -1860,6 +2020,9 @@ port.onMessage.addListener((message: any) => {
 			statusText.textContent = strings.capturing;
 			saveBtn.disabled = true;
 		} else {
+			signInEvent.setStatus(Status.Failed);
+			if (message.error) { signInEvent.setFailureInfo({ error: message.error }); }
+			logTelemetryEvent(signInEvent);
 			logFunnel(Funnel.Label.AuthSignInFailed);
 			showSignInError(message.error || loc("WebClipper.Error.SignInUnsuccessful", "Sign-in failed. Please try again."));
 		}
@@ -1934,6 +2097,24 @@ saveBtn.addEventListener("click", () => {
 	let prevBanner = document.getElementById("success-banner");
 	if (prevBanner) { prevBanner.style.display = "none"; }
 	logFunnel(Funnel.Label.ClipAttempted);
+	pendingClipEvent = new Event.PromiseEvent(Event.Label.ClipToOneNoteAction);
+
+	// ClipCommonOptions — match legacy saveToOneNoteLogger.ts
+	// ClipMode uses legacy enum names: FullPage, Augmentation (not Article), Bookmark, Region
+	let clipModeMap: { [key: string]: string } = { fullpage: "FullPage", article: "Augmentation", bookmark: "Bookmark", region: "Region" };
+	let clipCommonEvent = new Event.BaseEvent(Event.Label.ClipCommonOptions);
+	clipCommonEvent.setCustomProperty(PropertyName.Custom.ClipMode, clipModeMap[currentMode] || currentMode);
+	clipCommonEvent.setCustomProperty(PropertyName.Custom.PageTitleModified, titleField.value !== originalTitle);
+	clipCommonEvent.setCustomProperty(PropertyName.Custom.AnnotationAdded, noteField.value.length > 0);
+	logTelemetryEvent(clipCommonEvent);
+
+	// ClipRegionOptions — match legacy (only in region mode)
+	if (currentMode === "region") {
+		let clipRegionEvent = new Event.BaseEvent(Event.Label.ClipRegionOptions);
+		clipRegionEvent.setCustomProperty(PropertyName.Custom.NumRegions, regionImages.length);
+		logTelemetryEvent(clipRegionEvent);
+	}
+
 	lockSidebar();
 	saveBtn.disabled = true;
 	saveBtn.textContent = strings.saving;
