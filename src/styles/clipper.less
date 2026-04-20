@@ -131,7 +131,12 @@
 	position: fixed;
 	top: @ClipperUITopRightOffset;
 	right: @ClipperUITopRightOffset;
-	width: 100px;
+	// width: 100px;
+	width: 25%;
+	max-width: @ClipperUIWidth;
+	height: 70%;
+	max-height: 470px;
+	overflow: scroll;
 	background: @OneNotePurpleTransparent;
 	border-radius: @ClipperBorderRadius;
 	box-shadow: @ClipperBoxShadow;
@@ -144,6 +149,27 @@
 	-ms-user-select: none;
 	-o-user-select: none;
 	user-select: none;
+
+	::-webkit-scrollbar, ::-webkit-scrollbar-thumb:vertical, ::-webkit-scrollbar-thumb:horizontal {
+		-webkit-border-radius: @ClipperBorderRadius;
+		border-radius: @ClipperBorderRadius;
+	}
+
+	::-webkit-scrollbar {
+		// Corresponds to the vertical and horizontal scrollbars respectively
+		width: 10px;
+		height: 10px;
+	}
+
+	// The pointy ends of the scrollbar's bar
+	::-webkit-scrollbar-thumb:vertical, ::-webkit-scrollbar-thumb:horizontal {
+		background: @ClipperScrollbarDark;
+		-moz-background-clip: padding-box;
+		-webkit-background-clip: padding-box;
+		background-clip: padding-box;
+		border: 2px solid rgba(0, 0, 0, 0);
+		min-height: 10px;
+	}
 
 	#optionLabel {
 		margin: 5px;
