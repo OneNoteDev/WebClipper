@@ -16,7 +16,7 @@ pool:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '24.x'
   displayName: 'Install Node.js'
 
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@3
