@@ -4,7 +4,6 @@ import {Constants} from "../constants";
 import {StringUtils} from "../stringUtils";
 import {UrlUtils} from "../urlUtils";
 
-import {Clipper} from "../clipperUI/frontEndGlobals";
 import {TooltipType} from "../clipperUI/tooltipType";
 
 import {SmartValue} from "../communicator/smartValue";
@@ -45,13 +44,9 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected static version = "3.11.0";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
-		this.setUnhandledExceptionLogging();
-
 		this.workers = [];
 		this.logger = new WorkerPassthroughLogger(this.workers);
-		// Module-level callers (Log.ErrorUtils.sendFailureLogRequest, userDataBoundaryHelper)
-		// reach for this static slot since they have no `this` to hold a logger on.
-		Clipper.logger = this.logger;
+		this.setUnhandledExceptionLogging();
 		ExtensionBase.extensionId = StringUtils.generateGuid();
 
 		this.clipperData = clipperData;
@@ -317,7 +312,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 				this.updateLastSeenVersionInStorageToCurrent();
 			}
 		}, (error) => {
-			Log.ErrorUtils.sendFailureLogRequest({
+			Log.ErrorUtils.sendFailureLogRequest(this.logger, {
 				label: Log.Failure.Label.GetChangeLog,
 				properties: {
 					failureType: Log.Failure.Type.Unexpected,
@@ -381,7 +376,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 		self.onerror = (message: string, filename?: string, lineno?: number, colno?: number, error?: Error) => {
 			let callStack = error ? Log.Failure.getStackTrace(error) : "[unknown stacktrace]";
 
-			Log.ErrorUtils.sendFailureLogRequest({
+			Log.ErrorUtils.sendFailureLogRequest(this.logger, {
 				label: Log.Failure.Label.UnhandledExceptionThrown,
 				properties: {
 					failureType: Log.Failure.Type.Unexpected,

@@ -148,11 +148,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				func: () => {}
 			}, () => {
 				if (WebExtension.browser.runtime.lastError) {
-					Log.ErrorUtils.sendFailureLogRequest({
+					Log.ErrorUtils.sendFailureLogRequest(this.logger, {
 						label: Log.Failure.Label.UnclippablePage,
 						properties: {
 							failureType: Log.Failure.Type.Expected,
-							failureInfo: { error: WebExtension.browser.runtime.lastError.message },
+							failureInfo: { error: WebExtension.browser.runtime.lastError.message || "" },
 							stackTrace: Log.Failure.getStackTrace()
 						},
 						clientInfo: this.clientInfo

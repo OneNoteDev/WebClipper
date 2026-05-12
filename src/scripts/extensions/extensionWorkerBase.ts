@@ -606,7 +606,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		});
 
 		this.uiCommunicator.setErrorHandler((e: Error) => {
-			Log.ErrorUtils.handleCommunicatorError(Constants.CommunicationChannels.extensionAndUi, e, this.clientInfo);
+			Log.ErrorUtils.handleCommunicatorError(this.logger, Constants.CommunicationChannels.extensionAndUi, e, this.clientInfo);
 		});
 	}
 
@@ -623,7 +623,7 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		});
 
 		this.injectCommunicator.setErrorHandler((e: Error) => {
-			Log.ErrorUtils.handleCommunicatorError(Constants.CommunicationChannels.injectedAndExtension, e, this.clientInfo);
+			Log.ErrorUtils.handleCommunicatorError(this.logger, Constants.CommunicationChannels.injectedAndExtension, e, this.clientInfo);
 		});
 	}
 

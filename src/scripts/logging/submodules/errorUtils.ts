@@ -9,7 +9,7 @@ import {Localization} from "../../localization/localization";
 
 import {Failure, NoOp, unknownValue} from "../log";
 import { WebExtension } from "../../extensions/webExtensionBase/webExtension";
-import { Clipper } from "../../clipperUI/frontEndGlobals";
+import { Logger } from "../logger";
 
 export module ErrorUtils {
 	enum ErrorPropertyName {
@@ -67,11 +67,11 @@ export module ErrorUtils {
 	/**
 	 * Logs a failure with relevant failure data
 	 */
-	export function sendFailureLogRequest(data: FailureLogEventData): void {
+	export function sendFailureLogRequest(logger: Logger, data: FailureLogEventData): void {
 		let failureInfoString = ErrorUtils.toString(data.properties.failureInfo);
 		let callStack = data.properties.stackTrace;
 
-		Clipper.logger.logFailure(
+		logger.logFailure(
 			data.label,
 			data.properties.failureType,
 			{
@@ -81,7 +81,7 @@ export module ErrorUtils {
 		);
 	}
 
-	export function handleCommunicatorError(channel: string, e: Error, clientInfo: SmartValue<ClientInfo>, message?: string) {
+	export function handleCommunicatorError(logger: Logger, channel: string, e: Error, clientInfo: SmartValue<ClientInfo>, message?: string) {
 		let errorValue: string;
 		if (message) {
 			errorValue = JSON.stringify({ message: message, error: e.toString() });
@@ -89,7 +89,7 @@ export module ErrorUtils {
 			errorValue = e.toString();
 		}
 
-		ErrorUtils.sendFailureLogRequest({
+		ErrorUtils.sendFailureLogRequest(logger, {
 			label: Failure.Label.UnhandledExceptionThrown,
 			properties: {
 				failureType: Failure.Type.Unexpected,
