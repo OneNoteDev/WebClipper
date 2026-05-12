@@ -21,7 +21,6 @@ export module Failure {
 		GetComputedStyle,
 		GetLocalizedString,
 		GetSetting,
-		IFrameMessageHandlerHasNoOtherWindow,
 		InvalidArgument,
 		IsFeatureEnabled,
 		JsonParse,

@@ -292,7 +292,6 @@ export module Constants {
 
 		// Web Clipper
 		export var extensionAndUi = "EXTENSION_AND_UI";
-		export var injectedAndUi = "INJECTED_AND_UI";
 		export var injectedAndExtension = "INJECTED_AND_EXTENSION";
 
 		// What's New
@@ -307,7 +306,6 @@ export module Constants {
 		export var closePageNavTooltip = "CLOSE_PAGE_NAV_TOOLTIP";
 		export var createHiddenIFrame = "CREATE_HIDDEN_IFRAME";
 		export var ensureFreshUserBeforeClip = "ENSURE_FRESH_USER_BEFORE_CLIP";
-		export var escHandler = "ESC_HANDLER";
 		export var getInitialUser = "GET_INITIAL_USER";
 		export var getPageNavTooltipProps = "GET_PAGE_NAV_TOOLTIP_PROPS";
 		export var getStorageValue = "GET_STORAGE_VALUE";
@@ -328,7 +326,6 @@ export module Constants {
 		export var onSpaNavigate = "ON_SPA_NAVIGATE";
 		export var refreshPage = "REFRESH_PAGE";
 		export var showRefreshClipperMessage = "SHOW_REFRESH_CLIPPER_MESSAGE";
-		export var setInjectOptions = "SET_INJECT_OPTIONS";
 		export var setInvokeOptions = "SET_INVOKE_OPTIONS";
 		export var setStorageValue = "SET_STORAGE_VALUE";
 		export var signInUser = "SIGN_IN_USER";
@@ -338,7 +335,6 @@ export module Constants {
 		export var takeFullPageScreenshot = "TAKE_FULL_PAGE_SCREENSHOT";
 		export var cancelFullPageScreenshot = "CANCEL_FULL_PAGE_SCREENSHOT";
 		export var telemetry = "TELEMETRY";
-		export var toggleClipper = "TOGGLE_CLIPPER";
 		export var unloadHandler = "UNLOAD_HANDLER";
 		export var updateFrameHeight = "UPDATE_FRAME_HEIGHT";
 		export var updatePageInfoIfUrlChanged = "UPDATE_PAGE_INFO_IF_URL_CHANGED";
