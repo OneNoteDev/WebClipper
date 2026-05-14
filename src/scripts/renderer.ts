@@ -1351,28 +1351,25 @@ function applyArticleFontSize() {
 }
 
 function initHighlighter() {
-	let pDoc = previewFrame.contentDocument;
-	let pWin = previewFrame.contentWindow as any;
-	if (!pDoc || !pDoc.body || !pWin) { return; }
-
-	// Inject TextHighlighter script if not already present
-	if (!pWin.TextHighlighter) {
-		let script = pDoc.createElement("script");
-		script.src = "textHighlighter.js";
-		script.onload = function() {
-			createHighlighterInstance();
-		};
-		pDoc.head.appendChild(script);
-	} else {
-		createHighlighterInstance();
-	}
+	// TextHighlighter loads as a regular parent-window script (renderer.html),
+	// not injected into preview-frame -- the iframe is sandboxed with
+	// allow-same-origin only (no allow-scripts), so script execution inside
+	// it is blocked. Same-origin permits the parent's TextHighlighter to
+	// operate directly on the iframe's body/selection/events, which is
+	// how pdf.js also runs in this codebase (parent context, manipulating
+	// child DOM). The library is constructed against `pDoc.body` and uses
+	// `el.ownerDocument.defaultView` internally for selection-completion
+	// event binding (small patch applied to the vendored textHighlighter.js
+	// to route those bindings through the el-relative window helper instead
+	// of bare `window`).
+	createHighlighterInstance();
 }
 
 function createHighlighterInstance() {
-	let pWin = previewFrame.contentWindow as any;
 	let pDoc = previewFrame.contentDocument;
-	if (!pWin || !pWin.TextHighlighter || !pDoc || !pDoc.body) { return; }
-	textHighlighterInstance = new pWin.TextHighlighter(pDoc.body, {
+	let highlighterCtor = (window as any).TextHighlighter;
+	if (!highlighterCtor || !pDoc || !pDoc.body) { return; }
+	textHighlighterInstance = new highlighterCtor(pDoc.body, {
 		color: "#fefe56",
 		highlightedClass: "highlighted",
 		enabled: true,
