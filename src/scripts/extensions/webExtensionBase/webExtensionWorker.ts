@@ -437,10 +437,14 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 			contentWidth = renderWidth - sidebarWidth;
 		}
 
-		// Height: cap at 900px so the popup doesn't fill near-full-height on
+		// Height: cap at 980px so the popup doesn't fill near-full-height on
 		// 1080p+ monitors. Floor at 600 so capture progress UI fits comfortably.
 		// On smaller browsers we still shrink to fit (browserHeight - margin).
-		let renderHeight = Math.max(Math.min(browserHeight - screenMargin, 900), 600);
+		// 980 accommodates the 12px-above/12px-below divider spacing on the
+		// sidebar groups (+24px vs the original 8/8 spacing) and keeps the
+		// "View in OneNote" success-banner button in view in PDF mode without
+		// requiring the user to scroll.
+		let renderHeight = Math.max(Math.min(browserHeight - screenMargin, 980), 600);
 
 		// Position: align with browser window's top-left
 		let renderLeft = browserLeft;

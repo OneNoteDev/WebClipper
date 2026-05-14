@@ -240,9 +240,13 @@ iframe#preview-frame {
 }
 
 // Sidebar groups — Fluent design uses 1px neutral dividers between sections.
-// 8px padding above + 8px padding below the divider matches Figma `py-[8px]`.
+// 12px padding above + 12px padding below the divider. Designer asked for
+// 16/16 but that crowded the PDF-mode success banner against the window
+// bottom even with the bumped height cap; 12/12 keeps the spacing
+// generous vs the original 8/8 while leaving room to land the
+// "View in OneNote" button without scrolling.
 .sidebar-group {
-	padding: 8px 0;
+	padding: 12px 0;
 	&:first-child { padding-top: 4px; }
 	& + .sidebar-group {
 		border-top: 1px solid @colorNeutralStroke2;
