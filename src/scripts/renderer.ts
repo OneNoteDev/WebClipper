@@ -7,6 +7,8 @@ import {PropertyName} from "./logging/submodules/propertyName";
 import {Session} from "./logging/submodules/session";
 import {Status} from "./logging/submodules/status";
 
+import {tryOEmbed, sanitizeProviderHtml, OEmbedData} from "./contentCapture/oembedExtractor";
+
 // Renderer page script - connects to service worker via port
 // and handles scroll/capture commands. Content HTML arrives inline
 // on the loadContent port message; images sent to worker via chunked
@@ -134,7 +136,10 @@ let fullPageComplete = false;
 let fullPageDataUrl = ""; // Cached full-page screenshot data URL for mode switching
 let saveDone = false;
 let articleLoaded = false;
-let cachedArticleHtml = ""; // Readability result, extracted lazily from content-frame DOM
+let cachedArticleHtml = ""; // Article preview HTML (Readability or oEmbed-preview shape)
+let cachedOEmbedData: OEmbedData | null = null; // Raw oEmbed payload; if present, save path builds iframe-based HTML from this instead of cachedArticleHtml
+let cachedOEmbedDescription = ""; // og:description (or fallback chain) from page DOM; oEmbed responses typically don't carry the full description
+let cachedPageMetadata: { [key: string]: string } | null = null; // PageMetadata sent in save msg; worker emits each entry as a <meta> tag (matches V1 OneNotePage)
 let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from content-frame DOM
 let bookmarkLoaded = false;
 let contentDocReady = false; // true once content-frame has loaded HTML
@@ -1053,6 +1058,170 @@ function loadArticleContent() {
 }
 
 function extractArticle() {
+	// For known oEmbed providers (YouTube, Vimeo, Slideshare, etc.), prefer the
+	// provider's structured embed payload over Readability's text extraction --
+	// Readability strips iframes, so video pages would otherwise lose the player.
+	// Falls back to Readability on no-match or fetch failure.
+	let pageUrl = sourceUrlText.textContent || "";
+	tryOEmbed(pageUrl).then(function(data) {
+		if (data) {
+			cachedOEmbedData = data;
+			// Description from page DOM -- oEmbed responses typically don't include
+			// the long description (YouTube's e.g. carries only title/author). Same
+			// og:description / description / twitter:description fallback chain
+			// bookmark mode uses.
+			let iframeDoc = iframe.contentDocument;
+			let description = "";
+			if (iframeDoc) {
+				description = getMetaContent(iframeDoc, "og:description", "property")
+					|| getMetaContent(iframeDoc, "description", "name")
+					|| getMetaContent(iframeDoc, "twitter:description", "name")
+					|| "";
+			}
+			cachedOEmbedDescription = description;
+			cachedArticleHtml = composeOEmbedForPreview(data, description);
+			cachedPageMetadata = buildPageMetadataForOEmbed(data, description);
+			renderArticleHtml(cachedArticleHtml);
+			articleLoaded = true;
+			if (currentMode === "article") {
+				saveBtn.disabled = false;
+				saveBtn.textContent = strings.saveToOneNote;
+			}
+			return;
+		}
+		extractArticleViaReadability();
+	});
+}
+
+// Preview rendering for oEmbed responses: a static thumbnail with title /
+// author / provider attribution and the page description. We avoid
+// rendering the provider's iframe here because the sandboxed preview-frame
+// blocks the embedded player's JS, which would surface a broken "Unable
+// to execute JavaScript" UI. The iframe still flows through to save --
+// OneNote isn't sandboxed.
+function composeOEmbedForPreview(data: OEmbedData, pageDescription: string): string {
+	let html = "<div style=\"margin-bottom:16px;\">";
+	if (data.thumbnail_url) {
+		// For video/rich types the save path emits a 600x338 (16:9) iframe;
+		// lock the preview thumbnail to the same frame so the visual size
+		// matches what the user will see on the saved OneNote page. For
+		// photo type the photo itself is the content, so use natural aspect.
+		let isFramed = data.type === "video" || data.type === "rich";
+		let containerStyle = isFramed
+			? "position:relative; display:block; width:100%; max-width:600px; aspect-ratio:600/338; background:#000;"
+			: "position:relative; display:inline-block; max-width:100%;";
+		let imgStyle = isFramed
+			? "display:block; width:100%; height:100%; object-fit:cover;"
+			: "display:block; max-width:600px; width:100%; height:auto;";
+		html += "<div style=\"" + containerStyle + "\">";
+		html += "<img src=\"" + escapeAttr(data.thumbnail_url) + "\""
+			+ " style=\"" + imgStyle + "\""
+			+ " alt=\"" + escapeAttr(data.title || "") + "\" />";
+		if (data.type === "video") {
+			// Play-glyph overlay -- pure CSS, no text, so no i18n surface
+			html += "<div style=\""
+				+ "position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);"
+				+ "width:72px; height:72px; border-radius:50%;"
+				+ "background:rgba(0,0,0,0.65); pointer-events:none;"
+				+ "display:flex; align-items:center; justify-content:center;"
+				+ "color:white; font-size:32px; line-height:1; padding-left:6px;"
+				+ "\">&#9654;</div>";
+		}
+		html += "</div>";
+	}
+	if (data.title) {
+		html += "<h3 style=\"margin:12px 0 4px;\">" + escapeHtml(data.title) + "</h3>";
+	}
+	let metaLine: string[] = [];
+	if (data.author_name) { metaLine.push(escapeHtml(data.author_name)); }
+	if (data.provider_name) { metaLine.push(escapeHtml(data.provider_name)); }
+	if (metaLine.length) {
+		html += "<div style=\"color:#666; font-size:14px;\">" + metaLine.join(" · ") + "</div>";
+	}
+	if (pageDescription) {
+		html += "<div style=\"margin-top:12px; color:#333; font-size:14px; line-height:1.5;\">"
+			+ escapeHtml(pageDescription) + "</div>";
+	}
+	html += "</div>";
+	return html;
+}
+
+// Save-side composition: emit the actual provider iframe (sanitized) so
+// OneNote's page renderer recognizes and embeds the video player. Title,
+// author and description render below the iframe as a simple caption.
+// Adds `data-original-src` to every iframe (the marker OneNote's renderer
+// uses to recognize video embeds, matching V1's YouTubeVideoExtractor
+// behavior) and normalizes iframe dimensions to V1's 600x338 for visual
+// parity with the legacy clipper output.
+function composeOEmbedForSave(data: OEmbedData, pageDescription: string): string {
+	let body = "";
+	if (data.type === "photo" && data.url) {
+		body = "<img src=\"" + escapeAttr(data.url) + "\""
+			+ (data.width ? " width=\"" + data.width + "\"" : "")
+			+ (data.height ? " height=\"" + data.height + "\"" : "")
+			+ " data-original-src=\"" + escapeAttr(data.pageUrl) + "\" />";
+	} else if (data.html) {
+		body = normalizeProviderIframe(sanitizeProviderHtml(data.html), data.pageUrl);
+	} else {
+		return "";
+	}
+	let caption = "";
+	if (data.title) { caption += "<h3>" + escapeHtml(data.title) + "</h3>"; }
+	if (data.author_name) { caption += "<div>" + escapeHtml(data.author_name) + "</div>"; }
+	if (pageDescription) { caption += "<div>" + escapeHtml(pageDescription) + "</div>"; }
+	return "<div style=\"margin-bottom: 16px\">"
+		+ body
+		+ (caption ? "<br>" + caption : "")
+		+ "</div>";
+}
+
+function normalizeProviderIframe(html: string, pageUrl: string): string {
+	let parsed = new DOMParser().parseFromString(html, "text/html");
+	let iframes = parsed.getElementsByTagName("iframe");
+	for (let i = 0; i < iframes.length; i++) {
+		// data-original-src is the marker OneNote's renderer looks for to
+		// recognize and render a video embed on the saved page.
+		iframes[i].setAttribute("data-original-src", pageUrl);
+		// Match V1 dimensions for consistent presentation in OneNote.
+		iframes[i].setAttribute("width", "600");
+		iframes[i].setAttribute("height", "338");
+	}
+	return parsed.body ? parsed.body.innerHTML : html;
+}
+
+// PageMetadata for oEmbed-extracted pages -- mirrors V1 server-side
+// `PageMetadata.AutoPageTags*` plus oEmbed-sourced descriptive fields.
+// Worker iterates the map and emits one <meta> per entry (V1 OneNotePage
+// behavior).
+function buildPageMetadataForOEmbed(data: OEmbedData, pageDescription: string): { [key: string]: string } {
+	let meta: { [key: string]: string } = {
+		AutoPageTagsCodes: "Article",
+		AutoPageTags: "Article"
+	};
+	if (data.title) { meta.title = data.title; }
+	if (data.author_name) { meta.author = data.author_name; }
+	if (data.provider_name) { meta.siteName = data.provider_name; }
+	if (pageDescription) { meta.description = pageDescription; }
+	return meta;
+}
+
+// PageMetadata for Readability-extracted articles -- matches V1
+// augmentationHelper's local metadata population (title/excerpt/byline/
+// siteName/publishedTime) plus the AutoPageTags markers.
+function buildPageMetadataForReadability(article: any): { [key: string]: string } {
+	let meta: { [key: string]: string } = {
+		AutoPageTagsCodes: "Article",
+		AutoPageTags: "Article"
+	};
+	if (article.title) { meta.title = article.title; }
+	if (article.excerpt) { meta.description = article.excerpt; }
+	if (article.byline) { meta.author = article.byline; }
+	if (article.siteName) { meta.siteName = article.siteName; }
+	if (article.publishedTime) { meta.publishedTime = article.publishedTime; }
+	return meta;
+}
+
+function extractArticleViaReadability() {
 	// Clone content-frame document — Readability mutates the DOM
 	let iframeDoc = iframe.contentDocument;
 	if (!iframeDoc || !iframeDoc.body) {
@@ -1067,6 +1236,8 @@ function extractArticle() {
 
 		if (article && article.content) {
 			cachedArticleHtml = cleanArticleHtml(article.content);
+			cachedOEmbedData = null;
+			cachedPageMetadata = buildPageMetadataForReadability(article);
 			renderArticleHtml(cachedArticleHtml);
 			articleLoaded = true;
 			if (currentMode === "article") {
@@ -1477,7 +1648,13 @@ function extractBookmark() {
 }
 
 // Fetch an image URL and convert to base64 data URL via canvas
-// (OneNote API can't fetch external URLs — matches legacy DomUtils.getImageDataUrl)
+// (OneNote API can't fetch external URLs — matches legacy DomUtils.getImageDataUrl).
+// Initial encode is PNG (lossless, ideal for icons/logos). For oversized
+// photos (e.g. YouTube's 1280x720 og:image at maxresdefault.jpg) PNG can
+// exceed the OneNote API per-MIME-part limit and the save POST returns 400
+// "Maximum request size exceeded" -- fall back to JPEG and step quality
+// down until the encoded size fits. Matches legacy
+// DomUtils.adjustImageQualityIfNecessary behavior.
 function imageToDataUrl(url: string, callback: (dataUrl: string) => void) {
 	let img = new Image();
 	img.crossOrigin = "anonymous";
@@ -1487,13 +1664,28 @@ function imageToDataUrl(url: string, callback: (dataUrl: string) => void) {
 			canvas.width = img.naturalWidth;
 			canvas.height = img.naturalHeight;
 			(canvas.getContext("2d") as CanvasRenderingContext2D).drawImage(img, 0, 0);
-			callback(canvas.toDataURL("image/png"));
+			let dataUrl = canvas.toDataURL("image/png");
+			callback(adjustImageQualityIfNecessary(canvas, dataUrl));
 		} catch (e) {
 			callback(""); // tainted canvas or other error — fall back
 		}
 	};
 	img.onerror = () => { callback(""); };
 	img.src = url;
+}
+
+// OneNote API per-MIME-part limit (matches legacy
+// Settings.Instance.Apis_MediaTypesHandledInMemoryMaxRequestLength) minus a
+// small padding for the request envelope.
+const MAX_BYTES_FOR_MEDIA_TYPES = 2097152 - 500;
+
+function adjustImageQualityIfNecessary(canvas: HTMLCanvasElement, dataUrl: string): string {
+	let quality = 1.0;
+	while (quality > 0 && dataUrl.length > MAX_BYTES_FOR_MEDIA_TYPES) {
+		dataUrl = canvas.toDataURL("image/jpeg", quality);
+		quality -= 0.1;
+	}
+	return dataUrl;
 }
 
 function getMetaContent(doc: Document, value: string, attr: string): string {
@@ -3032,21 +3224,29 @@ saveBtn.addEventListener("click", () => {
 			safeSend({ action: "saveImage", index: i, dataUrl: regionImages[i] });
 		}
 	} else if (currentMode === "article") {
-		let pDoc = previewFrame.contentDocument;
 		let articleBody = "";
-		if (pDoc && pDoc.body && pDoc.body.querySelector(".highlighted")) {
-			let clone = pDoc.body.cloneNode(true) as HTMLElement;
-			let delBtns = clone.querySelectorAll(".delete-highlight");
-			for (let i = delBtns.length - 1; i >= 0; i--) {
-				if (delBtns[i].parentNode) { delBtns[i].parentNode.removeChild(delBtns[i]); }
-			}
-			articleBody = clone.innerHTML;
+		let oembedSnap = cachedOEmbedData;
+		if (oembedSnap) {
+			// oEmbed-source: save uses provider iframe (preview only showed
+			// thumbnail since sandboxed iframes can't run the player).
+			articleBody = composeOEmbedForSave(oembedSnap, cachedOEmbedDescription);
 		} else {
-			articleBody = cachedArticleHtml;
+			let pDoc = previewFrame.contentDocument;
+			if (pDoc && pDoc.body && pDoc.body.querySelector(".highlighted")) {
+				let clone = pDoc.body.cloneNode(true) as HTMLElement;
+				let delBtns = clone.querySelectorAll(".delete-highlight");
+				for (let i = delBtns.length - 1; i >= 0; i--) {
+					if (delBtns[i].parentNode) { delBtns[i].parentNode.removeChild(delBtns[i]); }
+				}
+				articleBody = clone.innerHTML;
+			} else {
+				articleBody = cachedArticleHtml;
+			}
 		}
 		let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 		let fontStyle = "font-size: " + articleFontSize + "px; font-family: " + fontFamily + ";";
 		saveMsg.contentHtml = "<div style=\"" + fontStyle + "\">" + articleBody + "</div>";
+		if (cachedPageMetadata) { saveMsg.pageMetadata = cachedPageMetadata; }
 		saveMsg.saveImageCount = 0;
 		safeSend(saveMsg);
 	} else if (currentMode === "bookmark") {

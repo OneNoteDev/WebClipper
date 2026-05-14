@@ -679,6 +679,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					let saveAnnotation = msg.annotation || "";
 					let saveSectionId = msg.sectionId || "";
 					let saveUrl = msg.url || "";
+					let savePageMetadata: { [key: string]: string } | undefined = msg.pageMetadata;
 
 					// Ensure fresh token before save (matches old clipper.tsx ensureFreshUserBeforeClip)
 					workerSelf.auth.updateUserInfoData(workerSelf.clientInfo.get().clipperId, UpdateReason.TokenRefreshForPendingClip).then(() => {
@@ -697,7 +698,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								return;
 							}
 
-							// Build OneNote page content based on mode
+							// Build OneNote page content based on mode. Output shape mirrors V1
+							// OneNotePage.getEntireOnml: `<html xmlns lang>` (no DOCTYPE, no
+							// quotes around lang), `<head>` with title + created meta + one
+							// `<meta>` per PageMetadata entry.
 							let buildPage = (bodyOnml: string, imageParts: { name: string; blob: Blob; type: string }[]) => {
 								let boundary = "OneNoteRendererBoundary" + Date.now();
 								let now = new Date();
@@ -710,9 +714,21 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								if (parseInt(offsetMins, 10) < 10) { offsetMins = "0" + offsetMins; }
 								let createdTime = offsetSign + offsetHours + ":" + offsetMins;
 								let fontStyle = "font-size: 16px; font-family: Verdana;";
-								let presentationHtml = "<!DOCTYPE html><html><head>"
-									+ "<title>" + saveTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</title>"
+								let locale = (typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
+								let metaTags = "";
+								if (savePageMetadata) {
+									for (let key in savePageMetadata) {
+										if (Object.prototype.hasOwnProperty.call(savePageMetadata, key)) {
+											metaTags += "<meta name=\"" + escapeAttr(key)
+												+ "\" content=\"" + escapeAttr(savePageMetadata[key]) + "\" />";
+										}
+									}
+								}
+								let presentationHtml = "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=" + locale + ">"
+									+ "<head>"
+									+ "<title>" + escapeHtml(saveTitle) + "</title>"
 									+ "<meta name=\"created\" content=\"" + createdTime + " \">"
+									+ metaTags
 									+ "</head><body>";
 								if (saveAnnotation) {
 									let escaped = saveAnnotation.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -861,8 +877,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 											if (parseInt(oM, 10) < 10) { oM = "0" + oM; }
 											let ct = offsetSign2 + oH + ":" + oM;
 											let fStyle = "font-size: 16px; font-family: Verdana;";
-											let distHtml = "<!DOCTYPE html><html><head>"
-												+ "<title>" + pageTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</title>"
+											let distLocale = (typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
+											let distHtml = "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=" + distLocale + ">"
+												+ "<head>"
+												+ "<title>" + escapeHtml(pageTitle) + "</title>"
 												+ "<meta name=\"created\" content=\"" + ct + " \">"
 												+ "</head><body>";
 											if (pageIdx === 0 && saveAnnotation) {
