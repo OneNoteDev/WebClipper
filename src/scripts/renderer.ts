@@ -1113,26 +1113,51 @@ function extractArticle() {
 	tryOEmbed(pageUrl).then(function(data) {
 		if (data) {
 			cachedOEmbedData = data;
-			// Description from page DOM -- oEmbed responses typically don't include
-			// the long description (YouTube's e.g. carries only title/author). Same
-			// og:description / description / twitter:description fallback chain
-			// bookmark mode uses.
 			let iframeDoc = iframe.contentDocument;
-			let description = "";
+			// Meta-tag description as fallback (used if Readability fails / returns
+			// empty excerpt). Same chain bookmark mode uses.
+			let metaDesc = "";
 			if (iframeDoc) {
-				description = getMetaContent(iframeDoc, "og:description", "property")
+				metaDesc = getMetaContent(iframeDoc, "og:description", "property")
 					|| getMetaContent(iframeDoc, "description", "name")
 					|| getMetaContent(iframeDoc, "twitter:description", "name")
 					|| "";
 			}
-			cachedOEmbedDescription = description;
-			cachedArticleHtml = composeOEmbedForPreview(data, description);
-			cachedPageMetadata = buildPageMetadataForOEmbed(data, description);
-			renderArticleHtml(cachedArticleHtml);
-			articleLoaded = true;
-			if (currentMode === "article") {
-				saveBtn.disabled = false;
-				saveBtn.textContent = strings.saveToOneNote;
+			let finalize = function(description: string, publishedTime: string) {
+				cachedOEmbedDescription = description;
+				cachedArticleHtml = composeOEmbedForPreview(data, description);
+				cachedPageMetadata = buildPageMetadataForOEmbed(data, description, publishedTime);
+				renderArticleHtml(cachedArticleHtml);
+				articleLoaded = true;
+				if (currentMode === "article") {
+					saveBtn.disabled = false;
+					saveBtn.textContent = strings.saveToOneNote;
+				}
+			};
+			// V1 parity: V1's augmentPage ran Readability on ALL article-mode pages
+			// (including video pages) and used article.excerpt for the description
+			// + article.publishedTime for the timestamp (augmentationHelper.ts:62-71).
+			// It then ADDED video iframes on top via addEmbeddedVideosWhereSupported.
+			// Our oEmbed path skips Readability entirely, which leaves us reading
+			// YouTube's often-truncated og:description as the only description source.
+			// Run Readability alongside oEmbed JUST to recover its richer excerpt +
+			// publishedTime; iframe/title/author/thumbnail stay from oEmbed (V1's
+			// video extractor is replaced by oEmbed for that part).
+			if (iframeDoc) {
+				let docClone = iframeDoc.cloneNode(true) as Document;
+				(import("@mozilla/readability") as any).then(function(mod: any) {
+					try {
+						let reader = new mod.Readability(docClone, { charThreshold: 100 });
+						let article = reader.parse();
+						let desc = (article && article.excerpt) || metaDesc;
+						let pubTime = (article && article.publishedTime) || "";
+						finalize(desc, pubTime);
+					} catch (e) {
+						finalize(metaDesc, "");
+					}
+				})["catch"](function() { finalize(metaDesc, ""); });
+			} else {
+				finalize(metaDesc, "");
 			}
 			return;
 		}
@@ -1240,7 +1265,11 @@ function normalizeProviderIframe(html: string, pageUrl: string): string {
 // `PageMetadata.AutoPageTags*` plus oEmbed-sourced descriptive fields.
 // Worker iterates the map and emits one <meta> per entry (V1 OneNotePage
 // behavior).
-function buildPageMetadataForOEmbed(data: OEmbedData, pageDescription: string): { [key: string]: string } {
+function buildPageMetadataForOEmbed(
+	data: OEmbedData,
+	pageDescription: string,
+	publishedTime?: string
+): { [key: string]: string } {
 	let meta: { [key: string]: string } = {
 		AutoPageTagsCodes: "Article",
 		AutoPageTags: "Article"
@@ -1249,6 +1278,10 @@ function buildPageMetadataForOEmbed(data: OEmbedData, pageDescription: string): 
 	if (data.author_name) { meta.author = data.author_name; }
 	if (data.provider_name) { meta.siteName = data.provider_name; }
 	if (pageDescription) { meta.description = pageDescription; }
+	// V1 parity: augmentationHelper populated publishedTime from Readability
+	// even when V1 was about to add video iframes on top -- we mirror that by
+	// passing through Readability's publishedTime when it's available.
+	if (publishedTime) { meta.publishedTime = publishedTime; }
 	return meta;
 }
 
