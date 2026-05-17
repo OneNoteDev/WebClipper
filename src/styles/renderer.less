@@ -271,37 +271,85 @@ iframe#preview-frame {
 	}
 }
 
-// Mode buttons
-#mode-panel {
-	display: flex; flex-direction: column; gap: 8px;
+// Mode selector — canonical Fluent 2 Dropdown styling, matched to the
+// section picker below (#section-selected). Differentiation between the two
+// pickers comes from the field-label ("What do you want to capture?" vs
+// "Location") and the sidebar group separation, not from differing visual
+// weight on the controls themselves -- that's how Fluent 2 expresses
+// hierarchy between two related decisions on the same panel.
+#mode-selector { position: relative; }
+
+#mode-trigger {
+	width: 100%; box-sizing: border-box; position: relative;
+	background: @colorNeutralBackground1; color: @colorNeutralForeground1;
+	border: 1px solid @colorNeutralStroke1; border-radius: 4px;
+	padding: 4px 12px; padding-inline-end: 28px;
+	font-family: inherit; font-size: 14px; line-height: 20px;
+	cursor: pointer; text-align: start;
+	display: flex; align-items: center; gap: 8px;
+	min-height: 20px;
+	&:hover { background: @colorSubtleBackgroundHover; }
+	&:focus { outline: none; border-color: @colorCompoundBrandBackground; border-bottom-width: 2px; padding-bottom: 3px; }
+	&[aria-expanded="true"] { border-color: @colorCompoundBrandBackground; }
+	#mode-trigger-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	// Chevron sits in the same right-side position the section-picker uses,
+	// rendered via inline SVG so we can rotate it on expand for affordance.
+	#mode-trigger-chevron {
+		position: absolute; inset-inline-end: 10px; top: 50%;
+		transform: translateY(-50%); opacity: 0.7; transition: transform 0.15s;
+		pointer-events: none;
+	}
+	&[aria-expanded="true"] #mode-trigger-chevron { transform: translateY(-50%) rotate(180deg); }
+	#mode-trigger-icon-slot {
+		flex-shrink: 0; width: 16px; height: 16px;
+		display: flex; align-items: center; justify-content: center;
+		svg { width: 16px; height: 16px; display: block; }
+		img { width: 16px; height: 16px; display: block; filter: brightness(0); }
+	}
 }
 
-// Fluent outline button style — white bg, neutral border, icon + left-aligned text
-// Typography: Body 1 Strong (14px/20px, 600). Padding: 6px 12px (Fluent snudge/m).
+// Popover menu — positioned absolutely below #mode-trigger; closed by default.
+// Open state toggled via .open class from JS (mirrors section-picker pattern).
+#mode-panel {
+	display: none;
+	position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+	background: @colorNeutralBackground1;
+	border: 1px solid @colorNeutralStroke1; border-radius: 4px;
+	padding: 4px;
+	box-shadow: 0 4px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.1);
+	z-index: 50;
+	flex-direction: column; gap: 2px;
+	&.open { display: flex; }
+}
+
+// .mode-btn now lives inside the popover as a menu item -- styled to match
+// .section-item below (8px 12px padding, 14x14 icon, gap 6px, weight 600 +
+// brand color on selected). Consistent menu-option styling across both
+// dropdowns.
 .mode-btn {
-	width: 100%; border: 1px solid @colorNeutralStroke1; border-radius: 4px;
-	background: @colorNeutralBackground1; color: @colorNeutralForeground1;
-	font-size: 14px; line-height: 20px; font-weight: 600; font-family: inherit;
+	width: 100%; border: 1px solid transparent; border-radius: 4px;
+	background: transparent; color: @colorNeutralForeground1;
+	font-size: 14px; line-height: 20px; font-weight: 400; font-family: inherit;
 	cursor: pointer;
 	display: flex; align-items: center; gap: 6px;
-	padding: 6px 12px; box-sizing: border-box;
+	padding: 8px 12px; box-sizing: border-box;
 	transition: background 0.1s;
 	&:hover { background: @colorSubtleBackgroundHover; }
 	&:active { background: @colorSubtleBackgroundPressed; }
 	&.selected {
 		background: @colorSubtleBackgroundHover;
-		border-color: @colorCompoundBrandBackground;
 		color: @colorCompoundBrandBackground;
+		font-weight: 600;
 	}
 	&.disabled {
 		opacity: 0.4; cursor: default;
-		&:hover { background: @colorNeutralBackground1; }
+		&:hover { background: transparent; }
 	}
 	// Inline SVG icon: fill="currentColor" inherits the button's text color, which
 	// works in both normal mode (black/purple) and forced-colors (ButtonText/
 	// HighlightText). Inline SVG is the most reliable way to theme icons.
 	.mode-icon {
-		width: 20px; height: 20px; flex-shrink: 0;
+		width: 16px; height: 16px; flex-shrink: 0;
 		display: block;
 	}
 	// PDF icon: pdf.png is a white-pixel-on-transparent indexed PNG (designed for
@@ -310,7 +358,7 @@ iframe#preview-frame {
 	// Selected state uses the legacy purple hue-rotate filter to match the
 	// brand color of the selected text/border.
 	.mode-icon-img {
-		width: 20px; height: 20px; flex-shrink: 0;
+		width: 16px; height: 16px; flex-shrink: 0;
 		filter: brightness(0);
 	}
 	&.selected .mode-icon-img {
