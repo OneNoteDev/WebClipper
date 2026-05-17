@@ -21,7 +21,7 @@ import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InjectHelper} from "../injectHelper";
 
 import {InvokeInfo} from "../invokeInfo";
-import {InvokeOptions} from "../invokeOptions";
+import {InvokeMode, InvokeOptions} from "../invokeOptions";
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
@@ -46,6 +46,15 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private noOpTrackerInvoked: boolean;
 	private activeRendererCleanup: () => void;
 	private activeRendererWindowId: number;
+	// Set by closeAllFramesAndInvokeClipper from the InvokeOptions passed by the
+	// caller; consumed by the contentCapture listener so the renderer's
+	// loadContent payload can carry the original invocation intent
+	// (e.g. ContextTextSelection -> auto-engage Selection mode after screenshot,
+	//  ContextImage -> auto-engage Region mode with srcUrl pre-seeded).
+	private pendingInvokeMode: string;
+	// Companion to pendingInvokeMode: the InvokeOptions.invokeDataForMode value
+	// (image srcUrl for ContextImage, selected text for PDF-plugin selection).
+	private pendingInvokeData: string;
 
 	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
 		let messageHandlerThunk = () => { return new WebExtensionBackgroundMessageHandler(tab.id); };
@@ -55,6 +64,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.tab = tab;
 		this.tabId = tab.id;
 		this.noOpTrackerInvoked = false;
+		this.pendingInvokeMode = "";
+		this.pendingInvokeData = "";
 
 		this.activeRendererCleanup = () => { /* no-op */ };
 		this.activeRendererWindowId = 0;
@@ -118,6 +129,15 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.consoleOutputEnabledFlagProcessed.then(() => {
 			this.logClipperInvoke(invokeInfo, options);
 		});
+
+		// Capture invokeMode + invokeDataForMode for the contentCapture listener
+		// to forward to the renderer. ContextTextSelection -> auto-engage
+		// Selection mode after screenshot; ContextImage -> auto-engage Region
+		// mode with the right-clicked image (srcUrl) pre-seeded.
+		this.pendingInvokeMode = (options && options.invokeMode !== undefined)
+			? InvokeMode[options.invokeMode]
+			: "";
+		this.pendingInvokeData = (options && options.invokeDataForMode) ? options.invokeDataForMode : "";
 
 		if (this.activeRendererWindowId) {
 			WebExtension.browser.windows.update(this.activeRendererWindowId, { focused: true }, () => {
@@ -355,7 +375,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				title: msg.title || "",
 				url: msg.url || "",
 				statusText: "Capturing page...",
-				contentType: msg.contentType || "html"
+				contentType: msg.contentType || "html",
+				selectionHtml: msg.selectionHtml || "",
+				invokeMode: this.pendingInvokeMode || "",
+				invokeData: this.pendingInvokeData || ""
 			};
 			contentCaptured = true;
 			if (activePort) {
@@ -832,7 +855,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									).join("&nbsp;");
 									buildPage(bodyOnml, imageParts);
 								});
-							} else if (saveMode === "article") {
+							} else if (saveMode === "article" || saveMode === "selection") {
+								// Selection mode shares the article save path -- same
+								// body shape (font-wrapped HTML), same metadata
+								// (AutoPageTags=Article), no images. Renderer composes
+								// the body identically.
 								let articleHtml = msg.contentHtml || "";
 								buildPage(articleHtml, []);
 							} else if (saveMode === "bookmark") {

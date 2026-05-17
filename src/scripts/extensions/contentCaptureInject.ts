@@ -272,12 +272,70 @@
 	let contentType = detectContentType();
 	let html = resolveLazyImages(getDomString(doc));
 
+	// Selection capture (for context-menu "Clip Selection to OneNote" support).
+	// Strategy: build a "selection-substituted" doc -- clone the live document,
+	// replace its body with just the cloned selection fragment, then run the
+	// same DOM-cleanup pipeline that full-DOM capture uses (addBaseTag,
+	// addImageSize, removeUnwantedItems). The parallel-walk pipeline steps
+	// (inlineHiddenElements, neutralizePositioning, flattenShadowDomSlots,
+	// convertCanvasElementsToImages) are screenshot-stitching concerns and
+	// don't apply to a static save body, so they're correctly skipped here.
+	//
+	// Since the renderer's switchToSelection() wraps the result in its own
+	// doctype/head/body via renderArticleHtml, we return body.innerHTML (we
+	// lose the <base> tag in the wrapped output). To preserve URL resolution
+	// after that strip, materialize url-bearing attributes from their browser-
+	// resolved properties (el.src / .href -- already resolved against the
+	// in-doc <base href> we just added) back into the serialized attribute.
+	function captureSelectionHtml(): string {
+		try {
+			let sel = window.getSelection();
+			if (!sel || sel.rangeCount === 0) { return ""; }
+			let range = sel.getRangeAt(0);
+			if (range.collapsed) { return ""; }
+
+			let selDoc = cloneDocument(document);
+			if (!selDoc.body) { return ""; }
+			while (selDoc.body.firstChild) { selDoc.body.removeChild(selDoc.body.firstChild); }
+			selDoc.body.appendChild(selDoc.importNode(range.cloneContents(), true));
+
+			addBaseTagIfNecessary(selDoc, document.location);
+			addImageSizeInformationToDom(selDoc);
+			removeUnwantedItems(selDoc);
+
+			// Only img.src + a.href need materializing. video/audio/source/iframe
+			// are stripped downstream by cleanArticleHtml's ONML cleanup (matches
+			// V1's tagsNotSupportedInOnml + removeDisallowedIframes), so reading
+			// their resolved URLs here would be wasted work.
+			let materialize = (selector: string, prop: string, attr: string) => {
+				let els = selDoc.querySelectorAll(selector);
+				for (let i = 0; i < els.length; i++) {
+					let el = els[i] as HTMLElement;
+					let resolved = (el as any)[prop];
+					if (resolved && typeof resolved === "string") { el.setAttribute(attr, resolved); }
+				}
+			};
+			materialize("img[src]", "src", "src");
+			materialize("a[href]", "href", "href");
+
+			return selDoc.body.innerHTML;
+		} catch (e) {
+			return "";
+		}
+	}
+	// Apply the same lazy-image resolution pass that the full-page HTML gets
+	// (line above). Without this, an <img> the user selected that the host
+	// page lazy-loads via data-src/data-lazy-src/data-original lands in the
+	// saved selection HTML with an empty or placeholder src.
+	let selectionHtml = resolveLazyImages(captureSelectionHtml());
+
 	chrome.runtime.sendMessage(JSON.stringify({
 		action: "contentCaptureComplete",
 		html: html,
 		baseUrl: document.baseURI || document.URL,
 		title: document.title || "",
 		url: document.URL || "",
-		contentType: contentType
+		contentType: contentType,
+		selectionHtml: selectionHtml
 	}));
 })();

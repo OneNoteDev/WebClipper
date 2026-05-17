@@ -140,6 +140,19 @@ let cachedArticleHtml = ""; // Article preview HTML (Readability or oEmbed-previ
 let cachedOEmbedData: OEmbedData | null = null; // Raw oEmbed payload; if present, save path builds iframe-based HTML from this instead of cachedArticleHtml
 let cachedOEmbedDescription = ""; // og:description (or fallback chain) from page DOM; oEmbed responses typically don't carry the full description
 let cachedPageMetadata: { [key: string]: string } | null = null; // PageMetadata sent in save msg; worker emits each entry as a <meta> tag (matches V1 OneNotePage)
+// Selection-mode state (context-menu "Clip Selection to OneNote"). selectionHtml
+// is sanitized in contentCaptureInject; we render it through the article-mode
+// preview/save wiring so highlighter + font controls work transparently.
+// invokedFromContextSelection gates whether to auto-engage Selection mode after
+// the screenshot completes (true only when user used right-click menu).
+let cachedSelectionHtml = "";
+let invokedFromContextSelection = false;
+// Context-image state (context-menu "Clip Image to OneNote"). srcUrl is the
+// image URL captured by the worker from chrome.contextMenus.OnClickData.srcUrl;
+// when set, the renderer fetches it as a data URL, pushes into regionImages,
+// and auto-engages Region mode after the screenshot completes.
+let contextImageSrcUrl = "";
+let invokedFromContextImage = false;
 let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from content-frame DOM
 let bookmarkLoaded = false;
 let contentDocReady = false; // true once content-frame has loaded HTML
@@ -179,7 +192,8 @@ let articleSerif = false;
 let articleFontSize = 16;
 let highlighterEnabled = false;
 let textHighlighterInstance: any = undefined;
-let articleWorkingHtml = ""; // Preserves highlights/edits across mode switches
+let articleWorkingHtml = ""; // Preserves article highlights/edits across mode switches
+let selectionWorkingHtml = ""; // Same, for selection mode (V1 parity via EditorPreviewComponentBase)
 let saveTimeoutId: any = 0; // Client-side save timeout (service worker setTimeout unreliable)
 
 // --- Localization ---
@@ -236,6 +250,7 @@ let strings = {
 	modeArticle: loc("WebClipper.ClipType.Article.Button", "Article"),
 	modeBookmark: loc("WebClipper.ClipType.Bookmark.Button", "Bookmark"),
 	modeRegion: loc("WebClipper.ClipType.Region.Button", "Region"),
+	modeSelection: loc("WebClipper.ClipType.Selection.Button", "Selection"),
 	titlePlaceholder: loc("WebClipper.Label.PageTitlePlaceholder", "Add a page title..."),
 	notePlaceholder: loc("WebClipper.Label.AnnotationPlaceholder", "Add a note..."),
 	sourceLabel: loc("WebClipper.Label.Source", "Source"),
@@ -345,7 +360,7 @@ port.onMessage.addListener((msg: any) => {
 // Apply localized strings to UI elements
 sidebarTitle.textContent = strings.clipperTitle;
 cancelBtn.textContent = strings.cancel;
-let modeMap: any = { fullpage: strings.modeFullPage, article: strings.modeArticle, bookmark: strings.modeBookmark, region: strings.modeRegion };
+let modeMap: any = { fullpage: strings.modeFullPage, article: strings.modeArticle, bookmark: strings.modeBookmark, region: strings.modeRegion, selection: strings.modeSelection };
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	let mode = btn.getAttribute("data-mode");
 	if (mode && modeMap[mode]) {
@@ -360,7 +375,8 @@ let tooltipMap: any = {
 	fullpage: loc("WebClipper.ClipType.ScreenShot.Button.Tooltip", "Take a screenshot of the whole page, just like you see it."),
 	article: loc("WebClipper.ClipType.Button.Tooltip", "Clip just the {0} in an easy-to-read format.").replace("{0}", strings.modeArticle.toLowerCase()),
 	bookmark: loc("WebClipper.ClipType.Bookmark.Button.Tooltip", "Clip just the title, thumbnail, synopsis, and link."),
-	region: loc("WebClipper.ClipType.Region.Button.Tooltip", "Take a screenshot of the part of the page you'll select.")
+	region: loc("WebClipper.ClipType.Region.Button.Tooltip", "Take a screenshot of the part of the page you'll select."),
+	selection: loc("WebClipper.ClipType.Selection.Button.Tooltip", "Clip just the text you selected.")
 };
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	let mode = btn.getAttribute("data-mode");
@@ -969,15 +985,23 @@ function resetSaveState() {
 }
 
 // Save article working state (highlights, edits) before switching away
-function saveArticleWorkingState() {
+// Captures the preview-frame body's current innerHTML into the per-mode
+// working-state slot, so highlights/edits survive a switch-away/switch-back.
+// V1 equivalent: EditorPreviewComponentBase.handleBodyChange updated the
+// per-mode previewBodyHtml in clipperState; we keep two scalars instead.
+// Article and selection share the preview-frame, so dispatch by currentMode.
+function saveWorkingState() {
+	let pDoc = previewFrame.contentDocument;
+	if (!pDoc || !pDoc.body) { return; }
 	if (currentMode === "article") {
-		let pDoc = previewFrame.contentDocument;
-		if (pDoc && pDoc.body) { articleWorkingHtml = pDoc.body.innerHTML; }
+		articleWorkingHtml = pDoc.body.innerHTML;
+	} else if (currentMode === "selection") {
+		selectionWorkingHtml = pDoc.body.innerHTML;
 	}
 }
 
 function switchToFullPage() {
-	saveArticleWorkingState();
+	saveWorkingState();
 	resetSaveState();
 	currentMode = "fullpage";
 	previewFrameWrap.style.display = "none";
@@ -1003,6 +1027,7 @@ function switchToFullPage() {
 }
 
 function switchToArticle() {
+	saveWorkingState(); // capture outgoing mode's preview-frame body (e.g. selection -> article preserves selection's highlights)
 	resetSaveState();
 	currentMode = "article";
 	// Hide full-page content and preview
@@ -1021,6 +1046,28 @@ function switchToArticle() {
 		saveBtn.disabled = false;
 		saveBtn.textContent = strings.saveToOneNote;
 	}
+}
+
+// Selection mode (V1 parity) -- internally identical to article mode but
+// sourced from the user's selected DOM range (captured page-side in
+// contentCaptureInject) rather than Readability output. The preview-frame
+// shares its highlighter + font-toolbar wiring with article mode, so those
+// controls work transparently here.
+function switchToSelection() {
+	saveWorkingState(); // capture outgoing mode's preview-frame body
+	resetSaveState();
+	currentMode = "selection";
+	iframe.style.display = "none";
+	previewContainer.style.display = "none";
+	capturePanel.style.display = "none";
+	previewFrameWrap.style.display = "flex";
+	articleHeader.style.display = "flex";
+
+	// Prefer working HTML (preserves highlights from a prior visit to selection mode);
+	// fall back to the pristine clean selection HTML on first entry.
+	renderArticleHtml(selectionWorkingHtml || cachedSelectionHtml);
+	saveBtn.disabled = false;
+	saveBtn.textContent = strings.saveToOneNote;
 }
 
 function loadArticleContent() {
@@ -1261,16 +1308,31 @@ function showArticleError() {
 	}
 }
 
-// Clean Readability output to match ONML (OneNote Markup Language) constraints,
-// mirroring the old toOnml() pipeline: strip styles/classes, event handlers, and
-// unsupported elements. Applied once at extraction time so both preview and save
-// use the same cleaned HTML.
+// Clean HTML to match ONML (OneNote Markup Language) constraints, mirroring
+// V1's toOnml() pipeline. Applied at:
+//   - Readability extraction (article mode fallback path)
+//   - loadContent handler for cachedSelectionHtml (selection mode)
+// The oEmbed article path builds its own iframe-bearing HTML and intentionally
+// bypasses this function -- adding `iframe` to the strip list below is safe
+// for that reason. Readability already drops iframes upstream, so the iframe
+// strip is effectively a selection-only behavior, matching V1's selection
+// flow which stripped all iframes (V1 had a video-domain exception via
+// VideoExtractorFactory; we don't replicate it for selection -- video clips
+// belong in article mode).
 function cleanArticleHtml(html: string): string {
 	let tempDoc = new DOMParser().parseFromString(html, "text/html");
 	// Remove elements not supported in ONML
-	let unsupported = tempDoc.querySelectorAll("applet, audio, button, canvas, embed, hr, input, link, map, menu, menuitem, meter, noscript, progress, script, source, style, svg, video");
+	let unsupported = tempDoc.querySelectorAll("applet, audio, button, canvas, embed, hr, iframe, input, link, map, menu, menuitem, meter, noscript, progress, script, source, style, svg, video");
 	for (let i = unsupported.length - 1; i >= 0; i--) {
 		if (unsupported[i].parentNode) { unsupported[i].parentNode.removeChild(unsupported[i]); }
+	}
+	// Drop blank <img> (no src / empty src) -- matches V1's removeBlankImages.
+	// After contentCaptureInject's resolveLazyImages + materialize passes, any
+	// <img> still without a src is genuinely useless and renders broken.
+	let blanks = tempDoc.querySelectorAll('img:not([src]), img[src=""]');
+	for (let i = blanks.length - 1; i >= 0; i--) {
+		let parent = blanks[i].parentNode;
+		if (parent) { parent.removeChild(blanks[i]); }
 	}
 	// Strip all style and class attributes (page layout styles leak into preview/OneNote)
 	let allEls = tempDoc.querySelectorAll("*");
@@ -1313,7 +1375,13 @@ function renderArticleHtml(html: string) {
 		+ "table { border-collapse: collapse; width: 100%; }"
 		+ "td, th { border: 1px solid #ddd; padding: 8px; }"
 		+ ".highlighted { background: #fefe56; }"
-		+ ".highlight-anchor { position: relative; display: inline-block; }"
+		// display:inline (not inline-block): inline-block would make the wrapped
+		// text an atomic layout unit, defeating word-break/overflow-wrap inside
+		// <pre> code blocks and forcing long highlighted tokens (URLs etc.) to
+		// their own line. position:relative on an inline still serves as the
+		// containing block for the absolutely-positioned delete button, which
+		// anchors to the first line-box's top-left -- the visual we want.
+		+ ".highlight-anchor { position: relative; display: inline; }"
 		+ ".delete-highlight { position: absolute; top: -8px; inset-inline-start: -8px; z-index: 10; "
 		+ "width: 18px; height: 18px; border-radius: 50%; background: #e74c3c; color: #fff; "
 		+ "font-size: 12px; line-height: 18px; text-align: center; cursor: pointer; }"
@@ -1492,7 +1560,7 @@ highlightBtn.addEventListener("click", () => {
 // --- Bookmark mode ---
 
 function switchToBookmark() {
-	saveArticleWorkingState();
+	saveWorkingState();
 	resetSaveState();
 	currentMode = "bookmark";
 	iframe.style.display = "none";
@@ -1752,7 +1820,7 @@ function startRegionCapture() {
 }
 
 function switchToRegion() {
-	saveArticleWorkingState();
+	saveWorkingState();
 	resetSaveState();
 	currentMode = "region";
 	iframe.style.display = "none";
@@ -2355,6 +2423,9 @@ modeButtons.forEach((btn, idx) => {
 		} else if (mode === "article") {
 			switchToArticle();
 			setTelemetryContext(Context.Custom.ContentType, "Article");
+		} else if (mode === "selection") {
+			switchToSelection();
+			setTelemetryContext(Context.Custom.ContentType, "Selection");
 		} else if (mode === "bookmark") {
 			// For PDF pages, generate bookmark from title/URL since DOM has no og: tags
 			if (pdfMode && !cachedBookmarkHtml) {
@@ -2385,6 +2456,17 @@ port.onMessage.addListener((message: any) => {
 		let pageTitle: string = message.title || "";
 		let pageUrl: string = message.url || "";
 		let contentType: string = message.contentType || "html";
+
+		// Context-menu payload. selectionHtml is captured by contentCaptureInject
+		// whenever a non-collapsed range exists; invokeMode + invokeData tell us
+		// whether the user used a right-click menu item (vs the toolbar icon),
+		// and which one. cleanArticleHtml applies V1's ONML-equivalent strip on
+		// top of the already-piped contentCaptureInject pipeline (addBaseTag /
+		// addImageSize / removeUnwantedItems).
+		cachedSelectionHtml = message.selectionHtml ? cleanArticleHtml(message.selectionHtml) : "";
+		invokedFromContextSelection = message.invokeMode === "ContextTextSelection";
+		contextImageSrcUrl = message.invokeData || "";
+		invokedFromContextImage = message.invokeMode === "ContextImage" && !!contextImageSrcUrl;
 
 		// Populate title and source URL (may not have been available on initial page load)
 		if (pageTitle && !titleField.value) { titleField.value = pageTitle; }
@@ -2798,9 +2880,49 @@ port.onMessage.addListener((message: any) => {
 					});
 					enableSignout();
 					announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
-					// Set initial focus on Full Page mode button after capture
-					let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
-					if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
+
+					// Selection mode (V1 parity): when invoked via the right-click
+					// "Clip Selection to OneNote" menu AND we captured a non-empty
+					// selection from the page, reveal the Selection mode button
+					// and auto-engage that mode. Other modes (Region/Bookmark/
+					// Article/PDF) stay reachable. If selection is empty or the
+					// invocation was via the toolbar icon, leave the button hidden
+					// and stay on Full Page.
+					if (invokedFromContextSelection && cachedSelectionHtml) {
+						let selBtn = document.querySelector('.mode-btn[data-mode="selection"]') as HTMLElement;
+						if (selBtn) {
+							selBtn.style.display = "";
+							setTimeout(function() {
+								(selBtn as HTMLButtonElement).click();
+								selBtn.focus();
+							}, 100);
+						}
+					} else if (invokedFromContextImage && contextImageSrcUrl) {
+						// Context-image mode (V1 parity): right-click "Clip Image to
+						// OneNote" pre-seeds regionImages with the right-clicked
+						// image and auto-engages Region mode. Fetch failures (taint /
+						// network) yield "" from imageToDataUrl; we fall back to
+						// Full Page so the user is never stranded.
+						imageToDataUrl(contextImageSrcUrl, function(dataUrl: string) {
+							if (dataUrl) {
+								regionImages.push(dataUrl);
+								let regionBtn = document.querySelector('.mode-btn[data-mode="region"]') as HTMLElement;
+								if (regionBtn) {
+									setTimeout(function() {
+										(regionBtn as HTMLButtonElement).click();
+										regionBtn.focus();
+									}, 100);
+									return;
+								}
+							}
+							let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
+							if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
+						});
+					} else {
+						// Set initial focus on Full Page mode button after capture
+						let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
+						if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
+					}
 
 					safeSend({ action: "finalizeComplete" });
 			};
@@ -3036,6 +3158,12 @@ port.onMessage.addListener((message: any) => {
 			fullPageDataUrl = "";
 			articleLoaded = false;
 			cachedArticleHtml = "";
+			articleWorkingHtml = "";
+			cachedSelectionHtml = "";
+			selectionWorkingHtml = "";
+			invokedFromContextSelection = false;
+			contextImageSrcUrl = "";
+			invokedFromContextImage = false;
 			bookmarkLoaded = false;
 			cachedBookmarkHtml = "";
 			contentDocReady = false;
@@ -3079,6 +3207,10 @@ port.onMessage.addListener((message: any) => {
 		fullPageDataUrl = "";
 		articleLoaded = false;
 		cachedArticleHtml = "";
+		articleWorkingHtml = "";
+		cachedSelectionHtml = "";
+		selectionWorkingHtml = "";
+		invokedFromContextSelection = false;
 		bookmarkLoaded = false;
 		cachedBookmarkHtml = "";
 		contentDocReady = false;
@@ -3220,10 +3352,14 @@ saveBtn.addEventListener("click", () => {
 		for (let i = 0; i < regionImages.length; i++) {
 			safeSend({ action: "saveImage", index: i, dataUrl: regionImages[i] });
 		}
-	} else if (currentMode === "article") {
+	} else if (currentMode === "article" || currentMode === "selection") {
+		// Selection mode reuses the article save path entirely (same
+		// preview-frame, same font wrapper, same OneNote-side handling).
+		// Source differs: selection uses cachedSelectionHtml (user's selected
+		// DOM), article uses Readability/oEmbed output.
 		let articleBody = "";
 		let oembedSnap = cachedOEmbedData;
-		if (oembedSnap) {
+		if (currentMode === "article" && oembedSnap) {
 			// oEmbed-source: save uses provider iframe (preview only showed
 			// thumbnail since sandboxed iframes can't run the player).
 			articleBody = composeOEmbedForSave(oembedSnap, cachedOEmbedDescription);
@@ -3237,12 +3373,21 @@ saveBtn.addEventListener("click", () => {
 				}
 				articleBody = clone.innerHTML;
 			} else {
-				articleBody = cachedArticleHtml;
+				articleBody = currentMode === "selection" ? cachedSelectionHtml : cachedArticleHtml;
 			}
 		}
 		let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 		let fontStyle = "font-size: " + articleFontSize + "px; font-family: " + fontFamily + ";";
 		saveMsg.contentHtml = "<div style=\"" + fontStyle + "\">" + articleBody + "</div>";
+		// Selection mode uses Article taxonomy in PageMetadata (V1 parity):
+		// AutoPageTagsCodes=Article, AutoPageTags=Article. Populate on the fly
+		// when not already set by Readability/oEmbed extraction.
+		if (currentMode === "selection" && !cachedPageMetadata) {
+			cachedPageMetadata = {
+				AutoPageTagsCodes: "Article",
+				AutoPageTags: "Article"
+			};
+		}
 		if (cachedPageMetadata) { saveMsg.pageMetadata = cachedPageMetadata; }
 		saveMsg.saveImageCount = 0;
 		safeSend(saveMsg);
