@@ -42,6 +42,20 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 
 		this.registerBrowserButton();
 
+		// Register the contextMenus.onClicked listener SYNCHRONOUSLY at worker
+		// startup, before any async work. MV3 service workers unload aggressively;
+		// when a context-menu click wakes the worker, Chrome dispatches the event
+		// during initialization. If the listener isn't registered yet (because
+		// it's gated behind an async chain like clipperIdProcessed -> locStrings
+		// fetch -> contextMenus.removeAll), the event is silently dropped --
+		// surfacing as "first right-click does nothing, second one works." The
+		// handler itself defers actual clipper invocation on clipperIdProcessed
+		// via invokeClipperInTab, so we don't need state to be ready at listener
+		// registration time; we just need the listener wired up.
+		this.registerContextMenuClickListener();
+
+		// Menu item creation stays async -- the titles need localized strings,
+		// so we wait for clipperIdProcessed + the locStrings fetch chain.
 		this.clipperIdProcessed.then(() => {
 			this.registerContextMenuItems();
 		});
@@ -185,51 +199,52 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 					}
 					WebExtension.browser.contextMenus.create(menus[i]);
 				}
-
-				// Register the click listener ONCE per registerContextMenuItems
-				// invocation. Previously this lived inside the for loop above and
-				// registered N copies (one per menu item) -- a single click would
-				// fire the handler N times, causing N parallel invokeClipperInTab
-				// calls, N captureVisibleTab requests racing the per-second quota,
-				// and the renderer popup blinking-and-closing on context-menu
-				// invocations.
-				WebExtension.browser.contextMenus.onClicked.addListener((info, tab?: Tab) => {
-					if (!tab) {
-						return;
-					}
-					let clickedTab = tab as W3CTab;
-					switch (info.menuItemId) {
-						case "WebClipper.Label.OneNoteWebClipper":
-							this.invokeClipperInTab(clickedTab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
-							break;
-						case "WebClipper.Label.ClipSelectionToOneNote":
-							let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
-
-							// If the tab index is negative, chances are the user is using some sort of PDF plugin,
-							// and the tab object will be invalid. We need to get the parent tab in this scenario.
-							if (clickedTab.index < 0) {
-								// Since we are in a PDF plugin, Rangy won't work, so we rely on WebExtension API to grab pure text
-								invokeOptions.invokeDataForMode = info.selectionText;
-								WebExtension.browser.tabs.query({ active: true, currentWindow: true }, (tabs: Tab[]) => {
-									// There will only be one tab that meets this criteria
-									let parentTab = tabs[0] as W3CTab;
-									this.invokeClipperInTab(parentTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
-								});
-							} else {
-								this.invokeClipperInTab(clickedTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
-							}
-							break;
-						case "WebClipper.Label.ClipImageToOneNote":
-							// Even though we know the user right-clicked an image, srcUrl is only present if the src attr exists
-							this.invokeClipperInTab(clickedTab, { invokeSource: InvokeSource.ContextMenu }, info.srcUrl ? {
-								// srcUrl will always be the full url, not relative
-								invokeDataForMode: info.srcUrl, invokeMode: InvokeMode.ContextImage
-							} : { invokeMode: InvokeMode.Default });
-							break;
-						default:
-					}
-				});
 			});
+		});
+	}
+
+	// Synchronous companion to registerContextMenuItems. Called directly from
+	// the constructor (no async chain) so the listener is wired up before the
+	// first event-loop tick, ensuring no context-menu click is dropped during
+	// an MV3 service-worker wake-up. The handler dispatches based on the menu
+	// item id alone -- no dependency on locStrings (those are needed only for
+	// menu *titles*, set during item creation).
+	private registerContextMenuClickListener() {
+		WebExtension.browser.contextMenus.onClicked.addListener((info, tab?: Tab) => {
+			if (!tab) {
+				return;
+			}
+			let clickedTab = tab as W3CTab;
+			switch (info.menuItemId) {
+				case "WebClipper.Label.OneNoteWebClipper":
+					this.invokeClipperInTab(clickedTab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
+					break;
+				case "WebClipper.Label.ClipSelectionToOneNote":
+					let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
+
+					// If the tab index is negative, chances are the user is using some sort of PDF plugin,
+					// and the tab object will be invalid. We need to get the parent tab in this scenario.
+					if (clickedTab.index < 0) {
+						// Since we are in a PDF plugin, Rangy won't work, so we rely on WebExtension API to grab pure text
+						invokeOptions.invokeDataForMode = info.selectionText;
+						WebExtension.browser.tabs.query({ active: true, currentWindow: true }, (tabs: Tab[]) => {
+							// There will only be one tab that meets this criteria
+							let parentTab = tabs[0] as W3CTab;
+							this.invokeClipperInTab(parentTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+						});
+					} else {
+						this.invokeClipperInTab(clickedTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+					}
+					break;
+				case "WebClipper.Label.ClipImageToOneNote":
+					// Even though we know the user right-clicked an image, srcUrl is only present if the src attr exists
+					this.invokeClipperInTab(clickedTab, { invokeSource: InvokeSource.ContextMenu }, info.srcUrl ? {
+						// srcUrl will always be the full url, not relative
+						invokeDataForMode: info.srcUrl, invokeMode: InvokeMode.ContextImage
+					} : { invokeMode: InvokeMode.Default });
+					break;
+				default:
+			}
 		});
 	}
 
