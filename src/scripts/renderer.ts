@@ -7,7 +7,7 @@ import {PropertyName} from "./logging/submodules/propertyName";
 import {Session} from "./logging/submodules/session";
 import {Status} from "./logging/submodules/status";
 
-import {tryOEmbed, sanitizeProviderHtml, OEmbedData} from "./contentCapture/oembedExtractor";
+import {tryOEmbed, sanitizeProviderHtml, isOEmbedProviderUrl, OEmbedData} from "./contentCapture/oembedExtractor";
 
 // Renderer page script - connects to service worker via port
 // and handles scroll/capture commands. Content HTML arrives inline
@@ -160,6 +160,13 @@ let invokedFromContextSelection = false;
 // and auto-engages Region mode after the screenshot completes.
 let contextImageSrcUrl = "";
 let invokedFromContextImage = false;
+// Site-suggested initial mode. Set when the captured page URL matches a known
+// oEmbed provider (YouTube, Vimeo) on a toolbar invocation -- skips the
+// eager full-page capture loop and opens directly in Article mode, where
+// extractArticle's oEmbed branch will render the embedded video. Mirrors the
+// context-menu skip-capture path. Stays false on context-menu invocations
+// (those have their own explicit mode intent that takes precedence).
+let siteSuggestsArticleMode = false;
 let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from content-frame DOM
 let bookmarkLoaded = false;
 let contentDocReady = false; // true once content-frame has loaded HTML
@@ -2623,14 +2630,16 @@ function enterReadyStateWithoutCapture() {
 	});
 	enableSignout();
 	announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
-	triggerContextMenuAutoEngage();
+	triggerInitialModeAutoEngage();
 }
 
-// Reveal the Selection or Region mode button (per the original invocation
-// intent) and auto-click it. Extracted from the capture-complete handler so
-// both eager-capture (toolbar) and skip-capture (context-menu) paths share
-// one implementation.
-function triggerContextMenuAutoEngage() {
+// Reveal the appropriate mode button (per the invocation intent or site
+// detection) and auto-click it. Three sources of "skip eager capture and
+// open in a specific mode" converge here:
+//   - Right-click "Clip Selection" -> Selection mode
+//   - Right-click "Clip Image"     -> Region mode with image pre-seeded
+//   - Toolbar invoke on oEmbed URL -> Article mode (video provider page)
+function triggerInitialModeAutoEngage() {
 	if (invokedFromContextSelection && cachedSelectionHtml) {
 		let selBtn = document.querySelector('.mode-btn[data-mode="selection"]') as HTMLElement;
 		if (selBtn) {
@@ -2642,6 +2651,17 @@ function triggerContextMenuAutoEngage() {
 			// window). Firing in the same microtask batches the DOM transitions.
 			(selBtn as HTMLButtonElement).click();
 			selBtn.focus();
+		}
+	} else if (siteSuggestsArticleMode) {
+		// oEmbed provider URL on toolbar invoke: jump straight to Article
+		// mode. extractArticle's existing oEmbed branch will fetch the
+		// provider payload + Readability for description. If oEmbed fails
+		// for this specific URL, Readability fallback still produces a
+		// reasonable result -- the user is no worse off than today.
+		let articleBtn = document.querySelector('.mode-btn[data-mode="article"]') as HTMLElement;
+		if (articleBtn) {
+			(articleBtn as HTMLButtonElement).click();
+			articleBtn.focus();
 		}
 	} else if (invokedFromContextImage && contextImageSrcUrl) {
 		// Pre-seed regionImages with the right-clicked image, then auto-click
@@ -2692,17 +2712,27 @@ port.onMessage.addListener((message: any) => {
 		invokedFromContextSelection = message.invokeMode === "ContextTextSelection";
 		contextImageSrcUrl = message.invokeData || "";
 		invokedFromContextImage = message.invokeMode === "ContextImage" && !!contextImageSrcUrl;
+		// Site-suggested initial mode for known oEmbed providers (YouTube,
+		// Vimeo). Only fires on toolbar invocations -- context-menu invokes
+		// carry an explicit user intent that takes precedence. The actual
+		// oEmbed fetch + Readability fallback happens later in
+		// extractArticle; this is just the "what mode do we open in" hint.
+		siteSuggestsArticleMode =
+			!invokedFromContextSelection &&
+			!invokedFromContextImage &&
+			isOEmbedProviderUrl(pageUrl);
 
 		// Hide the content-frame's pixels (not its layout) the moment we know
-		// the user invoked via context menu. The iframe is display:block by
-		// default and renderContent() below will synchronously write the
-		// captured page DOM into it -- which paints to screen before onReady
-		// (waiting on images) eventually fires our auto-engage. Without this,
-		// the user briefly sees the full-page DOM "blink" before Selection /
-		// Region mode takes over. visibility:hidden keeps the iframe in
-		// layout so onReady's dimension measurements remain accurate for a
-		// potential later deferred Full Page kickoff.
-		if (invokedFromContextSelection || invokedFromContextImage) {
+		// the user invoked via context menu (or landed on an oEmbed page).
+		// The iframe is display:block by default and renderContent() below
+		// will synchronously write the captured page DOM into it -- which
+		// paints to screen before onReady (waiting on images) eventually
+		// fires our auto-engage. Without this, the user briefly sees the
+		// full-page DOM "blink" before Selection / Region / Article mode
+		// takes over. visibility:hidden keeps the iframe in layout so
+		// onReady's dimension measurements remain accurate for a potential
+		// later deferred Full Page kickoff.
+		if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode) {
 			iframe.style.visibility = "hidden";
 		}
 
@@ -2942,14 +2972,18 @@ port.onMessage.addListener((message: any) => {
 						pageHeight: htmlEl.scrollHeight,
 						contentHeight: contentHeight
 					};
-					// Skip the eager full-page capture loop when the user invoked via
-					// the right-click context menu with explicit mode intent. The
-					// loop scrolls/captures the original tab over multiple seconds
-					// and produces a screenshot the user has no use for in Selection
-					// or Region (image-pre-seeded) flows. If the user later clicks
-					// the Full Page mode option, switchToFullPage() kicks off the
-					// loop then. Toolbar invocations keep the eager-capture behavior.
-					if (invokedFromContextSelection || invokedFromContextImage) {
+					// Skip the eager full-page capture loop when:
+					//   1. User invoked via right-click context menu (explicit mode
+					//      intent: Selection or Image -> Region)
+					//   2. Captured page URL matches a known oEmbed provider
+					//      (YouTube, Vimeo) -- Article mode is almost certainly
+					//      what the user wants on a video page, and the full-page
+					//      screenshot of a YouTube watch page (mostly chrome and
+					//      dynamic suggestions) is rarely useful.
+					// In either case, switchToFullPage() kicks off the capture loop
+					// on demand if the user later picks Full Page. Plain toolbar
+					// invocations on non-oEmbed pages keep eager-capture behavior.
+					if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode) {
 						enterReadyStateWithoutCapture();
 					} else {
 						kickoffFullPageCapture();
@@ -3388,6 +3422,7 @@ port.onMessage.addListener((message: any) => {
 			invokedFromContextSelection = false;
 			contextImageSrcUrl = "";
 			invokedFromContextImage = false;
+			siteSuggestsArticleMode = false;
 			bookmarkLoaded = false;
 			cachedBookmarkHtml = "";
 			contentDocReady = false;
@@ -3437,6 +3472,7 @@ port.onMessage.addListener((message: any) => {
 		cachedSelectionHtml = "";
 		selectionWorkingHtml = "";
 		invokedFromContextSelection = false;
+		siteSuggestsArticleMode = false;
 		bookmarkLoaded = false;
 		cachedBookmarkHtml = "";
 		contentDocReady = false;
