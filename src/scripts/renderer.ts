@@ -134,6 +134,13 @@ let signoutLink = document.getElementById("signout-link") as HTMLAnchorElement;
 let currentMode = "fullpage";
 let fullPageComplete = false;
 let fullPageDataUrl = ""; // Cached full-page screenshot data URL for mode switching
+// Capture lifecycle state. captureInProgress is true between sending `dimensions`
+// to the worker and receiving the `finalize` complete signal back; used to
+// disable mode buttons during deferred capture. captureDimensions stashes the
+// measured iframe dimensions so deferred kickoff (Selection/ContextImage paths)
+// can reuse them without re-measuring after layout has potentially shifted.
+let captureInProgress = false;
+let captureDimensions: { viewportHeight: number; pageHeight: number; contentHeight: number } | null = null;
 let saveDone = false;
 let articleLoaded = false;
 let cachedArticleHtml = ""; // Article preview HTML (Readability or oEmbed-preview shape)
@@ -950,10 +957,13 @@ function lockSidebar() {
 }
 
 function unlockSidebar() {
+	// Re-enable all mode buttons unconditionally. fullPageComplete is no longer
+	// the right gate: in the Selection / ContextImage skip-capture path, no
+	// full-page capture has run yet but the other modes (Selection, Article,
+	// Bookmark, Region) are perfectly functional. switchToFullPage handles
+	// deferred-capture kickoff on its own if the user enters it.
 	document.querySelectorAll(".mode-btn").forEach((b) => {
-		if (fullPageComplete || b.getAttribute("data-mode") === "fullpage") {
-			(b as HTMLButtonElement).disabled = false;
-		}
+		(b as HTMLButtonElement).disabled = false;
 	});
 	titleField.disabled = false;
 	noteField.disabled = false;
@@ -1019,10 +1029,28 @@ function switchToFullPage() {
 		capturePanel.style.display = "none";
 	} else {
 		iframe.style.display = "block";
+		// Reset the visibility:hidden that loadContent applied for skip-capture
+		// flows -- captureVisibleTab needs the content-frame painted to capture
+		// it. Without this, the deferred capture would grab an invisible (blank)
+		// viewport.
+		iframe.style.visibility = "";
 		previewContainer.style.display = "none";
 		capturePanel.style.display = "flex";
 		statusText.textContent = strings.capturing;
 		saveBtn.disabled = true;
+		// Deferred capture: if loadContent measured dimensions but skipped the
+		// eager capture (Selection/ContextImage invocation), kick off the loop
+		// now. Mode buttons get disabled during the in-flight capture so the
+		// user can't whiplash modes mid-stitch. captureInProgress guards
+		// against double-fire if the user re-enters Full Page mode.
+		if (captureDimensions && !captureInProgress) {
+			document.querySelectorAll(".mode-btn").forEach((b: Element) => {
+				if (b.getAttribute("data-mode") !== "fullpage") {
+					(b as HTMLButtonElement).disabled = true;
+				}
+			});
+			kickoffFullPageCapture();
+		}
 	}
 }
 
@@ -2435,8 +2463,14 @@ modeButtons.forEach((btn, idx) => {
 	btn.addEventListener("click", () => {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === currentMode) { return; }
-		// Block mode switching during active capture — captureVisibleTab needs content-frame visible
-		if (!fullPageComplete && mode !== "fullpage") { return; }
+		// Block mode switching while a full-page capture loop is actively
+		// running (captureVisibleTab needs the content-frame visible through
+		// the scroll-and-stitch). When no capture has run yet (Selection /
+		// ContextImage skip path), switching is allowed -- the user invoked
+		// with explicit mode intent. fullPageComplete is not the right gate
+		// here: it stays false in the skip path even though no capture is
+		// in progress.
+		if (captureInProgress && mode !== "fullpage") { return; }
 
 		// Update selected state visually + ARIA
 		document.querySelectorAll(".mode-btn").forEach((b) => {
@@ -2558,6 +2592,86 @@ document.addEventListener("click", (e: MouseEvent) => {
 	closeModeMenu();
 });
 
+// --- Full-page capture lifecycle helpers (used by loadContent + switchToFullPage) ---
+
+// Sends the `dimensions` message to the worker, which starts the scroll-and-
+// stitch capture loop. Called either from loadContent (eager, toolbar invoke)
+// or from switchToFullPage (deferred, after a Selection/ContextImage invoke).
+// Idempotent guard via captureInProgress prevents double-firing.
+function kickoffFullPageCapture() {
+	if (!captureDimensions || captureInProgress || fullPageComplete) { return; }
+	captureInProgress = true;
+	safeSend({
+		action: "dimensions",
+		viewportHeight: captureDimensions.viewportHeight,
+		pageHeight: captureDimensions.pageHeight,
+		contentHeight: captureDimensions.contentHeight
+	});
+}
+
+// Enter the post-loadContent ready state without running the screenshot loop.
+// Used when the user invoked via right-click context menu (Selection / Image)
+// and has explicit mode intent that doesn't need a full-page screenshot.
+// Mirrors the relevant state changes from the capture-complete finalize block.
+function enterReadyStateWithoutCapture() {
+	capturePanel.style.display = "none";
+	saveBtn.textContent = strings.saveToOneNote;
+	saveBtn.disabled = false;
+	document.querySelectorAll(".mode-btn").forEach((b: Element) => {
+		(b as HTMLButtonElement).disabled = false;
+		b.classList.remove("disabled");
+	});
+	enableSignout();
+	announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
+	triggerContextMenuAutoEngage();
+}
+
+// Reveal the Selection or Region mode button (per the original invocation
+// intent) and auto-click it. Extracted from the capture-complete handler so
+// both eager-capture (toolbar) and skip-capture (context-menu) paths share
+// one implementation.
+function triggerContextMenuAutoEngage() {
+	if (invokedFromContextSelection && cachedSelectionHtml) {
+		let selBtn = document.querySelector('.mode-btn[data-mode="selection"]') as HTMLElement;
+		if (selBtn) {
+			selBtn.style.display = "";
+			// Synchronous click: no setTimeout. The deferred-100ms wrap used to
+			// produce a visible Full Page "blink" between enterReadyStateWithout-
+			// Capture and the auto-engage taking effect (the content-frame iframe
+			// was still rendered behind the cleared capture panel during that
+			// window). Firing in the same microtask batches the DOM transitions.
+			(selBtn as HTMLButtonElement).click();
+			selBtn.focus();
+		}
+	} else if (invokedFromContextImage && contextImageSrcUrl) {
+		// Pre-seed regionImages with the right-clicked image, then auto-click
+		// Region. The fetch is async; by the time it resolves the user may have
+		// already manually navigated to Full Page (and even completed a capture).
+		// Guard the late auto-engage on a "user hasn't moved" check so a slow
+		// image load can't bounce the user out of a mode they explicitly chose.
+		imageToDataUrl(contextImageSrcUrl, function(dataUrl: string) {
+			if (!dataUrl) {
+				let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
+				if (fpModeBtn) { fpModeBtn.focus(); }
+				return;
+			}
+			regionImages.push(dataUrl);
+			// If the user has triggered (or finished) a Full Page capture, or
+			// switched away from the default Full Page state, leave them where
+			// they are -- they've made their choice. Just keep the image in
+			// regionImages so Region mode is pre-seeded if they navigate to it.
+			if (captureInProgress || fullPageComplete || currentMode !== "fullpage") {
+				return;
+			}
+			let regionBtn = document.querySelector('.mode-btn[data-mode="region"]') as HTMLElement;
+			if (regionBtn) {
+				(regionBtn as HTMLButtonElement).click();
+				regionBtn.focus();
+			}
+		});
+	}
+}
+
 port.onMessage.addListener((message: any) => {
 	if (message.action === "loadContent") {
 		// Page payload arrives inline on the loadContent port message — html,
@@ -2578,6 +2692,19 @@ port.onMessage.addListener((message: any) => {
 		invokedFromContextSelection = message.invokeMode === "ContextTextSelection";
 		contextImageSrcUrl = message.invokeData || "";
 		invokedFromContextImage = message.invokeMode === "ContextImage" && !!contextImageSrcUrl;
+
+		// Hide the content-frame's pixels (not its layout) the moment we know
+		// the user invoked via context menu. The iframe is display:block by
+		// default and renderContent() below will synchronously write the
+		// captured page DOM into it -- which paints to screen before onReady
+		// (waiting on images) eventually fires our auto-engage. Without this,
+		// the user briefly sees the full-page DOM "blink" before Selection /
+		// Region mode takes over. visibility:hidden keeps the iframe in
+		// layout so onReady's dimension measurements remain accurate for a
+		// potential later deferred Full Page kickoff.
+		if (invokedFromContextSelection || invokedFromContextImage) {
+			iframe.style.visibility = "hidden";
+		}
 
 		// Populate title and source URL (may not have been available on initial page load)
 		if (pageTitle && !titleField.value) { titleField.value = pageTitle; }
@@ -2806,12 +2933,27 @@ port.onMessage.addListener((message: any) => {
 					if (parseInt(htmlComputed.paddingTop, 10) > 0) { htmlEl.style.paddingTop = "0"; }
 					if (parseInt(htmlComputed.marginTop, 10) > 0) { htmlEl.style.marginTop = "0"; }
 
-					safeSend({
-						action: "dimensions",
+					// Cache the measured dimensions so a deferred Full Page kickoff
+					// (via switchToFullPage after a Selection/ContextImage invocation)
+					// can reuse them without re-measuring on a layout that may have
+					// already shifted from highlight/font edits in the preview-frame.
+					captureDimensions = {
 						viewportHeight: viewportH,
 						pageHeight: htmlEl.scrollHeight,
 						contentHeight: contentHeight
-					});
+					};
+					// Skip the eager full-page capture loop when the user invoked via
+					// the right-click context menu with explicit mode intent. The
+					// loop scrolls/captures the original tab over multiple seconds
+					// and produces a screenshot the user has no use for in Selection
+					// or Region (image-pre-seeded) flows. If the user later clicks
+					// the Full Page mode option, switchToFullPage() kicks off the
+					// loop then. Toolbar invocations keep the eager-capture behavior.
+					if (invokedFromContextSelection || invokedFromContextImage) {
+						enterReadyStateWithoutCapture();
+					} else {
+						kickoffFullPageCapture();
+					}
 				};
 
 				for (let i = 0; i < iframeImgs.length; i++) {
@@ -2965,15 +3107,18 @@ port.onMessage.addListener((message: any) => {
 				fullPageComplete = true;
 				showPreviewFrame();
 
-					// Only update left panel if still viewing Full Page mode
+					// Only update the left panel if the user is still viewing Full
+					// Page. previewContainer is shared with Region mode (thumbnails
+					// + remove buttons live there); clear it before showing the
+					// screenshot so a Region->FullPage deferred capture doesn't
+					// leave region thumbs stacked above the screenshot. When the
+					// user isn't in Full Page mode, leave the panel alone -- their
+					// current mode owns it. switchToFullPage renders fresh from
+					// fullPageDataUrl on entry, so we don't need to pre-populate.
 					if (currentMode === "fullpage") {
 						iframe.style.display = "none";
+						previewContainer.innerHTML = "";
 						previewContainer.style.display = "block";
-						let previewImg = document.createElement("img");
-						previewImg.src = dataUrl;
-						previewContainer.appendChild(previewImg);
-					} else {
-						// Still create the preview image for later switching
 						let previewImg = document.createElement("img");
 						previewImg.src = dataUrl;
 						previewContainer.appendChild(previewImg);
@@ -2990,50 +3135,18 @@ port.onMessage.addListener((message: any) => {
 						b.classList.remove("disabled");
 					});
 					enableSignout();
+					captureInProgress = false;
 					announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
 
-					// Selection mode (V1 parity): when invoked via the right-click
-					// "Clip Selection to OneNote" menu AND we captured a non-empty
-					// selection from the page, reveal the Selection mode button
-					// and auto-engage that mode. Other modes (Region/Bookmark/
-					// Article/PDF) stay reachable. If selection is empty or the
-					// invocation was via the toolbar icon, leave the button hidden
-					// and stay on Full Page.
-					if (invokedFromContextSelection && cachedSelectionHtml) {
-						let selBtn = document.querySelector('.mode-btn[data-mode="selection"]') as HTMLElement;
-						if (selBtn) {
-							selBtn.style.display = "";
-							setTimeout(function() {
-								(selBtn as HTMLButtonElement).click();
-								selBtn.focus();
-							}, 100);
-						}
-					} else if (invokedFromContextImage && contextImageSrcUrl) {
-						// Context-image mode (V1 parity): right-click "Clip Image to
-						// OneNote" pre-seeds regionImages with the right-clicked
-						// image and auto-engages Region mode. Fetch failures (taint /
-						// network) yield "" from imageToDataUrl; we fall back to
-						// Full Page so the user is never stranded.
-						imageToDataUrl(contextImageSrcUrl, function(dataUrl: string) {
-							if (dataUrl) {
-								regionImages.push(dataUrl);
-								let regionBtn = document.querySelector('.mode-btn[data-mode="region"]') as HTMLElement;
-								if (regionBtn) {
-									setTimeout(function() {
-										(regionBtn as HTMLButtonElement).click();
-										regionBtn.focus();
-									}, 100);
-									return;
-								}
-							}
-							let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
-							if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
-						});
-					} else {
-						// Set initial focus on Full Page mode button after capture
-						let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
-						if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
-					}
+					// Context-menu auto-engage (Selection / ContextImage) is handled
+					// at loadContent time via enterReadyStateWithoutCapture(); by the
+					// time finalize runs we're either coming from a toolbar invoke
+					// (no auto-engage needed) or from a deferred Full Page kickoff
+					// the user explicitly requested (user is already in Full Page
+					// mode and doesn't want to be bounced back). Just focus the
+					// Full Page mode button so the user sees their result is here.
+					let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
+					if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
 
 					safeSend({ action: "finalizeComplete" });
 			};
@@ -3278,6 +3391,8 @@ port.onMessage.addListener((message: any) => {
 			bookmarkLoaded = false;
 			cachedBookmarkHtml = "";
 			contentDocReady = false;
+			captureInProgress = false;
+			captureDimensions = null;
 			// Populate section dropdown — delay slightly to ensure localStorage is written by offscreen
 			populateSectionDropdown();
 			setTimeout(fetchFreshNotebooks, 300);
@@ -3325,6 +3440,8 @@ port.onMessage.addListener((message: any) => {
 		bookmarkLoaded = false;
 		cachedBookmarkHtml = "";
 		contentDocReady = false;
+		captureInProgress = false;
+		captureDimensions = null;
 		regionImages.length = 0;
 		currentMode = "fullpage";
 		// Unlock sidebar (clears disabled state from lockSidebar during save)
