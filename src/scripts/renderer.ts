@@ -141,6 +141,12 @@ let fullPageDataUrl = ""; // Cached full-page screenshot data URL for mode switc
 // can reuse them without re-measuring after layout has potentially shifted.
 let captureInProgress = false;
 let captureDimensions: { viewportHeight: number; pageHeight: number; contentHeight: number } | null = null;
+// Mode the user was in before entering Region. Restored on regionCancelled
+// (region overlay dismissed without drawing a rectangle) so a cancel from
+// e.g. Selection->Region returns to Selection rather than dropping the user
+// into Full Page (which, post-deferred-capture-commit, also kicks off the
+// screenshot loop -- definitely not what someone who just cancelled wanted).
+let modeBeforeRegion = "";
 let saveDone = false;
 let articleLoaded = false;
 let cachedArticleHtml = ""; // Article preview HTML (Readability or oEmbed-preview shape)
@@ -1046,16 +1052,26 @@ function switchToFullPage() {
 		statusText.textContent = strings.capturing;
 		saveBtn.disabled = true;
 		// Deferred capture: if loadContent measured dimensions but skipped the
-		// eager capture (Selection/ContextImage invocation), kick off the loop
-		// now. Mode buttons get disabled during the in-flight capture so the
-		// user can't whiplash modes mid-stitch. captureInProgress guards
-		// against double-fire if the user re-enters Full Page mode.
+		// eager capture (Selection/ContextImage/oEmbed-site invocation), kick
+		// off the loop now. Matches the same control-lock as the boot-time
+		// eager capture path (~line 920): non-fullpage mode buttons disabled,
+		// signout disabled (clicking it mid-capture corrupts state), progress
+		// bar hidden until the first drawCapture, and a screen-reader
+		// announcement for "Capturing...". titleField / noteField /
+		// sectionPicker stay editable so the user can prep their save while
+		// the loop runs. captureInProgress guards against double-fire if the
+		// user re-enters Full Page mode mid-capture.
 		if (captureDimensions && !captureInProgress) {
 			document.querySelectorAll(".mode-btn").forEach((b: Element) => {
 				if (b.getAttribute("data-mode") !== "fullpage") {
 					(b as HTMLButtonElement).disabled = true;
+					b.classList.add("disabled");
 				}
 			});
+			disableSignout();
+			announceToScreenReader(strings.capturing);
+			let progressTrack = document.getElementById("progress-bar-track") as HTMLElement;
+			if (progressTrack) { progressTrack.style.display = "none"; }
 			kickoffFullPageCapture();
 		}
 	}
@@ -1889,6 +1905,14 @@ function startRegionCapture() {
 
 function switchToRegion() {
 	saveWorkingState();
+	// Stash the outgoing mode so a cancel from the region overlay can restore
+	// the user to where they were instead of dropping them into Full Page.
+	// Skip the stash when already in region (e.g. user clicked Region while
+	// looking at thumbnails) so a quick cancel still falls back to the
+	// originally-stashed prior mode rather than self-referencing.
+	if (currentMode !== "region") {
+		modeBeforeRegion = currentMode;
+	}
 	resetSaveState();
 	currentMode = "region";
 	iframe.style.display = "none";
@@ -2169,7 +2193,12 @@ function enterPdfMode(url: string) {
 	}
 	pdfAttachWarning.textContent = strings.pdfTooLarge;
 
-	// Hide non-PDF mode buttons, show PDF + Region + Bookmark, enable them (they start disabled during capture)
+	// Hide non-PDF mode buttons, show PDF + Region + Bookmark, enable them (they start disabled during capture).
+	// Clear .selected/aria-pressed on every other mode too -- previously the else
+	// branch only set display:none, leaving Full Page's initial .selected class
+	// intact. With two buttons claiming .selected, the dropdown trigger's
+	// querySelector(".mode-btn.selected") picked the DOM-first match (Full Page)
+	// and rendered the wrong icon/label while the PDF preview was correct.
 	document.querySelectorAll(".mode-btn").forEach(function(btn) {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === "pdf") {
@@ -2186,8 +2215,13 @@ function enterPdfMode(url: string) {
 			btn.setAttribute("aria-pressed", "false");
 		} else {
 			(btn as HTMLElement).style.display = "none";
+			btn.classList.remove("selected");
+			btn.setAttribute("aria-pressed", "false");
 		}
 	});
+	// enterPdfMode bypasses the mode-btn click handler (which is where the
+	// dropdown trigger normally re-syncs), so push the trigger update manually.
+	syncTriggerToSelected();
 	enableSignout();
 
 	// Show PDF options, hide capture panel
@@ -3232,25 +3266,18 @@ port.onMessage.addListener((message: any) => {
 	if (message.action === "regionCancelled") {
 		capturePanel.style.display = "none";
 		if (regionImages.length === 0) {
-			// Matches legacy clipper behavior: cancelling a fresh region selection
-			// snaps back to the page's default mode — Full Page on web pages,
-			// PDF Document on PDF pages (Full Page mode is hidden in PDF flow).
-			// Focus stays on the Region mode button so the user can re-enter
-			// region mode immediately.
-			let fallbackMode = pdfMode ? "pdf" : "fullpage";
-			document.querySelectorAll(".mode-btn").forEach((b) => {
-				b.classList.remove("selected");
-				b.setAttribute("aria-pressed", "false");
-			});
-			let fallbackBtn = document.querySelector('.mode-btn[data-mode="' + fallbackMode + '"]');
-			if (fallbackBtn) { fallbackBtn.classList.add("selected"); fallbackBtn.setAttribute("aria-pressed", "true"); }
-			if (pdfMode) {
-				switchToPdf();
-				setTelemetryContext(Context.Custom.ContentType, "Pdf");
-			} else {
-				switchToFullPage();
-				setTelemetryContext(Context.Custom.ContentType, "FullPage");
-			}
+			// Restore the mode the user was in before they entered Region.
+			// Click-routing through the actual mode-btn click handler picks up
+			// for free: .selected/aria-pressed state, syncTriggerToSelected
+			// for the dropdown trigger, closeModeMenu, telemetry context, and
+			// the mode-specific switchToXxx UI transition. Falls back to PDF
+			// on PDF pages / FullPage otherwise if we somehow have no stashed
+			// mode (shouldn't happen -- switchToRegion always stashes -- but
+			// defensive). Focus stays on the Region mode button so the user
+			// can re-enter region mode immediately.
+			let fallbackMode = modeBeforeRegion || (pdfMode ? "pdf" : "fullpage");
+			let fallbackBtn = document.querySelector('.mode-btn[data-mode="' + fallbackMode + '"]') as HTMLButtonElement;
+			if (fallbackBtn) { fallbackBtn.click(); }
 			let regionBtn = document.querySelector('.mode-btn[data-mode="region"]') as HTMLElement;
 			if (regionBtn) { setTimeout(function() { regionBtn.focus(); }, 0); }
 		} else {
@@ -3428,6 +3455,7 @@ port.onMessage.addListener((message: any) => {
 			contentDocReady = false;
 			captureInProgress = false;
 			captureDimensions = null;
+			modeBeforeRegion = "";
 			// Populate section dropdown — delay slightly to ensure localStorage is written by offscreen
 			populateSectionDropdown();
 			setTimeout(fetchFreshNotebooks, 300);
@@ -3478,6 +3506,7 @@ port.onMessage.addListener((message: any) => {
 		contentDocReady = false;
 		captureInProgress = false;
 		captureDimensions = null;
+		modeBeforeRegion = "";
 		regionImages.length = 0;
 		currentMode = "fullpage";
 		// Unlock sidebar (clears disabled state from lockSidebar during save)
