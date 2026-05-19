@@ -2143,6 +2143,7 @@ function switchToPdf() {
 		renderPdfPagesInPreview(0, pdfInitialPageLoad);
 		setupPdfPreviewLazyLoad();
 		updatePdfPageSelection();
+		renderPdfAttachmentIndicator();
 	}
 	saveBtn.disabled = !pdfDoc;
 	saveBtn.textContent = strings.saveToOneNote;
@@ -2303,11 +2304,42 @@ function setupPdfOptions() {
 
 	pdfAttachCheckbox.addEventListener("change", function() {
 		pdfAttach = pdfAttachCheckbox.checked;
+		renderPdfAttachmentIndicator();
 	});
 
 	pdfDistributeCheckbox.addEventListener("change", function() {
 		pdfDistribute = pdfDistributeCheckbox.checked;
 	});
+}
+
+// Visual indicator at the top of the PDF preview area showing that the PDF
+// file itself will be attached to the OneNote page (in addition to the
+// per-page images). Mirrors V1's PdfPreviewAttachment component: 84x96 box
+// with a 48px PDF icon over the filename (without extension). Removed +
+// re-added when the user toggles the attach checkbox, and re-added after
+// each previewContainer.innerHTML="" rebuild (enterPdfMode / switchToPdf).
+function renderPdfAttachmentIndicator() {
+	let existing = document.getElementById("pdf-attachment-indicator");
+	if (existing && existing.parentNode) { existing.parentNode.removeChild(existing); }
+	if (!pdfAttach || !previewContainer) { return; }
+	let url = sourceUrlText.textContent || pdfSourceUrl;
+	let fullName = getPdfFileName(url);
+	let nameOnly = fullName.replace(/\.[^.]+$/, "");
+	let indicator = document.createElement("div");
+	indicator.id = "pdf-attachment-indicator";
+	indicator.className = "pdf-attachment-indicator";
+	indicator.setAttribute("role", "img");
+	indicator.setAttribute("aria-label", strings.pdfAttachFile + ": " + fullName);
+	let img = document.createElement("img");
+	img.src = "images/editorOptions/pdf_attachment_icon.png";
+	img.alt = "";
+	let label = document.createElement("div");
+	label.className = "file-name";
+	label.textContent = nameOnly;
+	label.title = fullName;
+	indicator.appendChild(img);
+	indicator.appendChild(label);
+	previewContainer.insertBefore(indicator, previewContainer.firstChild);
 }
 
 // Update preview to gray out unselected pages (matches legacy opacity:0.3 behavior)
@@ -2373,6 +2405,7 @@ function loadPdf(url: string) {
 			// Render initial pages
 			renderPdfPagesInPreview(0, pdfInitialPageLoad);
 			setupPdfPreviewLazyLoad();
+			renderPdfAttachmentIndicator();
 
 			announceToScreenReader(strings.modePdf + " — " + pdfPageCount + " " + strings.page + (pdfPageCount !== 1 ? "s" : ""));
 		}, function(err: any) {
@@ -2414,6 +2447,10 @@ function updateAttachCheckbox() {
 		pdfAttach = false;
 		pdfAttachLabel.classList.add("disabled");
 		pdfAttachWarning.style.display = "";
+		// Drop the visual indicator if it was already rendered (e.g. checkbox
+		// was checked by default and then we got a too-large PDF after the
+		// initial render). The user has no way to re-enable from here.
+		renderPdfAttachmentIndicator();
 	}
 }
 

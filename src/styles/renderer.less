@@ -1189,6 +1189,30 @@ iframe#preview-frame {
 		text-align: center; padding: 20px; color: #666;
 		font-size: 13px;
 	}
+	// Visual indicator that the PDF file itself will be attached (in addition
+	// to the per-page images). Mirrors V1's .attachment-overlay (84x96 box,
+	// 48px icon, filename below). V1 positioned this top-left of the preview
+	// area (margin:0 on the box); we keep that with padding on the
+	// surrounding container instead of centering. Inserted as the first child
+	// of #preview-container when "Attach PDF file" is checked.
+	.pdf-attachment-indicator {
+		width: 84px; min-height: 96px;
+		margin-inline-start: 16px; margin-top: 16px; margin-bottom: 8px;
+		text-align: center; box-sizing: border-box;
+		img {
+			width: 48px; height: 48px;
+			margin: 5px 18px;
+			display: block;
+		}
+		.file-name {
+			overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+			max-width: 84px;
+			padding: 0;
+			font-size: 13px; line-height: 1.5em;
+			text-align: center; word-wrap: normal;
+			color: @colorNeutralForeground2;
+		}
+	}
 }
 
 // --- Screen reader only (mirrors old .srOnly pattern) ---
