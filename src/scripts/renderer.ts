@@ -2219,9 +2219,6 @@ function enterPdfMode(url: string) {
 			btn.setAttribute("aria-pressed", "false");
 		}
 	});
-	// enterPdfMode bypasses the mode-btn click handler (which is where the
-	// dropdown trigger normally re-syncs), so push the trigger update manually.
-	syncTriggerToSelected();
 	enableSignout();
 
 	// Show PDF options, hide capture panel
@@ -2549,88 +2546,10 @@ modeButtons.forEach((btn, idx) => {
 			switchToPdf();
 			setTelemetryContext(Context.Custom.ContentType, "Pdf");
 		}
-		// Sync the trigger (reflects current mode) and close the popover menu.
-		syncTriggerToSelected();
-		closeModeMenu();
 		// Announce mode change to screen readers
 		let modeLabel = btn.querySelector("span");
 		if (modeLabel) { announceToScreenReader(modeLabel.textContent || ""); }
 	});
-});
-
-// Mode menu (Fluent 2 prominent MenuButton): the #mode-trigger button shows
-// the current mode (icon + label + chevron); clicking opens #mode-panel as a
-// popover with all available modes. Replaces the previous always-visible
-// vertical toolbar -- saves vertical space, especially when the conditional
-// PDF / Selection modes are revealed. The .mode-btn buttons remain functional
-// and keep their selectors, so the rest of the renderer doesn't need updating.
-let modeTrigger = document.getElementById("mode-trigger") as HTMLButtonElement;
-let modePanel = document.getElementById("mode-panel") as HTMLDivElement;
-let modeTriggerLabel = document.getElementById("mode-trigger-label") as HTMLSpanElement;
-let modeTriggerIconSlot = document.getElementById("mode-trigger-icon-slot") as HTMLSpanElement;
-
-function syncTriggerToSelected() {
-	let sel = document.querySelector(".mode-btn.selected") as HTMLElement;
-	if (!sel || !modeTriggerLabel || !modeTriggerIconSlot) { return; }
-	let icon = sel.querySelector(".mode-icon, .mode-icon-img");
-	modeTriggerIconSlot.innerHTML = "";
-	if (icon) { modeTriggerIconSlot.appendChild(icon.cloneNode(true)); }
-	let span = sel.querySelector("span");
-	if (span) { modeTriggerLabel.textContent = span.textContent || ""; }
-}
-
-function openModeMenu() {
-	if (!modePanel || !modeTrigger) { return; }
-	modePanel.classList.add("open");
-	modeTrigger.setAttribute("aria-expanded", "true");
-	// Focus the first non-disabled, visible mode button so arrow-key nav can begin.
-	let buttons = modePanel.querySelectorAll(".mode-btn");
-	for (let i = 0; i < buttons.length; i++) {
-		let b = buttons[i] as HTMLButtonElement;
-		if (!b.disabled && b.style.display !== "none") { b.focus(); break; }
-	}
-}
-
-function closeModeMenu() {
-	if (!modePanel || !modeTrigger) { return; }
-	modePanel.classList.remove("open");
-	modeTrigger.setAttribute("aria-expanded", "false");
-}
-
-if (modeTrigger) {
-	modeTrigger.addEventListener("click", () => {
-		if (modePanel.classList.contains("open")) { closeModeMenu(); } else { openModeMenu(); }
-	});
-	modeTrigger.addEventListener("keydown", (e: KeyboardEvent) => {
-		if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
-			e.preventDefault();
-			openModeMenu();
-		} else if (e.key === "Escape") {
-			closeModeMenu();
-		}
-	});
-	// Initial sync — trigger reflects the default-selected fullpage mode.
-	syncTriggerToSelected();
-}
-
-// Escape inside the menu closes it and returns focus to the trigger.
-modeButtons.forEach((btn) => {
-	btn.addEventListener("keydown", (e: KeyboardEvent) => {
-		if (e.key === "Escape") {
-			e.preventDefault();
-			closeModeMenu();
-			if (modeTrigger) { modeTrigger.focus(); }
-		}
-	});
-});
-
-// Click outside the trigger + menu closes the menu.
-document.addEventListener("click", (e: MouseEvent) => {
-	if (!modePanel || !modeTrigger) { return; }
-	if (!modePanel.classList.contains("open")) { return; }
-	let target = e.target as Node;
-	if (modeTrigger.contains(target) || modePanel.contains(target)) { return; }
-	closeModeMenu();
 });
 
 // --- Full-page capture lifecycle helpers (used by loadContent + switchToFullPage) ---
@@ -3268,9 +3187,8 @@ port.onMessage.addListener((message: any) => {
 		if (regionImages.length === 0) {
 			// Restore the mode the user was in before they entered Region.
 			// Click-routing through the actual mode-btn click handler picks up
-			// for free: .selected/aria-pressed state, syncTriggerToSelected
-			// for the dropdown trigger, closeModeMenu, telemetry context, and
-			// the mode-specific switchToXxx UI transition. Falls back to PDF
+			// .selected/aria-pressed state, telemetry context, and the mode-
+			// specific switchToXxx UI transition for free. Falls back to PDF
 			// on PDF pages / FullPage otherwise if we somehow have no stashed
 			// mode (shouldn't happen -- switchToRegion always stashes -- but
 			// defensive). Focus stays on the Region mode button so the user

@@ -460,10 +460,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 			contentWidth = renderWidth - sidebarWidth;
 		}
 
-		// Height: cap at 900px so the popup doesn't fill near-full-height on
+		// Height: cap at 980px so the popup doesn't fill near-full-height on
 		// 1080p+ monitors. Floor at 600 so capture progress UI fits comfortably.
 		// On smaller browsers we still shrink to fit (browserHeight - margin).
-		let renderHeight = Math.max(Math.min(browserHeight - screenMargin, 900), 600);
+		let renderHeight = Math.max(Math.min(browserHeight - screenMargin, 980), 600);
 
 		// Position: align with browser window's top-left
 		let renderLeft = browserLeft;
