@@ -541,6 +541,27 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					}
 				}
 
+				// --- V1 parity: refresh user state on renderer open ---
+				// Matches legacy extensionWorkerBase.getInitialUser. The renderer
+				// requests this on boot before kicking off the notebooks fetch,
+				// so the OneNote API call uses a fresh access token.
+				// auth.updateUserInfoData is cache-aware via clipperData.getFreshValue
+				// with TTL = (accessTokenExpiration*1000) - 180000 -- if the cached
+				// token is still within its expiry-minus-3-minutes window, returns
+				// cached without a network call. Otherwise hits /webclipper/userinfo
+				// (which uses the refresh-token cookie) and writes a fresh token to
+				// localStorage. The renderer re-reads localStorage on userRefreshed.
+				if (message.action === "refreshUser") {
+					// On both success and failure, just notify "done" -- the renderer
+					// inspects localStorage to decide what to do next, mirroring V1's
+					// data-driven pattern (V1 returned the UserInfo and the UI looked
+					// at .user presence; here the equivalent state is in localStorage).
+					let notify = () => {
+						try { port.postMessage({ action: "userRefreshed" }); } catch (e) { /* port may be dead */ }
+					};
+					this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.InitialRetrieval).then(notify, notify);
+				}
+
 				// --- Sign-in from renderer (self-contained sign-in) ---
 				if (message.action === "signIn") {
 					let authType: AuthType = (AuthType as any)[message.authType];

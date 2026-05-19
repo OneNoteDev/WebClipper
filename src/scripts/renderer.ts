@@ -921,7 +921,14 @@ async function fetchFreshNotebooks() {
 		logTelemetryEvent(getNotebooksEvent);
 	}
 }
-fetchFreshNotebooks();
+// V1 parity (matches legacy clipper.tsx getInitialUser pattern): defer the
+// notebooks fetch until the worker has confirmed user state is fresh. The
+// `refreshUser` port message is sent at the bottom of this file, right
+// alongside the existing `ready` message, AFTER the port.onMessage listener
+// is registered. populateSectionDropdown() above already populated the UI
+// from the localStorage cache synchronously, so if the worker's refresh
+// somehow hangs and userRefreshed never arrives, the user still sees the
+// cached notebook list -- nothing additional to recover here.
 
 // Lock all interactive controls during initial capture — prevents race conditions
 // (e.g., clicking sign-out mid-capture corrupts state)
@@ -2683,6 +2690,14 @@ function triggerInitialModeAutoEngage() {
 }
 
 port.onMessage.addListener((message: any) => {
+	// V1 parity: worker has finished refreshing user state -- localStorage is
+	// now current. fetchFreshNotebooks inspects it for an accessToken and
+	// returns early if absent, so we don't need a success flag here.
+	if (message.action === "userRefreshed") {
+		fetchFreshNotebooks();
+		return;
+	}
+
 	if (message.action === "loadContent") {
 		// Page payload arrives inline on the loadContent port message — html,
 		// baseUrl, title, url, contentType, plus the localFileNotAllowed flag.
@@ -3837,3 +3852,16 @@ let signingIn = false; // Used by sign-in flow
 
 // Signal that the renderer is ready
 safeSend({ action: "ready" });
+
+// V1 parity (matches legacy clipper.tsx getInitialUser pattern): ask the
+// worker to refresh user state before kicking off the notebooks fetch. The
+// worker's auth.updateUserInfoData is cache-aware via clipperData.getFreshValue
+// with TTL = (accessTokenExpiration*1000) - 180000 -- skips the network when
+// the cached token is still within its expiry-minus-3-minutes window, so the
+// steady-state cost is just a port round-trip. When the cached token IS stale,
+// worker hits /webclipper/userinfo using the refresh-token cookie and writes
+// a fresh access token to localStorage. The userRefreshed handler in the main
+// port.onMessage listener then calls fetchFreshNotebooks. If userRefreshed
+// somehow never arrives (worker hung), populateSectionDropdown() has already
+// rendered cached notebooks at module-load, so the user isn't stranded.
+safeSend({ action: "refreshUser" });
