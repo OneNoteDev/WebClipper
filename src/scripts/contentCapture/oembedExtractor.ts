@@ -109,19 +109,8 @@ export function sanitizeProviderHtml(html: string): string {
 	return doc.body ? doc.body.innerHTML : "";
 }
 
-/**
- * Synchronous sibling of tryOEmbed: returns true if pageUrl matches a known
- * oEmbed provider hostname pattern, without doing the network fetch. Used
- * for the "site-suggested initial mode" routing in the renderer -- we can
- * skip the eager full-page capture loop on YouTube/Vimeo pages and open
- * directly to Article mode, since the actual tryOEmbed call (in
- * extractArticle) will follow and either succeed or fall back to Readability
- * gracefully. Worst case for a false positive (provider hostname matches
- * but the specific URL has no oEmbed): user lands in Article mode with
- * Readability output instead of Full Page screenshot -- still a reasonable
- * result, and the user can switch to Full Page (which triggers deferred
- * capture) if they want the screenshot.
- */
+// Sync hostname check (no fetch). Used by the renderer to skip eager capture
+// on YouTube/Vimeo and route directly to Article mode.
 export function isOEmbedProviderUrl(pageUrl: string): boolean {
 	return matchProvider(pageUrl) !== null;
 }

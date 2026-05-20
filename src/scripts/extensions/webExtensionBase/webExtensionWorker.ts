@@ -46,14 +46,9 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private noOpTrackerInvoked: boolean;
 	private activeRendererCleanup: () => void;
 	private activeRendererWindowId: number;
-	// Set by closeAllFramesAndInvokeClipper from the InvokeOptions passed by the
-	// caller; consumed by the contentCapture listener so the renderer's
-	// loadContent payload can carry the original invocation intent
-	// (e.g. ContextTextSelection -> auto-engage Selection mode after screenshot,
-	//  ContextImage -> auto-engage Region mode with srcUrl pre-seeded).
+	// Original InvokeOptions, set by closeAllFramesAndInvokeClipper and forwarded
+	// to the renderer via loadContent so it can auto-engage the right mode.
 	private pendingInvokeMode: string;
-	// Companion to pendingInvokeMode: the InvokeOptions.invokeDataForMode value
-	// (image srcUrl for ContextImage, selected text for PDF-plugin selection).
 	private pendingInvokeData: string;
 
 	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
@@ -130,10 +125,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 			this.logClipperInvoke(invokeInfo, options);
 		});
 
-		// Capture invokeMode + invokeDataForMode for the contentCapture listener
-		// to forward to the renderer. ContextTextSelection -> auto-engage
-		// Selection mode after screenshot; ContextImage -> auto-engage Region
-		// mode with the right-clicked image (srcUrl) pre-seeded.
+		// Capture invocation intent for the contentCapture listener to forward.
 		this.pendingInvokeMode = (options && options.invokeMode !== undefined)
 			? InvokeMode[options.invokeMode]
 			: "";
@@ -541,21 +533,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					}
 				}
 
-				// --- V1 parity: refresh user state on renderer open ---
-				// Matches legacy extensionWorkerBase.getInitialUser. The renderer
-				// requests this on boot before kicking off the notebooks fetch,
-				// so the OneNote API call uses a fresh access token.
-				// auth.updateUserInfoData is cache-aware via clipperData.getFreshValue
-				// with TTL = (accessTokenExpiration*1000) - 180000 -- if the cached
-				// token is still within its expiry-minus-3-minutes window, returns
-				// cached without a network call. Otherwise hits /webclipper/userinfo
-				// (which uses the refresh-token cookie) and writes a fresh token to
-				// localStorage. The renderer re-reads localStorage on userRefreshed.
+				// V1 parity: refresh user state on renderer open (legacy getInitialUser).
+				// updateUserInfoData is cache-aware — no network call if cached token
+				// is fresh. Renderer reads localStorage on userRefreshed.
 				if (message.action === "refreshUser") {
-					// On both success and failure, just notify "done" -- the renderer
-					// inspects localStorage to decide what to do next, mirroring V1's
-					// data-driven pattern (V1 returned the UserInfo and the UI looked
-					// at .user presence; here the equivalent state is in localStorage).
 					let notify = () => {
 						try { port.postMessage({ action: "userRefreshed" }); } catch (e) { /* port may be dead */ }
 					};

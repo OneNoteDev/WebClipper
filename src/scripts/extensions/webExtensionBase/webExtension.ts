@@ -42,20 +42,10 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 
 		this.registerBrowserButton();
 
-		// Register the contextMenus.onClicked listener SYNCHRONOUSLY at worker
-		// startup, before any async work. MV3 service workers unload aggressively;
-		// when a context-menu click wakes the worker, Chrome dispatches the event
-		// during initialization. If the listener isn't registered yet (because
-		// it's gated behind an async chain like clipperIdProcessed -> locStrings
-		// fetch -> contextMenus.removeAll), the event is silently dropped --
-		// surfacing as "first right-click does nothing, second one works." The
-		// handler itself defers actual clipper invocation on clipperIdProcessed
-		// via invokeClipperInTab, so we don't need state to be ready at listener
-		// registration time; we just need the listener wired up.
+		// Listener registers synchronously at SW startup so context-menu clicks
+		// during a wake-up aren't dropped (MV3 SWs unload aggressively). Menu
+		// items themselves are async because their titles need locStrings.
 		this.registerContextMenuClickListener();
-
-		// Menu item creation stays async -- the titles need localized strings,
-		// so we wait for clipperIdProcessed + the locStrings fetch chain.
 		this.clipperIdProcessed.then(() => {
 			this.registerContextMenuItems();
 		});
@@ -203,12 +193,8 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		});
 	}
 
-	// Synchronous companion to registerContextMenuItems. Called directly from
-	// the constructor (no async chain) so the listener is wired up before the
-	// first event-loop tick, ensuring no context-menu click is dropped during
-	// an MV3 service-worker wake-up. The handler dispatches based on the menu
-	// item id alone -- no dependency on locStrings (those are needed only for
-	// menu *titles*, set during item creation).
+	// Synchronous part of context-menu setup — dispatches on info.menuItemId only,
+	// no locStrings dependency. See constructor for why this is split out.
 	private registerContextMenuClickListener() {
 		WebExtension.browser.contextMenus.onClicked.addListener((info, tab?: Tab) => {
 			if (!tab) {

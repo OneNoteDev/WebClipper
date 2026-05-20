@@ -134,18 +134,11 @@ let signoutLink = document.getElementById("signout-link") as HTMLAnchorElement;
 let currentMode = "fullpage";
 let fullPageComplete = false;
 let fullPageDataUrl = ""; // Cached full-page screenshot data URL for mode switching
-// Capture lifecycle state. captureInProgress is true between sending `dimensions`
-// to the worker and receiving the `finalize` complete signal back; used to
-// disable mode buttons during deferred capture. captureDimensions stashes the
-// measured iframe dimensions so deferred kickoff (Selection/ContextImage paths)
-// can reuse them without re-measuring after layout has potentially shifted.
+// captureInProgress: true between dimensions send and finalize. captureDimensions:
+// cached iframe measurements for deferred kickoff (Selection / ContextImage paths).
 let captureInProgress = false;
 let captureDimensions: { viewportHeight: number; pageHeight: number; contentHeight: number } | null = null;
-// Mode the user was in before entering Region. Restored on regionCancelled
-// (region overlay dismissed without drawing a rectangle) so a cancel from
-// e.g. Selection->Region returns to Selection rather than dropping the user
-// into Full Page (which, post-deferred-capture-commit, also kicks off the
-// screenshot loop -- definitely not what someone who just cancelled wanted).
+// Outgoing mode before Region — restored if user cancels region selection.
 let modeBeforeRegion = "";
 let saveDone = false;
 let articleLoaded = false;
@@ -153,25 +146,15 @@ let cachedArticleHtml = ""; // Article preview HTML (Readability or oEmbed-previ
 let cachedOEmbedData: OEmbedData | null = null; // Raw oEmbed payload; if present, save path builds iframe-based HTML from this instead of cachedArticleHtml
 let cachedOEmbedDescription = ""; // og:description (or fallback chain) from page DOM; oEmbed responses typically don't carry the full description
 let cachedPageMetadata: { [key: string]: string } | null = null; // PageMetadata sent in save msg; worker emits each entry as a <meta> tag (matches V1 OneNotePage)
-// Selection-mode state (context-menu "Clip Selection to OneNote"). selectionHtml
-// is sanitized in contentCaptureInject; we render it through the article-mode
-// preview/save wiring so highlighter + font controls work transparently.
-// invokedFromContextSelection gates whether to auto-engage Selection mode after
-// the screenshot completes (true only when user used right-click menu).
+// Right-click "Clip Selection to OneNote". cachedSelectionHtml is sanitized
+// page-side; invokedFromContextSelection gates auto-engage of Selection mode.
 let cachedSelectionHtml = "";
 let invokedFromContextSelection = false;
-// Context-image state (context-menu "Clip Image to OneNote"). srcUrl is the
-// image URL captured by the worker from chrome.contextMenus.OnClickData.srcUrl;
-// when set, the renderer fetches it as a data URL, pushes into regionImages,
-// and auto-engages Region mode after the screenshot completes.
+// Right-click "Clip Image to OneNote". srcUrl is fetched -> data URL -> region thumb.
 let contextImageSrcUrl = "";
 let invokedFromContextImage = false;
-// Site-suggested initial mode. Set when the captured page URL matches a known
-// oEmbed provider (YouTube, Vimeo) on a toolbar invocation -- skips the
-// eager full-page capture loop and opens directly in Article mode, where
-// extractArticle's oEmbed branch will render the embedded video. Mirrors the
-// context-menu skip-capture path. Stays false on context-menu invocations
-// (those have their own explicit mode intent that takes precedence).
+// True when pageUrl matches a known oEmbed provider on a toolbar invocation —
+// triggers skip-capture + auto-engage Article. Context-menu invokes take precedence.
 let siteSuggestsArticleMode = false;
 let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from content-frame DOM
 let bookmarkLoaded = false;
@@ -921,15 +904,6 @@ async function fetchFreshNotebooks() {
 		logTelemetryEvent(getNotebooksEvent);
 	}
 }
-// V1 parity (matches legacy clipper.tsx getInitialUser pattern): defer the
-// notebooks fetch until the worker has confirmed user state is fresh. The
-// `refreshUser` port message is sent at the bottom of this file, right
-// alongside the existing `ready` message, AFTER the port.onMessage listener
-// is registered. populateSectionDropdown() above already populated the UI
-// from the localStorage cache synchronously, so if the worker's refresh
-// somehow hangs and userRefreshed never arrives, the user still sees the
-// cached notebook list -- nothing additional to recover here.
-
 // Lock all interactive controls during initial capture — prevents race conditions
 // (e.g., clicking sign-out mid-capture corrupts state)
 document.querySelectorAll(".mode-btn").forEach((btn) => {
@@ -977,11 +951,8 @@ function lockSidebar() {
 }
 
 function unlockSidebar() {
-	// Re-enable all mode buttons unconditionally. fullPageComplete is no longer
-	// the right gate: in the Selection / ContextImage skip-capture path, no
-	// full-page capture has run yet but the other modes (Selection, Article,
-	// Bookmark, Region) are perfectly functional. switchToFullPage handles
-	// deferred-capture kickoff on its own if the user enters it.
+	// All modes are reachable post-save; switchToFullPage handles deferred
+	// capture on its own when entered.
 	document.querySelectorAll(".mode-btn").forEach((b) => {
 		(b as HTMLButtonElement).disabled = false;
 	});
@@ -1014,12 +985,8 @@ function resetSaveState() {
 	if (errBanner) { errBanner.style.display = "none"; }
 }
 
-// Save article working state (highlights, edits) before switching away
-// Captures the preview-frame body's current innerHTML into the per-mode
-// working-state slot, so highlights/edits survive a switch-away/switch-back.
-// V1 equivalent: EditorPreviewComponentBase.handleBodyChange updated the
-// per-mode previewBodyHtml in clipperState; we keep two scalars instead.
-// Article and selection share the preview-frame, so dispatch by currentMode.
+// Persist preview-frame body for article/selection so highlights survive
+// mode switches (V1 parity: EditorPreviewComponentBase.handleBodyChange).
 function saveWorkingState() {
 	let pDoc = previewFrame.contentDocument;
 	if (!pDoc || !pDoc.body) { return; }
@@ -1049,25 +1016,15 @@ function switchToFullPage() {
 		capturePanel.style.display = "none";
 	} else {
 		iframe.style.display = "block";
-		// Reset the visibility:hidden that loadContent applied for skip-capture
-		// flows -- captureVisibleTab needs the content-frame painted to capture
-		// it. Without this, the deferred capture would grab an invisible (blank)
-		// viewport.
+		// Skip-capture flows hid the iframe via visibility:hidden; restore so
+		// captureVisibleTab grabs real pixels.
 		iframe.style.visibility = "";
 		previewContainer.style.display = "none";
 		capturePanel.style.display = "flex";
 		statusText.textContent = strings.capturing;
 		saveBtn.disabled = true;
-		// Deferred capture: if loadContent measured dimensions but skipped the
-		// eager capture (Selection/ContextImage/oEmbed-site invocation), kick
-		// off the loop now. Matches the same control-lock as the boot-time
-		// eager capture path (~line 920): non-fullpage mode buttons disabled,
-		// signout disabled (clicking it mid-capture corrupts state), progress
-		// bar hidden until the first drawCapture, and a screen-reader
-		// announcement for "Capturing...". titleField / noteField /
-		// sectionPicker stay editable so the user can prep their save while
-		// the loop runs. captureInProgress guards against double-fire if the
-		// user re-enters Full Page mode mid-capture.
+		// Deferred capture kickoff — mirrors boot-time lock (mode btns / signout
+		// disabled, progress bar reset). titleField/noteField stay editable.
 		if (captureDimensions && !captureInProgress) {
 			document.querySelectorAll(".mode-btn").forEach((b: Element) => {
 				if (b.getAttribute("data-mode") !== "fullpage") {
@@ -1192,15 +1149,9 @@ function extractArticle() {
 					saveBtn.textContent = strings.saveToOneNote;
 				}
 			};
-			// V1 parity: V1's augmentPage ran Readability on ALL article-mode pages
-			// (including video pages) and used article.excerpt for the description
-			// + article.publishedTime for the timestamp (augmentationHelper.ts:62-71).
-			// It then ADDED video iframes on top via addEmbeddedVideosWhereSupported.
-			// Our oEmbed path skips Readability entirely, which leaves us reading
-			// YouTube's often-truncated og:description as the only description source.
-			// Run Readability alongside oEmbed JUST to recover its richer excerpt +
-			// publishedTime; iframe/title/author/thumbnail stay from oEmbed (V1's
-			// video extractor is replaced by oEmbed for that part).
+			// V1 parity (augmentationHelper): run Readability alongside oEmbed to
+			// recover article.excerpt + publishedTime. YouTube's og:description is
+			// often truncated, and oEmbed doesn't carry a description field.
 			if (iframeDoc) {
 				let docClone = iframeDoc.cloneNode(true) as Document;
 				(import("@mozilla/readability") as any).then(function(mod: any) {
@@ -1223,12 +1174,10 @@ function extractArticle() {
 	});
 }
 
-// Preview rendering for oEmbed responses: a static thumbnail with title /
-// author / provider attribution and the page description. We avoid
-// rendering the provider's iframe here because the sandboxed preview-frame
-// blocks the embedded player's JS, which would surface a broken "Unable
-// to execute JavaScript" UI. The iframe still flows through to save --
-// OneNote isn't sandboxed.
+// Preview: static thumbnail + title/author/description. The provider iframe
+// is omitted here because the sandboxed preview-frame can't run its JS;
+// the iframe flows through to save (composeOEmbedForSave) where OneNote
+// renders it without the sandbox.
 function composeOEmbedForPreview(data: OEmbedData, pageDescription: string): string {
 	let html = "<div style=\"margin-bottom:16px;\">";
 	if (data.thumbnail_url) {
@@ -1276,13 +1225,8 @@ function composeOEmbedForPreview(data: OEmbedData, pageDescription: string): str
 	return html;
 }
 
-// Save-side composition: emit the actual provider iframe (sanitized) so
-// OneNote's page renderer recognizes and embeds the video player. Title,
-// author and description render below the iframe as a simple caption.
-// Adds `data-original-src` to every iframe (the marker OneNote's renderer
-// uses to recognize video embeds, matching V1's YouTubeVideoExtractor
-// behavior) and normalizes iframe dimensions to V1's 600x338 for visual
-// parity with the legacy clipper output.
+// Save-side: emit the provider iframe (sanitized) with `data-original-src` and
+// V1's 600x338 dimensions so OneNote's renderer recognizes the video embed.
 function composeOEmbedForSave(data: OEmbedData, pageDescription: string): string {
 	let body = "";
 	if (data.type === "photo" && data.url) {
@@ -1399,17 +1343,9 @@ function showArticleError() {
 	}
 }
 
-// Clean HTML to match ONML (OneNote Markup Language) constraints, mirroring
-// V1's toOnml() pipeline. Applied at:
-//   - Readability extraction (article mode fallback path)
-//   - loadContent handler for cachedSelectionHtml (selection mode)
-// The oEmbed article path builds its own iframe-bearing HTML and intentionally
-// bypasses this function -- adding `iframe` to the strip list below is safe
-// for that reason. Readability already drops iframes upstream, so the iframe
-// strip is effectively a selection-only behavior, matching V1's selection
-// flow which stripped all iframes (V1 had a video-domain exception via
-// VideoExtractorFactory; we don't replicate it for selection -- video clips
-// belong in article mode).
+// ONML cleanup (mirrors V1 toOnml). Applied to Readability output + selection
+// HTML. iframe is in the strip list -- safe because the oEmbed path builds its
+// own iframe HTML and bypasses this function.
 function cleanArticleHtml(html: string): string {
 	let tempDoc = new DOMParser().parseFromString(html, "text/html");
 	// Remove elements not supported in ONML
@@ -2202,11 +2138,8 @@ function enterPdfMode(url: string) {
 	pdfAttachWarning.textContent = strings.pdfTooLarge;
 
 	// Hide non-PDF mode buttons, show PDF + Region + Bookmark, enable them (they start disabled during capture).
-	// Clear .selected/aria-pressed on every other mode too -- previously the else
-	// branch only set display:none, leaving Full Page's initial .selected class
-	// intact. With two buttons claiming .selected, the dropdown trigger's
-	// querySelector(".mode-btn.selected") picked the DOM-first match (Full Page)
-	// and rendered the wrong icon/label while the PDF preview was correct.
+	// Clear .selected/aria-pressed on hidden modes too — leaving Full Page's
+	// initial .selected intact created a dual-selected state.
 	document.querySelectorAll(".mode-btn").forEach(function(btn) {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === "pdf") {
@@ -2319,12 +2252,8 @@ function setupPdfOptions() {
 	});
 }
 
-// Visual indicator at the top of the PDF preview area showing that the PDF
-// file itself will be attached to the OneNote page (in addition to the
-// per-page images). Mirrors V1's PdfPreviewAttachment component: 84x96 box
-// with a 48px PDF icon over the filename (without extension). Removed +
-// re-added when the user toggles the attach checkbox, and re-added after
-// each previewContainer.innerHTML="" rebuild (enterPdfMode / switchToPdf).
+// V1 parity (PdfPreviewAttachment): 84x96 icon + filename at top of preview
+// when the Attach PDF checkbox is on. Re-mounted on every previewContainer rebuild.
 function renderPdfAttachmentIndicator() {
 	let existing = document.getElementById("pdf-attachment-indicator");
 	if (existing && existing.parentNode) { existing.parentNode.removeChild(existing); }
@@ -2545,13 +2474,9 @@ modeButtons.forEach((btn, idx) => {
 	btn.addEventListener("click", () => {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === currentMode) { return; }
-		// Block mode switching while a full-page capture loop is actively
-		// running (captureVisibleTab needs the content-frame visible through
-		// the scroll-and-stitch). When no capture has run yet (Selection /
-		// ContextImage skip path), switching is allowed -- the user invoked
-		// with explicit mode intent. fullPageComplete is not the right gate
-		// here: it stays false in the skip path even though no capture is
-		// in progress.
+		// Block mode switching mid-capture (captureVisibleTab needs the iframe
+		// visible). Skip-capture paths leave captureInProgress false so switching
+		// works there.
 		if (captureInProgress && mode !== "fullpage") { return; }
 
 		// Update selected state visually + ARIA
@@ -2563,7 +2488,7 @@ modeButtons.forEach((btn, idx) => {
 		btn.setAttribute("aria-pressed", "true");
 
 		// Click event — match legacy componentBase.ts logClickEvent(element.id)
-		let modeClickIds: { [key: string]: string } = { fullpage: "fullPageButton", article: "augmentationButton", bookmark: "bookmarkButton", region: "regionButton", pdf: "pdfButton" };
+		let modeClickIds: { [key: string]: string } = { fullpage: "fullPageButton", article: "augmentationButton", bookmark: "bookmarkButton", region: "regionButton", pdf: "pdfButton", selection: "selectionButton" };
 		logClickEvent(modeClickIds[mode as string] || mode as string);
 
 		if (mode === "fullpage") {
@@ -2596,12 +2521,9 @@ modeButtons.forEach((btn, idx) => {
 	});
 });
 
-// --- Full-page capture lifecycle helpers (used by loadContent + switchToFullPage) ---
+// --- Full-page capture lifecycle helpers ---
 
-// Sends the `dimensions` message to the worker, which starts the scroll-and-
-// stitch capture loop. Called either from loadContent (eager, toolbar invoke)
-// or from switchToFullPage (deferred, after a Selection/ContextImage invoke).
-// Idempotent guard via captureInProgress prevents double-firing.
+// Sends `dimensions` to start the worker's scroll-and-stitch loop.
 function kickoffFullPageCapture() {
 	if (!captureDimensions || captureInProgress || fullPageComplete) { return; }
 	captureInProgress = true;
@@ -2613,10 +2535,8 @@ function kickoffFullPageCapture() {
 	});
 }
 
-// Enter the post-loadContent ready state without running the screenshot loop.
-// Used when the user invoked via right-click context menu (Selection / Image)
-// and has explicit mode intent that doesn't need a full-page screenshot.
-// Mirrors the relevant state changes from the capture-complete finalize block.
+// Post-loadContent state for invocations that don't need a full-page screenshot
+// (Selection/Image context-menu or oEmbed-site toolbar invoke).
 function enterReadyStateWithoutCapture() {
 	capturePanel.style.display = "none";
 	saveBtn.textContent = strings.saveToOneNote;
@@ -2630,42 +2550,23 @@ function enterReadyStateWithoutCapture() {
 	triggerInitialModeAutoEngage();
 }
 
-// Reveal the appropriate mode button (per the invocation intent or site
-// detection) and auto-click it. Three sources of "skip eager capture and
-// open in a specific mode" converge here:
-//   - Right-click "Clip Selection" -> Selection mode
-//   - Right-click "Clip Image"     -> Region mode with image pre-seeded
-//   - Toolbar invoke on oEmbed URL -> Article mode (video provider page)
+// Auto-engage Selection / Region / Article mode based on invocation intent.
 function triggerInitialModeAutoEngage() {
 	if (invokedFromContextSelection && cachedSelectionHtml) {
 		let selBtn = document.querySelector('.mode-btn[data-mode="selection"]') as HTMLElement;
 		if (selBtn) {
 			selBtn.style.display = "";
-			// Synchronous click: no setTimeout. The deferred-100ms wrap used to
-			// produce a visible Full Page "blink" between enterReadyStateWithout-
-			// Capture and the auto-engage taking effect (the content-frame iframe
-			// was still rendered behind the cleared capture panel during that
-			// window). Firing in the same microtask batches the DOM transitions.
 			(selBtn as HTMLButtonElement).click();
 			selBtn.focus();
 		}
 	} else if (siteSuggestsArticleMode) {
-		// oEmbed provider URL on toolbar invoke: jump straight to Article
-		// mode. extractArticle's existing oEmbed branch will fetch the
-		// provider payload + Readability for description. If oEmbed fails
-		// for this specific URL, Readability fallback still produces a
-		// reasonable result -- the user is no worse off than today.
 		let articleBtn = document.querySelector('.mode-btn[data-mode="article"]') as HTMLElement;
 		if (articleBtn) {
 			(articleBtn as HTMLButtonElement).click();
 			articleBtn.focus();
 		}
 	} else if (invokedFromContextImage && contextImageSrcUrl) {
-		// Pre-seed regionImages with the right-clicked image, then auto-click
-		// Region. The fetch is async; by the time it resolves the user may have
-		// already manually navigated to Full Page (and even completed a capture).
-		// Guard the late auto-engage on a "user hasn't moved" check so a slow
-		// image load can't bounce the user out of a mode they explicitly chose.
+		// Async fetch; if user has moved on by the time it resolves, don't bounce.
 		imageToDataUrl(contextImageSrcUrl, function(dataUrl: string) {
 			if (!dataUrl) {
 				let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
@@ -2673,10 +2574,6 @@ function triggerInitialModeAutoEngage() {
 				return;
 			}
 			regionImages.push(dataUrl);
-			// If the user has triggered (or finished) a Full Page capture, or
-			// switched away from the default Full Page state, leave them where
-			// they are -- they've made their choice. Just keep the image in
-			// regionImages so Region mode is pre-seeded if they navigate to it.
 			if (captureInProgress || fullPageComplete || currentMode !== "fullpage") {
 				return;
 			}
@@ -2690,9 +2587,7 @@ function triggerInitialModeAutoEngage() {
 }
 
 port.onMessage.addListener((message: any) => {
-	// V1 parity: worker has finished refreshing user state -- localStorage is
-	// now current. fetchFreshNotebooks inspects it for an accessToken and
-	// returns early if absent, so we don't need a success flag here.
+	// Worker finished refreshing user state — localStorage is now current.
 	if (message.action === "userRefreshed") {
 		fetchFreshNotebooks();
 		return;
@@ -2707,12 +2602,8 @@ port.onMessage.addListener((message: any) => {
 		let pageUrl: string = message.url || "";
 		let contentType: string = message.contentType || "html";
 
-		// Context-menu payload. selectionHtml is captured by contentCaptureInject
-		// whenever a non-collapsed range exists; invokeMode + invokeData tell us
-		// whether the user used a right-click menu item (vs the toolbar icon),
-		// and which one. cleanArticleHtml applies V1's ONML-equivalent strip on
-		// top of the already-piped contentCaptureInject pipeline (addBaseTag /
-		// addImageSize / removeUnwantedItems).
+		// Context-menu payload from worker (selection HTML + invocation intent).
+		// cleanArticleHtml applies the ONML strip on top of contentCaptureInject's pipeline.
 		cachedSelectionHtml = message.selectionHtml ? cleanArticleHtml(message.selectionHtml) : "";
 		invokedFromContextSelection = message.invokeMode === "ContextTextSelection";
 		contextImageSrcUrl = message.invokeData || "";
@@ -2727,16 +2618,9 @@ port.onMessage.addListener((message: any) => {
 			!invokedFromContextImage &&
 			isOEmbedProviderUrl(pageUrl);
 
-		// Hide the content-frame's pixels (not its layout) the moment we know
-		// the user invoked via context menu (or landed on an oEmbed page).
-		// The iframe is display:block by default and renderContent() below
-		// will synchronously write the captured page DOM into it -- which
-		// paints to screen before onReady (waiting on images) eventually
-		// fires our auto-engage. Without this, the user briefly sees the
-		// full-page DOM "blink" before Selection / Region / Article mode
-		// takes over. visibility:hidden keeps the iframe in layout so
-		// onReady's dimension measurements remain accurate for a potential
-		// later deferred Full Page kickoff.
+		// Skip-capture flows: hide iframe (visibility, not display, so layout
+		// stays for measurement) to avoid the Full Page "blink" before
+		// auto-engage takes over. switchToFullPage resets visibility if entered.
 		if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode) {
 			iframe.style.visibility = "hidden";
 		}
@@ -2968,26 +2852,14 @@ port.onMessage.addListener((message: any) => {
 					if (parseInt(htmlComputed.paddingTop, 10) > 0) { htmlEl.style.paddingTop = "0"; }
 					if (parseInt(htmlComputed.marginTop, 10) > 0) { htmlEl.style.marginTop = "0"; }
 
-					// Cache the measured dimensions so a deferred Full Page kickoff
-					// (via switchToFullPage after a Selection/ContextImage invocation)
-					// can reuse them without re-measuring on a layout that may have
-					// already shifted from highlight/font edits in the preview-frame.
+					// Cache dimensions for deferred Full Page kickoff.
 					captureDimensions = {
 						viewportHeight: viewportH,
 						pageHeight: htmlEl.scrollHeight,
 						contentHeight: contentHeight
 					};
-					// Skip the eager full-page capture loop when:
-					//   1. User invoked via right-click context menu (explicit mode
-					//      intent: Selection or Image -> Region)
-					//   2. Captured page URL matches a known oEmbed provider
-					//      (YouTube, Vimeo) -- Article mode is almost certainly
-					//      what the user wants on a video page, and the full-page
-					//      screenshot of a YouTube watch page (mostly chrome and
-					//      dynamic suggestions) is rarely useful.
-					// In either case, switchToFullPage() kicks off the capture loop
-					// on demand if the user later picks Full Page. Plain toolbar
-					// invocations on non-oEmbed pages keep eager-capture behavior.
+					// Skip eager capture when invocation implies a specific non-FullPage
+					// mode; switchToFullPage kicks off on demand if user enters it.
 					if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode) {
 						enterReadyStateWithoutCapture();
 					} else {
@@ -3146,14 +3018,10 @@ port.onMessage.addListener((message: any) => {
 				fullPageComplete = true;
 				showPreviewFrame();
 
-					// Only update the left panel if the user is still viewing Full
-					// Page. previewContainer is shared with Region mode (thumbnails
-					// + remove buttons live there); clear it before showing the
-					// screenshot so a Region->FullPage deferred capture doesn't
-					// leave region thumbs stacked above the screenshot. When the
-					// user isn't in Full Page mode, leave the panel alone -- their
-					// current mode owns it. switchToFullPage renders fresh from
-					// fullPageDataUrl on entry, so we don't need to pre-populate.
+					// Only update the panel if user is still in Full Page. Clear
+					// first — Region mode shares previewContainer and may have
+					// thumbnails. Other modes leave the panel alone (their
+					// switchToXxx repopulates).
 					if (currentMode === "fullpage") {
 						iframe.style.display = "none";
 						previewContainer.innerHTML = "";
@@ -3177,13 +3045,8 @@ port.onMessage.addListener((message: any) => {
 					captureInProgress = false;
 					announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
 
-					// Context-menu auto-engage (Selection / ContextImage) is handled
-					// at loadContent time via enterReadyStateWithoutCapture(); by the
-					// time finalize runs we're either coming from a toolbar invoke
-					// (no auto-engage needed) or from a deferred Full Page kickoff
-					// the user explicitly requested (user is already in Full Page
-					// mode and doesn't want to be bounced back). Just focus the
-					// Full Page mode button so the user sees their result is here.
+					// Auto-engage already happened at loadContent if applicable; here
+					// we're at the tail of a Full Page capture, so just focus the FP btn.
 					let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
 					if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
 
@@ -3237,14 +3100,8 @@ port.onMessage.addListener((message: any) => {
 	if (message.action === "regionCancelled") {
 		capturePanel.style.display = "none";
 		if (regionImages.length === 0) {
-			// Restore the mode the user was in before they entered Region.
-			// Click-routing through the actual mode-btn click handler picks up
-			// .selected/aria-pressed state, telemetry context, and the mode-
-			// specific switchToXxx UI transition for free. Falls back to PDF
-			// on PDF pages / FullPage otherwise if we somehow have no stashed
-			// mode (shouldn't happen -- switchToRegion always stashes -- but
-			// defensive). Focus stays on the Region mode button so the user
-			// can re-enter region mode immediately.
+			// Restore prior mode via .click() so all state/telemetry flows through
+			// the mode-btn handler. PDF/FullPage fallback is defensive only.
 			let fallbackMode = modeBeforeRegion || (pdfMode ? "pdf" : "fullpage");
 			let fallbackBtn = document.querySelector('.mode-btn[data-mode="' + fallbackMode + '"]') as HTMLButtonElement;
 			if (fallbackBtn) { fallbackBtn.click(); }
@@ -3853,15 +3710,8 @@ let signingIn = false; // Used by sign-in flow
 // Signal that the renderer is ready
 safeSend({ action: "ready" });
 
-// V1 parity (matches legacy clipper.tsx getInitialUser pattern): ask the
-// worker to refresh user state before kicking off the notebooks fetch. The
-// worker's auth.updateUserInfoData is cache-aware via clipperData.getFreshValue
-// with TTL = (accessTokenExpiration*1000) - 180000 -- skips the network when
-// the cached token is still within its expiry-minus-3-minutes window, so the
-// steady-state cost is just a port round-trip. When the cached token IS stale,
-// worker hits /webclipper/userinfo using the refresh-token cookie and writes
-// a fresh access token to localStorage. The userRefreshed handler in the main
-// port.onMessage listener then calls fetchFreshNotebooks. If userRefreshed
-// somehow never arrives (worker hung), populateSectionDropdown() has already
-// rendered cached notebooks at module-load, so the user isn't stranded.
+// V1 parity (getInitialUser): defer notebooks fetch until worker refreshes
+// user state. updateUserInfoData is cache-aware, so steady-state cost is just
+// a port round-trip. populateSectionDropdown above already showed cached
+// notebooks, so a hung worker just leaves the cache in place.
 safeSend({ action: "refreshUser" });
