@@ -504,21 +504,28 @@ THE SOFTWARE.
     };
 
     TextHighlighter.prototype.bindEvents = function (el) {
+        // Bind selection-completion events to el's own window so this library works
+        // when constructed from a parent window operating on a same-origin sandboxed
+        // iframe (where bare `window` would resolve to the parent and miss events
+        // that fire inside the iframe). All other DOM access already routes through
+        // dom(el).get{Window,Document,Selection}(), this is the only outlier.
+        var win = el.ownerDocument.defaultView;
         el.addEventListener('keydown', this.boundStartDragHandler);
         el.addEventListener('mousedown', this.boundStartDragHandler);
         el.addEventListener('touchstart', this.boundStartDragHandler);
-        window.addEventListener('keyup', this.boundHighlightHandler);
-        window.addEventListener('mouseup', this.boundHighlightHandler);
-        window.addEventListener('touchend', this.boundHighlightHandler);
+        win.addEventListener('keyup', this.boundHighlightHandler);
+        win.addEventListener('mouseup', this.boundHighlightHandler);
+        win.addEventListener('touchend', this.boundHighlightHandler);
     }
 
     TextHighlighter.prototype.unbindEvents = function (el) {
+        var win = el.ownerDocument.defaultView;
         el.removeEventListener('keydown', this.boundStartDragHandler);
         el.removeEventListener('mousedown', this.boundStartDragHandler);
         el.removeEventListener('touchstart', this.boundStartDragHandler);
-        window.removeEventListener('keyup', this.boundHighlightHandler);
-        window.removeEventListener('mouseup', this.boundHighlightHandler);
-        window.removeEventListener('touchend', this.boundHighlightHandler);
+        win.removeEventListener('keyup', this.boundHighlightHandler);
+        win.removeEventListener('mouseup', this.boundHighlightHandler);
+        win.removeEventListener('touchend', this.boundHighlightHandler);
     }
 
     /**

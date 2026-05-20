@@ -21,7 +21,7 @@ import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InjectHelper} from "../injectHelper";
 
 import {InvokeInfo} from "../invokeInfo";
-import {InvokeOptions} from "../invokeOptions";
+import {InvokeMode, InvokeOptions} from "../invokeOptions";
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
@@ -46,6 +46,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private noOpTrackerInvoked: boolean;
 	private activeRendererCleanup: () => void;
 	private activeRendererWindowId: number;
+	// Original InvokeOptions, set by closeAllFramesAndInvokeClipper and forwarded
+	// to the renderer via loadContent so it can auto-engage the right mode.
+	private pendingInvokeMode: string;
+	private pendingInvokeData: string;
 
 	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
 		let messageHandlerThunk = () => { return new WebExtensionBackgroundMessageHandler(tab.id); };
@@ -55,6 +59,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.tab = tab;
 		this.tabId = tab.id;
 		this.noOpTrackerInvoked = false;
+		this.pendingInvokeMode = "";
+		this.pendingInvokeData = "";
 
 		this.activeRendererCleanup = () => { /* no-op */ };
 		this.activeRendererWindowId = 0;
@@ -118,6 +124,12 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.consoleOutputEnabledFlagProcessed.then(() => {
 			this.logClipperInvoke(invokeInfo, options);
 		});
+
+		// Capture invocation intent for the contentCapture listener to forward.
+		this.pendingInvokeMode = (options && options.invokeMode !== undefined)
+			? InvokeMode[options.invokeMode]
+			: "";
+		this.pendingInvokeData = (options && options.invokeDataForMode) ? options.invokeDataForMode : "";
 
 		if (this.activeRendererWindowId) {
 			WebExtension.browser.windows.update(this.activeRendererWindowId, { focused: true }, () => {
@@ -355,7 +367,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				title: msg.title || "",
 				url: msg.url || "",
 				statusText: "Capturing page...",
-				contentType: msg.contentType || "html"
+				contentType: msg.contentType || "html",
+				selectionHtml: msg.selectionHtml || "",
+				invokeMode: this.pendingInvokeMode || "",
+				invokeData: this.pendingInvokeData || ""
 			};
 			contentCaptured = true;
 			if (activePort) {
@@ -437,10 +452,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 			contentWidth = renderWidth - sidebarWidth;
 		}
 
-		// Height: cap at 900px so the popup doesn't fill near-full-height on
+		// Height: cap at 980px so the popup doesn't fill near-full-height on
 		// 1080p+ monitors. Floor at 600 so capture progress UI fits comfortably.
 		// On smaller browsers we still shrink to fit (browserHeight - margin).
-		let renderHeight = Math.max(Math.min(browserHeight - screenMargin, 900), 600);
+		let renderHeight = Math.max(Math.min(browserHeight - screenMargin, 980), 600);
 
 		// Position: align with browser window's top-left
 		let renderLeft = browserLeft;
@@ -516,6 +531,16 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					} catch (e) {
 						flushLoadContent();
 					}
+				}
+
+				// V1 parity: refresh user state on renderer open (legacy getInitialUser).
+				// updateUserInfoData is cache-aware — no network call if cached token
+				// is fresh. Renderer reads localStorage on userRefreshed.
+				if (message.action === "refreshUser") {
+					let notify = () => {
+						try { port.postMessage({ action: "userRefreshed" }); } catch (e) { /* port may be dead */ }
+					};
+					this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.InitialRetrieval).then(notify, notify);
 				}
 
 				// --- Sign-in from renderer (self-contained sign-in) ---
@@ -679,6 +704,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					let saveAnnotation = msg.annotation || "";
 					let saveSectionId = msg.sectionId || "";
 					let saveUrl = msg.url || "";
+					let savePageMetadata: { [key: string]: string } | undefined = msg.pageMetadata;
 
 					// Ensure fresh token before save (matches old clipper.tsx ensureFreshUserBeforeClip)
 					workerSelf.auth.updateUserInfoData(workerSelf.clientInfo.get().clipperId, UpdateReason.TokenRefreshForPendingClip).then(() => {
@@ -697,7 +723,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								return;
 							}
 
-							// Build OneNote page content based on mode
+							// Build OneNote page content based on mode. Output shape mirrors V1
+							// OneNotePage.getEntireOnml: `<html xmlns lang>` (no DOCTYPE, no
+							// quotes around lang), `<head>` with title + created meta + one
+							// `<meta>` per PageMetadata entry.
 							let buildPage = (bodyOnml: string, imageParts: { name: string; blob: Blob; type: string }[]) => {
 								let boundary = "OneNoteRendererBoundary" + Date.now();
 								let now = new Date();
@@ -710,9 +739,21 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								if (parseInt(offsetMins, 10) < 10) { offsetMins = "0" + offsetMins; }
 								let createdTime = offsetSign + offsetHours + ":" + offsetMins;
 								let fontStyle = "font-size: 16px; font-family: Verdana;";
-								let presentationHtml = "<!DOCTYPE html><html><head>"
-									+ "<title>" + saveTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</title>"
+								let locale = (typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
+								let metaTags = "";
+								if (savePageMetadata) {
+									for (let key in savePageMetadata) {
+										if (Object.prototype.hasOwnProperty.call(savePageMetadata, key)) {
+											metaTags += "<meta name=\"" + escapeAttr(key)
+												+ "\" content=\"" + escapeAttr(savePageMetadata[key]) + "\" />";
+										}
+									}
+								}
+								let presentationHtml = "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=" + locale + ">"
+									+ "<head>"
+									+ "<title>" + escapeHtml(saveTitle) + "</title>"
 									+ "<meta name=\"created\" content=\"" + createdTime + " \">"
+									+ metaTags
 									+ "</head><body>";
 								if (saveAnnotation) {
 									let escaped = saveAnnotation.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -816,7 +857,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									).join("&nbsp;");
 									buildPage(bodyOnml, imageParts);
 								});
-							} else if (saveMode === "article") {
+							} else if (saveMode === "article" || saveMode === "selection") {
+								// Selection mode shares the article save path -- same
+								// body shape (font-wrapped HTML), same metadata
+								// (AutoPageTags=Article), no images. Renderer composes
+								// the body identically.
 								let articleHtml = msg.contentHtml || "";
 								buildPage(articleHtml, []);
 							} else if (saveMode === "bookmark") {
@@ -861,8 +906,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 											if (parseInt(oM, 10) < 10) { oM = "0" + oM; }
 											let ct = offsetSign2 + oH + ":" + oM;
 											let fStyle = "font-size: 16px; font-family: Verdana;";
-											let distHtml = "<!DOCTYPE html><html><head>"
-												+ "<title>" + pageTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</title>"
+											let distLocale = (typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
+											let distHtml = "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=" + distLocale + ">"
+												+ "<head>"
+												+ "<title>" + escapeHtml(pageTitle) + "</title>"
 												+ "<meta name=\"created\" content=\"" + ct + " \">"
 												+ "</head><body>";
 											if (pageIdx === 0 && saveAnnotation) {

@@ -21,12 +21,10 @@
         "activeTab",
         "scripting",
         "contextMenus",
-        "cookies",
         "tabs",
         "webRequest",
         "webNavigation",
-        "offscreen",
-        "storage"
+        "offscreen"
     ],
 
     "host_permissions": [
