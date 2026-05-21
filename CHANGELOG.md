@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.11.1 (May 2026)
+* Improvement : Restored V1 parity for video pages (YouTube, Vimeo) via oEmbed, right-click "Clip Selection" and "Clip Image", article-mode highlighter, and PDF-attach visual indicator.
+
 ## 3.11.0 (May 2026)
 * Improvement : Unified renderer window with improved performance and reliability for Full Page and Article modes.
 
