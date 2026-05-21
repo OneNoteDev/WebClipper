@@ -7,6 +7,8 @@ import {PropertyName} from "./logging/submodules/propertyName";
 import {Session} from "./logging/submodules/session";
 import {Status} from "./logging/submodules/status";
 
+import {tryOEmbed, sanitizeProviderHtml, isOEmbedProviderUrl, OEmbedData} from "./contentCapture/oembedExtractor";
+
 // Renderer page script - connects to service worker via port
 // and handles scroll/capture commands. Content HTML arrives inline
 // on the loadContent port message; images sent to worker via chunked
@@ -132,9 +134,21 @@ let signoutLink = document.getElementById("signout-link") as HTMLAnchorElement;
 let currentMode = "fullpage";
 let fullPageComplete = false;
 let fullPageDataUrl = ""; // Cached full-page screenshot data URL for mode switching
+let captureInProgress = false;
+let captureDimensions: { viewportHeight: number; pageHeight: number; contentHeight: number } | null = null;
+let modeBeforeRegion = "";
 let saveDone = false;
 let articleLoaded = false;
-let cachedArticleHtml = ""; // Readability result, extracted lazily from content-frame DOM
+let cachedArticleHtml = ""; // Article preview HTML (Readability or oEmbed-preview shape)
+let cachedOEmbedData: OEmbedData | null = null; // Raw oEmbed payload; if present, save path builds iframe-based HTML from this instead of cachedArticleHtml
+let cachedOEmbedDescription = ""; // og:description (or fallback chain) from page DOM; oEmbed responses typically don't carry the full description
+let cachedPageMetadata: { [key: string]: string } | null = null; // PageMetadata sent in save msg; worker emits each entry as a <meta> tag (matches V1 OneNotePage)
+let cachedSelectionHtml = "";
+let invokedFromContextSelection = false;
+let contextImageSrcUrl = "";
+let invokedFromContextImage = false;
+// True for toolbar invocations on known oEmbed providers; context-menu invokes take precedence.
+let siteSuggestsArticleMode = false;
 let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from content-frame DOM
 let bookmarkLoaded = false;
 let contentDocReady = false; // true once content-frame has loaded HTML
@@ -174,7 +188,8 @@ let articleSerif = false;
 let articleFontSize = 16;
 let highlighterEnabled = false;
 let textHighlighterInstance: any = undefined;
-let articleWorkingHtml = ""; // Preserves highlights/edits across mode switches
+let articleWorkingHtml = ""; // Preserves article highlights/edits across mode switches
+let selectionWorkingHtml = ""; // Same, for selection mode (V1 parity via EditorPreviewComponentBase)
 let saveTimeoutId: any = 0; // Client-side save timeout (service worker setTimeout unreliable)
 
 // --- Localization ---
@@ -231,6 +246,7 @@ let strings = {
 	modeArticle: loc("WebClipper.ClipType.Article.Button", "Article"),
 	modeBookmark: loc("WebClipper.ClipType.Bookmark.Button", "Bookmark"),
 	modeRegion: loc("WebClipper.ClipType.Region.Button", "Region"),
+	modeSelection: loc("WebClipper.ClipType.Selection.Button", "Selection"),
 	titlePlaceholder: loc("WebClipper.Label.PageTitlePlaceholder", "Add a page title..."),
 	notePlaceholder: loc("WebClipper.Label.AnnotationPlaceholder", "Add a note..."),
 	sourceLabel: loc("WebClipper.Label.Source", "Source"),
@@ -340,7 +356,7 @@ port.onMessage.addListener((msg: any) => {
 // Apply localized strings to UI elements
 sidebarTitle.textContent = strings.clipperTitle;
 cancelBtn.textContent = strings.cancel;
-let modeMap: any = { fullpage: strings.modeFullPage, article: strings.modeArticle, bookmark: strings.modeBookmark, region: strings.modeRegion };
+let modeMap: any = { fullpage: strings.modeFullPage, article: strings.modeArticle, bookmark: strings.modeBookmark, region: strings.modeRegion, selection: strings.modeSelection };
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	let mode = btn.getAttribute("data-mode");
 	if (mode && modeMap[mode]) {
@@ -355,7 +371,8 @@ let tooltipMap: any = {
 	fullpage: loc("WebClipper.ClipType.ScreenShot.Button.Tooltip", "Take a screenshot of the whole page, just like you see it."),
 	article: loc("WebClipper.ClipType.Button.Tooltip", "Clip just the {0} in an easy-to-read format.").replace("{0}", strings.modeArticle.toLowerCase()),
 	bookmark: loc("WebClipper.ClipType.Bookmark.Button.Tooltip", "Clip just the title, thumbnail, synopsis, and link."),
-	region: loc("WebClipper.ClipType.Region.Button.Tooltip", "Take a screenshot of the part of the page you'll select.")
+	region: loc("WebClipper.ClipType.Region.Button.Tooltip", "Take a screenshot of the part of the page you'll select."),
+	selection: loc("WebClipper.ClipType.Selection.Button.Tooltip", "Clip just the text you selected.")
 };
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	let mode = btn.getAttribute("data-mode");
@@ -880,8 +897,6 @@ async function fetchFreshNotebooks() {
 		logTelemetryEvent(getNotebooksEvent);
 	}
 }
-fetchFreshNotebooks();
-
 // Lock all interactive controls during initial capture — prevents race conditions
 // (e.g., clicking sign-out mid-capture corrupts state)
 document.querySelectorAll(".mode-btn").forEach((btn) => {
@@ -930,9 +945,7 @@ function lockSidebar() {
 
 function unlockSidebar() {
 	document.querySelectorAll(".mode-btn").forEach((b) => {
-		if (fullPageComplete || b.getAttribute("data-mode") === "fullpage") {
-			(b as HTMLButtonElement).disabled = false;
-		}
+		(b as HTMLButtonElement).disabled = false;
 	});
 	titleField.disabled = false;
 	noteField.disabled = false;
@@ -963,16 +976,19 @@ function resetSaveState() {
 	if (errBanner) { errBanner.style.display = "none"; }
 }
 
-// Save article working state (highlights, edits) before switching away
-function saveArticleWorkingState() {
+// Persist preview-frame body so highlights survive mode switches (V1 parity).
+function saveWorkingState() {
+	let pDoc = previewFrame.contentDocument;
+	if (!pDoc || !pDoc.body) { return; }
 	if (currentMode === "article") {
-		let pDoc = previewFrame.contentDocument;
-		if (pDoc && pDoc.body) { articleWorkingHtml = pDoc.body.innerHTML; }
+		articleWorkingHtml = pDoc.body.innerHTML;
+	} else if (currentMode === "selection") {
+		selectionWorkingHtml = pDoc.body.innerHTML;
 	}
 }
 
 function switchToFullPage() {
-	saveArticleWorkingState();
+	saveWorkingState();
 	resetSaveState();
 	currentMode = "fullpage";
 	previewFrameWrap.style.display = "none";
@@ -990,14 +1006,30 @@ function switchToFullPage() {
 		capturePanel.style.display = "none";
 	} else {
 		iframe.style.display = "block";
+		// Restore visibility (skip-capture flows hide via visibility:hidden).
+		iframe.style.visibility = "";
 		previewContainer.style.display = "none";
 		capturePanel.style.display = "flex";
 		statusText.textContent = strings.capturing;
 		saveBtn.disabled = true;
+		if (captureDimensions && !captureInProgress) {
+			document.querySelectorAll(".mode-btn").forEach((b: Element) => {
+				if (b.getAttribute("data-mode") !== "fullpage") {
+					(b as HTMLButtonElement).disabled = true;
+					b.classList.add("disabled");
+				}
+			});
+			disableSignout();
+			announceToScreenReader(strings.capturing);
+			let progressTrack = document.getElementById("progress-bar-track") as HTMLElement;
+			if (progressTrack) { progressTrack.style.display = "none"; }
+			kickoffFullPageCapture();
+		}
 	}
 }
 
 function switchToArticle() {
+	saveWorkingState(); // capture outgoing mode's preview-frame body (e.g. selection -> article preserves selection's highlights)
 	resetSaveState();
 	currentMode = "article";
 	// Hide full-page content and preview
@@ -1016,6 +1048,22 @@ function switchToArticle() {
 		saveBtn.disabled = false;
 		saveBtn.textContent = strings.saveToOneNote;
 	}
+}
+
+// Article-mode UI sourced from the user's DOM selection (V1 parity).
+function switchToSelection() {
+	saveWorkingState(); // capture outgoing mode's preview-frame body
+	resetSaveState();
+	currentMode = "selection";
+	iframe.style.display = "none";
+	previewContainer.style.display = "none";
+	capturePanel.style.display = "none";
+	previewFrameWrap.style.display = "flex";
+	articleHeader.style.display = "flex";
+
+	renderArticleHtml(selectionWorkingHtml || cachedSelectionHtml);
+	saveBtn.disabled = false;
+	saveBtn.textContent = strings.saveToOneNote;
 }
 
 function loadArticleContent() {
@@ -1053,6 +1101,167 @@ function loadArticleContent() {
 }
 
 function extractArticle() {
+	// Prefer oEmbed payload for known providers (Readability strips iframes); fall back to Readability.
+	let pageUrl = sourceUrlText.textContent || "";
+	tryOEmbed(pageUrl).then(function(data) {
+		if (data) {
+			cachedOEmbedData = data;
+			let iframeDoc = iframe.contentDocument;
+			// Meta-tag fallback if Readability returns empty (same chain as bookmark mode).
+			let metaDesc = "";
+			if (iframeDoc) {
+				metaDesc = getMetaContent(iframeDoc, "og:description", "property")
+					|| getMetaContent(iframeDoc, "description", "name")
+					|| getMetaContent(iframeDoc, "twitter:description", "name")
+					|| "";
+			}
+			let finalize = function(description: string, publishedTime: string) {
+				cachedOEmbedDescription = description;
+				cachedArticleHtml = composeOEmbedForPreview(data, description);
+				cachedPageMetadata = buildPageMetadataForOEmbed(data, description, publishedTime);
+				renderArticleHtml(cachedArticleHtml);
+				articleLoaded = true;
+				if (currentMode === "article") {
+					saveBtn.disabled = false;
+					saveBtn.textContent = strings.saveToOneNote;
+				}
+			};
+			// Readability runs alongside oEmbed to recover excerpt + publishedTime (V1 parity).
+			if (iframeDoc) {
+				let docClone = iframeDoc.cloneNode(true) as Document;
+				(import("@mozilla/readability") as any).then(function(mod: any) {
+					try {
+						let reader = new mod.Readability(docClone, { charThreshold: 100 });
+						let article = reader.parse();
+						let desc = (article && article.excerpt) || metaDesc;
+						let pubTime = (article && article.publishedTime) || "";
+						finalize(desc, pubTime);
+					} catch (e) {
+						finalize(metaDesc, "");
+					}
+				})["catch"](function() { finalize(metaDesc, ""); });
+			} else {
+				finalize(metaDesc, "");
+			}
+			return;
+		}
+		extractArticleViaReadability();
+	});
+}
+
+// Preview shows a static thumbnail; provider iframe is sandboxed off here
+// and flows through composeOEmbedForSave for the saved page.
+function composeOEmbedForPreview(data: OEmbedData, pageDescription: string): string {
+	let html = "<div style=\"margin-bottom:16px;\">";
+	if (data.thumbnail_url) {
+		// Lock framed types to the save-side 16:9 frame so the preview matches.
+		let isFramed = data.type === "video" || data.type === "rich";
+		let containerStyle = isFramed
+			? "position:relative; display:block; width:100%; max-width:600px; aspect-ratio:600/338; background:#000;"
+			: "position:relative; display:inline-block; max-width:100%;";
+		let imgStyle = isFramed
+			? "display:block; width:100%; height:100%; object-fit:cover;"
+			: "display:block; max-width:600px; width:100%; height:auto;";
+		html += "<div style=\"" + containerStyle + "\">";
+		html += "<img src=\"" + escapeAttr(data.thumbnail_url) + "\""
+			+ " style=\"" + imgStyle + "\""
+			+ " alt=\"" + escapeAttr(data.title || "") + "\" />";
+		if (data.type === "video") {
+			// Play-glyph overlay -- pure CSS, no text, so no i18n surface
+			html += "<div style=\""
+				+ "position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);"
+				+ "width:72px; height:72px; border-radius:50%;"
+				+ "background:rgba(0,0,0,0.65); pointer-events:none;"
+				+ "display:flex; align-items:center; justify-content:center;"
+				+ "color:white; font-size:32px; line-height:1; padding-left:6px;"
+				+ "\">&#9654;</div>";
+		}
+		html += "</div>";
+	}
+	if (data.title) {
+		html += "<h3 style=\"margin:12px 0 4px;\">" + escapeHtml(data.title) + "</h3>";
+	}
+	let metaLine: string[] = [];
+	if (data.author_name) { metaLine.push(escapeHtml(data.author_name)); }
+	if (data.provider_name) { metaLine.push(escapeHtml(data.provider_name)); }
+	if (metaLine.length) {
+		html += "<div style=\"color:#666; font-size:14px;\">" + metaLine.join(" · ") + "</div>";
+	}
+	if (pageDescription) {
+		html += "<div style=\"margin-top:12px; color:#333; font-size:14px; line-height:1.5;\">"
+			+ escapeHtml(pageDescription) + "</div>";
+	}
+	html += "</div>";
+	return html;
+}
+
+function composeOEmbedForSave(data: OEmbedData, pageDescription: string): string {
+	let body = "";
+	if (data.type === "photo" && data.url) {
+		body = "<img src=\"" + escapeAttr(data.url) + "\""
+			+ (data.width ? " width=\"" + data.width + "\"" : "")
+			+ (data.height ? " height=\"" + data.height + "\"" : "")
+			+ " data-original-src=\"" + escapeAttr(data.pageUrl) + "\" />";
+	} else if (data.html) {
+		body = normalizeProviderIframe(sanitizeProviderHtml(data.html), data.pageUrl);
+	} else {
+		return "";
+	}
+	let caption = "";
+	if (data.title) { caption += "<h3>" + escapeHtml(data.title) + "</h3>"; }
+	if (data.author_name) { caption += "<div>" + escapeHtml(data.author_name) + "</div>"; }
+	if (pageDescription) { caption += "<div>" + escapeHtml(pageDescription) + "</div>"; }
+	return "<div style=\"margin-bottom: 16px\">"
+		+ body
+		+ (caption ? "<br>" + caption : "")
+		+ "</div>";
+}
+
+function normalizeProviderIframe(html: string, pageUrl: string): string {
+	let parsed = new DOMParser().parseFromString(html, "text/html");
+	let iframes = parsed.getElementsByTagName("iframe");
+	for (let i = 0; i < iframes.length; i++) {
+		// data-original-src marks the iframe for OneNote's renderer; 600x338 matches V1.
+		iframes[i].setAttribute("data-original-src", pageUrl);
+		iframes[i].setAttribute("width", "600");
+		iframes[i].setAttribute("height", "338");
+	}
+	return parsed.body ? parsed.body.innerHTML : html;
+}
+
+// V1 parity: AutoPageTags* + descriptive fields. Worker emits one <meta> per entry.
+function buildPageMetadataForOEmbed(
+	data: OEmbedData,
+	pageDescription: string,
+	publishedTime?: string
+): { [key: string]: string } {
+	let meta: { [key: string]: string } = {
+		AutoPageTagsCodes: "Article",
+		AutoPageTags: "Article"
+	};
+	if (data.title) { meta.title = data.title; }
+	if (data.author_name) { meta.author = data.author_name; }
+	if (data.provider_name) { meta.siteName = data.provider_name; }
+	if (pageDescription) { meta.description = pageDescription; }
+	if (publishedTime) { meta.publishedTime = publishedTime; }
+	return meta;
+}
+
+// V1 parity: AutoPageTags* + descriptive fields. Worker emits one <meta> per entry.
+function buildPageMetadataForReadability(article: any): { [key: string]: string } {
+	let meta: { [key: string]: string } = {
+		AutoPageTagsCodes: "Article",
+		AutoPageTags: "Article"
+	};
+	if (article.title) { meta.title = article.title; }
+	if (article.excerpt) { meta.description = article.excerpt; }
+	if (article.byline) { meta.author = article.byline; }
+	if (article.siteName) { meta.siteName = article.siteName; }
+	if (article.publishedTime) { meta.publishedTime = article.publishedTime; }
+	return meta;
+}
+
+function extractArticleViaReadability() {
 	// Clone content-frame document — Readability mutates the DOM
 	let iframeDoc = iframe.contentDocument;
 	if (!iframeDoc || !iframeDoc.body) {
@@ -1067,6 +1276,8 @@ function extractArticle() {
 
 		if (article && article.content) {
 			cachedArticleHtml = cleanArticleHtml(article.content);
+			cachedOEmbedData = null;
+			cachedPageMetadata = buildPageMetadataForReadability(article);
 			renderArticleHtml(cachedArticleHtml);
 			articleLoaded = true;
 			if (currentMode === "article") {
@@ -1090,16 +1301,19 @@ function showArticleError() {
 	}
 }
 
-// Clean Readability output to match ONML (OneNote Markup Language) constraints,
-// mirroring the old toOnml() pipeline: strip styles/classes, event handlers, and
-// unsupported elements. Applied once at extraction time so both preview and save
-// use the same cleaned HTML.
+// ONML cleanup for Readability/selection output (mirrors V1 toOnml).
 function cleanArticleHtml(html: string): string {
 	let tempDoc = new DOMParser().parseFromString(html, "text/html");
 	// Remove elements not supported in ONML
-	let unsupported = tempDoc.querySelectorAll("applet, audio, button, canvas, embed, hr, input, link, map, menu, menuitem, meter, noscript, progress, script, source, style, svg, video");
+	let unsupported = tempDoc.querySelectorAll("applet, audio, button, canvas, embed, hr, iframe, input, link, map, menu, menuitem, meter, noscript, progress, script, source, style, svg, video");
 	for (let i = unsupported.length - 1; i >= 0; i--) {
 		if (unsupported[i].parentNode) { unsupported[i].parentNode.removeChild(unsupported[i]); }
+	}
+	// Drop blank <img> (V1 parity: removeBlankImages).
+	let blanks = tempDoc.querySelectorAll('img:not([src]), img[src=""]');
+	for (let i = blanks.length - 1; i >= 0; i--) {
+		let parent = blanks[i].parentNode;
+		if (parent) { parent.removeChild(blanks[i]); }
 	}
 	// Strip all style and class attributes (page layout styles leak into preview/OneNote)
 	let allEls = tempDoc.querySelectorAll("*");
@@ -1113,36 +1327,26 @@ function cleanArticleHtml(html: string): string {
 function renderArticleHtml(html: string) {
 	let pDoc = previewFrame.contentDocument;
 	if (!pDoc) { return; }
-	// Wrap article HTML in a styled document matching OneNote page layout:
-	// 624px content width + 20px left/right padding = 664px total (from @OneNotePageWidth)
 	let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 	let fontSize = articleFontSize + "px";
 	let articleCss = "body { font-family: " + fontFamily + ", 'Segoe UI', sans-serif; font-size: " + fontSize + "; line-height: 1.6; "
 		+ "max-width: 624px; margin: 24px 0; padding: 0 20px; color: #1a1a1a; margin-bottom: 16px; }"
 		+ "img { max-width: 100%; height: auto; }"
-		// pointer-events:none + cursor:default prevent click navigation in the
-		// preview iframe (matches bookmark mode). Without this, clicking a link
-		// in the rendered article navigates the iframe away from the captured
-		// content, breaking save/highlight flows. Text selection still works
-		// because the selection range covers the link without the link itself
-		// receiving the mouse event.
+		// pointer-events:none on links so the iframe doesn't navigate away on click (matches bookmark mode).
 		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
 		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
 		+ "h2 { font-size: 18px; color: rgb(46,117,181); }"
 		+ "h3, h4, h5, h6 { color: rgb(91,155,213); margin-top: 14pt; margin-bottom: 14pt; }"
 		+ "figure { margin-inline-start: 0; }"
 		+ "pre, code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 14px; }"
-		// Wrap long lines instead of horizontal scroll — OneNote doesn't preserve
-		// scrollbars in saved pages, so showing one in preview is misleading.
-		// !important + overflow-wrap:anywhere defeat inline styles from Readability
-		// output and unbreakable tokens (long URLs, paths) in code samples.
 		+ "pre, pre code { white-space: pre-wrap !important; overflow-wrap: anywhere !important; word-break: break-word !important; overflow-x: hidden !important; }"
 		+ "pre { padding: 12px; }"
 		+ "blockquote { border-inline-start: 3px solid rgb(46,117,181); margin-inline-start: 0; padding-inline-start: 16px; color: #555; }"
 		+ "table { border-collapse: collapse; width: 100%; }"
 		+ "td, th { border: 1px solid #ddd; padding: 8px; }"
 		+ ".highlighted { background: #fefe56; }"
-		+ ".highlight-anchor { position: relative; display: inline-block; }"
+		// display:inline (not inline-block) so word-break still applies to long highlighted tokens.
+		+ ".highlight-anchor { position: relative; display: inline; }"
 		+ ".delete-highlight { position: absolute; top: -8px; inset-inline-start: -8px; z-index: 10; "
 		+ "width: 18px; height: 18px; border-radius: 50%; background: #e74c3c; color: #fff; "
 		+ "font-size: 12px; line-height: 18px; text-align: center; cursor: pointer; }"
@@ -1180,28 +1384,15 @@ function applyArticleFontSize() {
 }
 
 function initHighlighter() {
-	let pDoc = previewFrame.contentDocument;
-	let pWin = previewFrame.contentWindow as any;
-	if (!pDoc || !pDoc.body || !pWin) { return; }
-
-	// Inject TextHighlighter script if not already present
-	if (!pWin.TextHighlighter) {
-		let script = pDoc.createElement("script");
-		script.src = "textHighlighter.js";
-		script.onload = function() {
-			createHighlighterInstance();
-		};
-		pDoc.head.appendChild(script);
-	} else {
-		createHighlighterInstance();
-	}
+	// Parent-window script operating on the sandboxed (allow-same-origin) preview-frame.
+	createHighlighterInstance();
 }
 
 function createHighlighterInstance() {
-	let pWin = previewFrame.contentWindow as any;
 	let pDoc = previewFrame.contentDocument;
-	if (!pWin || !pWin.TextHighlighter || !pDoc || !pDoc.body) { return; }
-	textHighlighterInstance = new pWin.TextHighlighter(pDoc.body, {
+	let highlighterCtor = (window as any).TextHighlighter;
+	if (!highlighterCtor || !pDoc || !pDoc.body) { return; }
+	textHighlighterInstance = new highlighterCtor(pDoc.body, {
 		color: "#fefe56",
 		highlightedClass: "highlighted",
 		enabled: true,
@@ -1324,7 +1515,7 @@ highlightBtn.addEventListener("click", () => {
 // --- Bookmark mode ---
 
 function switchToBookmark() {
-	saveArticleWorkingState();
+	saveWorkingState();
 	resetSaveState();
 	currentMode = "bookmark";
 	iframe.style.display = "none";
@@ -1417,12 +1608,7 @@ function extractBookmark() {
 		}
 	}
 
-	// Convert thumbnail to base64 data URL (OneNote API can't fetch external URLs)
-	// HTML structure matches legacy BookmarkHelper + createPostProcessessedHtml exactly:
-	// - Outer div + tables get fontStyleString (tables don't inherit from div in OneNote API)
-	// - No table-layout/border-collapse on outer table (legacy didn't have them)
-	// - Thumbnail <td> has only padding-top:9px (no vertical-align, no object-fit)
-	// - <img> has id="bookmarkThumbnail", no inline style (legacy pattern)
+	// HTML matches V1 BookmarkHelper + createPostProcessessedHtml; thumbnail goes to base64 below.
 	let buildBookmark = (resolvedThumbSrc: string) => {
 		let thumbHtml = "";
 		if (resolvedThumbSrc) {
@@ -1476,8 +1662,8 @@ function extractBookmark() {
 	}
 }
 
-// Fetch an image URL and convert to base64 data URL via canvas
-// (OneNote API can't fetch external URLs — matches legacy DomUtils.getImageDataUrl)
+// URL -> data URL via canvas (OneNote API can't fetch externals). PNG initial,
+// JPEG step-down on oversized images to stay under the per-MIME-part limit.
 function imageToDataUrl(url: string, callback: (dataUrl: string) => void) {
 	let img = new Image();
 	img.crossOrigin = "anonymous";
@@ -1487,13 +1673,26 @@ function imageToDataUrl(url: string, callback: (dataUrl: string) => void) {
 			canvas.width = img.naturalWidth;
 			canvas.height = img.naturalHeight;
 			(canvas.getContext("2d") as CanvasRenderingContext2D).drawImage(img, 0, 0);
-			callback(canvas.toDataURL("image/png"));
+			let dataUrl = canvas.toDataURL("image/png");
+			callback(adjustImageQualityIfNecessary(canvas, dataUrl));
 		} catch (e) {
 			callback(""); // tainted canvas or other error — fall back
 		}
 	};
 	img.onerror = () => { callback(""); };
 	img.src = url;
+}
+
+// OneNote API per-MIME-part limit (V1: Apis_MediaTypesHandledInMemoryMaxRequestLength), minus envelope padding.
+const MAX_BYTES_FOR_MEDIA_TYPES = 2097152 - 500;
+
+function adjustImageQualityIfNecessary(canvas: HTMLCanvasElement, dataUrl: string): string {
+	let quality = 1.0;
+	while (quality > 0 && dataUrl.length > MAX_BYTES_FOR_MEDIA_TYPES) {
+		dataUrl = canvas.toDataURL("image/jpeg", quality);
+		quality -= 0.1;
+	}
+	return dataUrl;
 }
 
 function getMetaContent(doc: Document, value: string, attr: string): string {
@@ -1563,7 +1762,11 @@ function startRegionCapture() {
 }
 
 function switchToRegion() {
-	saveArticleWorkingState();
+	saveWorkingState();
+	// Stash the outgoing mode for region-cancel restore; skip self-references.
+	if (currentMode !== "region") {
+		modeBeforeRegion = currentMode;
+	}
 	resetSaveState();
 	currentMode = "region";
 	iframe.style.display = "none";
@@ -1794,6 +1997,7 @@ function switchToPdf() {
 		renderPdfPagesInPreview(0, pdfInitialPageLoad);
 		setupPdfPreviewLazyLoad();
 		updatePdfPageSelection();
+		renderPdfAttachmentIndicator();
 	}
 	saveBtn.disabled = !pdfDoc;
 	saveBtn.textContent = strings.saveToOneNote;
@@ -1844,7 +2048,7 @@ function enterPdfMode(url: string) {
 	}
 	pdfAttachWarning.textContent = strings.pdfTooLarge;
 
-	// Hide non-PDF mode buttons, show PDF + Region + Bookmark, enable them (they start disabled during capture)
+	// Show only PDF/Region/Bookmark buttons; clear .selected on hidden modes.
 	document.querySelectorAll(".mode-btn").forEach(function(btn) {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === "pdf") {
@@ -1861,6 +2065,8 @@ function enterPdfMode(url: string) {
 			btn.setAttribute("aria-pressed", "false");
 		} else {
 			(btn as HTMLElement).style.display = "none";
+			btn.classList.remove("selected");
+			btn.setAttribute("aria-pressed", "false");
 		}
 	});
 	enableSignout();
@@ -1947,11 +2153,37 @@ function setupPdfOptions() {
 
 	pdfAttachCheckbox.addEventListener("change", function() {
 		pdfAttach = pdfAttachCheckbox.checked;
+		renderPdfAttachmentIndicator();
 	});
 
 	pdfDistributeCheckbox.addEventListener("change", function() {
 		pdfDistribute = pdfDistributeCheckbox.checked;
 	});
+}
+
+// V1 PdfPreviewAttachment: 84x96 icon + filename at top of preview when Attach PDF is on.
+function renderPdfAttachmentIndicator() {
+	let existing = document.getElementById("pdf-attachment-indicator");
+	if (existing && existing.parentNode) { existing.parentNode.removeChild(existing); }
+	if (!pdfAttach || !previewContainer) { return; }
+	let url = sourceUrlText.textContent || pdfSourceUrl;
+	let fullName = getPdfFileName(url);
+	let nameOnly = fullName.replace(/\.[^.]+$/, "");
+	let indicator = document.createElement("div");
+	indicator.id = "pdf-attachment-indicator";
+	indicator.className = "pdf-attachment-indicator";
+	indicator.setAttribute("role", "img");
+	indicator.setAttribute("aria-label", strings.pdfAttachFile + ": " + fullName);
+	let img = document.createElement("img");
+	img.src = "images/editorOptions/pdf_attachment_icon.png";
+	img.alt = "";
+	let label = document.createElement("div");
+	label.className = "file-name";
+	label.textContent = nameOnly;
+	label.title = fullName;
+	indicator.appendChild(img);
+	indicator.appendChild(label);
+	previewContainer.insertBefore(indicator, previewContainer.firstChild);
 }
 
 // Update preview to gray out unselected pages (matches legacy opacity:0.3 behavior)
@@ -2017,6 +2249,7 @@ function loadPdf(url: string) {
 			// Render initial pages
 			renderPdfPagesInPreview(0, pdfInitialPageLoad);
 			setupPdfPreviewLazyLoad();
+			renderPdfAttachmentIndicator();
 
 			announceToScreenReader(strings.modePdf + " — " + pdfPageCount + " " + strings.page + (pdfPageCount !== 1 ? "s" : ""));
 		}, function(err: any) {
@@ -2058,6 +2291,7 @@ function updateAttachCheckbox() {
 		pdfAttach = false;
 		pdfAttachLabel.classList.add("disabled");
 		pdfAttachWarning.style.display = "";
+		renderPdfAttachmentIndicator();
 	}
 }
 
@@ -2145,8 +2379,8 @@ modeButtons.forEach((btn, idx) => {
 	btn.addEventListener("click", () => {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === currentMode) { return; }
-		// Block mode switching during active capture — captureVisibleTab needs content-frame visible
-		if (!fullPageComplete && mode !== "fullpage") { return; }
+		// Block mode switching mid-capture (captureVisibleTab needs the iframe visible).
+		if (captureInProgress && mode !== "fullpage") { return; }
 
 		// Update selected state visually + ARIA
 		document.querySelectorAll(".mode-btn").forEach((b) => {
@@ -2157,7 +2391,7 @@ modeButtons.forEach((btn, idx) => {
 		btn.setAttribute("aria-pressed", "true");
 
 		// Click event — match legacy componentBase.ts logClickEvent(element.id)
-		let modeClickIds: { [key: string]: string } = { fullpage: "fullPageButton", article: "augmentationButton", bookmark: "bookmarkButton", region: "regionButton", pdf: "pdfButton" };
+		let modeClickIds: { [key: string]: string } = { fullpage: "fullPageButton", article: "augmentationButton", bookmark: "bookmarkButton", region: "regionButton", pdf: "pdfButton", selection: "selectionButton" };
 		logClickEvent(modeClickIds[mode as string] || mode as string);
 
 		if (mode === "fullpage") {
@@ -2166,6 +2400,9 @@ modeButtons.forEach((btn, idx) => {
 		} else if (mode === "article") {
 			switchToArticle();
 			setTelemetryContext(Context.Custom.ContentType, "Article");
+		} else if (mode === "selection") {
+			switchToSelection();
+			setTelemetryContext(Context.Custom.ContentType, "Selection");
 		} else if (mode === "bookmark") {
 			// For PDF pages, generate bookmark from title/URL since DOM has no og: tags
 			if (pdfMode && !cachedBookmarkHtml) {
@@ -2187,7 +2424,78 @@ modeButtons.forEach((btn, idx) => {
 	});
 });
 
+// --- Full-page capture lifecycle helpers ---
+
+// Sends `dimensions` to start the worker's scroll-and-stitch loop.
+function kickoffFullPageCapture() {
+	if (!captureDimensions || captureInProgress || fullPageComplete) { return; }
+	captureInProgress = true;
+	safeSend({
+		action: "dimensions",
+		viewportHeight: captureDimensions.viewportHeight,
+		pageHeight: captureDimensions.pageHeight,
+		contentHeight: captureDimensions.contentHeight
+	});
+}
+
+// Post-loadContent state for invocations that don't need a full-page screenshot
+// (Selection/Image context-menu or oEmbed-site toolbar invoke).
+function enterReadyStateWithoutCapture() {
+	capturePanel.style.display = "none";
+	saveBtn.textContent = strings.saveToOneNote;
+	saveBtn.disabled = false;
+	document.querySelectorAll(".mode-btn").forEach((b: Element) => {
+		(b as HTMLButtonElement).disabled = false;
+		b.classList.remove("disabled");
+	});
+	enableSignout();
+	announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
+	triggerInitialModeAutoEngage();
+}
+
+// Auto-engage Selection / Region / Article mode based on invocation intent.
+function triggerInitialModeAutoEngage() {
+	if (invokedFromContextSelection && cachedSelectionHtml) {
+		let selBtn = document.querySelector('.mode-btn[data-mode="selection"]') as HTMLElement;
+		if (selBtn) {
+			selBtn.style.display = "";
+			(selBtn as HTMLButtonElement).click();
+			selBtn.focus();
+		}
+	} else if (siteSuggestsArticleMode) {
+		let articleBtn = document.querySelector('.mode-btn[data-mode="article"]') as HTMLElement;
+		if (articleBtn) {
+			(articleBtn as HTMLButtonElement).click();
+			articleBtn.focus();
+		}
+	} else if (invokedFromContextImage && contextImageSrcUrl) {
+		// Async fetch; if user has moved on by the time it resolves, don't bounce.
+		imageToDataUrl(contextImageSrcUrl, function(dataUrl: string) {
+			if (!dataUrl) {
+				let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
+				if (fpModeBtn) { fpModeBtn.focus(); }
+				return;
+			}
+			regionImages.push(dataUrl);
+			if (captureInProgress || fullPageComplete || currentMode !== "fullpage") {
+				return;
+			}
+			let regionBtn = document.querySelector('.mode-btn[data-mode="region"]') as HTMLElement;
+			if (regionBtn) {
+				(regionBtn as HTMLButtonElement).click();
+				regionBtn.focus();
+			}
+		});
+	}
+}
+
 port.onMessage.addListener((message: any) => {
+	// Worker finished refreshing user state — localStorage is now current.
+	if (message.action === "userRefreshed") {
+		fetchFreshNotebooks();
+		return;
+	}
+
 	if (message.action === "loadContent") {
 		// Page payload arrives inline on the loadContent port message — html,
 		// baseUrl, title, url, contentType, plus the localFileNotAllowed flag.
@@ -2196,6 +2504,23 @@ port.onMessage.addListener((message: any) => {
 		let pageTitle: string = message.title || "";
 		let pageUrl: string = message.url || "";
 		let contentType: string = message.contentType || "html";
+
+		// Context-menu payload from worker (selection HTML + invocation intent).
+		// cleanArticleHtml applies the ONML strip on top of contentCaptureInject's pipeline.
+		cachedSelectionHtml = message.selectionHtml ? cleanArticleHtml(message.selectionHtml) : "";
+		invokedFromContextSelection = message.invokeMode === "ContextTextSelection";
+		contextImageSrcUrl = message.invokeData || "";
+		invokedFromContextImage = message.invokeMode === "ContextImage" && !!contextImageSrcUrl;
+		// Toolbar-only mode hint; context-menu invocations carry explicit intent.
+		siteSuggestsArticleMode =
+			!invokedFromContextSelection &&
+			!invokedFromContextImage &&
+			isOEmbedProviderUrl(pageUrl);
+
+		// Skip-capture flows: hide iframe via visibility (preserves layout for measurement).
+		if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode) {
+			iframe.style.visibility = "hidden";
+		}
 
 		// Populate title and source URL (may not have been available on initial page load)
 		if (pageTitle && !titleField.value) { titleField.value = pageTitle; }
@@ -2424,12 +2749,19 @@ port.onMessage.addListener((message: any) => {
 					if (parseInt(htmlComputed.paddingTop, 10) > 0) { htmlEl.style.paddingTop = "0"; }
 					if (parseInt(htmlComputed.marginTop, 10) > 0) { htmlEl.style.marginTop = "0"; }
 
-					safeSend({
-						action: "dimensions",
+					// Cache dimensions for deferred Full Page kickoff.
+					captureDimensions = {
 						viewportHeight: viewportH,
 						pageHeight: htmlEl.scrollHeight,
 						contentHeight: contentHeight
-					});
+					};
+					// Skip eager capture when invocation implies a specific non-FullPage
+					// mode; switchToFullPage kicks off on demand if user enters it.
+					if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode) {
+						enterReadyStateWithoutCapture();
+					} else {
+						kickoffFullPageCapture();
+					}
 				};
 
 				for (let i = 0; i < iframeImgs.length; i++) {
@@ -2583,15 +2915,11 @@ port.onMessage.addListener((message: any) => {
 				fullPageComplete = true;
 				showPreviewFrame();
 
-					// Only update left panel if still viewing Full Page mode
+					// Only update the panel when user is in Full Page; other modes own previewContainer.
 					if (currentMode === "fullpage") {
 						iframe.style.display = "none";
+						previewContainer.innerHTML = "";
 						previewContainer.style.display = "block";
-						let previewImg = document.createElement("img");
-						previewImg.src = dataUrl;
-						previewContainer.appendChild(previewImg);
-					} else {
-						// Still create the preview image for later switching
 						let previewImg = document.createElement("img");
 						previewImg.src = dataUrl;
 						previewContainer.appendChild(previewImg);
@@ -2608,8 +2936,9 @@ port.onMessage.addListener((message: any) => {
 						b.classList.remove("disabled");
 					});
 					enableSignout();
+					captureInProgress = false;
 					announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
-					// Set initial focus on Full Page mode button after capture
+
 					let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
 					if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
 
@@ -2663,25 +2992,9 @@ port.onMessage.addListener((message: any) => {
 	if (message.action === "regionCancelled") {
 		capturePanel.style.display = "none";
 		if (regionImages.length === 0) {
-			// Matches legacy clipper behavior: cancelling a fresh region selection
-			// snaps back to the page's default mode — Full Page on web pages,
-			// PDF Document on PDF pages (Full Page mode is hidden in PDF flow).
-			// Focus stays on the Region mode button so the user can re-enter
-			// region mode immediately.
-			let fallbackMode = pdfMode ? "pdf" : "fullpage";
-			document.querySelectorAll(".mode-btn").forEach((b) => {
-				b.classList.remove("selected");
-				b.setAttribute("aria-pressed", "false");
-			});
-			let fallbackBtn = document.querySelector('.mode-btn[data-mode="' + fallbackMode + '"]');
-			if (fallbackBtn) { fallbackBtn.classList.add("selected"); fallbackBtn.setAttribute("aria-pressed", "true"); }
-			if (pdfMode) {
-				switchToPdf();
-				setTelemetryContext(Context.Custom.ContentType, "Pdf");
-			} else {
-				switchToFullPage();
-				setTelemetryContext(Context.Custom.ContentType, "FullPage");
-			}
+			let fallbackMode = modeBeforeRegion || (pdfMode ? "pdf" : "fullpage");
+			let fallbackBtn = document.querySelector('.mode-btn[data-mode="' + fallbackMode + '"]') as HTMLButtonElement;
+			if (fallbackBtn) { fallbackBtn.click(); }
 			let regionBtn = document.querySelector('.mode-btn[data-mode="region"]') as HTMLElement;
 			if (regionBtn) { setTimeout(function() { regionBtn.focus(); }, 0); }
 		} else {
@@ -2847,9 +3160,19 @@ port.onMessage.addListener((message: any) => {
 			fullPageDataUrl = "";
 			articleLoaded = false;
 			cachedArticleHtml = "";
+			articleWorkingHtml = "";
+			cachedSelectionHtml = "";
+			selectionWorkingHtml = "";
+			invokedFromContextSelection = false;
+			contextImageSrcUrl = "";
+			invokedFromContextImage = false;
+			siteSuggestsArticleMode = false;
 			bookmarkLoaded = false;
 			cachedBookmarkHtml = "";
 			contentDocReady = false;
+			captureInProgress = false;
+			captureDimensions = null;
+			modeBeforeRegion = "";
 			// Populate section dropdown — delay slightly to ensure localStorage is written by offscreen
 			populateSectionDropdown();
 			setTimeout(fetchFreshNotebooks, 300);
@@ -2890,9 +3213,17 @@ port.onMessage.addListener((message: any) => {
 		fullPageDataUrl = "";
 		articleLoaded = false;
 		cachedArticleHtml = "";
+		articleWorkingHtml = "";
+		cachedSelectionHtml = "";
+		selectionWorkingHtml = "";
+		invokedFromContextSelection = false;
+		siteSuggestsArticleMode = false;
 		bookmarkLoaded = false;
 		cachedBookmarkHtml = "";
 		contentDocReady = false;
+		captureInProgress = false;
+		captureDimensions = null;
+		modeBeforeRegion = "";
 		regionImages.length = 0;
 		currentMode = "fullpage";
 		// Unlock sidebar (clears disabled state from lockSidebar during save)
@@ -3031,22 +3362,35 @@ saveBtn.addEventListener("click", () => {
 		for (let i = 0; i < regionImages.length; i++) {
 			safeSend({ action: "saveImage", index: i, dataUrl: regionImages[i] });
 		}
-	} else if (currentMode === "article") {
-		let pDoc = previewFrame.contentDocument;
+	} else if (currentMode === "article" || currentMode === "selection") {
 		let articleBody = "";
-		if (pDoc && pDoc.body && pDoc.body.querySelector(".highlighted")) {
-			let clone = pDoc.body.cloneNode(true) as HTMLElement;
-			let delBtns = clone.querySelectorAll(".delete-highlight");
-			for (let i = delBtns.length - 1; i >= 0; i--) {
-				if (delBtns[i].parentNode) { delBtns[i].parentNode.removeChild(delBtns[i]); }
-			}
-			articleBody = clone.innerHTML;
+		let oembedSnap = cachedOEmbedData;
+		if (currentMode === "article" && oembedSnap) {
+			articleBody = composeOEmbedForSave(oembedSnap, cachedOEmbedDescription);
 		} else {
-			articleBody = cachedArticleHtml;
+			let pDoc = previewFrame.contentDocument;
+			if (pDoc && pDoc.body && pDoc.body.querySelector(".highlighted")) {
+				let clone = pDoc.body.cloneNode(true) as HTMLElement;
+				let delBtns = clone.querySelectorAll(".delete-highlight");
+				for (let i = delBtns.length - 1; i >= 0; i--) {
+					if (delBtns[i].parentNode) { delBtns[i].parentNode.removeChild(delBtns[i]); }
+				}
+				articleBody = clone.innerHTML;
+			} else {
+				articleBody = currentMode === "selection" ? cachedSelectionHtml : cachedArticleHtml;
+			}
 		}
 		let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 		let fontStyle = "font-size: " + articleFontSize + "px; font-family: " + fontFamily + ";";
 		saveMsg.contentHtml = "<div style=\"" + fontStyle + "\">" + articleBody + "</div>";
+		// Selection uses Article taxonomy in PageMetadata (V1 parity).
+		if (currentMode === "selection" && !cachedPageMetadata) {
+			cachedPageMetadata = {
+				AutoPageTagsCodes: "Article",
+				AutoPageTags: "Article"
+			};
+		}
+		if (cachedPageMetadata) { saveMsg.pageMetadata = cachedPageMetadata; }
 		saveMsg.saveImageCount = 0;
 		safeSend(saveMsg);
 	} else if (currentMode === "bookmark") {
@@ -3247,3 +3591,6 @@ let signingIn = false; // Used by sign-in flow
 
 // Signal that the renderer is ready
 safeSend({ action: "ready" });
+
+// V1 parity (getInitialUser): refresh user state on open before notebooks fetch.
+safeSend({ action: "refreshUser" });
