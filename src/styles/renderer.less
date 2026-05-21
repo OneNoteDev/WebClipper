@@ -1,15 +1,7 @@
 // Renderer window styles — sidebar panel for capture progress and preview
 // Color values follow Fluent 2 design tokens (white theme).
 
-// CSS declaration for (Apple & Android) users who don't have Segoe UI
-// installed locally. Without this, Mac/Linux users fall through the
-// font-family stack to -apple-system (San Francisco) which renders
-// noticeably different from the intended Fluent Segoe UI typography.
-// Loaded from OneNote's own CDN, same source V1 used.
-// Semibold rendering uses `font-weight: 600` on this Regular face;
-// browser synthesizes the bolder weight (V1 behavior). If pixel-perfect
-// Mac/Windows parity on semibold is ever needed, add a second
-// @font-face for `Segoe UI Semibold` pointing at segoeuisb.woff.
+// Segoe UI for non-Windows users (matches V1; loaded from OneNote CDN).
 @font-face {
 	font-family: 'Segoe UI';
 	src: url('segoeui.eot');
@@ -257,12 +249,7 @@ iframe#preview-frame {
 	&::-webkit-scrollbar-track { background: transparent; }
 }
 
-// Sidebar groups — Fluent design uses 1px neutral dividers between sections.
-// 12px padding above + 12px padding below the divider. Designer asked for
-// 16/16 but that crowded the PDF-mode success banner against the window
-// bottom even with the bumped height cap; 12/12 keeps the spacing
-// generous vs the original 8/8 while leaving room to land the
-// "View in OneNote" button without scrolling.
+// Sidebar groups — Fluent dividers; 12/12 padding keeps PDF mode within window height.
 .sidebar-group {
 	padding: 12px 0;
 	&:first-child { padding-top: 4px; }
@@ -1189,12 +1176,7 @@ iframe#preview-frame {
 		text-align: center; padding: 20px; color: #666;
 		font-size: 13px;
 	}
-	// Visual indicator that the PDF file itself will be attached (in addition
-	// to the per-page images). Mirrors V1's .attachment-overlay (84x96 box,
-	// 48px icon, filename below). V1 positioned this top-left of the preview
-	// area (margin:0 on the box); we keep that with padding on the
-	// surrounding container instead of centering. Inserted as the first child
-	// of #preview-container when "Attach PDF file" is checked.
+	// V1 .attachment-overlay parity: 84x96 box, 48px icon, filename below.
 	.pdf-attachment-indicator {
 		width: 84px; min-height: 96px;
 		margin-inline-start: 16px; margin-top: 16px; margin-bottom: 8px;

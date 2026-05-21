@@ -272,21 +272,7 @@
 	let contentType = detectContentType();
 	let html = resolveLazyImages(getDomString(doc));
 
-	// Selection capture (for context-menu "Clip Selection to OneNote" support).
-	// Strategy: build a "selection-substituted" doc -- clone the live document,
-	// replace its body with just the cloned selection fragment, then run the
-	// same DOM-cleanup pipeline that full-DOM capture uses (addBaseTag,
-	// addImageSize, removeUnwantedItems). The parallel-walk pipeline steps
-	// (inlineHiddenElements, neutralizePositioning, flattenShadowDomSlots,
-	// convertCanvasElementsToImages) are screenshot-stitching concerns and
-	// don't apply to a static save body, so they're correctly skipped here.
-	//
-	// Since the renderer's switchToSelection() wraps the result in its own
-	// doctype/head/body via renderArticleHtml, we return body.innerHTML (we
-	// lose the <base> tag in the wrapped output). To preserve URL resolution
-	// after that strip, materialize url-bearing attributes from their browser-
-	// resolved properties (el.src / .href -- already resolved against the
-	// in-doc <base href> we just added) back into the serialized attribute.
+	// Selection through the same DOM-cleanup pipeline; materialize URLs first so they survive base-tag strip.
 	function captureSelectionHtml(): string {
 		try {
 			let sel = window.getSelection();
@@ -303,10 +289,7 @@
 			addImageSizeInformationToDom(selDoc);
 			removeUnwantedItems(selDoc);
 
-			// Only img.src + a.href need materializing. video/audio/source/iframe
-			// are stripped downstream by cleanArticleHtml's ONML cleanup (matches
-			// V1's tagsNotSupportedInOnml + removeDisallowedIframes), so reading
-			// their resolved URLs here would be wasted work.
+			// Only img.src + a.href need materializing; other URL-bearing tags are stripped downstream.
 			let materialize = (selector: string, prop: string, attr: string) => {
 				let els = selDoc.querySelectorAll(selector);
 				for (let i = 0; i < els.length; i++) {
@@ -323,10 +306,7 @@
 			return "";
 		}
 	}
-	// Apply the same lazy-image resolution pass that the full-page HTML gets
-	// (line above). Without this, an <img> the user selected that the host
-	// page lazy-loads via data-src/data-lazy-src/data-original lands in the
-	// saved selection HTML with an empty or placeholder src.
+	// Resolve lazy images on the selection branch too, else lazy-loaded <img> lands with no src.
 	let selectionHtml = resolveLazyImages(captureSelectionHtml());
 
 	chrome.runtime.sendMessage(JSON.stringify({

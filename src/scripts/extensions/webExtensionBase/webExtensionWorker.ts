@@ -723,10 +723,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								return;
 							}
 
-							// Build OneNote page content based on mode. Output shape mirrors V1
-							// OneNotePage.getEntireOnml: `<html xmlns lang>` (no DOCTYPE, no
-							// quotes around lang), `<head>` with title + created meta + one
-							// `<meta>` per PageMetadata entry.
+							// Output shape mirrors V1 OneNotePage.getEntireOnml.
 							let buildPage = (bodyOnml: string, imageParts: { name: string; blob: Blob; type: string }[]) => {
 								let boundary = "OneNoteRendererBoundary" + Date.now();
 								let now = new Date();
@@ -858,10 +855,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									buildPage(bodyOnml, imageParts);
 								});
 							} else if (saveMode === "article" || saveMode === "selection") {
-								// Selection mode shares the article save path -- same
-								// body shape (font-wrapped HTML), same metadata
-								// (AutoPageTags=Article), no images. Renderer composes
-								// the body identically.
+								// Selection shares the article save path; renderer composes the body.
 								let articleHtml = msg.contentHtml || "";
 								buildPage(articleHtml, []);
 							} else if (saveMode === "bookmark") {

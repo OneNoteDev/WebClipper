@@ -42,9 +42,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 
 		this.registerBrowserButton();
 
-		// Listener registers synchronously at SW startup so context-menu clicks
-		// during a wake-up aren't dropped (MV3 SWs unload aggressively). Menu
-		// items themselves are async because their titles need locStrings.
+		// Listener registers synchronously at SW startup; menu items themselves need locStrings.
 		this.registerContextMenuClickListener();
 		this.clipperIdProcessed.then(() => {
 			this.registerContextMenuItems();

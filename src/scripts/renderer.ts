@@ -134,11 +134,8 @@ let signoutLink = document.getElementById("signout-link") as HTMLAnchorElement;
 let currentMode = "fullpage";
 let fullPageComplete = false;
 let fullPageDataUrl = ""; // Cached full-page screenshot data URL for mode switching
-// captureInProgress: true between dimensions send and finalize. captureDimensions:
-// cached iframe measurements for deferred kickoff (Selection / ContextImage paths).
 let captureInProgress = false;
 let captureDimensions: { viewportHeight: number; pageHeight: number; contentHeight: number } | null = null;
-// Outgoing mode before Region — restored if user cancels region selection.
 let modeBeforeRegion = "";
 let saveDone = false;
 let articleLoaded = false;
@@ -146,15 +143,11 @@ let cachedArticleHtml = ""; // Article preview HTML (Readability or oEmbed-previ
 let cachedOEmbedData: OEmbedData | null = null; // Raw oEmbed payload; if present, save path builds iframe-based HTML from this instead of cachedArticleHtml
 let cachedOEmbedDescription = ""; // og:description (or fallback chain) from page DOM; oEmbed responses typically don't carry the full description
 let cachedPageMetadata: { [key: string]: string } | null = null; // PageMetadata sent in save msg; worker emits each entry as a <meta> tag (matches V1 OneNotePage)
-// Right-click "Clip Selection to OneNote". cachedSelectionHtml is sanitized
-// page-side; invokedFromContextSelection gates auto-engage of Selection mode.
 let cachedSelectionHtml = "";
 let invokedFromContextSelection = false;
-// Right-click "Clip Image to OneNote". srcUrl is fetched -> data URL -> region thumb.
 let contextImageSrcUrl = "";
 let invokedFromContextImage = false;
-// True when pageUrl matches a known oEmbed provider on a toolbar invocation —
-// triggers skip-capture + auto-engage Article. Context-menu invokes take precedence.
+// True for toolbar invocations on known oEmbed providers; context-menu invokes take precedence.
 let siteSuggestsArticleMode = false;
 let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from content-frame DOM
 let bookmarkLoaded = false;
@@ -951,8 +944,6 @@ function lockSidebar() {
 }
 
 function unlockSidebar() {
-	// All modes are reachable post-save; switchToFullPage handles deferred
-	// capture on its own when entered.
 	document.querySelectorAll(".mode-btn").forEach((b) => {
 		(b as HTMLButtonElement).disabled = false;
 	});
@@ -985,8 +976,7 @@ function resetSaveState() {
 	if (errBanner) { errBanner.style.display = "none"; }
 }
 
-// Persist preview-frame body for article/selection so highlights survive
-// mode switches (V1 parity: EditorPreviewComponentBase.handleBodyChange).
+// Persist preview-frame body so highlights survive mode switches (V1 parity).
 function saveWorkingState() {
 	let pDoc = previewFrame.contentDocument;
 	if (!pDoc || !pDoc.body) { return; }
@@ -1016,15 +1006,12 @@ function switchToFullPage() {
 		capturePanel.style.display = "none";
 	} else {
 		iframe.style.display = "block";
-		// Skip-capture flows hid the iframe via visibility:hidden; restore so
-		// captureVisibleTab grabs real pixels.
+		// Restore visibility (skip-capture flows hide via visibility:hidden).
 		iframe.style.visibility = "";
 		previewContainer.style.display = "none";
 		capturePanel.style.display = "flex";
 		statusText.textContent = strings.capturing;
 		saveBtn.disabled = true;
-		// Deferred capture kickoff — mirrors boot-time lock (mode btns / signout
-		// disabled, progress bar reset). titleField/noteField stay editable.
 		if (captureDimensions && !captureInProgress) {
 			document.querySelectorAll(".mode-btn").forEach((b: Element) => {
 				if (b.getAttribute("data-mode") !== "fullpage") {
@@ -1063,11 +1050,7 @@ function switchToArticle() {
 	}
 }
 
-// Selection mode (V1 parity) -- internally identical to article mode but
-// sourced from the user's selected DOM range (captured page-side in
-// contentCaptureInject) rather than Readability output. The preview-frame
-// shares its highlighter + font-toolbar wiring with article mode, so those
-// controls work transparently here.
+// Article-mode UI sourced from the user's DOM selection (V1 parity).
 function switchToSelection() {
 	saveWorkingState(); // capture outgoing mode's preview-frame body
 	resetSaveState();
@@ -1078,8 +1061,6 @@ function switchToSelection() {
 	previewFrameWrap.style.display = "flex";
 	articleHeader.style.display = "flex";
 
-	// Prefer working HTML (preserves highlights from a prior visit to selection mode);
-	// fall back to the pristine clean selection HTML on first entry.
 	renderArticleHtml(selectionWorkingHtml || cachedSelectionHtml);
 	saveBtn.disabled = false;
 	saveBtn.textContent = strings.saveToOneNote;
@@ -1120,17 +1101,13 @@ function loadArticleContent() {
 }
 
 function extractArticle() {
-	// For known oEmbed providers (YouTube, Vimeo, Slideshare, etc.), prefer the
-	// provider's structured embed payload over Readability's text extraction --
-	// Readability strips iframes, so video pages would otherwise lose the player.
-	// Falls back to Readability on no-match or fetch failure.
+	// Prefer oEmbed payload for known providers (Readability strips iframes); fall back to Readability.
 	let pageUrl = sourceUrlText.textContent || "";
 	tryOEmbed(pageUrl).then(function(data) {
 		if (data) {
 			cachedOEmbedData = data;
 			let iframeDoc = iframe.contentDocument;
-			// Meta-tag description as fallback (used if Readability fails / returns
-			// empty excerpt). Same chain bookmark mode uses.
+			// Meta-tag fallback if Readability returns empty (same chain as bookmark mode).
 			let metaDesc = "";
 			if (iframeDoc) {
 				metaDesc = getMetaContent(iframeDoc, "og:description", "property")
@@ -1149,9 +1126,7 @@ function extractArticle() {
 					saveBtn.textContent = strings.saveToOneNote;
 				}
 			};
-			// V1 parity (augmentationHelper): run Readability alongside oEmbed to
-			// recover article.excerpt + publishedTime. YouTube's og:description is
-			// often truncated, and oEmbed doesn't carry a description field.
+			// Readability runs alongside oEmbed to recover excerpt + publishedTime (V1 parity).
 			if (iframeDoc) {
 				let docClone = iframeDoc.cloneNode(true) as Document;
 				(import("@mozilla/readability") as any).then(function(mod: any) {
@@ -1174,17 +1149,12 @@ function extractArticle() {
 	});
 }
 
-// Preview: static thumbnail + title/author/description. The provider iframe
-// is omitted here because the sandboxed preview-frame can't run its JS;
-// the iframe flows through to save (composeOEmbedForSave) where OneNote
-// renders it without the sandbox.
+// Preview shows a static thumbnail; provider iframe is sandboxed off here
+// and flows through composeOEmbedForSave for the saved page.
 function composeOEmbedForPreview(data: OEmbedData, pageDescription: string): string {
 	let html = "<div style=\"margin-bottom:16px;\">";
 	if (data.thumbnail_url) {
-		// For video/rich types the save path emits a 600x338 (16:9) iframe;
-		// lock the preview thumbnail to the same frame so the visual size
-		// matches what the user will see on the saved OneNote page. For
-		// photo type the photo itself is the content, so use natural aspect.
+		// Lock framed types to the save-side 16:9 frame so the preview matches.
 		let isFramed = data.type === "video" || data.type === "rich";
 		let containerStyle = isFramed
 			? "position:relative; display:block; width:100%; max-width:600px; aspect-ratio:600/338; background:#000;"
@@ -1225,8 +1195,6 @@ function composeOEmbedForPreview(data: OEmbedData, pageDescription: string): str
 	return html;
 }
 
-// Save-side: emit the provider iframe (sanitized) with `data-original-src` and
-// V1's 600x338 dimensions so OneNote's renderer recognizes the video embed.
 function composeOEmbedForSave(data: OEmbedData, pageDescription: string): string {
 	let body = "";
 	if (data.type === "photo" && data.url) {
@@ -1253,20 +1221,15 @@ function normalizeProviderIframe(html: string, pageUrl: string): string {
 	let parsed = new DOMParser().parseFromString(html, "text/html");
 	let iframes = parsed.getElementsByTagName("iframe");
 	for (let i = 0; i < iframes.length; i++) {
-		// data-original-src is the marker OneNote's renderer looks for to
-		// recognize and render a video embed on the saved page.
+		// data-original-src marks the iframe for OneNote's renderer; 600x338 matches V1.
 		iframes[i].setAttribute("data-original-src", pageUrl);
-		// Match V1 dimensions for consistent presentation in OneNote.
 		iframes[i].setAttribute("width", "600");
 		iframes[i].setAttribute("height", "338");
 	}
 	return parsed.body ? parsed.body.innerHTML : html;
 }
 
-// PageMetadata for oEmbed-extracted pages -- mirrors V1 server-side
-// `PageMetadata.AutoPageTags*` plus oEmbed-sourced descriptive fields.
-// Worker iterates the map and emits one <meta> per entry (V1 OneNotePage
-// behavior).
+// V1 parity: AutoPageTags* + descriptive fields. Worker emits one <meta> per entry.
 function buildPageMetadataForOEmbed(
 	data: OEmbedData,
 	pageDescription: string,
@@ -1280,16 +1243,11 @@ function buildPageMetadataForOEmbed(
 	if (data.author_name) { meta.author = data.author_name; }
 	if (data.provider_name) { meta.siteName = data.provider_name; }
 	if (pageDescription) { meta.description = pageDescription; }
-	// V1 parity: augmentationHelper populated publishedTime from Readability
-	// even when V1 was about to add video iframes on top -- we mirror that by
-	// passing through Readability's publishedTime when it's available.
 	if (publishedTime) { meta.publishedTime = publishedTime; }
 	return meta;
 }
 
-// PageMetadata for Readability-extracted articles -- matches V1
-// augmentationHelper's local metadata population (title/excerpt/byline/
-// siteName/publishedTime) plus the AutoPageTags markers.
+// V1 parity: AutoPageTags* + descriptive fields. Worker emits one <meta> per entry.
 function buildPageMetadataForReadability(article: any): { [key: string]: string } {
 	let meta: { [key: string]: string } = {
 		AutoPageTagsCodes: "Article",
@@ -1343,9 +1301,7 @@ function showArticleError() {
 	}
 }
 
-// ONML cleanup (mirrors V1 toOnml). Applied to Readability output + selection
-// HTML. iframe is in the strip list -- safe because the oEmbed path builds its
-// own iframe HTML and bypasses this function.
+// ONML cleanup for Readability/selection output (mirrors V1 toOnml).
 function cleanArticleHtml(html: string): string {
 	let tempDoc = new DOMParser().parseFromString(html, "text/html");
 	// Remove elements not supported in ONML
@@ -1353,9 +1309,7 @@ function cleanArticleHtml(html: string): string {
 	for (let i = unsupported.length - 1; i >= 0; i--) {
 		if (unsupported[i].parentNode) { unsupported[i].parentNode.removeChild(unsupported[i]); }
 	}
-	// Drop blank <img> (no src / empty src) -- matches V1's removeBlankImages.
-	// After contentCaptureInject's resolveLazyImages + materialize passes, any
-	// <img> still without a src is genuinely useless and renders broken.
+	// Drop blank <img> (V1 parity: removeBlankImages).
 	let blanks = tempDoc.querySelectorAll('img:not([src]), img[src=""]');
 	for (let i = blanks.length - 1; i >= 0; i--) {
 		let parent = blanks[i].parentNode;
@@ -1373,41 +1327,25 @@ function cleanArticleHtml(html: string): string {
 function renderArticleHtml(html: string) {
 	let pDoc = previewFrame.contentDocument;
 	if (!pDoc) { return; }
-	// Wrap article HTML in a styled document matching OneNote page layout:
-	// 624px content width + 20px left/right padding = 664px total (from @OneNotePageWidth)
 	let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 	let fontSize = articleFontSize + "px";
 	let articleCss = "body { font-family: " + fontFamily + ", 'Segoe UI', sans-serif; font-size: " + fontSize + "; line-height: 1.6; "
 		+ "max-width: 624px; margin: 24px 0; padding: 0 20px; color: #1a1a1a; margin-bottom: 16px; }"
 		+ "img { max-width: 100%; height: auto; }"
-		// pointer-events:none + cursor:default prevent click navigation in the
-		// preview iframe (matches bookmark mode). Without this, clicking a link
-		// in the rendered article navigates the iframe away from the captured
-		// content, breaking save/highlight flows. Text selection still works
-		// because the selection range covers the link without the link itself
-		// receiving the mouse event.
+		// pointer-events:none on links so the iframe doesn't navigate away on click (matches bookmark mode).
 		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
 		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
 		+ "h2 { font-size: 18px; color: rgb(46,117,181); }"
 		+ "h3, h4, h5, h6 { color: rgb(91,155,213); margin-top: 14pt; margin-bottom: 14pt; }"
 		+ "figure { margin-inline-start: 0; }"
 		+ "pre, code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 14px; }"
-		// Wrap long lines instead of horizontal scroll — OneNote doesn't preserve
-		// scrollbars in saved pages, so showing one in preview is misleading.
-		// !important + overflow-wrap:anywhere defeat inline styles from Readability
-		// output and unbreakable tokens (long URLs, paths) in code samples.
 		+ "pre, pre code { white-space: pre-wrap !important; overflow-wrap: anywhere !important; word-break: break-word !important; overflow-x: hidden !important; }"
 		+ "pre { padding: 12px; }"
 		+ "blockquote { border-inline-start: 3px solid rgb(46,117,181); margin-inline-start: 0; padding-inline-start: 16px; color: #555; }"
 		+ "table { border-collapse: collapse; width: 100%; }"
 		+ "td, th { border: 1px solid #ddd; padding: 8px; }"
 		+ ".highlighted { background: #fefe56; }"
-		// display:inline (not inline-block): inline-block would make the wrapped
-		// text an atomic layout unit, defeating word-break/overflow-wrap inside
-		// <pre> code blocks and forcing long highlighted tokens (URLs etc.) to
-		// their own line. position:relative on an inline still serves as the
-		// containing block for the absolutely-positioned delete button, which
-		// anchors to the first line-box's top-left -- the visual we want.
+		// display:inline (not inline-block) so word-break still applies to long highlighted tokens.
 		+ ".highlight-anchor { position: relative; display: inline; }"
 		+ ".delete-highlight { position: absolute; top: -8px; inset-inline-start: -8px; z-index: 10; "
 		+ "width: 18px; height: 18px; border-radius: 50%; background: #e74c3c; color: #fff; "
@@ -1446,17 +1384,7 @@ function applyArticleFontSize() {
 }
 
 function initHighlighter() {
-	// TextHighlighter loads as a regular parent-window script (renderer.html),
-	// not injected into preview-frame -- the iframe is sandboxed with
-	// allow-same-origin only (no allow-scripts), so script execution inside
-	// it is blocked. Same-origin permits the parent's TextHighlighter to
-	// operate directly on the iframe's body/selection/events, which is
-	// how pdf.js also runs in this codebase (parent context, manipulating
-	// child DOM). The library is constructed against `pDoc.body` and uses
-	// `el.ownerDocument.defaultView` internally for selection-completion
-	// event binding (small patch applied to the vendored textHighlighter.js
-	// to route those bindings through the el-relative window helper instead
-	// of bare `window`).
+	// Parent-window script operating on the sandboxed (allow-same-origin) preview-frame.
 	createHighlighterInstance();
 }
 
@@ -1680,12 +1608,7 @@ function extractBookmark() {
 		}
 	}
 
-	// Convert thumbnail to base64 data URL (OneNote API can't fetch external URLs)
-	// HTML structure matches legacy BookmarkHelper + createPostProcessessedHtml exactly:
-	// - Outer div + tables get fontStyleString (tables don't inherit from div in OneNote API)
-	// - No table-layout/border-collapse on outer table (legacy didn't have them)
-	// - Thumbnail <td> has only padding-top:9px (no vertical-align, no object-fit)
-	// - <img> has id="bookmarkThumbnail", no inline style (legacy pattern)
+	// HTML matches V1 BookmarkHelper + createPostProcessessedHtml; thumbnail goes to base64 below.
 	let buildBookmark = (resolvedThumbSrc: string) => {
 		let thumbHtml = "";
 		if (resolvedThumbSrc) {
@@ -1739,14 +1662,8 @@ function extractBookmark() {
 	}
 }
 
-// Fetch an image URL and convert to base64 data URL via canvas
-// (OneNote API can't fetch external URLs — matches legacy DomUtils.getImageDataUrl).
-// Initial encode is PNG (lossless, ideal for icons/logos). For oversized
-// photos (e.g. YouTube's 1280x720 og:image at maxresdefault.jpg) PNG can
-// exceed the OneNote API per-MIME-part limit and the save POST returns 400
-// "Maximum request size exceeded" -- fall back to JPEG and step quality
-// down until the encoded size fits. Matches legacy
-// DomUtils.adjustImageQualityIfNecessary behavior.
+// URL -> data URL via canvas (OneNote API can't fetch externals). PNG initial,
+// JPEG step-down on oversized images to stay under the per-MIME-part limit.
 function imageToDataUrl(url: string, callback: (dataUrl: string) => void) {
 	let img = new Image();
 	img.crossOrigin = "anonymous";
@@ -1766,9 +1683,7 @@ function imageToDataUrl(url: string, callback: (dataUrl: string) => void) {
 	img.src = url;
 }
 
-// OneNote API per-MIME-part limit (matches legacy
-// Settings.Instance.Apis_MediaTypesHandledInMemoryMaxRequestLength) minus a
-// small padding for the request envelope.
+// OneNote API per-MIME-part limit (V1: Apis_MediaTypesHandledInMemoryMaxRequestLength), minus envelope padding.
 const MAX_BYTES_FOR_MEDIA_TYPES = 2097152 - 500;
 
 function adjustImageQualityIfNecessary(canvas: HTMLCanvasElement, dataUrl: string): string {
@@ -1848,11 +1763,7 @@ function startRegionCapture() {
 
 function switchToRegion() {
 	saveWorkingState();
-	// Stash the outgoing mode so a cancel from the region overlay can restore
-	// the user to where they were instead of dropping them into Full Page.
-	// Skip the stash when already in region (e.g. user clicked Region while
-	// looking at thumbnails) so a quick cancel still falls back to the
-	// originally-stashed prior mode rather than self-referencing.
+	// Stash the outgoing mode for region-cancel restore; skip self-references.
 	if (currentMode !== "region") {
 		modeBeforeRegion = currentMode;
 	}
@@ -2137,9 +2048,7 @@ function enterPdfMode(url: string) {
 	}
 	pdfAttachWarning.textContent = strings.pdfTooLarge;
 
-	// Hide non-PDF mode buttons, show PDF + Region + Bookmark, enable them (they start disabled during capture).
-	// Clear .selected/aria-pressed on hidden modes too — leaving Full Page's
-	// initial .selected intact created a dual-selected state.
+	// Show only PDF/Region/Bookmark buttons; clear .selected on hidden modes.
 	document.querySelectorAll(".mode-btn").forEach(function(btn) {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === "pdf") {
@@ -2252,8 +2161,7 @@ function setupPdfOptions() {
 	});
 }
 
-// V1 parity (PdfPreviewAttachment): 84x96 icon + filename at top of preview
-// when the Attach PDF checkbox is on. Re-mounted on every previewContainer rebuild.
+// V1 PdfPreviewAttachment: 84x96 icon + filename at top of preview when Attach PDF is on.
 function renderPdfAttachmentIndicator() {
 	let existing = document.getElementById("pdf-attachment-indicator");
 	if (existing && existing.parentNode) { existing.parentNode.removeChild(existing); }
@@ -2383,9 +2291,6 @@ function updateAttachCheckbox() {
 		pdfAttach = false;
 		pdfAttachLabel.classList.add("disabled");
 		pdfAttachWarning.style.display = "";
-		// Drop the visual indicator if it was already rendered (e.g. checkbox
-		// was checked by default and then we got a too-large PDF after the
-		// initial render). The user has no way to re-enable from here.
 		renderPdfAttachmentIndicator();
 	}
 }
@@ -2474,9 +2379,7 @@ modeButtons.forEach((btn, idx) => {
 	btn.addEventListener("click", () => {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === currentMode) { return; }
-		// Block mode switching mid-capture (captureVisibleTab needs the iframe
-		// visible). Skip-capture paths leave captureInProgress false so switching
-		// works there.
+		// Block mode switching mid-capture (captureVisibleTab needs the iframe visible).
 		if (captureInProgress && mode !== "fullpage") { return; }
 
 		// Update selected state visually + ARIA
@@ -2608,19 +2511,13 @@ port.onMessage.addListener((message: any) => {
 		invokedFromContextSelection = message.invokeMode === "ContextTextSelection";
 		contextImageSrcUrl = message.invokeData || "";
 		invokedFromContextImage = message.invokeMode === "ContextImage" && !!contextImageSrcUrl;
-		// Site-suggested initial mode for known oEmbed providers (YouTube,
-		// Vimeo). Only fires on toolbar invocations -- context-menu invokes
-		// carry an explicit user intent that takes precedence. The actual
-		// oEmbed fetch + Readability fallback happens later in
-		// extractArticle; this is just the "what mode do we open in" hint.
+		// Toolbar-only mode hint; context-menu invocations carry explicit intent.
 		siteSuggestsArticleMode =
 			!invokedFromContextSelection &&
 			!invokedFromContextImage &&
 			isOEmbedProviderUrl(pageUrl);
 
-		// Skip-capture flows: hide iframe (visibility, not display, so layout
-		// stays for measurement) to avoid the Full Page "blink" before
-		// auto-engage takes over. switchToFullPage resets visibility if entered.
+		// Skip-capture flows: hide iframe via visibility (preserves layout for measurement).
 		if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode) {
 			iframe.style.visibility = "hidden";
 		}
@@ -3018,10 +2915,7 @@ port.onMessage.addListener((message: any) => {
 				fullPageComplete = true;
 				showPreviewFrame();
 
-					// Only update the panel if user is still in Full Page. Clear
-					// first — Region mode shares previewContainer and may have
-					// thumbnails. Other modes leave the panel alone (their
-					// switchToXxx repopulates).
+					// Only update the panel when user is in Full Page; other modes own previewContainer.
 					if (currentMode === "fullpage") {
 						iframe.style.display = "none";
 						previewContainer.innerHTML = "";
@@ -3045,8 +2939,6 @@ port.onMessage.addListener((message: any) => {
 					captureInProgress = false;
 					announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
 
-					// Auto-engage already happened at loadContent if applicable; here
-					// we're at the tail of a Full Page capture, so just focus the FP btn.
 					let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
 					if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
 
@@ -3100,8 +2992,6 @@ port.onMessage.addListener((message: any) => {
 	if (message.action === "regionCancelled") {
 		capturePanel.style.display = "none";
 		if (regionImages.length === 0) {
-			// Restore prior mode via .click() so all state/telemetry flows through
-			// the mode-btn handler. PDF/FullPage fallback is defensive only.
 			let fallbackMode = modeBeforeRegion || (pdfMode ? "pdf" : "fullpage");
 			let fallbackBtn = document.querySelector('.mode-btn[data-mode="' + fallbackMode + '"]') as HTMLButtonElement;
 			if (fallbackBtn) { fallbackBtn.click(); }
@@ -3473,15 +3363,9 @@ saveBtn.addEventListener("click", () => {
 			safeSend({ action: "saveImage", index: i, dataUrl: regionImages[i] });
 		}
 	} else if (currentMode === "article" || currentMode === "selection") {
-		// Selection mode reuses the article save path entirely (same
-		// preview-frame, same font wrapper, same OneNote-side handling).
-		// Source differs: selection uses cachedSelectionHtml (user's selected
-		// DOM), article uses Readability/oEmbed output.
 		let articleBody = "";
 		let oembedSnap = cachedOEmbedData;
 		if (currentMode === "article" && oembedSnap) {
-			// oEmbed-source: save uses provider iframe (preview only showed
-			// thumbnail since sandboxed iframes can't run the player).
 			articleBody = composeOEmbedForSave(oembedSnap, cachedOEmbedDescription);
 		} else {
 			let pDoc = previewFrame.contentDocument;
@@ -3499,9 +3383,7 @@ saveBtn.addEventListener("click", () => {
 		let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 		let fontStyle = "font-size: " + articleFontSize + "px; font-family: " + fontFamily + ";";
 		saveMsg.contentHtml = "<div style=\"" + fontStyle + "\">" + articleBody + "</div>";
-		// Selection mode uses Article taxonomy in PageMetadata (V1 parity):
-		// AutoPageTagsCodes=Article, AutoPageTags=Article. Populate on the fly
-		// when not already set by Readability/oEmbed extraction.
+		// Selection uses Article taxonomy in PageMetadata (V1 parity).
 		if (currentMode === "selection" && !cachedPageMetadata) {
 			cachedPageMetadata = {
 				AutoPageTagsCodes: "Article",
@@ -3710,8 +3592,5 @@ let signingIn = false; // Used by sign-in flow
 // Signal that the renderer is ready
 safeSend({ action: "ready" });
 
-// V1 parity (getInitialUser): defer notebooks fetch until worker refreshes
-// user state. updateUserInfoData is cache-aware, so steady-state cost is just
-// a port round-trip. populateSectionDropdown above already showed cached
-// notebooks, so a hung worker just leaves the cache in place.
+// V1 parity (getInitialUser): refresh user state on open before notebooks fetch.
 safeSend({ action: "refreshUser" });

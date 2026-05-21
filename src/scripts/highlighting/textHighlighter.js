@@ -504,11 +504,7 @@ THE SOFTWARE.
     };
 
     TextHighlighter.prototype.bindEvents = function (el) {
-        // Bind selection-completion events to el's own window so this library works
-        // when constructed from a parent window operating on a same-origin sandboxed
-        // iframe (where bare `window` would resolve to the parent and miss events
-        // that fire inside the iframe). All other DOM access already routes through
-        // dom(el).get{Window,Document,Selection}(), this is the only outlier.
+        // Use el's own window so events fire when the host is a same-origin iframe.
         var win = el.ownerDocument.defaultView;
         el.addEventListener('keydown', this.boundStartDragHandler);
         el.addEventListener('mousedown', this.boundStartDragHandler);
