@@ -10,7 +10,7 @@ export module UrlUtils {
 			return fallbackResult;
 		}
 		let regexResult = /\/(?=[^\/]+\.\w{3,4}$).+/g.exec(url);
-		return regexResult && regexResult[0] ? regexResult[0].slice(1) : fallbackResult;
+		return regexResult?.[0] ? regexResult[0].slice(1) : fallbackResult;
 	}
 
 	export async function getHostname(url: string): Promise<string> {

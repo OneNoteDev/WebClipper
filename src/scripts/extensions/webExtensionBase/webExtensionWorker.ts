@@ -112,10 +112,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		});
 
 		// Capture invocation intent for the contentCapture listener to forward.
-		this.pendingInvokeMode = (options && options.invokeMode !== undefined)
+		this.pendingInvokeMode = (options?.invokeMode !== undefined)
 			? InvokeMode[options.invokeMode]
 			: "";
-		this.pendingInvokeData = (options && options.invokeDataForMode) ? options.invokeDataForMode : "";
+		this.pendingInvokeData = options?.invokeDataForMode ?? "";
 
 		if (this.activeRendererWindowId) {
 			WebExtension.browser.windows.update(this.activeRendererWindowId, { focused: true }, () => {
@@ -198,7 +198,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		// pendingContent so the eventual loadContent port message can carry the
 		// full payload in one shot.
 		let captureListener = (rawMsg: any, sender: any) => {
-			if (!sender.tab || sender.tab.id !== this.tab.id) { return; }
+			if (sender.tab?.id !== this.tab.id) { return; }
 			let msg: any;
 			try { msg = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg; } catch (e) { return; }
 			if (msg.action !== "contentCaptureComplete") { return; }
@@ -224,7 +224,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		// If signed in, inject content capture script immediately (runs in parallel with window opening)
 		if (signedIn) {
 			// Check local file permission before injecting — file:/// tabs need explicit permission
-			let isLocalFile = this.tab.url && this.tab.url.indexOf("file:///") === 0;
+			let isLocalFile = this.tab.url?.indexOf("file:///") === 0;
 			let sendLocalFileNotAllowed = () => {
 				let tabUrl = this.tab.url || "";
 				let isPdf = /\.pdf$/i.test(tabUrl);
@@ -251,7 +251,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						files: ["contentCaptureInject.js"]
 					});
 					// Handle promise rejection (MV3 "Blocked" error on file:// without permission)
-					if (injectPromise && injectPromise.catch) {
+					if (injectPromise?.catch) {
 						injectPromise.catch(function() {
 							chrome.runtime.onMessage.removeListener(captureListener);
 							sendLocalFileNotAllowed();
@@ -273,8 +273,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		WebExtension.browser.windows.getCurrent((currentWindow: chrome.windows.Window) => {
 			let sidebarWidth = 321; // matches renderer.less #sidebar { width: 321px }
 			let screenMargin = 32; // leave breathing room so renderer doesn't cover the full screen
-			let browserWidth = currentWindow && currentWindow.width ? currentWindow.width : 1024;
-			let browserHeight = currentWindow && currentWindow.height ? currentWindow.height : 768;
+			let browserWidth = currentWindow?.width ?? 1024;
+			let browserHeight = currentWindow?.height ?? 768;
 			let browserLeft = currentWindow ? (currentWindow.left || 0) : 0;
 			let browserTop = currentWindow ? (currentWindow.top || 0) : 0;
 
@@ -392,7 +392,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						this.doSignInAction(authType).then(() => {
 							return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.SignInAttempt);
 						}).then((updatedUser: UserInfo) => {
-							if (updatedUser && updatedUser.user) {
+							if (updatedUser?.user) {
 								this.clipperData.setValue("isUserLoggedIn", "true");
 								port.postMessage({
 									action: "signInResult",
@@ -558,7 +558,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 							let accessToken = "";
 							try {
 								let userInfo = JSON.parse(userInfoJson);
-								accessToken = userInfo && userInfo.data ? userInfo.data.accessToken : "";
+								accessToken = userInfo?.data ? userInfo.data.accessToken : "";
 							} catch (e) { /* ignore */ }
 
 							if (!accessToken) {
@@ -579,11 +579,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								if (parseInt(offsetMins, 10) < 10) { offsetMins = "0" + offsetMins; }
 								let createdTime = offsetSign + offsetHours + ":" + offsetMins;
 								let fontStyle = "font-size: 16px; font-family: Verdana;";
-								let locale = (typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
+								let locale = (typeof chrome !== "undefined" && chrome.i18n?.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
 								let metaTags = "";
 								if (savePageMetadata) {
 									for (let key in savePageMetadata) {
-										if (Object.prototype.hasOwnProperty.call(savePageMetadata, key)) {
+										if (Object.hasOwn(savePageMetadata, key)) {
 											metaTags += "<meta name=\"" + escapeAttr(key)
 												+ "\" content=\"" + escapeAttr(savePageMetadata[key]) + "\" />";
 										}
@@ -642,7 +642,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 										response.json().then((data) => {
 											let pageUrl = "";
 											try {
-												pageUrl = data && data.links && data.links.oneNoteWebUrl ? data.links.oneNoteWebUrl.href : "";
+												pageUrl = data?.links?.oneNoteWebUrl ? data.links.oneNoteWebUrl.href : "";
 											} catch (e) { /* ignore */ }
 											port.postMessage({ action: "saveResult", success: true, pageUrl: pageUrl });
 										}).catch(() => {
@@ -743,7 +743,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 											if (parseInt(oM, 10) < 10) { oM = "0" + oM; }
 											let ct = offsetSign2 + oH + ":" + oM;
 											let fStyle = "font-size: 16px; font-family: Verdana;";
-											let distLocale = (typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
+											let distLocale = (typeof chrome !== "undefined" && chrome.i18n?.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
 											let distHtml = "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=" + distLocale + ">"
 												+ "<head>"
 												+ "<title>" + escapeHtml(pageTitle) + "</title>"
@@ -863,7 +863,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						let regionTabId = this.tab.id as number;
 						let regionWindowId = 0;
 						WebExtension.browser.tabs.get(regionTabId, (t: any) => {
-							if (!t || !t.windowId) { return; }
+							if (!t?.windowId) { return; }
 							regionWindowId = t.windowId;
 							WebExtension.browser.windows.update(regionWindowId, { focused: true }, () => {
 								if (WebExtension.browser.runtime.lastError) { /* ignore */ }
@@ -898,7 +898,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						// Listen for overlay messages (regionSelected / regionCancelled)
 						// Messages are JSON strings (required by offscreen.ts message handler)
 						let regionListener = (rawMsg: any, sender: any) => {
-							if (!sender.tab || sender.tab.id !== regionTabId) { return; }
+							if (sender.tab?.id !== regionTabId) { return; }
 							let msg: any;
 							try { msg = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg; } catch (e) { return; }
 

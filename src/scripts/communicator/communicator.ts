@@ -164,7 +164,7 @@ export class Communicator {
 			let func = this.functionMap[dataPackage.functionKey];
 			if (func) {
 				let promiseResult = func(dataPackage.data) as Promise<any>;
-				if (promiseResult && promiseResult.then && dataPackage.callbackKey) {
+				if (promiseResult?.then && dataPackage.callbackKey) {
 					promiseResult.then((result) => {
 						this.callRemoteFunction(dataPackage.callbackKey, { param: result });
 					}, (error) => {
@@ -197,7 +197,7 @@ export class Communicator {
 
 		let paramData = options ? options.param : undefined;
 		let callbackKey: string = undefined;
-		if (options && options.callback) {
+		if (options?.callback) {
 			callbackKey = name + Communicator.callbackPostfix + "-" + this.callbackIdPostfix++;
 			this.registerFunction(callbackKey, options.callback);
 		}

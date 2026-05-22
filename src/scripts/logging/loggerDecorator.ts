@@ -15,8 +15,8 @@ export abstract class LoggerDecorator extends SessionLogger {
 	private component: LoggerDecorator;
 
 	constructor(options?: LoggerDecoratorOptions) {
-		let strategy = options && options.contextStrategy ? options.contextStrategy : undefined;
-		let sessionId = options && options.sessionId ? options.sessionId : undefined;
+		let strategy = options?.contextStrategy;
+		let sessionId = options?.sessionId;
 		super({
 			contextStrategy: strategy,
 			sessionId: sessionId

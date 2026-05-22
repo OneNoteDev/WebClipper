@@ -49,7 +49,7 @@ export class AuthenticationHelper {
 						this.logger.logJsonParseUnexpected(storedUserInformation);
 					}
 
-					if (currentInfo && currentInfo.data && ObjectUtils.isNumeric(currentInfo.data.accessTokenExpiration)) {
+					if (currentInfo?.data && ObjectUtils.isNumeric(currentInfo.data.accessTokenExpiration)) {
 						// Expiration is in seconds, not milliseconds. Give additional leniency to account for response time.
 						updateInterval = Math.max((currentInfo.data.accessTokenExpiration * 1000) - 180000, 0);
 					}
@@ -138,7 +138,7 @@ export class AuthenticationHelper {
 	 * Determines whether or not the given string is valid JSON and has the required elements.
 	 */
 	protected isValidUserInformation(userInfo: UserInfoData): boolean {
-		if (userInfo && userInfo.accessToken && userInfo.accessTokenExpiration > 0 && userInfo.authType) {
+		if (userInfo?.accessToken && userInfo.accessTokenExpiration > 0 && userInfo.authType) {
 			return true;
 		}
 

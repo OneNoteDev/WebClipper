@@ -203,12 +203,12 @@ try {
 	let raw = localStorage.getItem("locStrings");
 	if (raw) {
 		let parsed = JSON.parse(raw);
-		locStrings = (parsed && parsed.data) || {};
+		locStrings = (parsed?.data) || {};
 	}
 } catch (e) { /* ignore */ }
 
 function loc(key: string, fallback: string): string {
-	return (locStrings && locStrings[key]) || fallback;
+	return (locStrings?.[key]) || fallback;
 }
 
 // Set HTML lang + dir from stored locale (extensionBase stores navigator.language in localStorage.locale).
@@ -318,7 +318,7 @@ window.onerror = function(msg, file, line, col, error) {
 	logFailure(Failure.Label.UnhandledExceptionThrown, Failure.Type.Unexpected, { error: errorStr }, "Renderer");
 };
 window.onunhandledrejection = function(e: any) {
-	let reason = e && e.reason ? (e.reason.message || String(e.reason)) : "Unknown rejection";
+	let reason = e?.reason ? (e.reason.message || String(e.reason)) : "Unknown rejection";
 	logFailure(Failure.Label.UnhandledExceptionThrown, Failure.Type.Unexpected, { error: reason }, "Renderer");
 };
 
@@ -716,7 +716,7 @@ try {
 	let userInfoRaw = localStorage.getItem("userInformation");
 	if (userInfoRaw) {
 		let userInfo = JSON.parse(userInfoRaw);
-		if (userInfo && userInfo.data) {
+		if (userInfo?.data) {
 			let email = userInfo.data.emailAddress || "";
 			let name = userInfo.data.fullName || "";
 			userAuthType = userInfo.data.authType || "";
@@ -757,7 +757,7 @@ try {
 	let uiRaw = localStorage.getItem("userInformation");
 	if (uiRaw) {
 		let ui = JSON.parse(uiRaw);
-		isSignedIn = !!(ui && ui.data && ui.data.accessToken);
+		isSignedIn = !!(ui?.data?.accessToken);
 	}
 } catch (e) { /* not signed in */ }
 
@@ -811,7 +811,7 @@ if (!isSignedIn) {
 		let uiRaw = localStorage.getItem("userInformation");
 		if (uiRaw) {
 			let ui = JSON.parse(uiRaw);
-			if (ui && ui.data && ui.data.cid) { setTelemetryContext(Context.Custom.UserInfoId, ui.data.cid); }
+			if (ui?.data?.cid) { setTelemetryContext(Context.Custom.UserInfoId, ui.data.cid); }
 		}
 	} catch (e) { /* ignore */ }
 }
@@ -841,7 +841,7 @@ async function fetchFreshNotebooks() {
 		let userInfoRaw = localStorage.getItem("userInformation");
 		if (!userInfoRaw) { return; }
 		let userInfo = JSON.parse(userInfoRaw);
-		let accessToken = userInfo && userInfo.data ? userInfo.data.accessToken : "";
+		let accessToken = userInfo?.data ? userInfo.data.accessToken : "";
 		if (!accessToken) { return; }
 		// Don't skip on token expiry — try the fetch anyway. The API will return 401 if
 		// truly expired, and we silently keep cached data. Skipping here caused stale
@@ -979,7 +979,7 @@ function resetSaveState() {
 // Persist preview-frame body so highlights survive mode switches (V1 parity).
 function saveWorkingState() {
 	let pDoc = previewFrame.contentDocument;
-	if (!pDoc || !pDoc.body) { return; }
+	if (!pDoc?.body) { return; }
 	if (currentMode === "article") {
 		articleWorkingHtml = pDoc.body.innerHTML;
 	} else if (currentMode === "selection") {
@@ -1133,8 +1133,8 @@ function extractArticle() {
 					try {
 						let reader = new mod.Readability(docClone, { charThreshold: 100 });
 						let article = reader.parse();
-						let desc = (article && article.excerpt) || metaDesc;
-						let pubTime = (article && article.publishedTime) || "";
+						let desc = (article?.excerpt) || metaDesc;
+						let pubTime = (article?.publishedTime) || "";
 						finalize(desc, pubTime);
 					} catch (e) {
 						finalize(metaDesc, "");
@@ -1264,7 +1264,7 @@ function buildPageMetadataForReadability(article: any): { [key: string]: string 
 function extractArticleViaReadability() {
 	// Clone content-frame document — Readability mutates the DOM
 	let iframeDoc = iframe.contentDocument;
-	if (!iframeDoc || !iframeDoc.body) {
+	if (!iframeDoc?.body) {
 		showArticleError();
 		return;
 	}
@@ -1274,7 +1274,7 @@ function extractArticleViaReadability() {
 		let reader = new mod.Readability(docClone, { charThreshold: 100 });
 		let article = reader.parse();
 
-		if (article && article.content) {
+		if (article?.content) {
 			cachedArticleHtml = cleanArticleHtml(article.content);
 			cachedOEmbedData = null;
 			cachedPageMetadata = buildPageMetadataForReadability(article);
@@ -1361,7 +1361,7 @@ function renderArticleHtml(html: string) {
 	// Re-initialize highlighter if enabled, including custom cursor
 	if (highlighterEnabled) {
 		initHighlighter();
-		if (pDoc && pDoc.body) {
+		if (pDoc?.body) {
 			let curUrl = chrome.runtime.getURL("images/editoroptions/highlight_cursor.cur");
 			pDoc.body.style.cursor = "url('" + curUrl + "') 16 16, text";
 		}
@@ -1372,14 +1372,14 @@ function renderArticleHtml(html: string) {
 
 function applyArticleFont() {
 	let pDoc = previewFrame.contentDocument;
-	if (!pDoc || !pDoc.body) { return; }
+	if (!pDoc?.body) { return; }
 	let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 	pDoc.body.style.fontFamily = fontFamily + ", 'Segoe UI', sans-serif";
 }
 
 function applyArticleFontSize() {
 	let pDoc = previewFrame.contentDocument;
-	if (!pDoc || !pDoc.body) { return; }
+	if (!pDoc?.body) { return; }
 	pDoc.body.style.fontSize = articleFontSize + "px";
 }
 
@@ -1391,7 +1391,7 @@ function initHighlighter() {
 function createHighlighterInstance() {
 	let pDoc = previewFrame.contentDocument;
 	let highlighterCtor = (window as any).TextHighlighter;
-	if (!highlighterCtor || !pDoc || !pDoc.body) { return; }
+	if (!highlighterCtor || !pDoc?.body) { return; }
 	textHighlighterInstance = new highlighterCtor(pDoc.body, {
 		color: "#fefe56",
 		highlightedClass: "highlighted",
@@ -1406,7 +1406,7 @@ function createHighlighterInstance() {
 	// Listen for clicks on delete buttons
 	pDoc.body.addEventListener("click", function(e: MouseEvent) {
 		let target = e.target as HTMLElement;
-		if (target && target.classList && target.classList.contains("delete-highlight")) {
+		if (target?.classList?.contains("delete-highlight")) {
 			e.stopPropagation();
 			let ts = target.getAttribute("data-timestamp");
 			// Remove the delete button itself first
@@ -1498,7 +1498,7 @@ highlightBtn.addEventListener("click", () => {
 		highlightBtn.setAttribute("aria-pressed", "true");
 		if (imgEl) { imgEl.src = "images/editoroptions/highlight_tool_on.svg"; }
 		initHighlighter();
-		if (pDoc && pDoc.body) {
+		if (pDoc?.body) {
 			let curUrl = chrome.runtime.getURL("images/editoroptions/highlight_cursor.cur");
 			pDoc.body.style.cursor = "url('" + curUrl + "') 16 16, text";
 		}
@@ -1507,7 +1507,7 @@ highlightBtn.addEventListener("click", () => {
 		highlightBtn.setAttribute("aria-pressed", "false");
 		if (imgEl) { imgEl.src = "images/editoroptions/highlight_tool_off.svg"; }
 		destroyHighlighter();
-		if (pDoc && pDoc.body) { pDoc.body.style.cursor = ""; }
+		if (pDoc?.body) { pDoc.body.style.cursor = ""; }
 	}
 	announceToScreenReader(strings.toggleHighlighter);
 });
@@ -1847,7 +1847,7 @@ function renderRegionThumbnails() {
 
 // Inline page range parser (mirrors StringUtils.parsePageRange from legacy clipper)
 function parsePageRange(text: string, maxRange: number): { ok: boolean; pages: number[]; error: string } {
-	if (!text || !text.trim()) { return { ok: false, pages: [], error: "" }; }
+	if (!text?.trim()) { return { ok: false, pages: [], error: "" }; }
 	let splitText = text.trim().split(",");
 	let range: number[] = [];
 	for (let i = 0; i < splitText.length; i++) {
@@ -2173,7 +2173,7 @@ function setupPdfOptions() {
 // V1 PdfPreviewAttachment: 84x96 icon + filename at top of preview when Attach PDF is on.
 function renderPdfAttachmentIndicator() {
 	let existing = document.getElementById("pdf-attachment-indicator");
-	if (existing && existing.parentNode) { existing.parentNode.removeChild(existing); }
+	if (existing?.parentNode) { existing.parentNode.removeChild(existing); }
 	if (!pdfAttach || !previewContainer) { return; }
 	let url = sourceUrlText.textContent || pdfSourceUrl;
 	let fullName = getPdfFileName(url);
@@ -2254,7 +2254,7 @@ function loadPdf(url: string) {
 
 			// Remove loading indicator
 			let loadEl = document.getElementById("pdf-initial-loading");
-			if (loadEl && loadEl.parentNode) { loadEl.parentNode.removeChild(loadEl); }
+			if (loadEl?.parentNode) { loadEl.parentNode.removeChild(loadEl); }
 
 			// Render initial pages
 			renderPdfPagesInPreview(0, pdfInitialPageLoad);
@@ -2312,7 +2312,7 @@ function updateAttachCheckbox() {
 function showLocalPdfBlockedPanel() {
 	if (document.getElementById("pdf-blocked-panel")) { return; }
 	let loadEl = document.getElementById("pdf-initial-loading");
-	if (loadEl && loadEl.parentNode) { loadEl.parentNode.removeChild(loadEl); }
+	if (loadEl?.parentNode) { loadEl.parentNode.removeChild(loadEl); }
 	let panel = document.createElement("div");
 	panel.id = "pdf-blocked-panel";
 	panel.setAttribute("role", "alert");
@@ -3379,7 +3379,7 @@ saveBtn.addEventListener("click", () => {
 			articleBody = composeOEmbedForSave(oembedSnap, cachedOEmbedDescription);
 		} else {
 			let pDoc = previewFrame.contentDocument;
-			if (pDoc && pDoc.body && pDoc.body.querySelector(".highlighted")) {
+			if (pDoc?.body?.querySelector(".highlighted")) {
 				let clone = pDoc.body.cloneNode(true) as HTMLElement;
 				let delBtns = clone.querySelectorAll(".delete-highlight");
 				for (let i = delBtns.length - 1; i >= 0; i--) {
@@ -3529,7 +3529,7 @@ let minHeight = 600;
 	if (chromeDelta <= 0) { return; }
 	try {
 		chrome.windows.getCurrent({}, function(w: any) {
-			if (!w || !w.id || !w.width) { return; }
+			if (!w?.id || !w.width) { return; }
 			let newOuter = w.width + chromeDelta;
 			captureWidth = newOuter; // update lock target before the resize so the resize handler doesn't fight us
 			chrome.windows.update(w.id, { width: newOuter });
@@ -3553,7 +3553,7 @@ window.addEventListener("resize", () => {
 		resizing = true;
 		try {
 			chrome.windows.getCurrent({}, (w: any) => {
-				if (w && w.state === "maximized") {
+				if (w?.state === "maximized") {
 					chrome.windows.update(w.id, { state: "normal", width: captureWidth, height: captureHeight }, () => { resizing = false; });
 				} else {
 					window.resizeTo(captureWidth, captureHeight);

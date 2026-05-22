@@ -82,7 +82,7 @@ export class CachedHttp {
 	 * Returns true if the timestamped data is older than the expiry time; false otherwise.
 	 */
 	public static valueHasExpired(value: TimeStampedData, expiryTime: number): boolean {
-		let lastUpdated = value && value.lastUpdated ? value.lastUpdated : 0;
+		let lastUpdated = value?.lastUpdated ?? 0;
 		return (Date.now() - lastUpdated >= expiryTime);
 	}
 

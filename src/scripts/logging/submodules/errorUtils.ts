@@ -24,7 +24,7 @@ export module ErrorUtils {
 		errorToObject[ErrorPropertyName[ErrorPropertyName.Error].toLowerCase()] = originalError.error;
 
 		let tryCastError: OneNoteApi.RequestError = <OneNoteApi.RequestError>originalError;
-		if (tryCastError && tryCastError.statusCode !== undefined) {
+		if (tryCastError?.statusCode !== undefined) {
 			errorToObject[ErrorPropertyName[ErrorPropertyName.StatusCode].toLowerCase()] = tryCastError.statusCode;
 			errorToObject[ErrorPropertyName[ErrorPropertyName.Response].toLowerCase()] = tryCastError.response;
 			errorToObject[ErrorPropertyName[ErrorPropertyName.ResponseHeaders].toLowerCase()] = tryCastError.responseHeaders;
@@ -42,7 +42,7 @@ export module ErrorUtils {
 		}
 
 		let tryCastError: OneNoteApi.RequestError = <OneNoteApi.RequestError>originalError;
-		if (tryCastError && tryCastError.statusCode !== undefined) {
+		if (tryCastError?.statusCode !== undefined) {
 			if (tryCastError.timeout !== undefined) {
 				return { error: tryCastError.error, statusCode: tryCastError.statusCode, response: tryCastError.response, responseHeaders: tryCastError.responseHeaders, timeout: tryCastError.timeout };
 			} else {

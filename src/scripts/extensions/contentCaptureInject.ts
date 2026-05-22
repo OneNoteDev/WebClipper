@@ -32,7 +32,7 @@
 		let hiddenIndices: number[] = [];
 		for (let i = 0; i < originalElements.length && i < clonedElements.length; i++) {
 			let el = originalElements[i] as HTMLElement;
-			if (el.style && el.style.display === "none") { continue; }
+			if (el.style?.display === "none") { continue; }
 			try {
 				let computed = window.getComputedStyle(el);
 				if (computed.display === "none") { hiddenIndices.push(i); }
@@ -40,7 +40,7 @@
 		}
 		for (let i = 0; i < hiddenIndices.length; i++) {
 			let el = clonedElements[hiddenIndices[i]] as HTMLElement;
-			if (el && el.style) { el.style.setProperty("display", "none", "important"); }
+			if (el?.style) { el.style.setProperty("display", "none", "important"); }
 		}
 	}
 
@@ -159,7 +159,7 @@
 		let clipperIds = ["clipperRootScript", "clipperUiFrame", "clipperExtFrame"];
 		for (let j = 0; j < clipperIds.length; j++) {
 			let el = doc.getElementById(clipperIds[j]);
-			if (el && el.parentNode) { el.parentNode.removeChild(el); }
+			if (el?.parentNode) { el.parentNode.removeChild(el); }
 		}
 		// Remove iframes that point to local (non-http/https) URLs
 		let iframes = doc.querySelectorAll("iframe");

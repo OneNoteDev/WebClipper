@@ -30,8 +30,8 @@ export abstract class SessionLogger extends Logger {
 	constructor(options?: SessionLoggerOptions) {
 		super();
 
-		this.sessionId = options && options.sessionId ? options.sessionId : new SmartValue<string>();
-		this.contextStrategy = options ? options.contextStrategy : undefined;
+		this.sessionId = options?.sessionId ?? new SmartValue<string>();
+		this.contextStrategy = options?.contextStrategy;
 	}
 
 	protected abstract handleClickEvent(clickId: string): void;

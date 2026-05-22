@@ -19,7 +19,11 @@ export default tseslint.config(
 		languageOptions: {
 			parser: tseslint.parser,
 			ecmaVersion: 2022,
-			sourceType: "module"
+			sourceType: "module",
+			parserOptions: {
+				project: "./tsconfig.json",
+				tsconfigRootDir: import.meta.dirname
+			}
 		},
 		plugins: {
 			"@typescript-eslint": tseslint.plugin
@@ -44,7 +48,8 @@ export default tseslint.config(
 			"radix": "error",
 			"semi": ["error", "always"],
 			"default-case": "error",
-			"eqeqeq": "error"
+			"eqeqeq": "error",
+			"@typescript-eslint/prefer-optional-chain": "error"
 		}
 	}
 );

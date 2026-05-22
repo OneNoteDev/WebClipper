@@ -75,7 +75,7 @@ export class UserDataBoundaryHelper {
 							this.logger.logJsonParseUnexpected(responseText);
 							reject(error);
 						}
-						if (parsedResponse && parsedResponse.telemetryRegion) {
+						if (parsedResponse?.telemetryRegion) {
 							resolve(parsedResponse.telemetryRegion);
 						} else {
 							resolve(DataBoundary[DataBoundary.UNKNOWN]);

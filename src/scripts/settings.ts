@@ -8,7 +8,7 @@ export module Settings {
 	export function getSetting(name: string): any {
 		let localResult = settings[name];
 
-		if (!localResult || !localResult.Value) {
+		if (!localResult?.Value) {
 			return undefined;
 		}
 
