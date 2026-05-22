@@ -3,19 +3,17 @@
 
 var fs = require("fs");
 var argv = require("yargs/yargs")(process.argv.slice(2)).argv;
-var browserify = require("browserify");
 var concat = require("gulp-concat");
 var del = require("del").deleteAsync;
+var esbuild = require("esbuild");
 var globby = require("globby");
 var gulp = require("gulp");
 var less = require("gulp-less");
-var merge = require("merge-stream");
 var mergeJSON = require("gulp-merge-json");
 var cssnano = require("cssnano");
 var postcss = require("gulp-postcss");
 var plumber = require("gulp-plumber");
 var rename = require("gulp-rename");
-var source = require("vinyl-source-stream");
 var spawn = require("child_process").spawn;
 var tslint = require("gulp-tslint");
 var uglify = require("gulp-uglify");
@@ -171,61 +169,57 @@ gulp.task("tslint", function() {
 ////////////////////////////////////////
 // BUNDLE
 ////////////////////////////////////////
-function generateBrowserifyTasks(folderPath, files) {
-    var tasks = [];
-    for (var i = 0; i < files.length; i++) {
-        tasks.push(browserify(folderPath + files[i])
-            .bundle()
-            .pipe(source(files[i]))
-            .pipe(gulp.dest(PATHS.BUNDLEROOT)));
+function bundleEntry(folderPath, file, options) {
+    options = options || {};
+    var buildOptions = {
+        entryPoints: [folderPath + file],
+        outfile: PATHS.BUNDLEROOT + file,
+        bundle: true,
+        platform: "browser",
+        format: "iife",
+        target: "es2017",
+        logLevel: "warning"
+    };
+    if (options.globalName) {
+        buildOptions.globalName = options.globalName;
     }
-    return tasks;
+    return esbuild.build(buildOptions);
 }
 
 gulp.task("bundleAppendIsInstalledMarker", function () {
-    return merge(generateBrowserifyTasks(PATHS.BUILDROOT + "scripts/extensions/", ["appendIsInstalledMarker.js"]));
+    return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/", "appendIsInstalledMarker.js");
 });
 
 gulp.task("bundleOffscreen", function () {
-    return merge(generateBrowserifyTasks(PATHS.BUILDROOT + "scripts/extensions/", ["offscreen.js"]));
+    return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/", "offscreen.js");
 });
 
 gulp.task("bundleRegionOverlay", function () {
-    return merge(generateBrowserifyTasks(PATHS.BUILDROOT + "scripts/extensions/", ["regionOverlay.js"]));
+    return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/", "regionOverlay.js");
 });
 
 gulp.task("bundleContentCaptureInject", function () {
-    return merge(generateBrowserifyTasks(PATHS.BUILDROOT + "scripts/extensions/", ["contentCaptureInject.js"]));
+    return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/", "contentCaptureInject.js");
 });
 
 gulp.task("bundleRenderer", function () {
-    return merge(generateBrowserifyTasks(PATHS.BUILDROOT + "scripts/", ["renderer.js"]));
+    return bundleEntry(PATHS.BUILDROOT + "scripts/", "renderer.js");
 });
 
 gulp.task("bundleLogManager", function () {
-    var defaultLogManager = browserify(PATHS.BUILDROOT + "scripts/logging/logManager.js", { standalone: "LogManager" })
-        .bundle()
-        .pipe(source("logManager.js"))
-        .pipe(gulp.dest(PATHS.BUNDLEROOT));
-
+    var tasks = [bundleEntry(PATHS.BUILDROOT + "scripts/logging/", "logManager.js", { globalName: "LogManager" })];
     if (fileExists(PATHS.BUILDROOT + "scripts/logging/logManager_internal.js") && !argv.nointernal) {
-        var internalLogManager = browserify(PATHS.BUILDROOT + "scripts/logging/logManager_internal.js", { standalone: "LogManager" })
-            .bundle()
-            .pipe(source("logManager_internal.js"))
-            .pipe(gulp.dest(PATHS.BUNDLEROOT));
-
-        return merge(defaultLogManager, internalLogManager);
+        tasks.push(bundleEntry(PATHS.BUILDROOT + "scripts/logging/", "logManager_internal.js", { globalName: "LogManager" }));
     }
-
-    return defaultLogManager;
+    return Promise.all(tasks);
 });
 
-gulp.task("bundleChrome", function() {
-    return merge(generateBrowserifyTasks(PATHS.BUILDROOT + "scripts/extensions/chrome/", ["chromeExtension.js"]));
+gulp.task("bundleChrome", function () {
+    return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/chrome/", "chromeExtension.js");
 });
 
 gulp.task("bundleEdge", function () {
-    return merge(generateBrowserifyTasks(PATHS.BUILDROOT + "scripts/extensions/edge/", ["edgeExtension.js"]));
+    return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/edge/", "edgeExtension.js");
 });
 
 gulp.task("bundle", gulp.series(

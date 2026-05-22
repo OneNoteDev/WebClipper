@@ -23,9 +23,9 @@
         "@mozilla/readability": "^0.6.0",
         "@types/chrome": "0.1.42",
         "@types/pdf": "0.0.31",
-        "browserify": "17.0.1",
         "cssnano": "8.0.1",
         "del": "8.0.1",
+        "esbuild": "0.28.0",
         "file-exists": "5.0.1",
         "globby": "16.2.0",
         "gulp": "5.0.1",
@@ -38,12 +38,10 @@
         "gulp-tslint": "6.1.2",
         "gulp-uglify": "^3.0.2",
         "gulp-zip": "6.1.0",
-        "merge-stream": "2.0.0",
         "pdfjs-dist": "5.7.284",
         "postcss": "8.5.15",
         "tslint": "3.15.1",
         "typescript": "5.7.2",
-        "vinyl-source-stream": "2.0.0",
         "yargs": "18.0.0"
     },
     "overrides": {
