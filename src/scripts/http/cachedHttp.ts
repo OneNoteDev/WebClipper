@@ -2,7 +2,7 @@ import {ResponsePackage} from "../responsePackage";
 
 import { Storage } from "../storage/storage";
 import { AuthType, JwtAcessTokenInfo } from "../userInfo";
-import * as jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export interface TimeStampedData {
 	data: any;
@@ -110,7 +110,7 @@ export class CachedHttp {
 		if (userAuthType === AuthType[AuthType.OrgId]) {
 			const token: string = valueAsJson.accessToken;
 			try {
-				const decodedToken: JwtAcessTokenInfo = jwt_decode(token);
+				const decodedToken: JwtAcessTokenInfo = jwtDecode(token);
 				if (decodedToken) {
 					valueAsJson.emailAddress = decodedToken.upn;
 				}

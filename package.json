@@ -23,35 +23,33 @@
         "@mozilla/readability": "^0.6.0",
         "@types/chrome": "0.0.257",
         "@types/pdf": "0.0.31",
-        "browserify": "14.1.0",
-        "del": "2.2.2",
-        "file-exists": "2.0.0",
-        "globby": "6.1.0",
-        "gulp": "3.9.1",
+        "browserify": "17.0.1",
+        "del": "8.0.1",
+        "file-exists": "5.0.1",
+        "globby": "16.2.0",
+        "gulp": "5.0.1",
         "gulp-concat": "2.6.1",
-        "gulp-cssnano": "2.1.2",
-        "gulp-less": "3.3.0",
-        "gulp-merge-json": "0.6.0",
-        "gulp-plumber": "1.1.0",
-        "gulp-rename": "1.2.2",
-        "gulp-rtlcss": "1.0.0",
+        "gulp-cssnano": "2.1.3",
+        "gulp-less": "5.0.0",
+        "gulp-merge-json": "2.2.1",
+        "gulp-plumber": "1.2.1",
+        "gulp-rename": "2.1.0",
         "gulp-tslint": "6.1.2",
         "gulp-typescript": "3.1.4",
         "gulp-uglify": "^3.0.2",
-        "gulp-zip": "4.0.0",
-        "merge-stream": "1.0.1",
+        "gulp-zip": "6.1.0",
+        "merge-stream": "2.0.0",
         "onenoteapi": "1.1.0",
         "pdfjs-dist": "1.7.290",
-        "run-sequence": "1.2.2",
         "tslint": "3.15.1",
         "typescript": "3.5.3",
-        "vinyl-source-stream": "1.1.0",
-        "yargs": "6.6.0"
+        "vinyl-source-stream": "2.0.0",
+        "yargs": "18.0.0"
     },
     "overrides": {
         "graceful-fs": "4.2.2"
     },
     "dependencies": {
-        "jwt-decode": "^2.2.0"
+        "jwt-decode": "^4.0.0"
     }
 }
