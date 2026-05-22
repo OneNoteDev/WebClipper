@@ -3,10 +3,6 @@ import {OperationResult} from "./operationResult";
 
 import {Localization} from "./localization/localization";
 
-import {Status} from "./clipperUI/status";
-
-import * as _ from "lodash";
-
 export module StringUtils {
 	export interface ParsedPageRange {
 		status: OperationResult;
@@ -56,7 +52,8 @@ export module StringUtils {
 					rhs - lhs + 1 > maxRangeSizeAllowed || (!ObjectUtils.isNullOrUndefined(maxRange) && rhs > maxRange)) {
 					return asFailedOperation(currentValue);
 				}
-				valueToAppend = _.range(lhs, rhs + 1);
+				valueToAppend = [];
+				for (let n = lhs; n <= rhs; n++) { valueToAppend.push(n); }
 			} else {
 				// The currentValue is not a single digit or a valid range
 				return asFailedOperation(currentValue);
@@ -65,13 +62,14 @@ export module StringUtils {
 			range = range.concat(valueToAppend);
 		}
 
-		let parsedPageRange = _(range).sortBy().sortedUniq().value();
+		let seen: { [n: number]: boolean } = {};
+		let parsedPageRange = range.filter(n => seen[n] ? false : (seen[n] = true)).sort((a, b) => a - b);
 
 		if (parsedPageRange.length === 0) {
 			return asFailedOperation(text);
 		}
 
-		const last = _.last(parsedPageRange);
+		const last = parsedPageRange[parsedPageRange.length - 1];
 		if (!ObjectUtils.isNullOrUndefined(maxRange) && last > maxRange) {
 			return asFailedOperation(last.toString());
 		}

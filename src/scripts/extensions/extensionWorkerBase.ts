@@ -1,6 +1,5 @@
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
-import {Polyfills} from "../polyfills";
 import {AuthType} from "../userInfo";
 import {Settings} from "../settings";
 
@@ -40,8 +39,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected sessionId: SmartValue<string>;
 
 	constructor(clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper, clipperData: ClipperData) {
-		Polyfills.init();
-
 		this.sessionId = new SmartValue<string>();
 		this.clipperData = clipperData;
 		this.auth = auth;

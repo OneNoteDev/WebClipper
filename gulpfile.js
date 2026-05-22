@@ -7,21 +7,16 @@ var browserify = require("browserify");
 var concat = require("gulp-concat");
 var del = require("del");
 var fileExists = require("file-exists");
-var forever = require("forever");
 var globby = require("globby");
 var gulp = require("gulp");
 var less = require("gulp-less");
 var merge = require("merge-stream");
 var mergeJSON = require("gulp-merge-json");
 var minifyCSS = require("gulp-cssnano");
-var msx = require("gulp-msx");
-var open = require("gulp-open");
 var plumber = require("gulp-plumber");
-var qunit = require("node-qunit-phantomjs");
 var rename = require("gulp-rename");
 var rtlcss = require("gulp-rtlcss");
 var runSequence = require("run-sequence");
-var shell = require("gulp-shell");
 var source = require("vinyl-source-stream");
 var ts = require("gulp-typescript");
 var tslint = require("gulp-tslint");
@@ -35,13 +30,11 @@ var PATHS = {
     },
     BUILDROOT: "build/",
     BUNDLEROOT: "build/bundles/",
-    LIBROOT: "lib/",
     TARGET: {
         ROOT: "target/",
         CHROME: "target/chrome/",
         EDGE_ROOT: "target/edge/OneNoteWebClipper/edgeextension/",
-        EDGE_EXTENSION: "target/edge/OneNoteWebClipper/edgeextension/manifest/extension/",
-        TESTS: "target/tests/"
+        EDGE_EXTENSION: "target/edge/OneNoteWebClipper/edgeextension/manifest/extension/"
     },
     NODE_MODULES: "node_modules/",
     INTERNAL: {
@@ -173,16 +166,9 @@ gulp.task("compileTypeScript", ["copyStrings", "mergeSettings", "preCompileInter
         .pipe(gulp.dest(PATHS.BUILDROOT));
 });
 
-gulp.task("mithrilify", function() {
-    return gulp.src(PATHS.BUILDROOT + "**/*.jsx")
-        .pipe(msx())
-        .pipe(gulp.dest(PATHS.BUILDROOT));
-});
-
 gulp.task("compile", function(callback) {
     runSequence(
         "compileTypeScript",
-        "mithrilify",
         callback);
 });
 
@@ -314,22 +300,6 @@ function lowerCasePathName() {
     });
 }
 
-function exportPickerFiles(targetDir) {
-    var pickerImages = gulp.src(PATHS.NODE_MODULES + "onenotepicker/target/images/*",
-        { base: PATHS.NODE_MODULES + "onenotepicker/target/" })
-        .pipe(gulp.dest(targetDir));
-
-    var pickerCss = gulp.src(PATHS.NODE_MODULES + "onenotepicker/target/css/*")
-        .pipe(gulp.dest(targetDir));
-
-    var pickerRtlCss = gulp.src(PATHS.NODE_MODULES + "onenotepicker/target/css/*")
-        .pipe(rtlcss())
-        .pipe(rename({ suffix: RTL_SUFFIX }))
-        .pipe(gulp.dest(targetDir));
-
-    return merge(pickerImages, pickerCss, pickerRtlCss);
-}
-
 var targetDirHasExportedCommonJs = {};
 targetDirHasExportedCommonJs[PATHS.TARGET.CHROME] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.EDGE_EXTENSION] = false;
@@ -375,32 +345,20 @@ function exportCommonCSS(targetDir) {
 }
 
 function exportCommonSrcFiles(targetDir) {
-    var pickerTask = exportPickerFiles(targetDir);
-
     var imagesTask = gulp.src(PATHS.SRC.ROOT + "images/**/*", { base: PATHS.SRC.ROOT })
         .pipe(lowerCasePathName())
         .pipe(gulp.dest(targetDir));
 
     var clipperTask = gulp.src([
-        PATHS.SRC.ROOT + "unsupportedBrowser.html",
         PATHS.SRC.ROOT + "renderer.html"
     ]).pipe(gulp.dest(targetDir));
 
-    return merge(pickerTask, imagesTask, clipperTask);
+    return merge(imagesTask, clipperTask);
 }
 
 function exportCommonLibFiles(targetDir) {
     var libFiles = [
-        PATHS.NODE_MODULES + "json3/lib/json3.min.js",
-        PATHS.NODE_MODULES + "es5-shim/es5-shim.min.js",
-        PATHS.NODE_MODULES + "mithril/mithril.min.js",
-        PATHS.NODE_MODULES + "onenoteapi/target/oneNoteApi.min.js",
-        PATHS.NODE_MODULES + "onenotepicker/target/oneNotePicker.min.js",
-        PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js",
-        PATHS.NODE_MODULES + "rangy/lib/rangy-core.js",
-        PATHS.NODE_MODULES + "urijs/src/URI.min.js",
-        PATHS.NODE_MODULES + "velocity-animate/velocity.min.js",
-        PATHS.LIBROOT + "sanitize-html.js"
+        PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js"
     ];
 
     var exportTask = gulp.src(assertModuleExists(libFiles))
@@ -735,7 +693,6 @@ gulp.task("watchSrcFiles", function() {
             PATHS.SRC.ROOT + "_locales/*",
             PATHS.SRC.ROOT + "icons/*",
             PATHS.SRC.ROOT + "images/*",
-            PATHS.SRC.ROOT + "unsupportedBrowser.html",
             PATHS.SRC.ROOT + "renderer.html",
             PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json",
             PATHS.SRC.ROOT + "scripts/extensions/offscreen.html",

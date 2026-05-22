@@ -2,18 +2,11 @@
 	"compilerOptions": {
 		"jsx": "preserve",
 		"module": "commonjs",
+		"target": "es2017",
+		"lib": ["es2017", "dom"],
 		"types": [
 			"chrome",
-			"es6-promise",
-			"jquery",
-			"mithril",
-			"pdf",
-			"qunit",
-			"rangy",
-			"safari-extension",
-			"sinon",
-			"urijs",
-			"velocity-animate"
+			"pdf"
 		],
 		"outDir": "./build"
 	}
