@@ -1,4 +1,3 @@
-import {BrowserUtils} from "../browserUtils";
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
 import {ClipperUrls} from "../clipperUrls";
@@ -361,43 +360,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			return this.invokeDebugLoggingBrowserSpecific();
 		}
 		return Promise.resolve(false);
-	}
-
-	protected launchPopupAndWaitForClose(url: string): Promise<boolean> {
-		return new Promise<boolean>((resolve, reject) => {
-			let signInWindow: Window = BrowserUtils.openPopupWindow(url);
-
-			let errorObject;
-			let popupMessageHandler = (event: MessageEvent) => {
-				if (event.source === signInWindow) {
-					let dataAsJson: any;
-					try {
-						dataAsJson = JSON.parse(event.data);
-					} catch (e) {
-						this.logger.logJsonParseUnexpected(event.data);
-					}
-
-					if (dataAsJson && (dataAsJson[Constants.Urls.QueryParams.error] || dataAsJson[Constants.Urls.QueryParams.errorDescription])) {
-						errorObject = {
-							correlationId: dataAsJson[Constants.Urls.QueryParams.correlationId],
-							error: dataAsJson[Constants.Urls.QueryParams.error],
-							errorDescription: dataAsJson[Constants.Urls.QueryParams.errorDescription]
-						};
-					}
-				}
-			};
-			window.addEventListener("message", popupMessageHandler);
-
-			let timer = setInterval(() => {
-				if (!signInWindow || signInWindow.closed) {
-					clearInterval(timer);
-					window.removeEventListener("message", popupMessageHandler);
-					// We always resolve with true in the non-error case as we can't reliably detect redirects
-					// on non-IE bookmarklets
-					errorObject ? reject(errorObject) : resolve(true);
-				}
-			}, 100);
-		});
 	}
 
 	protected logClipperInvoke(invokeInfo: InvokeInfo, options: InvokeOptions) {

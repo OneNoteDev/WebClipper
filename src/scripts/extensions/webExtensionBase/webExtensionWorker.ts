@@ -1207,15 +1207,9 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						WebExtension.browser.tabs.onRemoved.addListener(closeListener);
 					});
 				} catch (e) {
-					// In the event that there was an exception thrown during the creation of the popup, fallback to using window.open with a monitor
-					this.logger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, { error: e.message });
-
-					this.launchPopupAndWaitForClose(url).then((redirectOccurred) => {
-						// From chrome's background, we currently are unable to reliably determine if the redirect happened
-						resolve(true /* redirectOccurred */);
-					}, (errorObject) => {
-						reject(errorObject);
-					});
+					let errorMessage = (e as Error).message;
+					this.logger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, { error: errorMessage });
+					reject({ error: errorMessage });
 				}
 			});
 		});
