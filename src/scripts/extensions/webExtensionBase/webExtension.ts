@@ -42,6 +42,8 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 
 		this.registerBrowserButton();
 
+		// Listener registers synchronously at SW startup; menu items themselves need locStrings.
+		this.registerContextMenuClickListener();
 		this.clipperIdProcessed.then(() => {
 			this.registerContextMenuItems();
 		});
@@ -184,40 +186,49 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 						menus[i].documentUrlPatterns = documentUrlPatternList;
 					}
 					WebExtension.browser.contextMenus.create(menus[i]);
-					WebExtension.browser.contextMenus.onClicked.addListener((info, tab: W3CTab) => {
-						switch (info.menuItemId) {
-							case "WebClipper.Label.OneNoteWebClipper":
-								this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
-								break;
-							case "WebClipper.Label.ClipSelectionToOneNote":
-								let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
-
-								// If the tab index is negative, chances are the user is using some sort of PDF plugin,
-								// and the tab object will be invalid. We need to get the parent tab in this scenario.
-								if (tab.index < 0) {
-									// Since we are in a PDF plugin, Rangy won't work, so we rely on WebExtension API to grab pure text
-									invokeOptions.invokeDataForMode = info.selectionText;
-									WebExtension.browser.tabs.query({ active: true, currentWindow: true }, (tabs: W3CTab[]) => {
-										// There will only be one tab that meets this criteria
-										let parentTab = tabs[0];
-										this.invokeClipperInTab(parentTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
-									});
-								} else {
-									this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
-								}
-								break;
-							case "WebClipper.Label.ClipImageToOneNote":
-								// Even though we know the user right-clicked an image, srcUrl is only present if the src attr exists
-								this.invokeClipperInTab(tab, { invokeSource: InvokeSource.ContextMenu }, info.srcUrl ? {
-									// srcUrl will always be the full url, not relative
-									invokeDataForMode: info.srcUrl, invokeMode: InvokeMode.ContextImage
-								} : undefined);
-								break;
-							default:
-						}
-					});
 				}
 			});
+		});
+	}
+
+	// Synchronous part of context-menu setup — dispatches on info.menuItemId only,
+	// no locStrings dependency. See constructor for why this is split out.
+	private registerContextMenuClickListener() {
+		WebExtension.browser.contextMenus.onClicked.addListener((info, tab?: Tab) => {
+			if (!tab) {
+				return;
+			}
+			let clickedTab = tab as W3CTab;
+			switch (info.menuItemId) {
+				case "WebClipper.Label.OneNoteWebClipper":
+					this.invokeClipperInTab(clickedTab, { invokeSource: InvokeSource.ContextMenu }, { invokeMode: InvokeMode.Default });
+					break;
+				case "WebClipper.Label.ClipSelectionToOneNote":
+					let invokeOptions: InvokeOptions = { invokeMode: InvokeMode.ContextTextSelection };
+
+					// If the tab index is negative, chances are the user is using some sort of PDF plugin,
+					// and the tab object will be invalid. We need to get the parent tab in this scenario.
+					if (clickedTab.index < 0) {
+						// Since we are in a PDF plugin, Rangy won't work, so we rely on WebExtension API to grab pure text
+						invokeOptions.invokeDataForMode = info.selectionText;
+						WebExtension.browser.tabs.query({ active: true, currentWindow: true }, (tabs: Tab[]) => {
+							// There will only be one tab that meets this criteria
+							let parentTab = tabs[0] as W3CTab;
+							this.invokeClipperInTab(parentTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+						});
+					} else {
+						this.invokeClipperInTab(clickedTab, { invokeSource: InvokeSource.ContextMenu }, invokeOptions);
+					}
+					break;
+				case "WebClipper.Label.ClipImageToOneNote":
+					// Even though we know the user right-clicked an image, srcUrl is only present if the src attr exists
+					this.invokeClipperInTab(clickedTab, { invokeSource: InvokeSource.ContextMenu }, info.srcUrl ? {
+						// srcUrl will always be the full url, not relative
+						invokeDataForMode: info.srcUrl, invokeMode: InvokeMode.ContextImage
+					} : { invokeMode: InvokeMode.Default });
+					break;
+				default:
+			}
 		});
 	}
 

@@ -504,21 +504,24 @@ THE SOFTWARE.
     };
 
     TextHighlighter.prototype.bindEvents = function (el) {
+        // Use el's own window so events fire when the host is a same-origin iframe.
+        var win = el.ownerDocument.defaultView;
         el.addEventListener('keydown', this.boundStartDragHandler);
         el.addEventListener('mousedown', this.boundStartDragHandler);
         el.addEventListener('touchstart', this.boundStartDragHandler);
-        window.addEventListener('keyup', this.boundHighlightHandler);
-        window.addEventListener('mouseup', this.boundHighlightHandler);
-        window.addEventListener('touchend', this.boundHighlightHandler);
+        win.addEventListener('keyup', this.boundHighlightHandler);
+        win.addEventListener('mouseup', this.boundHighlightHandler);
+        win.addEventListener('touchend', this.boundHighlightHandler);
     }
 
     TextHighlighter.prototype.unbindEvents = function (el) {
+        var win = el.ownerDocument.defaultView;
         el.removeEventListener('keydown', this.boundStartDragHandler);
         el.removeEventListener('mousedown', this.boundStartDragHandler);
         el.removeEventListener('touchstart', this.boundStartDragHandler);
-        window.removeEventListener('keyup', this.boundHighlightHandler);
-        window.removeEventListener('mouseup', this.boundHighlightHandler);
-        window.removeEventListener('touchend', this.boundHighlightHandler);
+        win.removeEventListener('keyup', this.boundHighlightHandler);
+        win.removeEventListener('mouseup', this.boundHighlightHandler);
+        win.removeEventListener('touchend', this.boundHighlightHandler);
     }
 
     /**

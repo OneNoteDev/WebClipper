@@ -272,12 +272,50 @@
 	let contentType = detectContentType();
 	let html = resolveLazyImages(getDomString(doc));
 
+	// Selection through the same DOM-cleanup pipeline; materialize URLs first so they survive base-tag strip.
+	function captureSelectionHtml(): string {
+		try {
+			let sel = window.getSelection();
+			if (!sel || sel.rangeCount === 0) { return ""; }
+			let range = sel.getRangeAt(0);
+			if (range.collapsed) { return ""; }
+
+			let selDoc = cloneDocument(document);
+			if (!selDoc.body) { return ""; }
+			while (selDoc.body.firstChild) { selDoc.body.removeChild(selDoc.body.firstChild); }
+			selDoc.body.appendChild(selDoc.importNode(range.cloneContents(), true));
+
+			addBaseTagIfNecessary(selDoc, document.location);
+			addImageSizeInformationToDom(selDoc);
+			removeUnwantedItems(selDoc);
+
+			// Only img.src + a.href need materializing; other URL-bearing tags are stripped downstream.
+			let materialize = (selector: string, prop: string, attr: string) => {
+				let els = selDoc.querySelectorAll(selector);
+				for (let i = 0; i < els.length; i++) {
+					let el = els[i] as HTMLElement;
+					let resolved = (el as any)[prop];
+					if (resolved && typeof resolved === "string") { el.setAttribute(attr, resolved); }
+				}
+			};
+			materialize("img[src]", "src", "src");
+			materialize("a[href]", "href", "href");
+
+			return selDoc.body.innerHTML;
+		} catch (e) {
+			return "";
+		}
+	}
+	// Resolve lazy images on the selection branch too, else lazy-loaded <img> lands with no src.
+	let selectionHtml = resolveLazyImages(captureSelectionHtml());
+
 	chrome.runtime.sendMessage(JSON.stringify({
 		action: "contentCaptureComplete",
 		html: html,
 		baseUrl: document.baseURI || document.URL,
 		title: document.title || "",
 		url: document.URL || "",
-		contentType: contentType
+		contentType: contentType,
+		selectionHtml: selectionHtml
 	}));
 })();
