@@ -175,7 +175,7 @@ function bundleEntry(folderPath, file, options) {
         bundle: true,
         platform: "browser",
         format: "iife",
-        target: "es2017",
+        target: "es2022",
         logLevel: "warning"
     };
     if (options.globalName) {

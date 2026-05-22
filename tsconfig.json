@@ -2,8 +2,8 @@
 	"compilerOptions": {
 		"jsx": "preserve",
 		"module": "commonjs",
-		"target": "es2017",
-		"lib": ["es2017", "dom"],
+		"target": "es2022",
+		"lib": ["es2022", "dom"],
 		"types": [
 			"chrome",
 			"pdf"

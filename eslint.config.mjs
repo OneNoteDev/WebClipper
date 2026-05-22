@@ -18,7 +18,7 @@ export default tseslint.config(
 		files: ["src/**/*.ts", "src/**/*.tsx"],
 		languageOptions: {
 			parser: tseslint.parser,
-			ecmaVersion: 2017,
+			ecmaVersion: 2022,
 			sourceType: "module"
 		},
 		plugins: {
