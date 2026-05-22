@@ -38,7 +38,7 @@ export class UserDataBoundaryHelper {
 
 	/**
 	 * fetch the user data bounday from the emailAddress
-	 * @param userInfo 
+	 * @param userInfo
 	 * @returns user data boudary
 	 */
 	private async getUserDataBoundaryInternal(userInfo: UserInfoData): Promise<string | undefined> {

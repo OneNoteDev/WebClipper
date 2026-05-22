@@ -12,10 +12,8 @@ var less = require("gulp-less");
 var mergeJSON = require("gulp-merge-json");
 var cssnano = require("cssnano");
 var postcss = require("gulp-postcss");
-var plumber = require("gulp-plumber");
 var rename = require("gulp-rename");
 var spawn = require("child_process").spawn;
-var tslint = require("gulp-tslint");
 var uglify = require("gulp-uglify");
 var zip = require("gulp-zip").default;
 
@@ -148,26 +146,23 @@ gulp.task("compileTypeScript", gulp.series("copyStrings", "mergeSettings", "preC
 gulp.task("compile", gulp.series("compileTypeScript"));
 
 ////////////////////////////////////////
-// TSLINT
+// LINT (eslint)
 ////////////////////////////////////////
-gulp.task("tslint", function() {
-    var tsFiles = [
-        PATHS.SRC.ROOT + "**/*.ts",
-        PATHS.SRC.ROOT + "**/*.tsx",
-        "!" + PATHS.SRC.ROOT + "**/*.d.ts",
-        "!" + PATHS.SRC.ROOT + "scripts/definitions/custom/aria-web-telemetry-*.d_internal.ts"
-    ];
-
-    return gulp.src(tsFiles)
-        .pipe(plumber())
-        .pipe(tslint({
-            formatter: "verbose"
-        }))
-        .pipe(tslint.report({
-            emitError: false,
-            summarizeFailureOutput: true
-        }));
+gulp.task("lint", function (done) {
+    // require.resolve("eslint") is blocked by eslint's "exports" field; resolve
+    // via package.json (always exported) and walk to the bin entry instead.
+    var path = require("path");
+    var eslintPkgDir = path.dirname(require.resolve("eslint/package.json"));
+    var eslintBin = path.join(eslintPkgDir, "bin", "eslint.js");
+    var eslint = spawn(process.execPath, [eslintBin, "--no-error-on-unmatched-pattern", "src/**/*.ts", "src/**/*.tsx"], { stdio: "inherit" });
+    eslint.on("close", function () {
+        // Match legacy gulp-tslint behavior: report findings but don't fail the build.
+        done();
+    });
 });
+
+// Preserve the legacy task name for any external callers / pipeline references.
+gulp.task("tslint", gulp.series("lint"));
 
 ////////////////////////////////////////
 // BUNDLE

@@ -17,9 +17,9 @@ export interface RemoteFunctionOptions {
  * Communication interface for handling message passing between two scripts (separate windows, extensions, etc...)
  */
 export class Communicator {
-	public static initializationKey: string = "INITIALIZATION-K3Y";
-	public static acknowledgeKey: string = "ACKNOWLEDGE-K3Y";
-	public static registrationKey: string = "REGISTER-FUNCTION-K3Y";
+	public static initializationKey = "INITIALIZATION-K3Y";
+	public static acknowledgeKey = "ACKNOWLEDGE-K3Y";
+	public static registrationKey = "REGISTER-FUNCTION-K3Y";
 	public static setValuePrefix = "SETVALUE-";
 	private static callbackPostfix = "-CALLBACK";
 
@@ -38,7 +38,7 @@ export class Communicator {
 
 	// We do not want to override the callback if we call a remote function more than once, so each
 	// time we register a callback, we need to add this and increment it accordingly.
-	private callbackIdPostfix: number = 0;
+	private callbackIdPostfix = 0;
 
 	constructor(messageHandler: MessageHandler, channel: string) {
 		this.functionMap = {};

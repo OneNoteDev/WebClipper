@@ -1,382 +1,382 @@
 export module Constants {
 	export module Classes {
 		// animators
-		export var heightAnimator = "height-animator";
-		export var panelAnimator = "panel-animator";
-		export var clearfix = "clearfix";
+		export let heightAnimator = "height-animator";
+		export let panelAnimator = "panel-animator";
+		export let clearfix = "clearfix";
 
 		// changeLogPanel
-		export var change = "change";
-		export var changes = "changes";
-		export var changeBody = "change-body";
-		export var changeDescription = "change-description";
-		export var changeImage = "change-image";
-		export var changeTitle = "change-title";
+		export let change = "change";
+		export let changes = "changes";
+		export let changeBody = "change-body";
+		export let changeDescription = "change-description";
+		export let changeImage = "change-image";
+		export let changeTitle = "change-title";
 
 		// checkbox
-		export var checkboxCheck = "checkboxCheck";
+		export let checkboxCheck = "checkboxCheck";
 
 		// textArea input control
-		export var textAreaInput = "textAreaInput";
-		export var textAreaInputMirror = "textAreaInputMirror";
+		export let textAreaInput = "textAreaInput";
+		export let textAreaInputMirror = "textAreaInputMirror";
 
 		// popover
-		export var popover = "popover";
-		export var popoverArrow = "popover-arrow";
+		export let popover = "popover";
+		export let popoverArrow = "popover-arrow";
 
 		// previewViewer
-		export var deleteHighlightButton = "delete-highlight";
-		export var highlightable = "highlightable";
-		export var highlighted = "highlighted";
-		export var regionSelection = "region-selection";
-		export var regionSelectionImage = "region-selection-image";
-		export var regionSelectionRemoveButton = "region-selection-remove-button";
+		export let deleteHighlightButton = "delete-highlight";
+		export let highlightable = "highlightable";
+		export let highlighted = "highlighted";
+		export let regionSelection = "region-selection";
+		export let regionSelectionImage = "region-selection-image";
+		export let regionSelectionRemoveButton = "region-selection-remove-button";
 
 		// pdfPreviewViewer
-		export var attachmentOverlay = "attachment-overlay";
-		export var centeredInCanvas = "centered-in-canvas";
-		export var overlay = "overlay";
-		export var overlayHidden = "overlay-hidden";
-		export var overlayNumber = "overlay-number";
-		export var pdfPreviewImage = "pdf-preview-image";
-		export var pdfPreviewImageCanvas = "pdf-preview-image-canvas";
-		export var unselected = "unselected";
+		export let attachmentOverlay = "attachment-overlay";
+		export let centeredInCanvas = "centered-in-canvas";
+		export let overlay = "overlay";
+		export let overlayHidden = "overlay-hidden";
+		export let overlayNumber = "overlay-number";
+		export let pdfPreviewImage = "pdf-preview-image";
+		export let pdfPreviewImageCanvas = "pdf-preview-image-canvas";
+		export let unselected = "unselected";
 
-		export var localPdfPanelTitle = "local-pdf-panel-title";
-		export var localPdfPanelSubtitle = "local-pdf-panel-subtitle";
+		export let localPdfPanelTitle = "local-pdf-panel-title";
+		export let localPdfPanelSubtitle = "local-pdf-panel-subtitle";
 
 		// radioButton
-		export var radioIndicatorFill = "radio-indicator-fill";
+		export let radioIndicatorFill = "radio-indicator-fill";
 
 		// spriteAnimation
-		export var spinner = "spinner";
+		export let spinner = "spinner";
 
-		// Accessibility 
-		export var srOnly = "sr-only";
+		// Accessibility
+		export let srOnly = "sr-only";
 
 		// tooltip
-		export var tooltip = "tooltip";
+		export let tooltip = "tooltip";
 
 		// rotatingMessageSpriteAnimation
-		export var centeredInPreview = "centered-in-preview";
+		export let centeredInPreview = "centered-in-preview";
 	}
 
 	export module Cookies {
-		export var clipperInfo = "ClipperInfo";
+		export let clipperInfo = "ClipperInfo";
 	}
 
 	export module Extension {
 		export module NotificationIds {
-			export var conflictingExtension = "conflictingExtension";
+			export let conflictingExtension = "conflictingExtension";
 		}
 	}
 
 	export module Ids {
 		// annotationInput
-		export var annotationContainer = "annotationContainer";
-		export var annotationField = "annotationField";
-		export var annotationFieldMirror = "annotationFieldMirror";
-		export var annotationPlaceholder = "annotationPlaceholder";
+		export let annotationContainer = "annotationContainer";
+		export let annotationField = "annotationField";
+		export let annotationFieldMirror = "annotationFieldMirror";
+		export let annotationPlaceholder = "annotationPlaceholder";
 
 		// bookmarkPreview
-		export var bookmarkThumbnail = "bookmarkThumbnail";
-		export var bookmarkPreviewContentContainer = "bookmarkPreviewContentContainer";
-		export var bookmarkPreviewInnerContainer = "bookmarkPreviewInnerContainer";
+		export let bookmarkThumbnail = "bookmarkThumbnail";
+		export let bookmarkPreviewContentContainer = "bookmarkPreviewContentContainer";
+		export let bookmarkPreviewInnerContainer = "bookmarkPreviewInnerContainer";
 
 		// clippingPanel
-		export var clipperApiProgressContainer = "clipperApiProgressContainer";
+		export let clipperApiProgressContainer = "clipperApiProgressContainer";
 
 		// clippingPanel
-		export var clipProgressDelayedMessage = "clipProgressDelayedMessage";
-		export var clipProgressIndicatorMessage = "clipProgressIndicatorMessage";
+		export let clipProgressDelayedMessage = "clipProgressDelayedMessage";
+		export let clipProgressIndicatorMessage = "clipProgressIndicatorMessage";
 
 		// dialogPanel
-		export var dialogBackButton = "dialogBackButton";
-		export var dialogButtonContainer = "dialogButtonContainer";
-		export var dialogDebugMessageContainer = "dialogDebugMessageContainer";
-		export var dialogMessageContainer = "dialogMessageContainer";
-		export var dialogContentContainer = "dialogContentContainer";
-		export var dialogMessage = "dialogMessage";
-		export var dialogSignOutButton = "dialogSignoutButton";
-		export var dialogTryAgainButton = "dialogTryAgainButton";
+		export let dialogBackButton = "dialogBackButton";
+		export let dialogButtonContainer = "dialogButtonContainer";
+		export let dialogDebugMessageContainer = "dialogDebugMessageContainer";
+		export let dialogMessageContainer = "dialogMessageContainer";
+		export let dialogContentContainer = "dialogContentContainer";
+		export let dialogMessage = "dialogMessage";
+		export let dialogSignOutButton = "dialogSignoutButton";
+		export let dialogTryAgainButton = "dialogTryAgainButton";
 
 		// editorPreviewComponentBase
-		export var highlightablePreviewBody = "highlightablePreviewBody";
+		export let highlightablePreviewBody = "highlightablePreviewBody";
 
 		// failurePanel
-		export var apiErrorMessage = "apiErrorMessage";
-		export var backToHomeButton = "backToHomeButton";
-		export var clipperFailureContainer = "clipperFailureContainer";
-		export var refreshPageButton = "refreshPageButton";
-		export var tryAgainButton = "tryAgainButton";
+		export let apiErrorMessage = "apiErrorMessage";
+		export let backToHomeButton = "backToHomeButton";
+		export let clipperFailureContainer = "clipperFailureContainer";
+		export let refreshPageButton = "refreshPageButton";
+		export let tryAgainButton = "tryAgainButton";
 
 		// footer
-		export var clipperFooterContainer = "clipperFooterContainer";
-		export var currentUserControl = "currentUserControl";
-		export var currentUserDetails = "currentUserDetails";
-		export var currentUserEmail = "currentUserEmail";
-		export var currentUserId = "currentUserId";
-		export var currentUserName = "currentUserName";
-		export var feedbackButton = "feedbackButton";
-		export var feedbackImage = "feedbackImage";
-		export var signOutButton = "signOutButton";
-		export var userDropdownArrow = "userDropdownArrow";
-		export var userSettingsContainer = "userSettingsContainer";
-		export var feedbackLabel = "feedbackLabel";
-		export var footerButtonsContainer = "footerButtonsContainer";
+		export let clipperFooterContainer = "clipperFooterContainer";
+		export let currentUserControl = "currentUserControl";
+		export let currentUserDetails = "currentUserDetails";
+		export let currentUserEmail = "currentUserEmail";
+		export let currentUserId = "currentUserId";
+		export let currentUserName = "currentUserName";
+		export let feedbackButton = "feedbackButton";
+		export let feedbackImage = "feedbackImage";
+		export let signOutButton = "signOutButton";
+		export let userDropdownArrow = "userDropdownArrow";
+		export let userSettingsContainer = "userSettingsContainer";
+		export let feedbackLabel = "feedbackLabel";
+		export let footerButtonsContainer = "footerButtonsContainer";
 
 		// loadingPanel
-		export var clipperLoadingContainer = "clipperLoadingContainer";
+		export let clipperLoadingContainer = "clipperLoadingContainer";
 
 		// mainController
-		export var closeButton = "closeButton";
-		export var closeButtonContainer = "closeButtonContainer";
-		export var mainController = "mainController";
+		export let closeButton = "closeButton";
+		export let closeButtonContainer = "closeButtonContainer";
+		export let mainController = "mainController";
 
 		// OneNotePicker
-		export var saveToLocationContainer = "saveToLocationContainer";
+		export let saveToLocationContainer = "saveToLocationContainer";
 
 		// modeButton
-		export var regionButton = "regionButton";
-		export var fullPageButton = "fullPageButton";
-		export var bookmarkButton = "bookmarkButton";
-		export var augmentationButton = "augmentationButton";
-		export var pdfButton = "pdfButton";
-		export var selectionButton = "selectionButton";
+		export let regionButton = "regionButton";
+		export let fullPageButton = "fullPageButton";
+		export let bookmarkButton = "bookmarkButton";
+		export let augmentationButton = "augmentationButton";
+		export let pdfButton = "pdfButton";
+		export let selectionButton = "selectionButton";
 
 		// optionsPanel
-		export var clipButton = "clipButton";
-		export var clipButtonContainer = "clipButtonContainer";
-		export var optionLabel = "optionLabel";
+		export let clipButton = "clipButton";
+		export let clipButtonContainer = "clipButtonContainer";
+		export let optionLabel = "optionLabel";
 
 		// previewViewerPdfHeader
-		export var radioAllPagesLabel = "radioAllPagesLabel";
-		export var radioPageRangeLabel = "radioPageRangeLabel";
-		export var rangeInput = "rangeInput";
+		export let radioAllPagesLabel = "radioAllPagesLabel";
+		export let radioPageRangeLabel = "radioPageRangeLabel";
+		export let rangeInput = "rangeInput";
 
 		// previewViewer
-		export var previewBody = "previewBody";
-		export var previewContentContainer = "previewContentContainer";
-		export var previewHeader = "previewHeader";
-		export var previewHeaderContainer = "previewHeaderContainer";
-		export var previewHeaderInput = "previewHeaderInput";
-		export var previewHeaderInputMirror = "previewHeaderInputMirror";
-		export var previewTitleContainer = "previewTitleContainer";
-		export var previewSubtitleContainer = "previewSubtitleContainer";
-		export var previewInnerContainer = "previewInnerContainer";
-		export var previewAriaLiveDiv = "previewAriaLiveDiv";
-		export var previewOptionsContainer = "previewOptionsContainer";
-		export var previewInnerWrapper = "previewInnerWrapper";
-		export var previewOuterContainer = "previewOuterContainer";
-		export var previewUrlContainer = "previewUrlContainer";
-		export var previewNotesContainer = "previewNotesContainer";
+		export let previewBody = "previewBody";
+		export let previewContentContainer = "previewContentContainer";
+		export let previewHeader = "previewHeader";
+		export let previewHeaderContainer = "previewHeaderContainer";
+		export let previewHeaderInput = "previewHeaderInput";
+		export let previewHeaderInputMirror = "previewHeaderInputMirror";
+		export let previewTitleContainer = "previewTitleContainer";
+		export let previewSubtitleContainer = "previewSubtitleContainer";
+		export let previewInnerContainer = "previewInnerContainer";
+		export let previewAriaLiveDiv = "previewAriaLiveDiv";
+		export let previewOptionsContainer = "previewOptionsContainer";
+		export let previewInnerWrapper = "previewInnerWrapper";
+		export let previewOuterContainer = "previewOuterContainer";
+		export let previewUrlContainer = "previewUrlContainer";
+		export let previewNotesContainer = "previewNotesContainer";
 
 		// previewViewerFullPageHeader
-		export var fullPageControl = "fullPageControl";
-		export var fullPageHeaderTitle = "fullPageHeaderTitle";
+		export let fullPageControl = "fullPageControl";
+		export let fullPageHeaderTitle = "fullPageHeaderTitle";
 
 		// previewViewerPdfHeader
-		export var localPdfFileTitle = "localPdfFileTitle";
-		export var pdfControl = "pdfControl";
-		export var pdfHeaderTitle = "pdfHeaderTitle";
-		export var pageRangeControl = "pageRangeControl";
+		export let localPdfFileTitle = "localPdfFileTitle";
+		export let pdfControl = "pdfControl";
+		export let pdfHeaderTitle = "pdfHeaderTitle";
+		export let pageRangeControl = "pageRangeControl";
 
 		// pdfClipOptions
-		export var checkboxToDistributePages = "checkboxToDistributePages";
-		export var pdfIsTooLargeToAttachIndicator = "pdfIsTooLargeToAttachIndicator";
-		export var checkboxToAttachPdf = "checkboxToAttachPdf";
-		export var moreClipOptions = "moreClipOptions";
+		export let checkboxToDistributePages = "checkboxToDistributePages";
+		export let pdfIsTooLargeToAttachIndicator = "pdfIsTooLargeToAttachIndicator";
+		export let checkboxToAttachPdf = "checkboxToAttachPdf";
+		export let moreClipOptions = "moreClipOptions";
 
 		// previewViewerRegionHeader
-		export var addAnotherRegionButton = "addAnotherRegionButton";
-		export var addRegionControl = "addRegionControl";
+		export let addAnotherRegionButton = "addAnotherRegionButton";
+		export let addRegionControl = "addRegionControl";
 
 		// previewViewerRegionTitleOnlyHeader
-		export var regionControl = "regionControl";
-		export var regionHeaderTitle = "regionHeaderTitle";
+		export let regionControl = "regionControl";
+		export let regionHeaderTitle = "regionHeaderTitle";
 
 		// previewViewerAugmentationHeader
-		export var decrementFontSize = "decrementFontSize";
-		export var fontSizeControl = "fontSizeControl";
-		export var highlightButton = "highlightButton";
-		export var highlightControl = "highlightControl";
-		export var incrementFontSize = "incrementFontSize";
-		export var serifControl = "serifControl";
-		export var sansSerif = "sansSerif";
-		export var serif = "serif";
+		export let decrementFontSize = "decrementFontSize";
+		export let fontSizeControl = "fontSizeControl";
+		export let highlightButton = "highlightButton";
+		export let highlightControl = "highlightControl";
+		export let incrementFontSize = "incrementFontSize";
+		export let serifControl = "serifControl";
+		export let sansSerif = "sansSerif";
+		export let serif = "serif";
 
 		// previewViewerBookmarkHeader
-		export var bookmarkControl = "bookmarkControl";
-		export var bookmarkHeaderTitle = "bookmarkHeaderTitle";
+		export let bookmarkControl = "bookmarkControl";
+		export let bookmarkHeaderTitle = "bookmarkHeaderTitle";
 
 		// ratingsPrompt
-		export var ratingsButtonFeedbackNo = "ratingsButtonFeedbackNo";
-		export var ratingsButtonFeedbackYes = "ratingsButtonFeedbackYes";
-		export var ratingsButtonInitNo = "ratingsButtonInitNo";
-		export var ratingsButtonInitYes = "ratingsButtonInitYes";
-		export var ratingsButtonRateNo = "ratingsButtonRateNo";
-		export var ratingsButtonRateYes = "ratingsButtonRateYes";
-		export var ratingsPromptContainer = "ratingsPromptContainer";
+		export let ratingsButtonFeedbackNo = "ratingsButtonFeedbackNo";
+		export let ratingsButtonFeedbackYes = "ratingsButtonFeedbackYes";
+		export let ratingsButtonInitNo = "ratingsButtonInitNo";
+		export let ratingsButtonInitYes = "ratingsButtonInitYes";
+		export let ratingsButtonRateNo = "ratingsButtonRateNo";
+		export let ratingsButtonRateYes = "ratingsButtonRateYes";
+		export let ratingsPromptContainer = "ratingsPromptContainer";
 
 		// regionSelectingPanel
-		export var regionInstructionsContainer = "regionInstructionsContainer";
-		export var regionClipCancelButton = "regionClipCancelButton";
+		export let regionInstructionsContainer = "regionInstructionsContainer";
+		export let regionClipCancelButton = "regionClipCancelButton";
 
 		// regionSelector
-		export var innerFrame = "innerFrame";
-		export var outerFrame = "outerFrame";
-		export var regionSelectorContainer = "regionSelectorContainer";
+		export let innerFrame = "innerFrame";
+		export let outerFrame = "outerFrame";
+		export let regionSelectorContainer = "regionSelectorContainer";
 
 		// rotatingMessageSpriteAnimation
-		export var spinnerText = "spinnerText";
+		export let spinnerText = "spinnerText";
 
 		// sectionPicker
-		export var locationPickerContainer = "locationPickerContainer";
-		export var sectionLocationContainer = "sectionLocationContainer";
+		export let locationPickerContainer = "locationPickerContainer";
+		export let sectionLocationContainer = "sectionLocationContainer";
 
 		// signInPanel
-		export var signInButtonMsa = "signInButtonMsa";
-		export var signInButtonOrgId = "signInButtonOrgId";
-		export var signInContainer = "signInContainer";
-		export var signInErrorCookieInformation = "signInErrorCookieInformation";
-		export var signInErrorDebugInformation = "signInErrorDebugInformation";
-		export var signInErrorDebugInformationDescription = "signInErrorDebugInformationDescription";
-		export var signInErrorDebugInformationContainer = "signInErrorDebugInformationContainer";
-		export var signInErrorDebugInformationList = "signInErrorDebugInformationList";
-		export var signInErrorDescription = "signInErrorDescription";
-		export var signInErrorDescriptionContainer = "signInErrorDescriptionContainer";
-		export var signInErrorMoreInformation = "signInErrorMoreInformation";
-		export var signInLogo = "signInLogo";
-		export var signInMessageLabelContainer = "signInMessageLabelContainer";
-		export var signInText = "signInText";
-		export var signInToggleErrorDropdownArrow = "signInToggleErrorDropdownArrow";
-		export var signInToggleErrorInformationText = "signInToggleErrorInformationText";
+		export let signInButtonMsa = "signInButtonMsa";
+		export let signInButtonOrgId = "signInButtonOrgId";
+		export let signInContainer = "signInContainer";
+		export let signInErrorCookieInformation = "signInErrorCookieInformation";
+		export let signInErrorDebugInformation = "signInErrorDebugInformation";
+		export let signInErrorDebugInformationDescription = "signInErrorDebugInformationDescription";
+		export let signInErrorDebugInformationContainer = "signInErrorDebugInformationContainer";
+		export let signInErrorDebugInformationList = "signInErrorDebugInformationList";
+		export let signInErrorDescription = "signInErrorDescription";
+		export let signInErrorDescriptionContainer = "signInErrorDescriptionContainer";
+		export let signInErrorMoreInformation = "signInErrorMoreInformation";
+		export let signInLogo = "signInLogo";
+		export let signInMessageLabelContainer = "signInMessageLabelContainer";
+		export let signInText = "signInText";
+		export let signInToggleErrorDropdownArrow = "signInToggleErrorDropdownArrow";
+		export let signInToggleErrorInformationText = "signInToggleErrorInformationText";
 
 		// successPanel
-		export var clipperSuccessContainer = "clipperSuccessContainer";
-		export var launchOneNoteButton = "launchOneNoteButton";
+		export let clipperSuccessContainer = "clipperSuccessContainer";
+		export let launchOneNoteButton = "launchOneNoteButton";
 
 		// tooltipRenderer
-		export var pageNavAnimatedTooltip = "pageNavAnimatedTooltip";
+		export let pageNavAnimatedTooltip = "pageNavAnimatedTooltip";
 
 		// unsupportedBrowser
-		export var unsupportedBrowserContainer = "unsupportedBrowserContainer";
-		export var unsupportedBrowserPanel = "unsupportedBrowserPanel";
+		export let unsupportedBrowserContainer = "unsupportedBrowserContainer";
+		export let unsupportedBrowserPanel = "unsupportedBrowserPanel";
 
 		// whatsNewPanel
-		export var changeLogSubPanel = "changeLogSubPanel";
-		export var checkOutWhatsNewButton = "checkOutWhatsNewButton";
-		export var proceedToWebClipperButton = "proceedToWebClipperButton";
-		export var whatsNewTitleSubPanel = "whatsNewTitleSubPanel";
+		export let changeLogSubPanel = "changeLogSubPanel";
+		export let checkOutWhatsNewButton = "checkOutWhatsNewButton";
+		export let proceedToWebClipperButton = "proceedToWebClipperButton";
+		export let whatsNewTitleSubPanel = "whatsNewTitleSubPanel";
 
-		export var clipperRootScript = "oneNoteCaptureRootScript";
-		export var clipperUiFrame = "oneNoteWebClipper";
-		export var clipperPageNavFrame = "oneNoteWebClipperPageNav";
-		export var clipperExtFrame = "oneNoteWebClipperExtension";
+		export let clipperRootScript = "oneNoteCaptureRootScript";
+		export let clipperUiFrame = "oneNoteWebClipper";
+		export let clipperPageNavFrame = "oneNoteWebClipperPageNav";
+		export let clipperExtFrame = "oneNoteWebClipperExtension";
 
 		// tooltips
-		export var brandingContainer = "brandingContainer";
+		export let brandingContainer = "brandingContainer";
 	}
 
 	export module HeaderValues {
-		export var accept = "Accept";
-		export var appIdKey = "MS-Int-AppId";
-		export var correlationId = "X-CorrelationId";
-		export var noAuthKey = "X-NoAuth";
-		export var userSessionIdKey = "X-UserSessionId";
+		export let accept = "Accept";
+		export let appIdKey = "MS-Int-AppId";
+		export let correlationId = "X-CorrelationId";
+		export let noAuthKey = "X-NoAuth";
+		export let userSessionIdKey = "X-UserSessionId";
 	}
 
 	export module FunctionKeys {
 		// Only entry still referenced — by the kept-orphan
 		// communicatorLoggerPure.ts, which calls callRemoteFunction with this
 		// channel name. Live V3 telemetry uses Aria fetch() directly.
-		export var telemetry = "TELEMETRY";
+		export let telemetry = "TELEMETRY";
 	}
 
 	export module KeyCodes {
 		// event.which is deprecated -.-
-		export var tab = 9;
-		export var enter = 13;
-		export var esc = 27;
-		export var c = 67;
-		export var down = 40;
-		export var up = 38;
-		export var left = 37;
-		export var right = 39;
-		export var space = 32;
-		export var home = 36;
-		export var end = 35;
+		export let tab = 9;
+		export let enter = 13;
+		export let esc = 27;
+		export let c = 67;
+		export let down = 40;
+		export let up = 38;
+		export let left = 37;
+		export let right = 39;
+		export let space = 32;
+		export let home = 36;
+		export let end = 35;
 	}
 
 	export module StringKeyCodes {
-		export var c = "KeyC";
+		export let c = "KeyC";
 	}
 
 	export module Styles {
-		export var sectionPickerContainerHeight = 280;
-		export var clipperUiWidth = 322;
-		export var customCursorSize = 20;
-		export var clipperUiTopRightOffset = 20;
-		export var clipperUiDropShadowBuffer = 7;
-		export var clipperUiInnerPadding = 30;
+		export let sectionPickerContainerHeight = 280;
+		export let clipperUiWidth = 322;
+		export let customCursorSize = 20;
+		export let clipperUiTopRightOffset = 20;
+		export let clipperUiDropShadowBuffer = 7;
+		export let clipperUiInnerPadding = 30;
 
 		export module Colors {
-			export var oneNoteHighlightColor = "#fefe56";
+			export let oneNoteHighlightColor = "#fefe56";
 		}
 	}
 
 	export module Urls {
-		export var serviceDomain = "https://www.onenote.com";
+		export let serviceDomain = "https://www.onenote.com";
 
-		export var localizedStringsUrlBase = serviceDomain + "/strings?ids=WebClipper.";
+		export let localizedStringsUrlBase = serviceDomain + "/strings?ids=WebClipper.";
 
-		export var clipperInstallPageUrl = "https://support.microsoft.com/en-us/office/getting-started-with-the-onenote-web-clipper-5696609d-c5ae-4591-b3af-1f897cb6eda6";
-		export var clipperFeedbackUrl = "https://feedbackportal.microsoft.com/feedback/post/c06dcc30-2e1c-ec11-b6e7-0022481f8472";
-		export var msaDomain = "https://login.live.com";
-		export var orgIdDomain = "https://login.microsoftonline.com";
-		export var userDataBoundaryDomain = "https://odc.officeapps.live.com/odc/v2.1/federationprovider";
+		export let clipperInstallPageUrl = "https://support.microsoft.com/en-us/office/getting-started-with-the-onenote-web-clipper-5696609d-c5ae-4591-b3af-1f897cb6eda6";
+		export let clipperFeedbackUrl = "https://feedbackportal.microsoft.com/feedback/post/c06dcc30-2e1c-ec11-b6e7-0022481f8472";
+		export let msaDomain = "https://login.live.com";
+		export let orgIdDomain = "https://login.microsoftonline.com";
+		export let userDataBoundaryDomain = "https://odc.officeapps.live.com/odc/v2.1/federationprovider";
 
 		export module Authentication {
-			export var authRedirectUrl = serviceDomain + "/webclipper/auth";
-			export var signInUrl = serviceDomain + "/webclipper/signin";
-			export var signOutUrl = serviceDomain + "/webclipper/signout";
-			export var userInformationUrl = serviceDomain + "/webclipper/userinfo";
+			export let authRedirectUrl = serviceDomain + "/webclipper/auth";
+			export let signInUrl = serviceDomain + "/webclipper/signin";
+			export let signOutUrl = serviceDomain + "/webclipper/signout";
+			export let userInformationUrl = serviceDomain + "/webclipper/userinfo";
 		}
 
 		export module QueryParams {
-			export var authType = "authType";
-			export var clipperId = "clipperId";
-			export var error = "error";
-			export var errorDescription = "error_?description";
-			export var userSessionId = "userSessionId";
-			export var domain = "domain";
+			export let authType = "authType";
+			export let clipperId = "clipperId";
+			export let error = "error";
+			export let errorDescription = "error_?description";
+			export let userSessionId = "userSessionId";
+			export let domain = "domain";
 		}
 	}
 
 	export module Settings {
-		export var fontSizeStep = 2;
-		export var maxClipSuccessForRatingsPrompt = 12;
-		export var maximumJSTimeValue = 1000 * 60 * 60 * 24 * 100000000; // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
-		export var maximumFontSize = 72;
-		export var maximumMimeSizeLimit = 24900000;
-		export var minClipSuccessForRatingsPrompt = 4;
-		export var minimumFontSize = 8;
-		export var minTimeBetweenBadRatings = 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
-		export var numRetriesPerPatchRequest = 3;
-		export var pdfCheckCreatePageInterval = 2000; // 2 seconds
-		export var pdfClippingMessageDelay = 5000; // 5 seconds
-		export var pdfExtraPageLoadEachSide = 1;
-		export var pdfInitialPageLoadCount = 3;
-		export var timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
+		export let fontSizeStep = 2;
+		export let maxClipSuccessForRatingsPrompt = 12;
+		export let maximumJSTimeValue = 1000 * 60 * 60 * 24 * 100000000; // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
+		export let maximumFontSize = 72;
+		export let maximumMimeSizeLimit = 24900000;
+		export let minClipSuccessForRatingsPrompt = 4;
+		export let minimumFontSize = 8;
+		export let minTimeBetweenBadRatings = 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
+		export let numRetriesPerPatchRequest = 3;
+		export let pdfCheckCreatePageInterval = 2000; // 2 seconds
+		export let pdfClippingMessageDelay = 5000; // 5 seconds
+		export let pdfExtraPageLoadEachSide = 1;
+		export let pdfInitialPageLoadCount = 3;
+		export let timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
 	}
 
 	export module CustomHtmlAttributes {
-		export var setNameForArrowKeyNav = "setnameforarrowkeynav";
+		export let setNameForArrowKeyNav = "setnameforarrowkeynav";
 	}
 
 	export module AriaSet {
-		export var modeButtonSet = "ariaModeButtonSet";
-		export var pdfPageSelection = "pdfPageSelection";
-		export var serifGroupSet = "serifGroupSet";
+		export let modeButtonSet = "ariaModeButtonSet";
+		export let pdfPageSelection = "pdfPageSelection";
+		export let serifGroupSet = "serifGroupSet";
 	}
 }

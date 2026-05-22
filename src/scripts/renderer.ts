@@ -1139,7 +1139,7 @@ function extractArticle() {
 					} catch (e) {
 						finalize(metaDesc, "");
 					}
-				})["catch"](function() { finalize(metaDesc, ""); });
+				}).catch(function() { finalize(metaDesc, ""); });
 			} else {
 				finalize(metaDesc, "");
 			}
@@ -1287,7 +1287,7 @@ function extractArticleViaReadability() {
 		} else {
 			showArticleError();
 		}
-	})["catch"](function() {
+	}).catch(function() {
 		showArticleError();
 	});
 }
@@ -2925,34 +2925,34 @@ port.onMessage.addListener((message: any) => {
 				fullPageComplete = true;
 				showPreviewFrame();
 
-					// Only update the panel when user is in Full Page; other modes own previewContainer.
-					if (currentMode === "fullpage") {
-						iframe.style.display = "none";
-						previewContainer.innerHTML = "";
-						previewContainer.style.display = "block";
-						let previewImg = document.createElement("img");
-						previewImg.src = dataUrl;
-						previewContainer.appendChild(previewImg);
-					}
+				// Only update the panel when user is in Full Page; other modes own previewContainer.
+				if (currentMode === "fullpage") {
+					iframe.style.display = "none";
+					previewContainer.innerHTML = "";
+					previewContainer.style.display = "block";
+					let previewImg = document.createElement("img");
+					previewImg.src = dataUrl;
+					previewContainer.appendChild(previewImg);
+				}
 
-					// Update sidebar to preview mode — hide progress, show Clip button
-					capturePanel.style.display = "none";
-					saveBtn.textContent = strings.saveToOneNote;
-					saveBtn.disabled = false;
+				// Update sidebar to preview mode — hide progress, show Clip button
+				capturePanel.style.display = "none";
+				saveBtn.textContent = strings.saveToOneNote;
+				saveBtn.disabled = false;
 
-					// Re-enable mode buttons and sign-out now that capture is complete
-					document.querySelectorAll(".mode-btn").forEach((b: Element) => {
-						(b as HTMLButtonElement).disabled = false;
-						b.classList.remove("disabled");
-					});
-					enableSignout();
-					captureInProgress = false;
-					announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
+				// Re-enable mode buttons and sign-out now that capture is complete
+				document.querySelectorAll(".mode-btn").forEach((b: Element) => {
+					(b as HTMLButtonElement).disabled = false;
+					b.classList.remove("disabled");
+				});
+				enableSignout();
+				captureInProgress = false;
+				announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
 
-					let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
-					if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
+				let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
+				if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
 
-					safeSend({ action: "finalizeComplete" });
+				safeSend({ action: "finalizeComplete" });
 			};
 			reader.readAsDataURL(blob);
 		}) as BlobCallback, "image/jpeg", 0.95);

@@ -20,7 +20,7 @@ import { UrlUtils } from "../urlUtils";
 import { UserDataBoundaryHelper } from "./userDataBoundaryHelper";
 import { DataBoundary } from "./DataBoundary";
 
-declare var browser;
+declare let browser;
 
 export class AuthenticationHelper {
 	public user: SmartValue<UserInfo>;

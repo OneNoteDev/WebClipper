@@ -24,7 +24,7 @@ export abstract class SessionLogger extends Logger {
 	protected currentSessionState: Log.Session.State = Log.Session.State.Ended;
 	protected logQueue: Log.LogDataPackage[] = [];
 	protected streams: { [key: string]: any[] } = {};
-	protected userHasInteracted: boolean = false;
+	protected userHasInteracted = false;
 	protected sessionId: SmartValue<string> = undefined;
 
 	constructor(options?: SessionLoggerOptions) {

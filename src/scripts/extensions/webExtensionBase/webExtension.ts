@@ -215,9 +215,9 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		};
 
 		WebExtension.browser.tabs.onCreated.addListener((tab: W3CTab) => {
-		if (matchesAnyUnclippablePage(tab.url)) {
-			WebExtension.browser.action.disable(tab.id);
-		}
+			if (matchesAnyUnclippablePage(tab.url)) {
+				WebExtension.browser.action.disable(tab.id);
+			}
 		});
 
 		WebExtension.browser.tabs.onUpdated.addListener((tabId: number, changeInfo: any, tab: W3CTab) => {

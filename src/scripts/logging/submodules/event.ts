@@ -68,7 +68,7 @@ export module Event {
 		protected _label: Event.Label;
 		protected _duration: number;
 		protected _properties: {};
-		protected _timerWasStopped: boolean = false;
+		protected _timerWasStopped = false;
 
 		private _startTime: number;
 

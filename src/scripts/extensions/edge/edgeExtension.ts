@@ -2,7 +2,7 @@ import {ClientType} from "../../clientType";
 
 import {WebExtension} from "../webExtensionBase/webExtension";
 
-declare var browser;
+declare let browser;
 
 /**
  * There is no need to check the window object for the browser property

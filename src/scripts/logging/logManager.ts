@@ -14,5 +14,6 @@ export function createExtLogger(_sessionId: SmartValue<string>): SessionLogger {
 
 export function reInitLoggerForDataBoundaryChange(userDataBoundary: string): void {
 	let message: string = "DataBoundary different than default logging boundary :" + userDataBoundary;
+	// eslint-disable-next-line no-console -- public stub: emits to console when invoked; the internal Aria-backed variant overrides this
 	console.log(message);
 }
