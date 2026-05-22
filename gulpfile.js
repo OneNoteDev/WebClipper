@@ -11,7 +11,8 @@ var gulp = require("gulp");
 var less = require("gulp-less");
 var merge = require("merge-stream");
 var mergeJSON = require("gulp-merge-json");
-var minifyCSS = require("gulp-cssnano");
+var cssnano = require("cssnano");
+var postcss = require("gulp-postcss");
 var plumber = require("gulp-plumber");
 var rename = require("gulp-rename");
 var source = require("vinyl-source-stream");
@@ -491,7 +492,7 @@ gulp.task("package", gulp.series("packageChrome"));
 ////////////////////////////////////////
 gulp.task("minifyCss", function() {
     return gulp.src(PATHS.BUILDROOT + "css/**/*.css")
-        .pipe(minifyCSS())
+        .pipe(postcss([cssnano()]))
         .pipe(gulp.dest(PATHS.BUILDROOT + "css"));
 });
 
