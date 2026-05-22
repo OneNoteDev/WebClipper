@@ -9,28 +9,23 @@ export module Event {
 	}
 
 	export enum Label {
-		AddEmbeddedVideo,
-		AugmentationApiCall,
 		BookmarkPage,
-		CompressRegionSelection,
-		ClearNoOpTracker,
 		Click,
-		ClipAugmentationOptions,
 		ClipCommonOptions,
 		ClipPdfOptions,
 		ClipRegionOptions,
 		ClipSelectionOptions,
 		ClipToOneNoteAction,
 		CloseClipper,
-		ClosePageNavTooltip,
 		CreateNotebook,
 		CreatePage,
 		CreateSection,
-		DebugFeedback,
-		DeviceIdMap,
 		FetchNonLocalData,
+		// Parity-gap candidate (V3 captures full page but no current telemetry).
 		FullPageScreenshotCall,
 		GetBinaryRequest,
+		// Parity-gap candidate (V3 has clean-DOM pipeline in contentCaptureInject
+		// but no timing telemetry).
 		GetCleanDom,
 		GetExistingUserInformation,
 		GetFlightingAssignments,
@@ -44,8 +39,6 @@ export module Event {
 		HandleSignInEvent,
 		HideClipperDueToSpaNavigate,
 		InvokeClipper,
-		InvokeTooltip,
-		InvokeWhatsNew,
 		LocalFilesNotAllowedPanelShown,
 		PagesSearch,
 		PdfByteMetadata,
@@ -60,10 +53,8 @@ export module Event {
 		SetDoNotPromptRatings,
 		SetIsRatingsPromptLogicExecutedInEdge,
 		ShouldShowRatingsPrompt,
-		TooltipImpression,
 		UpdatePage,
-		UserInfoUpdated,
-		WhatsNewImpression
+		UserInfoUpdated
 	}
 
 	export interface BaseEventData {

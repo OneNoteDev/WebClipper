@@ -286,60 +286,11 @@ export module Constants {
 		export var userSessionIdKey = "X-UserSessionId";
 	}
 
-	export module CommunicationChannels {
-		// Debug Logging
-		export var debugLoggingInjectedAndExtension = "DEBUGLOGGINGINJECTED_AND_EXTENSION";
-
-		// Web Clipper
-		export var extensionAndUi = "EXTENSION_AND_UI";
-		export var injectedAndExtension = "INJECTED_AND_EXTENSION";
-
-		// What's New
-		export var extensionAndPageNavUi = "EXTENSION_AND_PAGENAVUI";
-		export var pageNavInjectedAndPageNavUi = "PAGENAVINJECTED_AND_PAGENAVUI";
-		export var pageNavInjectedAndExtension = "PAGENAVINJECTED_AND_EXTENSION";
-	}
-
 	export module FunctionKeys {
-		export var clipperStrings = "CLIPPER_STRINGS";
-		export var clipperStringsFrontLoaded = "CLIPPER_STRINGS_FRONT_LOADED";
-		export var closePageNavTooltip = "CLOSE_PAGE_NAV_TOOLTIP";
-		export var createHiddenIFrame = "CREATE_HIDDEN_IFRAME";
-		export var ensureFreshUserBeforeClip = "ENSURE_FRESH_USER_BEFORE_CLIP";
-		export var getInitialUser = "GET_INITIAL_USER";
-		export var getPageNavTooltipProps = "GET_PAGE_NAV_TOOLTIP_PROPS";
-		export var getStorageValue = "GET_STORAGE_VALUE";
-		export var getMultipleStorageValues = "GET_MULTIPLE_STORAGE_VALUES";
-		export var getTooltipToRenderInPageNav = "GET_TOOLTIP_TO_RENDER_IN_PAGE_NAV";
-		export var hideUi = "HIDE_UI";
-		export var showUi = "SHOW_UI";
-		export var showSignInPanel = "SHOW_SIGN_IN_PANEL";
-		export var startRegionCapture = "START_REGION_CAPTURE";
-		export var regionCaptureComplete = "REGION_CAPTURE_COMPLETE";
-		export var regionCaptureCancelled = "REGION_CAPTURE_CANCELLED";
-		export var invokeClipper = "INVOKE_CLIPPER";
-		export var invokeClipperFromPageNav = "INVOKE_CLIPPER_FROM_PAGE_NAV";
-		export var invokeDebugLogging = "INVOKE_DEBUG_LOGGING";
-		export var invokePageNav = "INVOKE_PAGE_NAV";
-		export var extensionNotAllowedToAccessLocalFiles = "EXTENSION_NOT_ALLOWED_TO_ACCESS_LOCAL_FILES";
-		export var noOpTracker = "NO_OP_TRACKER";
-		export var onSpaNavigate = "ON_SPA_NAVIGATE";
-		export var refreshPage = "REFRESH_PAGE";
-		export var showRefreshClipperMessage = "SHOW_REFRESH_CLIPPER_MESSAGE";
-		export var setInvokeOptions = "SET_INVOKE_OPTIONS";
-		export var setStorageValue = "SET_STORAGE_VALUE";
-		export var signInUser = "SIGN_IN_USER";
-		export var signOutUser = "SIGN_OUT_USER";
-		export var tabToLowestIndexedElement = "TAB_TO_LOWEST_INDEXED_ELEMENT";
-		export var takeTabScreenshot = "TAKE_TAB_SCREENSHOT";
-		export var takeFullPageScreenshot = "TAKE_FULL_PAGE_SCREENSHOT";
-		export var cancelFullPageScreenshot = "CANCEL_FULL_PAGE_SCREENSHOT";
+		// Only entry still referenced — by the kept-orphan
+		// communicatorLoggerPure.ts, which calls callRemoteFunction with this
+		// channel name. Live V3 telemetry uses Aria fetch() directly.
 		export var telemetry = "TELEMETRY";
-		export var unloadHandler = "UNLOAD_HANDLER";
-		export var updateFrameHeight = "UPDATE_FRAME_HEIGHT";
-		export var updatePageInfoIfUrlChanged = "UPDATE_PAGE_INFO_IF_URL_CHANGED";
-		export var keepAlive = "KEEP_ALIVE";
-		export var clearKeepAlive = "CLEAR_KEEP_ALIVE";
 	}
 
 	export module KeyCodes {
@@ -359,14 +310,6 @@ export module Constants {
 
 	export module StringKeyCodes {
 		export var c = "KeyC";
-	}
-
-	export module SmartValueKeys {
-		export var clientInfo = "CLIENT_INFO";
-		export var isFullScreen = "IS_FULL_SCREEN";
-		export var pageInfo = "PAGE_INFO";
-		export var sessionId = "SESSION_ID";
-		export var user = "USER";
 	}
 
 	export module Styles {
@@ -402,33 +345,12 @@ export module Constants {
 
 		export module QueryParams {
 			export var authType = "authType";
-			export var category = "category";
-			export var channel = "channel";
-			export var clientType = "clientType";
 			export var clipperId = "clipperId";
-			export var clipperVersion = "clipperVersion";
-			export var correlationId = "correlationId";
 			export var error = "error";
 			export var errorDescription = "error_?description";
-			export var event = "event";
-			export var eventName = "eventName";
-			export var failureId = "failureId";
-			export var failureInfo = "failureInfo";
-			export var failureType = "failureType";
-			export var inlineInstall = "inlineInstall";
-			export var label = "label";
-			export var noOpType = "noOpType";
-			export var stackTrace = "stackTrace";
-			export var timeoutInMs = "timeoutInMs";
-			export var url = "url";
 			export var userSessionId = "userSessionId";
-			export var wdFromClipper = "wdfromclipper"; // This naming convention is standard in OneNote Online
 			export var domain = "domain";
 		}
-	}
-
-	export module LogCategories {
-		export var oneNoteClipperUsage = "OneNoteClipperUsage";
 	}
 
 	export module Settings {
@@ -440,7 +362,6 @@ export module Constants {
 		export var minClipSuccessForRatingsPrompt = 4;
 		export var minimumFontSize = 8;
 		export var minTimeBetweenBadRatings = 1000 * 60 * 60 * 24 * 7 * 10; // 10 weeks
-		export var noOpTrackerTimeoutDuration = 20 * 1000; // 20 seconds
 		export var numRetriesPerPatchRequest = 3;
 		export var pdfCheckCreatePageInterval = 2000; // 2 seconds
 		export var pdfClippingMessageDelay = 5000; // 5 seconds
