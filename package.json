@@ -47,7 +47,16 @@
         "yargs": "18.0.0"
     },
     "overrides": {
-        "graceful-fs": "4.2.2"
+        "graceful-fs": "4.2.2",
+        "braces": "^3.0.3",
+        "color-string": "^1.5.5",
+        "diff": "^5.0.0",
+        "elliptic": "^6.6.1",
+        "fast-xml-parser": "^5.7.0",
+        "is-svg": "^4.3.0",
+        "js-yaml": "^4.0.0",
+        "lodash.template": "^4.5.5",
+        "minimist": "^1.2.6"
     },
     "dependencies": {
         "jwt-decode": "^4.0.0"
