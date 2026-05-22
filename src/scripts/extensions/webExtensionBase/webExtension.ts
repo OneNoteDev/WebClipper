@@ -1,21 +1,9 @@
 import {ClientType} from "../../clientType";
-import {Constants} from "../../constants";
-import {ResponsePackage} from "../../responsePackage";
-import {UrlUtils} from "../../urlUtils";
-
-import {TooltipType} from "../../clipperUI/tooltipType";
-
-import {VideoUtils} from "../../domParsers/videoUtils";
 
 import {Localization} from "../../localization/localization";
 
-import * as Log from "../../logging/log";
-
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
-
-import {ChangeLog} from "../../versioning/changeLog";
-import {Version} from "../../versioning/version";
 
 import {ExtensionBase} from "../extensionBase";
 import {InvokeInfo} from "../invokeInfo";
@@ -56,23 +44,6 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		return WebExtension.browser.runtime.getManifest().version;
 	}
 
-	protected addPageNavListener(callback: (tab: W3CTab) => void) {
-		WebExtension.browser.webNavigation.onCompleted.addListener((details) => {
-			// The callback is called on iframes as well, so we ignore those as we are only interested in main frame navigation
-			if (details.frameId === 0) {
-				WebExtension.browser.tabs.get(details.tabId, (tab: W3CTab) => {
-					if (!WebExtension.browser.runtime.lastError && tab) {
-						callback(tab);
-					}
-				});
-			}
-		});
-	}
-
-	protected checkIfTabIsOnWhitelistedUrl(tab: W3CTab): boolean {
-		return !UrlUtils.onBlacklistedDomain(tab.url) && UrlUtils.onWhitelistedDomain(tab.url);
-	}
-
 	protected createWorker(tab: W3CTab): WebExtensionWorker {
 		return new WebExtensionWorker(this.injectUrls, tab, this.clientInfo, this.auth);
 	}
@@ -89,18 +60,6 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 				this.onInstalled();
 			});
 		}
-	}
-
-	protected checkIfTabMatchesATooltipType(tab: W3CTab, tooltipTypes: TooltipType[]): TooltipType {
-		if (UrlUtils.onBlacklistedDomain(tab.url)) {
-			return undefined;
-		}
-		return UrlUtils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
-	}
-
-	protected async checkIfTabIsAVideoDomain(tab: W3CTab): Promise<boolean> {
-		let domain = await VideoUtils.videoDomainIfSupported(tab.url);
-		return !!domain;
 	}
 
 	private invokeClipperInTab(tab: W3CTab, invokeInfo: InvokeInfo, options: InvokeOptions) {

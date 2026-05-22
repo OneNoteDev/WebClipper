@@ -4,8 +4,6 @@ import {Polyfills} from "../polyfills";
 import {AuthType} from "../userInfo";
 import {Settings} from "../settings";
 
-import {TooltipType} from "../clipperUI/tooltipType";
-
 import {SmartValue} from "../communicator/smartValue";
 
 import {ClipperCachedHttp} from "../http/clipperCachedHttp";
@@ -18,8 +16,6 @@ import {SessionLogger} from "../logging/sessionLogger";
 
 import {ClipperData} from "../storage/clipperData";
 import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
-
-import {ChangeLog} from "../versioning/changeLog";
 
 import {AuthenticationHelper} from "./authenticationHelper";
 import {ExtensionBase} from "./extensionBase";
@@ -139,17 +135,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected abstract invokeDebugLoggingBrowserSpecific(): Promise<boolean>;
 
 	/**
-	 * Notify the UI to invoke the What's New tooltip. Resolve with true if it was thought to be successfully
-	 * injected; otherwise resolves with false.
-	 */
-	protected abstract invokeWhatsNewTooltipBrowserSpecific(newVersions: ChangeLog.Update[]): Promise<boolean>;
-
-	/**
-	 * Notify the UI to invoke a specific tooltip. Resolve with true if successfully injected, and false otherwise;
-	 */
-	protected abstract invokeTooltipBrowserSpecific(tooltipType: TooltipType): Promise<boolean>;
-
-	/**
 	 * Returns true if the user has allowed our extension to access file:/// links. Edge does not have a function to
 	 * check this as of 10/3/2016
 	 */
@@ -196,33 +181,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 				this.clipperFunnelAlreadyLogged = true;
 			}
 			this.logClipperInvoke(invokeInfo, options || { invokeMode: InvokeMode.Default });
-		});
-	}
-
-	/**
-	 * Notify the UI to invoke the What's New experience. Resolve with true if it was thought to be successfully
-	 * injected; otherwise resolves with false.
-	 */
-	public invokeWhatsNewTooltip(newVersions: ChangeLog.Update[]): Promise<boolean> {
-		let invokeWhatsNewEvent = new Log.Event.PromiseEvent(Log.Event.Label.InvokeWhatsNew);
-
-		return this.invokeWhatsNewTooltipBrowserSpecific(newVersions).then((wasInvoked) => {
-			if (!wasInvoked) {
-				invokeWhatsNewEvent.setStatus(Log.Status.Failed);
-				invokeWhatsNewEvent.setFailureInfo({ error: "invoking the What's New experience failed" });
-			}
-			this.logger.logEvent(invokeWhatsNewEvent);
-			return Promise.resolve(wasInvoked);
-		});
-	}
-
-	public invokeTooltip(tooltipType: TooltipType): Promise<boolean> {
-		let tooltipInvokeEvent = new Log.Event.PromiseEvent(Log.Event.Label.InvokeTooltip);
-		tooltipInvokeEvent.setCustomProperty(Log.PropertyName.Custom.TooltipType, TooltipType[tooltipType]);
-
-		return this.invokeTooltipBrowserSpecific(tooltipType).then((wasInvoked) => {
-			this.logger.logEvent(tooltipInvokeEvent);
-			return Promise.resolve(wasInvoked);
 		});
 	}
 

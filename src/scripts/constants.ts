@@ -385,7 +385,6 @@ export module Constants {
 	export module Urls {
 		export var serviceDomain = "https://www.onenote.com";
 
-		export var changelogUrl = serviceDomain + "/whatsnext/webclipper";
 		export var localizedStringsUrlBase = serviceDomain + "/strings?ids=WebClipper.";
 
 		export var clipperInstallPageUrl = "https://support.microsoft.com/en-us/office/getting-started-with-the-onenote-web-clipper-5696609d-c5ae-4591-b3af-1f897cb6eda6";
@@ -404,7 +403,6 @@ export module Constants {
 		export module QueryParams {
 			export var authType = "authType";
 			export var category = "category";
-			export var changelogLocale = "omkt";
 			export var channel = "channel";
 			export var clientType = "clientType";
 			export var clipperId = "clipperId";
@@ -438,7 +436,6 @@ export module Constants {
 		export var maxClipSuccessForRatingsPrompt = 12;
 		export var maximumJSTimeValue = 1000 * 60 * 60 * 24 * 100000000; // 100M days in milliseconds, http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
 		export var maximumFontSize = 72;
-		export var maximumNumberOfTimesToShowTooltips = 3;
 		export var maximumMimeSizeLimit = 24900000;
 		export var minClipSuccessForRatingsPrompt = 4;
 		export var minimumFontSize = 8;
@@ -449,9 +446,6 @@ export module Constants {
 		export var pdfClippingMessageDelay = 5000; // 5 seconds
 		export var pdfExtraPageLoadEachSide = 1;
 		export var pdfInitialPageLoadCount = 3;
-		export var timeBetweenDifferentTooltips = 1000 * 60 * 60 * 24 * 7 * 1; // 1 week
-		export var timeBetweenSameTooltip = 1000 * 60 * 60 * 24 * 7 * 3; // 3 weeks
-		export var timeBetweenTooltips = 1000 * 60 * 60 * 24 * 7 * 3; // 21 days
 		export var timeUntilPdfPageNumbersFadeOutAfterScroll = 1000; // 1 second
 	}
 

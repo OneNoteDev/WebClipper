@@ -14,8 +14,6 @@ import * as Log from "../../logging/log";
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
 
-import {ChangeLog} from "../../versioning/changeLog";
-
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
 import {InjectHelper} from "../injectHelper";
@@ -206,39 +204,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				}
 			});
 		});
-	}
-
-	protected invokePageNavBrowserSpecific(): Promise<boolean> {
-		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.scripting.executeScript({
-				target: { tabId: this.tab.id },
-				func: () => {}
-			}, () => {
-				// It's safest to not use lastError in the resolve due to special behavior in the Chrome API
-				if (WebExtension.browser.runtime.lastError) {
-					// We are probably on a page like about:blank, which is pretty normal
-					resolve(false);
-				} else {
-					WebExtension.browser.scripting.executeScript({
-						target: { tabId: this.tab.id },
-						files: [this.injectUrls.pageNavInjectUrl]
-					});
-					resolve(true);
-				}
-			});
-		});
-	}
-
-	/**
-	 * Notify the UI to invoke the What's New tooltip. Resolve with true if it was thought to be successfully
-	 * injected; otherwise resolves with false.
-	 */
-	protected invokeWhatsNewTooltipBrowserSpecific(newVersions: ChangeLog.Update[]): Promise<boolean> {
-		return this.invokePageNavBrowserSpecific();
-	}
-
-	protected invokeTooltipBrowserSpecific(): Promise<boolean> {
-		return this.invokePageNavBrowserSpecific();
 	}
 
 	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (allowed: boolean) => void): void {
