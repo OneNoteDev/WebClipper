@@ -106,10 +106,6 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	};
 
 	public addWorker(worker: TWorker) {
-		worker.setOnUnloading(() => {
-			worker.destroy();
-			this.removeWorker(worker);
-		});
 		this.workers.push(worker);
 	}
 

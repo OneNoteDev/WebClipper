@@ -1,16 +1,11 @@
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
-import {ClipperUrls} from "../clipperUrls";
-import {Constants} from "../constants";
 import {Polyfills} from "../polyfills";
-import {AuthType, UserInfo, UpdateReason} from "../userInfo";
+import {AuthType} from "../userInfo";
 import {Settings} from "../settings";
 
-import {TooltipProps} from "../clipperUI/tooltipProps";
 import {TooltipType} from "../clipperUI/tooltipType";
 
-import {Communicator} from "../communicator/communicator";
-import {MessageHandler} from "../communicator/messageHandler";
 import {SmartValue} from "../communicator/smartValue";
 
 import {ClipperCachedHttp} from "../http/clipperCachedHttp";
@@ -36,8 +31,6 @@ import {InvokeMode, InvokeOptions} from "./invokeOptions";
  * The abstract base class for all of the extension workers
  */
 export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
-	private onUnloading: () => void;
-	private loggerId: string;
 	private clipperFunnelAlreadyLogged = false;
 	private keepAlive: number;
 
@@ -48,38 +41,23 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected auth: AuthenticationHelper;
 	protected clipperData: ClipperData;
 
-	protected uiCommunicator: Communicator;
-	protected pageNavUiCommunicator: Communicator;
-	protected debugLoggingInjectCommunicator: Communicator;
-	protected injectCommunicator: Communicator;
-	protected pageNavInjectCommunicator: Communicator;
-
 	protected logger: SessionLogger;
 
 	protected clientInfo: SmartValue<ClientInfo>;
 	protected sessionId: SmartValue<string>;
 
-	constructor(clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper, clipperData: ClipperData, uiMessageHandlerThunk: () => MessageHandler, injectMessageHandlerThunk: () => MessageHandler) {
+	constructor(clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper, clipperData: ClipperData) {
 		Polyfills.init();
-
-		this.onUnloading = () => { };
-
-		this.uiCommunicator = new Communicator(uiMessageHandlerThunk(), Constants.CommunicationChannels.extensionAndUi);
-		this.pageNavUiCommunicator = new Communicator(uiMessageHandlerThunk(), Constants.CommunicationChannels.extensionAndPageNavUi);
-		this.debugLoggingInjectCommunicator = new Communicator(injectMessageHandlerThunk(), Constants.CommunicationChannels.debugLoggingInjectedAndExtension);
-		this.injectCommunicator = new Communicator(injectMessageHandlerThunk(), Constants.CommunicationChannels.injectedAndExtension);
-		this.pageNavInjectCommunicator = new Communicator(injectMessageHandlerThunk(), Constants.CommunicationChannels.pageNavInjectedAndExtension);
 
 		this.sessionId = new SmartValue<string>();
 		this.clipperData = clipperData;
 		this.auth = auth;
 		this.clientInfo = clientInfo;
-		this.consoleOutputEnabledFlagProcessed = LogHelpers.isConsoleOutputEnabled().then((isConsoleOutputEnabled) => {
-			this.logger = LogManager.createExtLogger(this.sessionId, isConsoleOutputEnabled ? this.debugLoggingInjectCommunicator : undefined);
+		this.consoleOutputEnabledFlagProcessed = LogHelpers.isConsoleOutputEnabled().then(() => {
+			this.logger = LogManager.createExtLogger(this.sessionId);
 			this.logger.logSessionStart();
 			this.clipperData.setLogger(this.logger);
 
-			this.initializeCommunicators();
 			this.initializeContextProperties();
 		});
 	}
@@ -114,20 +92,11 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 			clearInterval(this.keepAlive);
 		}
 		this.keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
-		// Ensure to clear the interval after 10 minutes if it hasn't been cleared already
+		// After 10 minutes, allow the service worker to become inactive.
 		setTimeout(() => {
 			if (!!this.keepAlive) {
 				clearInterval(this.keepAlive);
 				this.keepAlive = undefined;
-				/**
-				 * If we reach this point, it means that the keep alive interval was not cleared within 10 minutes
-				 * which is an indication that the clipper ux is not being used. We will now allow the service worker
-				 * to become inactive and notifiy the user to refresh the page.
-				 */
-				this.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.showRefreshClipperMessage, {
-					param: "Communicator " + Constants.CommunicationChannels.injectedAndExtension + " caught an error: " +
-						"Clipper UX was not used for 10 minutes."
-				});
 			}
 		}, 10 * 60 * 1000);
 	}
@@ -208,7 +177,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	 * Closes all active frames and notifies the UI to invoke the clipper.
 	 */
 	public closeAllFramesAndInvokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
-		this.pageNavInjectCommunicator.callRemoteFunction(Constants.FunctionKeys.closePageNavTooltip);
 		this.invokeClipper(invokeInfo, options);
 	}
 
@@ -222,26 +190,12 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	public invokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
 		this.setKeepAlive();
 
-		// For safety, we enforce that the object we send is never undefined.
-		let invokeOptionsToSend: InvokeOptions = {
-			invokeDataForMode: options ? options.invokeDataForMode : undefined,
-			invokeMode: options ? options.invokeMode : InvokeMode.Default
-		};
-
-		this.sendInvokeOptionsToInject(invokeOptionsToSend);
-
-		this.isAllowedFileSchemeAccessBrowserSpecific((isAllowed) => {
-			if (!isAllowed) {
-				this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.extensionNotAllowedToAccessLocalFiles);
-			}
-		});
-
 		Promise.all([this.consoleOutputEnabledFlagProcessed, this.invokeClipperBrowserSpecific()]).then(([v, wasInvoked]) => {
 			if (wasInvoked && !this.clipperFunnelAlreadyLogged) {
 				this.logger.logUserFunnel(Log.Funnel.Label.Invoke);
 				this.clipperFunnelAlreadyLogged = true;
 			}
-			this.logClipperInvoke(invokeInfo, invokeOptionsToSend);
+			this.logClipperInvoke(invokeInfo, options || { invokeMode: InvokeMode.Default });
 		});
 	}
 
@@ -252,23 +206,13 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	public invokeWhatsNewTooltip(newVersions: ChangeLog.Update[]): Promise<boolean> {
 		let invokeWhatsNewEvent = new Log.Event.PromiseEvent(Log.Event.Label.InvokeWhatsNew);
 
-		return this.registerLocalizedStringsForPageNav().then((successful) => {
-			if (successful) {
-				this.registerWhatsNewCommunicatorFunctions(newVersions);
-				return this.invokeWhatsNewTooltipBrowserSpecific(newVersions).then((wasInvoked) => {
-					if (!wasInvoked) {
-						invokeWhatsNewEvent.setStatus(Log.Status.Failed);
-						invokeWhatsNewEvent.setFailureInfo({ error: "invoking the What's New experience failed" });
-					}
-					this.logger.logEvent(invokeWhatsNewEvent);
-					return Promise.resolve(wasInvoked);
-				});
-			} else {
+		return this.invokeWhatsNewTooltipBrowserSpecific(newVersions).then((wasInvoked) => {
+			if (!wasInvoked) {
 				invokeWhatsNewEvent.setStatus(Log.Status.Failed);
-				invokeWhatsNewEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
-				this.logger.logEvent(invokeWhatsNewEvent);
-				return Promise.resolve(false);
+				invokeWhatsNewEvent.setFailureInfo({ error: "invoking the What's New experience failed" });
 			}
+			this.logger.logEvent(invokeWhatsNewEvent);
+			return Promise.resolve(wasInvoked);
 		});
 	}
 
@@ -276,27 +220,10 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		let tooltipInvokeEvent = new Log.Event.PromiseEvent(Log.Event.Label.InvokeTooltip);
 		tooltipInvokeEvent.setCustomProperty(Log.PropertyName.Custom.TooltipType, TooltipType[tooltipType]);
 
-		return this.registerLocalizedStringsForPageNav().then((successful) => {
-			if (successful) {
-				this.registerTooltipCommunicatorFunctions(tooltipType);
-				return this.invokeTooltipBrowserSpecific(tooltipType).then((wasInvoked) => {
-					this.logger.logEvent(tooltipInvokeEvent);
-					return Promise.resolve(wasInvoked);
-				});
-			} else {
-				tooltipInvokeEvent.setStatus(Log.Status.Failed);
-				tooltipInvokeEvent.setFailureInfo({ error: "getLocalizedStringsForBrowser returned undefined/null" });
-				this.logger.logEvent(tooltipInvokeEvent);
-				return Promise.resolve(false);
-			}
+		return this.invokeTooltipBrowserSpecific(tooltipType).then((wasInvoked) => {
+			this.logger.logEvent(tooltipInvokeEvent);
+			return Promise.resolve(wasInvoked);
 		});
-	}
-
-	/**
-	 * Sets the hook method that will be called when this worker object goes away.
-	 */
-	public setOnUnloading(callback: () => void) {
-		this.onUnloading = callback;
 	}
 
 	/**
@@ -367,281 +294,5 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		invokeClipperEvent.setCustomProperty(Log.PropertyName.Custom.InvokeSource, InvokeSource[invokeInfo.invokeSource]);
 		invokeClipperEvent.setCustomProperty(Log.PropertyName.Custom.InvokeMode, InvokeMode[options.invokeMode]);
 		this.logger.logEvent(invokeClipperEvent);
-	}
-
-	/**
-	 * Registers the tooltip type that needs to appear in the Page Nav experience, as well as any props it needs
-	 */
-	protected registerTooltipToRenderInPageNav(tooltipType: TooltipType, tooltipProps?: any) {
-		this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.getTooltipToRenderInPageNav, () => {
-			return Promise.resolve(tooltipType);
-		});
-		this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.getPageNavTooltipProps, () => {
-			return Promise.resolve(tooltipProps);
-		});
-	}
-
-	/**
-	 * Register communicator functions specific to the What's New experience
-	 */
-	protected registerWhatsNewCommunicatorFunctions(newVersions: ChangeLog.Update[]) {
-		this.registerTooltipToRenderInPageNav(TooltipType.WhatsNew, {
-			updates: newVersions
-		} as TooltipProps.WhatsNew);
-	}
-
-	protected registerTooltipCommunicatorFunctions(tooltipType: TooltipType) {
-		this.registerTooltipToRenderInPageNav(tooltipType);
-	}
-
-	protected sendInvokeOptionsToInject(options: InvokeOptions) {
-		this.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.setInvokeOptions, {
-			param: options
-		});
-	}
-
-	protected setUpNoOpTrackers(url: string) {
-		// No-op tracker for communication with inject
-		let injectNoOpTrackerTimeout = Log.ErrorUtils.setNoOpTrackerRequestTimeout({
-			label: Log.NoOp.Label.InitializeCommunicator,
-			channel: Constants.CommunicationChannels.injectedAndExtension,
-			clientInfo: this.clientInfo,
-			url: url
-		}, true);
-
-		this.injectCommunicator.callRemoteFunction(Constants.FunctionKeys.noOpTracker, {
-			param: new Date().getTime(),
-			callback: () => {
-				clearTimeout(injectNoOpTrackerTimeout);
-			}
-		});
-
-		// No-op tracker for communication with the UI
-		let uiNoOpTrackerTimeout = Log.ErrorUtils.setNoOpTrackerRequestTimeout({
-			label: Log.NoOp.Label.InitializeCommunicator,
-			channel: Constants.CommunicationChannels.extensionAndUi,
-			clientInfo: this.clientInfo,
-			url: url
-		}, true);
-
-		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.noOpTracker, {
-			param: new Date().getTime(),
-			callback: () => {
-				clearTimeout(uiNoOpTrackerTimeout);
-			}
-		});
-	}
-
-	/**
-	 * Signs the user out on in the frontend. TODO: this was implemented as an Edge workaround, and
-	 * should be removed when they fix their iframes not properly loading in the background.
-	 */
-	private doSignOutActionInFrontEnd(authType: AuthType) {
-		let usidQueryParamValue = this.getUserSessionIdQueryParamValue();
-		let signOutUrl = ClipperUrls.generateSignOutUrl(this.clientInfo.get().clipperId, usidQueryParamValue, AuthType[authType]);
-		this.uiCommunicator.callRemoteFunction(Constants.FunctionKeys.createHiddenIFrame, {
-			param: signOutUrl
-		});
-	}
-
-	private initializeCommunicators() {
-		this.initializeDebugLoggingCommunicators();
-		this.initializeClipperCommunicators();
-		this.initializePageNavCommunicators();
-	}
-
-	private initializeClipperCommunicators() {
-		this.initializeClipperUiCommunicator();
-		this.initializeClipperInjectCommunicator();
-	}
-
-	private initializeClipperUiCommunicator() {
-		this.uiCommunicator.broadcastAcrossCommunicator(this.auth.user, Constants.SmartValueKeys.user);
-		this.uiCommunicator.broadcastAcrossCommunicator(this.clientInfo, Constants.SmartValueKeys.clientInfo);
-		this.uiCommunicator.broadcastAcrossCommunicator(this.sessionId, Constants.SmartValueKeys.sessionId);
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.keepAlive, () => {
-			/**
-			 * This function is currently not being called from anywhere, but it is being registered
-			 * so that it may be used in the future if needed.
-			 */
-			this.setKeepAlive();
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.clearKeepAlive, () => {
-			if (!!this.keepAlive) {
-				clearInterval(this.keepAlive);
-				this.keepAlive = undefined;
-			}
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.clipperStrings, () => {
-			return new Promise<string>((resolve) => {
-				this.getLocalizedStringsForBrowser((dataResult: string) => {
-					resolve(dataResult);
-				});
-			});
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.getStorageValue, (key: string) => {
-			return new Promise<string>((resolve) => {
-				let value = this.clipperData.getValue(key);
-				resolve(value);
-			});
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.getMultipleStorageValues, (keys: string[]) => {
-			return new Promise<{ [key: string]: string }>(async(resolve) => {
-				let values: { [key: string]: string } = {};
-				for (let key of keys) {
-					values[key] = await this.clipperData.getValue(key);
-				}
-				resolve(values);
-			});
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.setStorageValue, (keyValuePair: { key: string, value: string }) => {
-			this.clipperData.setValue(keyValuePair.key, keyValuePair.value);
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.getInitialUser, () => {
-			return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.InitialRetrieval);
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.signInUser, (authType: AuthType) => {
-			return this.doSignInAction(authType).then((redirectOccurred) => {
-				// Recently, a change in sign-in flow broke our redirect detection, so now we give the benefit of the doubt
-				// and always attempt to update userInfo regardless
-				return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.SignInAttempt).then((updatedUser: UserInfo) => {
-					// While redirect detection is somewhat unreliable, it's still sometimes correct. So we try and
-					// detect this case only after we try get the latest userInfo
-					if ((!updatedUser || !updatedUser.user) && !redirectOccurred) {
-						let userInfoToSet: UserInfo = { updateReason: UpdateReason.SignInCancel };
-						this.auth.user.set(userInfoToSet);
-						return Promise.resolve(userInfoToSet);
-					}
-					return Promise.resolve(updatedUser);
-				});
-			}).catch((errorObject) => {
-				// Set the user info object to undefined as a result of an attempted sign in
-				this.auth.user.set({ updateReason: UpdateReason.SignInAttempt });
-
-				// Right now we're adding the update reason to the errorObject as well so that it is preserved in the callback.
-				// The right thing to do is revise the way we use callbacks in the communicator and instead use Promises so that
-				// we are able to return distinct objects.
-				errorObject.updateReason = UpdateReason.SignInAttempt;
-				return Promise.reject(errorObject);
-			});
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.signOutUser, (authType: AuthType) => {
-			if (this.clientInfo.get().clipperType === ClientType.EdgeExtension) {
-				this.doSignOutActionInFrontEnd(authType);
-			} else {
-				this.doSignOutAction(authType);
-			}
-
-			this.auth.user.set({ updateReason: UpdateReason.SignOutAction });
-			this.clipperData.setValue(ClipperStorageKeys.userInformation, undefined);
-			this.clipperData.setValue(ClipperStorageKeys.currentSelectedSection, undefined);
-			this.clipperData.setValue(ClipperStorageKeys.cachedNotebooks, undefined);
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.telemetry, (data: Log.LogDataPackage) => {
-			Log.parseAndLogDataPackage(data, this.logger);
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.ensureFreshUserBeforeClip, () => {
-			return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.TokenRefreshForPendingClip);
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.takeTabScreenshot, () => {
-			return this.takeTabScreenshot();
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.takeFullPageScreenshot, () => {
-			return this.takeFullPageScreenshot("");
-		});
-
-		this.uiCommunicator.registerFunction(Constants.FunctionKeys.cancelFullPageScreenshot, () => {
-			this.cancelFullPageScreenshot();
-		});
-
-		this.uiCommunicator.setErrorHandler((e: Error) => {
-			Log.ErrorUtils.handleCommunicatorError(this.logger, Constants.CommunicationChannels.extensionAndUi, e, this.clientInfo);
-		});
-	}
-
-	private initializeClipperInjectCommunicator() {
-		this.injectCommunicator.broadcastAcrossCommunicator(this.clientInfo, Constants.SmartValueKeys.clientInfo);
-
-		this.injectCommunicator.registerFunction(Constants.FunctionKeys.unloadHandler, () => {
-			this.tearDownCommunicators();
-			this.onUnloading();
-		});
-
-		this.injectCommunicator.registerFunction(Constants.FunctionKeys.setStorageValue, (keyValuePair: { key: string, value: string }) => {
-			this.clipperData.setValue(keyValuePair.key, keyValuePair.value);
-		});
-
-		this.injectCommunicator.setErrorHandler((e: Error) => {
-			Log.ErrorUtils.handleCommunicatorError(this.logger, Constants.CommunicationChannels.injectedAndExtension, e, this.clientInfo);
-		});
-	}
-
-	private initializeDebugLoggingCommunicators() {
-		this.debugLoggingInjectCommunicator.registerFunction(Constants.FunctionKeys.unloadHandler, () => {
-			this.tearDownCommunicators();
-			this.onUnloading();
-		});
-	}
-
-	private initializePageNavCommunicators() {
-		this.initializePageNavUiCommunicator();
-		this.initializePageNavInjectCommunicator();
-	}
-
-	private initializePageNavUiCommunicator() {
-		this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.telemetry, (data: Log.LogDataPackage) => {
-			Log.parseAndLogDataPackage(data, this.logger);
-		});
-
-		this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.invokeClipperFromPageNav, (invokeSource: InvokeSource) => {
-			this.closeAllFramesAndInvokeClipper({ invokeSource: invokeSource }, { invokeMode: InvokeMode.Default });
-		});
-	}
-
-	private initializePageNavInjectCommunicator() {
-		this.pageNavInjectCommunicator.registerFunction(Constants.FunctionKeys.telemetry, (data: Log.LogDataPackage) => {
-			Log.parseAndLogDataPackage(data, this.logger);
-		});
-		this.pageNavInjectCommunicator.registerFunction(Constants.FunctionKeys.unloadHandler, () => {
-			this.tearDownCommunicators();
-			this.onUnloading();
-		});
-	}
-
-	/**
-	 * Fetches fresh localized strings and prepares a remote function for the Page Nav UI to fetch them.
-	 * Resolves with true if successful; false otherwise.
-	 */
-	private registerLocalizedStringsForPageNav(): Promise<boolean> {
-		return new Promise<boolean>((resolve) => {
-			this.getLocalizedStringsForBrowser((localizedStrings) => {
-				if (localizedStrings) {
-					this.pageNavUiCommunicator.registerFunction(Constants.FunctionKeys.clipperStringsFrontLoaded, () => {
-						return Promise.resolve(localizedStrings);
-					});
-				}
-				resolve(!!localizedStrings);
-			});
-		});
-	}
-
-	private tearDownCommunicators() {
-		this.uiCommunicator.tearDown();
-		this.pageNavUiCommunicator.tearDown();
-		this.injectCommunicator.tearDown();
-		this.pageNavInjectCommunicator.tearDown();
 	}
 }

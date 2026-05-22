@@ -1,39 +1,15 @@
-import * as Log from "../logging/log";
-import {CommunicatorLoggerDecorator} from "../logging/communicatorLoggerDecorator";
-import {ConsoleLoggerDecorator} from "../logging/consoleLoggerDecorator";
-import {ConsoleOutput} from "../logging/consoleOutput";
-import {LogHelpers} from "../logging/logHelpers";
-import {ProductionRequirements} from "../logging/context";
 import {SessionLogger} from "../logging/sessionLogger";
 import {StubSessionLogger} from "../logging/stubSessionLogger";
-import {WebConsole} from "../logging/webConsole";
 
-import {Communicator} from "../communicator/communicator";
 import {SmartValue} from "../communicator/smartValue";
 
 /**
- * Creates the logger responsible for centralized logging on the backend. If a
- * communicator parameter is specified, it is assumed that console logging is
- * enabled, and it will be set up in the logger object as well.
+ * Creates the logger responsible for centralized logging on the backend.
+ * The public build ships a stub logger; the internal build's
+ * logManager_internal.ts replaces this at bundle time with an Aria-backed one.
  */
-export function createExtLogger(sessionId: SmartValue<string>, uiCommunicator?: Communicator): SessionLogger {
-	if (uiCommunicator) {
-		return createDebugLogger(uiCommunicator, sessionId);
-	}
+export function createExtLogger(_sessionId: SmartValue<string>): SessionLogger {
 	return new StubSessionLogger();
-}
-
-function createDebugLogger(uiCommunicator: Communicator, sessionId: SmartValue<string>): SessionLogger {
-	let commLogger: CommunicatorLoggerDecorator = uiCommunicator ? new CommunicatorLoggerDecorator(uiCommunicator) : undefined;
-
-	// If we have received a communicator, we can be sure that console logging is enabled
-	let consoleOutput: ConsoleOutput = new WebConsole();
-
-	return new ConsoleLoggerDecorator(consoleOutput, {
-		contextStrategy: new ProductionRequirements(),
-		component: commLogger,
-		sessionId: sessionId
-	});
 }
 
 export function reInitLoggerForDataBoundaryChange(userDataBoundary: string): void {

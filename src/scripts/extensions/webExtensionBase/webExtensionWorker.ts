@@ -24,7 +24,6 @@ import {InvokeInfo} from "../invokeInfo";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
 import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
-import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
 
 type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
 type WebResponseCacheDetails = chrome.webRequest.WebResponseCacheDetails;
@@ -43,7 +42,6 @@ function escapeHtml(s: string): string {
 
 export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private injectUrls: InjectUrls;
-	private noOpTrackerInvoked: boolean;
 	private activeRendererCleanup: () => void;
 	private activeRendererWindowId: number;
 	// Original InvokeOptions, set by closeAllFramesAndInvokeClipper and forwarded
@@ -52,13 +50,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private pendingInvokeData: string;
 
 	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
-		let messageHandlerThunk = () => { return new WebExtensionBackgroundMessageHandler(tab.id); };
-		super(clientInfo, auth, new ClipperData(new LocalStorage()), messageHandlerThunk, messageHandlerThunk);
+		super(clientInfo, auth, new ClipperData(new LocalStorage()));
 
 		this.injectUrls = injectUrls;
 		this.tab = tab;
 		this.tabId = tab.id;
-		this.noOpTrackerInvoked = false;
 		this.pendingInvokeMode = "";
 		this.pendingInvokeData = "";
 
@@ -185,10 +181,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 							files: [this.injectUrls.webClipperInjectUrl]
 						});
 
-						if (!this.noOpTrackerInvoked) {
-							this.setUpNoOpTrackers(this.tab.url);
-							this.noOpTrackerInvoked = true;
-						}
 						resolve(true);
 					}
 				}
