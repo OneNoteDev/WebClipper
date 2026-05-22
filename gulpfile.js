@@ -299,9 +299,14 @@ function exportCommonSrcFiles(targetDir) {
 }
 
 function exportCommonLibFiles(targetDir) {
-    var libFiles = [PATHS.NODE_MODULES + "pdfjs-dist/build/pdf.combined.js"];
+    var libFiles = [
+        PATHS.NODE_MODULES + "pdfjs-dist/legacy/build/pdf.mjs",
+        PATHS.NODE_MODULES + "pdfjs-dist/legacy/build/pdf.worker.mjs"
+    ];
 
     var exportTask = gulp.src(assertModuleExists(libFiles)).pipe(gulp.dest(targetDir));
+
+    var pdfLoaderTask = gulp.src(PATHS.SRC.ROOT + "pdfLoader.mjs").pipe(gulp.dest(targetDir));
 
     // The provided TextHighlighter.min.js file has a jQuery dependency so we have to use a sub-file
     var minifyAndExportTask = gulp.src(PATHS.SRC.ROOT + "scripts/highlighting/textHighlighter.js")
@@ -310,7 +315,7 @@ function exportCommonLibFiles(targetDir) {
         }))
         .pipe(gulp.dest(targetDir));
 
-    return streamsToPromise(exportTask, minifyAndExportTask);
+    return streamsToPromise(exportTask, pdfLoaderTask, minifyAndExportTask);
 }
 
 function exportCommonWebExtensionFiles(targetDir) {

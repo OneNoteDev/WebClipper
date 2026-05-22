@@ -21,7 +21,7 @@
     },
     "devDependencies": {
         "@mozilla/readability": "^0.6.0",
-        "@types/chrome": "0.0.257",
+        "@types/chrome": "0.1.42",
         "@types/pdf": "0.0.31",
         "browserify": "17.0.1",
         "del": "8.0.1",
@@ -40,9 +40,9 @@
         "gulp-zip": "6.1.0",
         "merge-stream": "2.0.0",
         "onenoteapi": "1.1.0",
-        "pdfjs-dist": "1.7.290",
+        "pdfjs-dist": "5.7.284",
         "tslint": "3.15.1",
-        "typescript": "3.5.3",
+        "typescript": "5.7.2",
         "vinyl-source-stream": "2.0.0",
         "yargs": "18.0.0"
     },

@@ -1889,17 +1889,26 @@ function getPdfSelectedIndices(): number[] {
 	return result.pages.map(function(p) { return p - 1; });
 }
 
+function getPdfJs(): Promise<any> {
+	if ((window as any).pdfjsLib) { return Promise.resolve((window as any).pdfjsLib); }
+	return new Promise(function(resolve) {
+		window.addEventListener("pdfjs-ready", function() {
+			resolve((window as any).pdfjsLib);
+		}, { once: true });
+	});
+}
+
 // Render a single PDF page to a data URL via canvas (scale=2 for quality, matching legacy)
 function renderPdfPage(pageIndex: number): Promise<string> {
 	if (pdfPageDataUrls[pageIndex]) { return Promise.resolve(pdfPageDataUrls[pageIndex]); }
 	return new Promise(function(resolve) {
 		pdfDoc.getPage(pageIndex + 1).then(function(page: any) {
-			let viewport = page.getViewport(2);
+			let viewport = page.getViewport({ scale: 2 });
 			let canvas = document.createElement("canvas");
 			canvas.width = viewport.width;
 			canvas.height = viewport.height;
 			let ctx = canvas.getContext("2d");
-			page.render({ canvasContext: ctx, viewport: viewport }).then(function() {
+			page.render({ canvasContext: ctx, viewport: viewport }).promise.then(function() {
 				let dataUrl = canvas.toDataURL();
 				pdfPageDataUrls[pageIndex] = dataUrl;
 				resolve(dataUrl);
@@ -2224,8 +2233,9 @@ function loadPdf(url: string) {
 	let isLocal = url.indexOf("file:///") === 0;
 
 	let processPdf = function(source: any, byteLen?: number) {
-		// PDFJS.getDocument returns a PDFDocumentLoadingTask with .then(ok, err) but no .catch
-		(window as any).PDFJS.getDocument(source).then(function(pdf: any) {
+		getPdfJs().then(function(pdfjsLib: any) {
+			return pdfjsLib.getDocument(source).promise;
+		}).then(function(pdf: any) {
 			pdfDoc = pdf;
 			pdfPageCount = pdf.numPages;
 			pdfPagesRendered = new Array(pdfPageCount);
@@ -2252,7 +2262,7 @@ function loadPdf(url: string) {
 			renderPdfAttachmentIndicator();
 
 			announceToScreenReader(strings.modePdf + " — " + pdfPageCount + " " + strings.page + (pdfPageCount !== 1 ? "s" : ""));
-		}, function(err: any) {
+		}).catch(function(err: any) {
 			if (isLocal) {
 				showLocalPdfBlockedPanel();
 			} else {

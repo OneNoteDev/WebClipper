@@ -4,7 +4,7 @@ import { Logger } from "../logging/logger";
 import { StringUtils } from "../stringUtils";
 import { UrlUtils } from "../urlUtils";
 import { UserInfoData, AuthType } from "../userInfo";
-import { DataBoundary } from "./dataBoundary";
+import { DataBoundary } from "./DataBoundary";
 
 export class UserDataBoundaryHelper {
 	private logger: Logger;

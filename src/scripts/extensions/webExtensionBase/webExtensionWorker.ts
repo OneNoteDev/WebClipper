@@ -21,8 +21,8 @@ import {InvokeInfo} from "../invokeInfo";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
 import {WebExtension} from "./webExtension";
 
-type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
-type WebResponseCacheDetails = chrome.webRequest.WebResponseCacheDetails;
+type TabRemoveInfo = chrome.tabs.OnRemovedInfo;
+type WebResponseCacheDetails = chrome.webRequest.OnCompletedDetails;
 type Window = chrome.windows.Window;
 
 // Escape user-provided strings before inlining into the OneNote citation HTML
@@ -1010,7 +1010,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 			windowReady = true;
 
 			// Close renderer if the source tab navigates away
-			let onTabUpdated = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
+			let onTabUpdated = (tabId: number, changeInfo: chrome.tabs.OnUpdatedInfo) => {
 				if (tabId === this.tab.id && changeInfo.url) {
 					WebExtension.browser.tabs.onUpdated.removeListener(onTabUpdated);
 					this.activeRendererCleanup();
@@ -1062,7 +1062,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 							if (details.responseHeaders) {
 								for (let i = 0; i < details.responseHeaders.length; i++) {
 									if (details.responseHeaders[i].name === Constants.HeaderValues.correlationId) {
-										correlationId = details.responseHeaders[i].value;
+										correlationId = details.responseHeaders[i].value || "";
 										break;
 									}
 								}

@@ -17,7 +17,7 @@ import {StringUtils} from "../stringUtils";
 import {UserInfoData} from "../userInfo";
 import { UrlUtils } from "../urlUtils";
 import { UserDataBoundaryHelper } from "./userDataBoundaryHelper";
-import { DataBoundary } from "./dataBoundary";
+import { DataBoundary } from "./DataBoundary";
 
 declare var browser;
 
