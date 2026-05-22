@@ -2,6 +2,7 @@ import {SmartValue} from "../communicator/smartValue";
 
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
+import { OneNoteApi } from "../oneNoteApi";
 
 import * as Log from "./log";
 import {Context} from "./context";

@@ -1,4 +1,5 @@
 import {ObjectUtils} from "../objectUtils";
+import { OneNoteApi } from "../oneNoteApi";
 import { ErrorUtils } from "../responsePackage";
 
 /**

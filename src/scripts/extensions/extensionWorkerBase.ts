@@ -1,5 +1,6 @@
 import {ClientInfo} from "../clientInfo";
 import {ClientType} from "../clientType";
+import { OneNoteApi } from "../oneNoteApi";
 import {AuthType} from "../userInfo";
 import {Settings} from "../settings";
 

@@ -4,6 +4,7 @@ import {SmartValue} from "../../communicator/smartValue";
 
 import {Failure} from "../log";
 import { Logger } from "../logger";
+import { OneNoteApi } from "../../oneNoteApi";
 
 export module ErrorUtils {
 	enum ErrorPropertyName {

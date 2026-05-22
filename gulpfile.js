@@ -279,10 +279,7 @@ function exportCommonJS(targetDir) {
         logManagerExportTask = gulp.src(PATHS.BUNDLEROOT + "logManager.js").pipe(gulp.dest(targetDir));
     }
 
-    var injectLibPaths = [PATHS.NODE_MODULES + "oneNoteApi/target/oneNoteApi.min.js"];
-    var injectLibsTask = gulp.src(assertModuleExists(injectLibPaths)).pipe(gulp.dest(targetDir));
-
-    return streamsToPromise(logManagerExportTask, injectLibsTask);
+    return streamToPromise(logManagerExportTask);
 }
 
 function exportCommonCSS(targetDir) {
@@ -338,7 +335,6 @@ function exportChromeJS() {
 
     var chromeExtensionTask = gulp.src([
         targetDir + "logManager.js",
-        targetDir + "oneNoteApi.min.js",
         PATHS.BUNDLEROOT + "chromeExtension.js"
     ]).pipe(concat("chromeExtension.js")).pipe(gulp.dest(targetDir));
 
@@ -375,7 +371,6 @@ function exportEdgeJS() {
 
     var edgeExtensionTask = gulp.src([
         targetDir + "logManager.js",
-        targetDir + "oneNoteApi.min.js",
         PATHS.BUNDLEROOT + "edgeExtension.js"
     ]).pipe(concat("edgeExtension.js")).pipe(gulp.dest(targetDir));
 

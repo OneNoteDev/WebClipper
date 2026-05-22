@@ -1,3 +1,4 @@
+import { OneNoteApi } from "../oneNoteApi";
 import {ResponsePackage} from "../responsePackage";
 
 import { Storage } from "../storage/storage";

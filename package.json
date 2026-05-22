@@ -39,7 +39,6 @@
         "gulp-uglify": "^3.0.2",
         "gulp-zip": "6.1.0",
         "merge-stream": "2.0.0",
-        "onenoteapi": "1.1.0",
         "pdfjs-dist": "5.7.284",
         "tslint": "3.15.1",
         "typescript": "5.7.2",

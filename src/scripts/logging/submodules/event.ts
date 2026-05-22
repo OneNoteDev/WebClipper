@@ -1,5 +1,6 @@
 import {ErrorUtils, Failure, PropertyName, Status} from "../log";
 import {ObjectUtils} from "../../objectUtils";
+import { OneNoteApi } from "../../oneNoteApi";
 
 export module Event {
 	export enum Category {

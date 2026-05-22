@@ -1,5 +1,3 @@
-/// <reference path="../../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {AuthType, UpdateReason, UserInfo} from "../../userInfo";
 import {ClientInfo} from "../../clientInfo";
 import {ClientType} from "../../clientType";

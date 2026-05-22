@@ -12,6 +12,7 @@ import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 import {UserInfo, UpdateReason} from "../userInfo";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
+import { OneNoteApi } from "../oneNoteApi";
 import {ResponsePackage} from "../responsePackage";
 import {StringUtils} from "../stringUtils";
 import {UserInfoData} from "../userInfo";

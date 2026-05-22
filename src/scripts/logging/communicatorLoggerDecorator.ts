@@ -1,6 +1,7 @@
 import {Constants} from "../constants";
 
 import {Communicator} from "../communicator/communicator";
+import { OneNoteApi } from "../oneNoteApi";
 
 import * as Log from "./log";
 import {CommunicatorLoggerPure} from "./communicatorLoggerPure";

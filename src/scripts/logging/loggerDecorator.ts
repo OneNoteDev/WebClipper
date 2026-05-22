@@ -1,5 +1,6 @@
 import {SmartValue} from "../communicator/smartValue";
 
+import { OneNoteApi } from "../oneNoteApi";
 import {StringUtils} from "../stringUtils";
 
 import * as Log from "./log";
