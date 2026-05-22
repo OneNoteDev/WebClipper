@@ -16,7 +16,7 @@ var postcss = require("gulp-postcss");
 var plumber = require("gulp-plumber");
 var rename = require("gulp-rename");
 var source = require("vinyl-source-stream");
-var ts = require("gulp-typescript");
+var spawn = require("child_process").spawn;
 var tslint = require("gulp-tslint");
 var uglify = require("gulp-uglify");
 var zip = require("gulp-zip").default;
@@ -136,15 +136,12 @@ gulp.task("copyInternal", function () {
 
 gulp.task("preCompileInternal", gulp.series("cleanInternal", "copyInternal"));
 
-gulp.task("compileTypeScript", gulp.series("copyStrings", "mergeSettings", "preCompileInternal", function compileTypeScriptInner() {
-    var tsProject = ts.createProject("./tsconfig.json", {
-        typescript: require("typescript"),
-        noEmitOnError: true
+gulp.task("compileTypeScript", gulp.series("copyStrings", "mergeSettings", "preCompileInternal", function compileTypeScriptInner(done) {
+    var tscBin = require.resolve("typescript/bin/tsc");
+    var tsc = spawn(process.execPath, [tscBin, "-p", "tsconfig.json"], { stdio: "inherit" });
+    tsc.on("close", function (code) {
+        done(code === 0 ? null : new Error("tsc exited with code " + code));
     });
-
-    return gulp.src([PATHS.SRC.ROOT + "**/*.+(ts|tsx)"])
-        .pipe(tsProject())
-        .pipe(gulp.dest(PATHS.BUILDROOT));
 }));
 
 gulp.task("compile", gulp.series("compileTypeScript"));

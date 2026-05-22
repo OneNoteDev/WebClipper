@@ -36,7 +36,6 @@
         "gulp-postcss": "10.0.0",
         "gulp-rename": "2.1.0",
         "gulp-tslint": "6.1.2",
-        "gulp-typescript": "3.1.4",
         "gulp-uglify": "^3.0.2",
         "gulp-zip": "6.1.0",
         "merge-stream": "2.0.0",

@@ -8,6 +8,9 @@
 			"chrome",
 			"pdf"
 		],
-		"outDir": "./build"
-	}
+		"rootDir": "./src",
+		"outDir": "./build",
+		"noEmitOnError": true
+	},
+	"include": ["src/**/*"]
 }
