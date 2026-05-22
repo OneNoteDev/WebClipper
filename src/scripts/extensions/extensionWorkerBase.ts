@@ -27,9 +27,6 @@ import {InvokeMode, InvokeOptions} from "./invokeOptions";
  * The abstract base class for all of the extension workers
  */
 export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
-	private clipperFunnelAlreadyLogged = false;
-	private keepAlive: number;
-
 	protected consoleOutputEnabledFlagProcessed: Promise<void>;
 	protected tab: TTab;
 	protected tabId: TTabIdentifier;
@@ -83,20 +80,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 		}
 	}
 
-	private setKeepAlive() {
-		if (!!this.keepAlive) {
-			clearInterval(this.keepAlive);
-		}
-		this.keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
-		// After 10 minutes, allow the service worker to become inactive.
-		setTimeout(() => {
-			if (!!this.keepAlive) {
-				clearInterval(this.keepAlive);
-				this.keepAlive = undefined;
-			}
-		}, 10 * 60 * 1000);
-	}
-
 	/**
 	 * Get the unique id associated with this worker's tab. The type is any type that allows us to distinguish
 	 * between tabs, and is dependent on the browser itself.
@@ -123,65 +106,13 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected abstract doSignOutAction(authType: AuthType);
 
 	/**
-	 * Notify the UI to invoke the clipper. Resolve with true if it was thought to be successfully
-	 * injected; otherwise resolves with false. Also performs logging.
-	 */
-	protected abstract invokeClipperBrowserSpecific(): Promise<boolean>;
-
-	/**
-	 * Notify the UI to invoke the frontend script that handles logging to the conosle. Resolve with
-	 * true if it was thought to be successfully injected; otherwise resolves with false.
-	 */
-	protected abstract invokeDebugLoggingBrowserSpecific(): Promise<boolean>;
-
-	/**
-	 * Returns true if the user has allowed our extension to access file:/// links. Edge does not have a function to
-	 * check this as of 10/3/2016
-	 */
-	protected abstract isAllowedFileSchemeAccessBrowserSpecific(callback: (isAllowed: boolean) => void): void;
-
-	/**
-	 * Gets the visible tab's screenshot as an image url
-	 */
-	protected abstract takeTabScreenshot(): Promise<string>;
-
-	/**
-	 * Renders the given HTML in an offscreen context and captures full-page screenshots.
-	 * Returns an array of data URL strings.
-	 */
-	protected abstract takeFullPageScreenshot(htmlContent: string): Promise<string[]>;
-
-	/**
-	 * Cancels an in-progress full-page screenshot capture.
-	 */
-	protected cancelFullPageScreenshot(): void {
-		// Default no-op; overridden in WebExtensionWorker
-	}
-
-	/**
 	 * Closes all active frames and notifies the UI to invoke the clipper.
+	 * Must be implemented by subclasses — V1 invoke flow was removed in Tier 3b.
 	 */
-	public closeAllFramesAndInvokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
-		this.invokeClipper(invokeInfo, options);
-	}
+	public abstract closeAllFramesAndInvokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions): void;
 
 	public getLogger() {
 		return this.logger;
-	}
-
-	/**
-	 * Skeleton method that notifies the UI to invoke the Clipper. Also performs logging.
-	 */
-	public invokeClipper(invokeInfo: InvokeInfo, options: InvokeOptions) {
-		this.setKeepAlive();
-
-		Promise.all([this.consoleOutputEnabledFlagProcessed, this.invokeClipperBrowserSpecific()]).then(([v, wasInvoked]) => {
-			if (wasInvoked && !this.clipperFunnelAlreadyLogged) {
-				this.logger.logUserFunnel(Log.Funnel.Label.Invoke);
-				this.clipperFunnelAlreadyLogged = true;
-			}
-			this.logClipperInvoke(invokeInfo, options || { invokeMode: InvokeMode.Default });
-		});
 	}
 
 	/**
@@ -238,13 +169,6 @@ export abstract class ExtensionWorkerBase<TTab, TTabIdentifier> {
 	protected getUserSessionIdQueryParamValue(): string {
 		let usidQueryParamValue = this.logger.getUserSessionId();
 		return usidQueryParamValue ? usidQueryParamValue : this.clientInfo.get().clipperId;
-	}
-
-	protected async invokeDebugLoggingIfEnabled(): Promise<boolean> {
-		if (await LogHelpers.isConsoleOutputEnabled()) {
-			return this.invokeDebugLoggingBrowserSpecific();
-		}
-		return Promise.resolve(false);
 	}
 
 	protected logClipperInvoke(invokeInfo: InvokeInfo, options: InvokeOptions) {

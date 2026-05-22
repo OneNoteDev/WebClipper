@@ -10,7 +10,6 @@ import {InvokeInfo} from "../invokeInfo";
 import {InvokeSource} from "../invokeSource";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
 
-import {InjectUrls} from "./injectUrls";
 import {WebExtensionWorker} from "./webExtensionWorker";
 
 // We are using the typing from chrome.d.ts, but it is the same for all of the WebExtensions
@@ -21,12 +20,8 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	public static browser: Browser;
 	public static offscreenUrl: string;
 
-	public injectUrls: InjectUrls;
-
-	constructor(clientType: ClientType, injectUrls: InjectUrls) {
+	constructor(clientType: ClientType) {
 		super(clientType, new ClipperData(new LocalStorage()));
-
-		this.injectUrls = injectUrls;
 
 		this.registerBrowserButton();
 
@@ -45,7 +40,7 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	}
 
 	protected createWorker(tab: W3CTab): WebExtensionWorker {
-		return new WebExtensionWorker(this.injectUrls, tab, this.clientInfo, this.auth);
+		return new WebExtensionWorker(tab, this.clientInfo, this.auth);
 	}
 
 	protected getIdFromTab(tab: W3CTab): number {

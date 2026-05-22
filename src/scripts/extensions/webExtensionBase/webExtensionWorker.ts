@@ -16,11 +16,9 @@ import {LocalStorage} from "../../storage/localStorage";
 
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
-import {InjectHelper} from "../injectHelper";
 
 import {InvokeInfo} from "../invokeInfo";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
-import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
 
 type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
@@ -39,7 +37,6 @@ function escapeHtml(s: string): string {
 }
 
 export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
-	private injectUrls: InjectUrls;
 	private activeRendererCleanup: () => void;
 	private activeRendererWindowId: number;
 	// Original InvokeOptions, set by closeAllFramesAndInvokeClipper and forwarded
@@ -47,10 +44,9 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private pendingInvokeMode: string;
 	private pendingInvokeData: string;
 
-	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
+	constructor(tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
 		super(clientInfo, auth, new ClipperData(new LocalStorage()));
 
-		this.injectUrls = injectUrls;
 		this.tab = tab;
 		this.tabId = tab.id;
 		this.pendingInvokeMode = "";
@@ -75,8 +71,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 			if (!clientInfoData.flightingInfo) {
 				this.logger.setContextProperty(Log.Context.Custom.FlightInfo, "");
 			}
-
-			this.invokeDebugLoggingIfEnabled();
 		});
 	}
 
@@ -141,112 +135,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.getLocalizedStringsForBrowser(() => {
 			this.openRendererWindow();
 		});
-	}
-
-	/**
-	 * Notify the UI to invoke the clipper. Resolve with true if it was thought to be successfully
-	 * injected; otherwise resolves with false.
-	 */
-	protected invokeClipperBrowserSpecific(): Promise<boolean> {
-		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.scripting.executeScript({
-				target: { tabId: this.tab.id },
-				func: () => {}
-			}, () => {
-				if (WebExtension.browser.runtime.lastError) {
-					Log.ErrorUtils.sendFailureLogRequest(this.logger, {
-						label: Log.Failure.Label.UnclippablePage,
-						properties: {
-							failureType: Log.Failure.Type.Expected,
-							failureInfo: { error: WebExtension.browser.runtime.lastError.message || "" },
-							stackTrace: Log.Failure.getStackTrace()
-						},
-						clientInfo: this.clientInfo
-					});
-
-					// In Firefox, alert() is not callable from the service worker, so it looks like we have to no-op here
-					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
-						InjectHelper.alertUserOfUnclippablePage();
-					}
-					resolve(false);
-				} else {
-					if (this.clientInfo.get().clipperType === ClientType.FirefoxExtension) {
-						WebExtension.browser.management.uninstallSelf();
-						resolve(true);
-					} else {
-						WebExtension.browser.scripting.executeScript({
-							target: { tabId: this.tab.id },
-							files: [this.injectUrls.webClipperInjectUrl]
-						});
-
-						resolve(true);
-					}
-				}
-			});
-		});
-	}
-
-	/**
-	 * Notify the UI to invoke the frontend script that handles logging to the conosle. Resolve with
-	 * true if it was thought to be successfully injected; otherwise resolves with false.
-	 */
-	protected invokeDebugLoggingBrowserSpecific(): Promise<boolean> {
-		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.scripting.executeScript({
-				target: { tabId: this.tab.id },
-				files: [this.injectUrls.debugLoggingInjectUrl]
-			}, () => {
-				if (WebExtension.browser.runtime.lastError) {
-					// We are probably on a page like about:blank, which is pretty normal
-					resolve(false);
-				} else {
-					resolve(true);
-				}
-			});
-		});
-	}
-
-	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (allowed: boolean) => void): void {
-		if (!WebExtension.browser.extension.isAllowedFileSchemeAccess) {
-			callback(true);
-			return;
-		}
-
-		WebExtension.browser.extension.isAllowedFileSchemeAccess((isAllowed) => {
-			if (!isAllowed && this.tab.url.indexOf("file:///") === 0) {
-				callback(false);
-			} else {
-				callback(true);
-			}
-		});
-	}
-
-	/**
-	 * Gets the visible tab's screenshot as an image url
-	 */
-	protected takeTabScreenshot(): Promise<string> {
-		return new Promise<string>((resolve) => {
-			WebExtension.browser.tabs.query({ active: true, lastFocusedWindow: true }, () => {
-				WebExtension.browser.tabs.captureVisibleTab({ format: "png" }, (dataUrl: string) => {
-					resolve(dataUrl);
-				});
-			});
-		});
-	}
-
-	/**
-	 * Cancels an in-progress full-page screenshot capture.
-	 */
-	protected cancelFullPageScreenshot(): void {
-		this.activeRendererCleanup();
-	}
-
-	/**
-	 * Legacy: called by clipper.tsx via communicator. In the new flow, openRendererWindow() is used instead.
-	 */
-	protected takeFullPageScreenshot(htmlContent: string): Promise<string[]> {
-		this.openRendererWindow();
-		return new Promise<string[]>(() => { /* renderer window handles everything */ });
 	}
 
 	/**

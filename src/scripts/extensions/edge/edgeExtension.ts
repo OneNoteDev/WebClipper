@@ -11,8 +11,4 @@ declare var browser;
 WebExtension.browser = chrome;
 WebExtension.offscreenUrl = chrome.runtime.getURL("offscreen.html");
 
-let clipperBackground = new WebExtension(ClientType.EdgeExtension, {
-	debugLoggingInjectUrl: "edgeDebugLoggingInject.js",
-	webClipperInjectUrl: "edgeInject.js",
-	pageNavInjectUrl: "edgePageNavInject.js"
-});
+let clipperBackground = new WebExtension(ClientType.EdgeExtension);
