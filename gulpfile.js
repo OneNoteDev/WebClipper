@@ -112,7 +112,10 @@ gulp.task("mergeSettings", function() {
         }
     }
 
-    return gulp.src(mergeOrder)
+    // allowEmpty restores gulp 4's behavior of silently tolerating missing
+    // production.json / dogfood.json overrides (only the internal repo
+    // ships those by default).
+    return gulp.src(mergeOrder, { allowEmpty: true })
         .pipe(mergeJSON({ fileName: "settings.json" }))
         .pipe(gulp.dest(PATHS.BUILDROOT));
 });
