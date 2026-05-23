@@ -28,7 +28,6 @@
         "esbuild": "0.28.0",
         "eslint": "10.4.0",
         "file-exists": "5.0.1",
-        "globby": "16.2.0",
         "gulp": "5.0.1",
         "gulp-concat": "2.6.1",
         "gulp-less": "5.0.0",

@@ -6,7 +6,6 @@ var argv = require("yargs/yargs")(process.argv.slice(2)).argv;
 var concat = require("gulp-concat");
 var del = require("del").deleteAsync;
 var esbuild = require("esbuild");
-var globby = require("globby");
 var gulp = require("gulp");
 var less = require("gulp-less");
 var mergeJSON = require("gulp-merge-json");
@@ -41,13 +40,6 @@ var PATHS = {
 };
 
 var ARIA_LIB_VERSION = "2.8.2";
-
-// Used for debugging glob declarations
-function printGlobResults(glob) {
-    globby.sync(glob).map(function(filePath) {
-        console.log(filePath);
-    });
-}
 
 function fileExists(path) {
     try { return fs.statSync(path).isFile(); } catch (e) { return false; }
@@ -155,9 +147,8 @@ gulp.task("lint", function (done) {
     var eslintPkgDir = path.dirname(require.resolve("eslint/package.json"));
     var eslintBin = path.join(eslintPkgDir, "bin", "eslint.js");
     var eslint = spawn(process.execPath, [eslintBin, "--no-error-on-unmatched-pattern", "src/**/*.ts", "src/**/*.tsx"], { stdio: "inherit" });
-    eslint.on("close", function () {
-        // Match legacy gulp-tslint behavior: report findings but don't fail the build.
-        done();
+    eslint.on("close", function (code) {
+        done(code === 0 ? null : new Error("eslint exited with code " + code));
     });
 });
 
