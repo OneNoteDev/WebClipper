@@ -11,29 +11,118 @@
 	font-weight: normal;
 }
 
-// --- Fluent 2 neutral tokens (light theme) ---
-@colorNeutralBackground1: #ffffff;        // Sidebar / surface
-@colorNeutralBackground2: #fafafa;        // Subtle hover
-@colorNeutralBackground3: #f5f5f5;        // Input / field rest
-@colorNeutralForeground1: #242424;        // Primary text
-@colorNeutralForeground2: #424242;        // Labels / secondary text
-@colorNeutralForeground3: #707070;        // Tertiary text (source URL)
-@colorNeutralForeground4: #b4b4b4;        // Placeholder
-@colorNeutralStroke1: #d1d1d1;            // Input/button border
-@colorNeutralStroke2: #e0e0e0;            // Divider
-@colorNeutralStroke3: #f0f0f0;            // Subtle separator
-@colorSubtleBackgroundHover: #f5f5f5;
-@colorSubtleBackgroundPressed: #e0e0e0;
+// --- Theme tokens as CSS custom properties (Fluent 2 light defaults) ---
+// Custom properties (not LESS vars) so they react live to prefers-color-scheme
+// without a page reload. Dark overrides live in the @media block below.
+:root {
+	// Neutrals
+	--color-bg-1: #ffffff;          // Sidebar / surface
+	--color-bg-2: #fafafa;          // Subtle hover
+	--color-bg-3: #f5f5f5;          // Input / field rest
+	--color-fg-1: #242424;          // Primary text
+	--color-fg-2: #424242;          // Labels / secondary
+	--color-fg-3: #707070;          // Tertiary (source URL)
+	--color-fg-4: #b4b4b4;          // Placeholder
+	--color-stroke-1: #d1d1d1;      // Input/button border
+	--color-stroke-2: #e0e0e0;      // Divider
+	--color-stroke-3: #f0f0f0;      // Subtle separator
+	--color-subtle-hover: #f5f5f5;
+	--color-subtle-pressed: #e0e0e0;
 
-// --- OneNote brand ramp (from Fluent 2 "Colors/Brand/OneNote/*" in Figma) ---
-// Used for primary button, focus ring, selected states
-@oneNoteBrand50: #5B1382;    // Pressed
-@oneNoteBrand60: #6C179A;    // Hover
-@oneNoteBrand80: #7719AA;    // Rest / primary
+	// Brand (OneNote purple) — Fluent 2 "Colors/Brand/OneNote/*"
+	--color-brand-rest: #7719AA;       // Primary button rest
+	--color-brand-hover: #6C179A;      // Hover
+	--color-brand-pressed: #5B1382;    // Pressed
+	--color-brand-on-fg: #ffffff;      // Text/halo color ON brand background
 
-@colorCompoundBrandBackground: @oneNoteBrand80;        // Primary button (Clip) rest
-@colorCompoundBrandBackgroundHover: @oneNoteBrand60;   // hover
-@colorCompoundBrandBackgroundPressed: @oneNoteBrand50; // pressed
+	// Surfaces (special-purpose)
+	--color-preview-bg: #e8e6e4;       // Frame around preview iframe
+	--color-overlay-scrim: rgba(0, 0, 0, 0.60);   // PDF page-number badge
+	--color-shadow-elev-2: rgba(0, 0, 0, 0.12);
+	--color-shadow-elev-1: rgba(0, 0, 0, 0.20);
+	--color-shadow-subtle: rgba(0, 0, 0, 0.08);
+	--color-shadow-faint:  rgba(0, 0, 0, 0.10);
+	--color-scrollbar-thumb: rgba(0, 0, 0, 0.20);
+
+	// Status
+	--color-danger-fg: #a80000;
+	--color-danger-bg: #fdeaea;
+	--color-success-fg: #0e700e;
+	--color-info-fg: #666666;          // "Loading / empty state" text
+
+	// Sticky-note (annotation chip)
+	--color-stickynote-bg: rgba(0, 0, 0, 0.05);
+	--color-stickynote-hover: rgba(0, 0, 0, 0.10);
+	--color-stickynote-border: rgba(0, 0, 0, 0.08);
+}
+
+// --- Dark mode overrides ---
+// Triggered when Edge appearance is set to Dark (edge://settings/appearance)
+// or when OS is dark and Edge is set to "System default". Updates live.
+@media (prefers-color-scheme: dark) {
+	:root {
+		// Neutrals — Fluent 2 dark theme ratios
+		--color-bg-1: #1f1f1f;          // Sidebar / surface
+		--color-bg-2: #2b2b2b;          // Subtle hover
+		--color-bg-3: #333333;          // Input / field rest
+		--color-fg-1: #f5f5f5;          // Primary text
+		--color-fg-2: #d6d6d6;          // Labels / secondary
+		--color-fg-3: #a6a6a6;          // Tertiary
+		--color-fg-4: #6e6e6e;          // Placeholder
+		--color-stroke-1: #5c5c5c;      // Input/button border
+		--color-stroke-2: #404040;      // Divider
+		--color-stroke-3: #2e2e2e;      // Subtle separator
+		--color-subtle-hover: #2e2e2e;
+		--color-subtle-pressed: #404040;
+
+		// Brand — lighter ramp from Fluent 2 dark theme for AA contrast on dark bg
+		--color-brand-rest: #C77FE0;       // brand120-equivalent
+		--color-brand-hover: #D9A8EC;      // brand130
+		--color-brand-pressed: #B25FCF;    // brand110
+		--color-brand-on-fg: #1f1f1f;      // Dark fg on the lighter brand bg
+
+		// Surfaces
+		--color-preview-bg: #2b2b2b;       // Dark frame around (light) preview content
+		--color-overlay-scrim: rgba(0, 0, 0, 0.75);
+		--color-shadow-elev-2: rgba(0, 0, 0, 0.50);
+		--color-shadow-elev-1: rgba(0, 0, 0, 0.45);
+		--color-shadow-subtle: rgba(255, 255, 255, 0.10);   // light tint for inner ring
+		--color-shadow-faint:  rgba(0, 0, 0, 0.35);
+		--color-scrollbar-thumb: rgba(255, 255, 255, 0.25);
+
+		// Status — lightened for AA contrast on dark bg
+		--color-danger-fg: #ff7a7a;
+		--color-danger-bg: #4a1f1f;
+		--color-success-fg: #6fcb6f;
+		--color-info-fg: #a6a6a6;
+
+		--color-stickynote-bg: rgba(255, 255, 255, 0.06);
+		--color-stickynote-hover: rgba(255, 255, 255, 0.12);
+		--color-stickynote-border: rgba(255, 255, 255, 0.12);
+	}
+}
+
+// --- Legacy LESS aliases ---
+// Keep the @colorXxx names as aliases pointing at the custom properties so the
+// rest of the file compiles without a mass rename. New rules should reference
+// var(--color-…) directly.
+@colorNeutralBackground1: var(--color-bg-1);
+@colorNeutralBackground2: var(--color-bg-2);
+@colorNeutralBackground3: var(--color-bg-3);
+@colorNeutralForeground1: var(--color-fg-1);
+@colorNeutralForeground2: var(--color-fg-2);
+@colorNeutralForeground3: var(--color-fg-3);
+@colorNeutralForeground4: var(--color-fg-4);
+@colorNeutralStroke1: var(--color-stroke-1);
+@colorNeutralStroke2: var(--color-stroke-2);
+@colorNeutralStroke3: var(--color-stroke-3);
+@colorSubtleBackgroundHover: var(--color-subtle-hover);
+@colorSubtleBackgroundPressed: var(--color-subtle-pressed);
+@colorCompoundBrandBackground: var(--color-brand-rest);
+@colorCompoundBrandBackgroundHover: var(--color-brand-hover);
+@colorCompoundBrandBackgroundPressed: var(--color-brand-pressed);
+// @oneNoteBrand80 referenced by @focusRingColor at line ~790
+@oneNoteBrand80: var(--color-brand-rest);
 
 // Layout
 html, body {
@@ -52,7 +141,7 @@ body { display: flex; }
 #preview-area {
 	flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%;
 	position: relative;
-	background: #e8e6e4; // visible contrast against white page content inside the rounded frame
+	background: var(--color-preview-bg); // visible contrast against white page content inside the rounded frame
 
 	// Rounded frame — thin inner ring only, no drop shadow
 	&.preview-ready::after {
@@ -60,7 +149,7 @@ body { display: flex; }
 		position: absolute; top: 0; left: 0; right: 0; bottom: 0;
 		pointer-events: none; z-index: 10;
 		border-radius: @preview-radius;
-		box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+		box-shadow: inset 0 0 0 1px var(--color-shadow-subtle);
 	}
 
 	// When ready, add real margin on child panels so content isn't hidden behind the rounded corners
@@ -95,6 +184,33 @@ body { display: flex; }
 	}
 }
 
+// --- Dark mode: preview content stays light, frame goes dark ---
+// The preview iframes render captured-page HTML — i.e., what the saved OneNote
+// page will look like. Force-paint a white background INSIDE the preview so a
+// partially-transparent captured page doesn't bleed the dark sidebar through,
+// and brighten the inner ring so the light content has a visible edge against
+// the dark sidebar.
+@media (prefers-color-scheme: dark) {
+	#preview-frame-wrap,
+	#preview-container,
+	iframe#content-frame,
+	iframe#preview-frame {
+		background: #ffffff;
+	}
+	#preview-area.preview-ready::after {
+		box-shadow: inset 0 0 0 1px var(--color-shadow-subtle);
+	}
+	// Section-picker chevron is a hardcoded dark stroke in a data: URI — swap
+	// to a light variant so it stays visible against the dark field background.
+	#section-selected {
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5l3.5 3.5 3.5-3.5' stroke='%23d6d6d6' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	}
+	// Region-remove-btn trash icon is a hardcoded dark fill — swap to light.
+	.region-remove-btn::before {
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23f5f5f5' d='M6.5 1a1.5 1.5 0 0 0-1.5 1.5V3H3a.5.5 0 0 0 0 1h.5v8.5A1.5 1.5 0 0 0 5 14h6a1.5 1.5 0 0 0 1.5-1.5V4h.5a.5.5 0 0 0 0-1h-2v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zM4.5 4h7v8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V4zm2 2a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5z'/%3E%3C/svg%3E") no-repeat center/contain;
+	}
+}
+
 // Content area — page renders here during capture (NO margin — captureVisibleTab captures these pixels)
 iframe#content-frame {
 	flex: 1; min-width: 0; min-height: 0;
@@ -125,7 +241,7 @@ iframe#content-frame {
 iframe#preview-frame {
 	flex: 1; min-width: 0; min-height: 0;
 	border: none; display: block;
-	background: #fff;
+	background: var(--color-bg-1);
 }
 
 // Preview area — shown after capture with scrollable image
@@ -134,12 +250,12 @@ iframe#preview-frame {
 #preview-container {
 	flex: 1; min-width: 0; min-height: 0;
 	overflow-y: auto; display: none;
-	background: #e8e6e4;
+	background: var(--color-preview-bg);
 	// Full-width for full-page screenshot preview, but not for region thumbnails
 	> img { width: 100%; display: block; }
 	// Show scrollbar to indicate scrollable content
 	&::-webkit-scrollbar { display: block; width: 6px; }
-	&::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+	&::-webkit-scrollbar-thumb { background: var(--color-scrollbar-thumb); border-radius: 3px; }
 	&::-webkit-scrollbar-track { background: transparent; }
 	&:focus-visible {
 		outline: none;
@@ -245,7 +361,7 @@ iframe#preview-frame {
 	// Visible scrollbar so user can see there's more content below
 	// !important overrides the global ::-webkit-scrollbar { display: none } at bottom of file
 	&::-webkit-scrollbar { display: block !important; width: 5px !important; }
-	&::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2) !important; border-radius: 3px; }
+	&::-webkit-scrollbar-thumb { background: var(--color-scrollbar-thumb) !important; border-radius: 3px; }
 	&::-webkit-scrollbar-track { background: transparent; }
 }
 
@@ -397,10 +513,10 @@ iframe#preview-frame {
 	background: @colorNeutralBackground1;
 	border: 1px solid @colorNeutralStroke1;
 	border-radius: 4px;
-	box-shadow: 0 4px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.1);
+	box-shadow: 0 4px 8px var(--color-shadow-elev-2), 0 0 2px var(--color-shadow-faint);
 	z-index: 50;
 	&::-webkit-scrollbar { display: block !important; width: 5px !important; }
-	&::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2) !important; border-radius: 3px; }
+	&::-webkit-scrollbar-thumb { background: var(--color-scrollbar-thumb) !important; border-radius: 3px; }
 	&::-webkit-scrollbar-track { background: transparent; }
 }
 
@@ -475,7 +591,7 @@ iframe#preview-frame {
 // Clip — Fluent primary (OneNote brand /80 rest → /60 hover → /50 pressed)
 #save-btn {
 	background: @colorCompoundBrandBackground;
-	color: #fff;
+	color: var(--color-brand-on-fg);
 	border: 1px solid @colorCompoundBrandBackground;
 	&:hover { background: @colorCompoundBrandBackgroundHover; border-color: @colorCompoundBrandBackgroundHover; }
 	&:active { background: @colorCompoundBrandBackgroundPressed; border-color: @colorCompoundBrandBackgroundPressed; }
@@ -488,7 +604,7 @@ iframe#preview-frame {
 #sidebar #save-btn:focus {
 	outline: none !important;
 	box-shadow:
-		inset 0 0 0 2px #fff,
+		inset 0 0 0 2px var(--color-brand-on-fg),
 		0 0 0 2px @colorNeutralForeground1 !important;
 	border-color: @colorCompoundBrandBackground !important;
 }
@@ -559,7 +675,7 @@ iframe#preview-frame {
 				box-shadow: inset 0 0 0 1px @focusRingColor !important;
 				border-color: @focusRingColor !important;
 			}
-			&.copied { color: #0e700e; border-color: #0e700e; }
+			&.copied { color: var(--color-success-fg); border-color: var(--color-success-fg); }
 		}
 }
 
@@ -664,14 +780,14 @@ iframe#preview-frame {
 	height: 28px; padding: 0; padding-inline: 8px 12px;
 	margin-bottom: 8px; // gap between button and image
 	border-radius: 4px;
-	border: 1px solid rgba(0,0,0,0.08);
-	background: rgba(0,0,0,0.05); // translucent black alpha 5% per sticky note
+	border: 1px solid var(--color-stickynote-border);
+	background: var(--color-stickynote-bg); // translucent overlay per sticky note
 	color: @colorNeutralForeground1;
 	font-size: 13px; font-weight: 400; line-height: 20px;
 	font-family: inherit;
 	cursor: pointer;
 	transition: background 0.1s;
-	&:hover { background: rgba(0,0,0,0.1); }
+	&:hover { background: var(--color-stickynote-hover); }
 	// Trash icon — clean filled path
 	&::before {
 		content: "";
@@ -757,7 +873,7 @@ iframe#preview-frame {
 	cursor: pointer;
 	margin-bottom: 10px;
 	transition: background 0.1s;
-	background: @colorCompoundBrandBackground; color: #fff;
+	background: @colorCompoundBrandBackground; color: var(--color-brand-on-fg);
 	&:hover { background: @colorCompoundBrandBackgroundHover; border-color: @colorCompoundBrandBackgroundHover; }
 	&:disabled { opacity: 0.4; cursor: default; }
 }
@@ -772,7 +888,7 @@ iframe#preview-frame {
 
 .signin-error {
 	font-size: 12px;
-	color: #a80000; // Fluent danger color
+	color: var(--color-danger-fg); // Fluent danger color
 	margin-top: 8px;
 	line-height: 16px;
 }
@@ -1116,8 +1232,8 @@ iframe#preview-frame {
 }
 
 .pdf-range-error {
-	color: #a80000; font-size: 12px; margin-top: 2px;
-	padding: 4px 8px; background: #fdeaea; border-radius: 4px;
+	color: var(--color-danger-fg); font-size: 12px; margin-top: 2px;
+	padding: 4px 8px; background: var(--color-danger-bg); border-radius: 4px;
 }
 
 #pdf-checkboxes {
@@ -1139,7 +1255,7 @@ iframe#preview-frame {
 }
 
 .pdf-attach-warning {
-	color: #a80000; font-size: 12px;
+	color: var(--color-danger-fg); font-size: 12px;
 	padding: 4px 0 0 0; padding-inline-start: 20px;
 }
 
@@ -1154,13 +1270,13 @@ iframe#preview-frame {
 	}
 	.pdf-page-img {
 		max-width: 100%; height: auto; display: block;
-		margin: 0 auto; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-		background: #fff;
+		margin: 0 auto; box-shadow: 0 1px 4px var(--color-shadow-elev-1);
+		background: #ffffff; // PDF pages are always white — matches the saved OneNote page
 	}
 	.pdf-page-number {
 		position: absolute; inset-inline-start: 12px; top: 12px;
 		min-width: 36px; height: 36px;
-		background: rgba(0,0,0,0.60); color: #fff;
+		background: var(--color-overlay-scrim); color: #ffffff; // white text on dark scrim, both modes
 		font-size: 15px; font-family: "Segoe UI", sans-serif;
 		display: flex; align-items: center; justify-content: center;
 		pointer-events: none; border-radius: 4px;
@@ -1173,7 +1289,7 @@ iframe#preview-frame {
 		opacity: 0.3;
 	}
 	.pdf-loading-indicator {
-		text-align: center; padding: 20px; color: #666;
+		text-align: center; padding: 20px; color: var(--color-info-fg);
 		font-size: 13px;
 	}
 	// V1 .attachment-overlay parity: 84x96 box, 48px icon, filename below.

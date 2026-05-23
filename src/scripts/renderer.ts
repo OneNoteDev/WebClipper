@@ -1084,7 +1084,7 @@ function loadArticleContent() {
 	let loadingDoc = previewFrame.contentDocument;
 	if (loadingDoc) {
 		loadingDoc.open();
-		loadingDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>" + escapeHtml(loc("WebClipper.Preview.LoadingMessage", "Loading article...")) + "</div></body></html>");
+		loadingDoc.write("<!DOCTYPE html><html><head><style>:root{color-scheme:light}html,body{background:#ffffff}body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>" + escapeHtml(loc("WebClipper.Preview.LoadingMessage", "Loading article...")) + "</div></body></html>");
 		loadingDoc.close();
 	}
 	let attempts = 0;
@@ -1296,7 +1296,7 @@ function showArticleError() {
 	let errDoc = previewFrame.contentDocument;
 	if (errDoc) {
 		errDoc.open();
-		errDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#999;}</style></head><body><div>" + escapeHtml(loc("WebClipper.Preview.NoContentFound", "Article content not available for this page.")) + "</div></body></html>");
+		errDoc.write("<!DOCTYPE html><html><head><style>:root{color-scheme:light}html,body{background:#ffffff}body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#999;}</style></head><body><div>" + escapeHtml(loc("WebClipper.Preview.NoContentFound", "Article content not available for this page.")) + "</div></body></html>");
 		errDoc.close();
 	}
 }
@@ -1329,7 +1329,11 @@ function renderArticleHtml(html: string) {
 	if (!pDoc) { return; }
 	let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 	let fontSize = articleFontSize + "px";
-	let articleCss = "body { font-family: " + fontFamily + ", 'Segoe UI', sans-serif; font-size: " + fontSize + "; line-height: 1.6; "
+	// :root{color-scheme:light} pins the iframe document to light UA defaults
+	// regardless of system/browser dark mode -- the preview must show what the
+	// saved OneNote page will look like (always light), not the renderer chrome theme.
+	let articleCss = ":root{color-scheme:light}html,body{background:#ffffff}"
+		+ "body { font-family: " + fontFamily + ", 'Segoe UI', sans-serif; font-size: " + fontSize + "; line-height: 1.6; "
 		+ "max-width: 624px; margin: 24px 0; padding: 0 20px; color: #1a1a1a; margin-bottom: 16px; }"
 		+ "img { max-width: 100%; height: auto; }"
 		// pointer-events:none on links so the iframe doesn't navigate away on click (matches bookmark mode).
@@ -1543,7 +1547,7 @@ function loadBookmarkContent() {
 	let loadingDoc = previewFrame.contentDocument;
 	if (loadingDoc) {
 		loadingDoc.open();
-		loadingDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>Loading bookmark...</div></body></html>");
+		loadingDoc.write("<!DOCTYPE html><html><head><style>:root{color-scheme:light}html,body{background:#ffffff}body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>Loading bookmark...</div></body></html>");
 		loadingDoc.close();
 	}
 	let attempts = 0;
@@ -1716,7 +1720,10 @@ function escapeAttr(str: string): string {
 function renderBookmarkHtml(html: string) {
 	let pDoc = previewFrame.contentDocument;
 	if (!pDoc) { return; }
-	let bookmarkCss = "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.5; "
+	// :root{color-scheme:light} keeps the preview light in browser dark mode --
+	// the saved OneNote page is always light, so the preview should match.
+	let bookmarkCss = ":root{color-scheme:light}html,body{background:#ffffff}"
+		+ "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.5; "
 		+ "max-width: 624px; margin: 24px 0; padding: 0 20px; color: #1a1a1a; }"
 		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
 		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
