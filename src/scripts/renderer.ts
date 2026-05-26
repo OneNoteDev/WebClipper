@@ -3010,9 +3010,11 @@ port.onMessage.addListener((message: any) => {
 		if (regionImages.length === 0) {
 			let fallbackMode = modeBeforeRegion || (pdfMode ? "pdf" : "fullpage");
 			let fallbackBtn = document.querySelector('.mode-btn[data-mode="' + fallbackMode + '"]') as HTMLButtonElement;
-			if (fallbackBtn) { fallbackBtn.click(); }
-			let regionBtn = document.querySelector('.mode-btn[data-mode="region"]') as HTMLElement;
-			if (regionBtn) { setTimeout(function() { regionBtn.focus(); }, 0); }
+			if (fallbackBtn) {
+				fallbackBtn.click();
+				// Focus follows aria-pressed — screen readers otherwise announce the wrong button state.
+				setTimeout(function() { fallbackBtn.focus(); }, 0);
+			}
 		} else {
 			// User cancelled mid-add but already has captures — stay in region mode
 			// so they can save what they have or add another region.
