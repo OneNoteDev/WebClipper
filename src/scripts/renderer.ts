@@ -897,14 +897,7 @@ async function fetchFreshNotebooks() {
 		logTelemetryEvent(getNotebooksEvent);
 	}
 }
-// Lock all interactive controls during initial capture — prevents race conditions
-// (e.g., clicking sign-out mid-capture corrupts state)
-document.querySelectorAll(".mode-btn").forEach((btn) => {
-	if (btn.getAttribute("data-mode") !== "fullpage") {
-		(btn as HTMLButtonElement).disabled = true;
-		btn.classList.add("disabled");
-	}
-});
+// Sign-out and Save lock until capture completes; mode buttons stay interactive.
 saveBtn.disabled = true;
 disableSignout();
 // Show initial capture progress (bar hidden until first drawCapture with viewport counts)
@@ -912,7 +905,7 @@ capturePanel.style.display = "flex";
 statusText.textContent = strings.capturing;
 announceToScreenReader(strings.capturing);
 (document.getElementById("progress-bar-track") as HTMLElement).style.display = "none";
-// During capture, Cancel is the only actionable control — focus it
+// Cancel is the safest initial focus target; user can Tab to a mode button.
 if (isSignedIn) { setTimeout(function() { cancelBtn.focus(); }, 100); }
 
 // Section selection persistence is handled by selectSection() in the custom dropdown
@@ -1013,17 +1006,18 @@ function switchToFullPage() {
 		statusText.textContent = strings.capturing;
 		saveBtn.disabled = true;
 		if (captureDimensions && !captureInProgress) {
-			document.querySelectorAll(".mode-btn").forEach((b: Element) => {
-				if (b.getAttribute("data-mode") !== "fullpage") {
-					(b as HTMLButtonElement).disabled = true;
-					b.classList.add("disabled");
-				}
-			});
 			disableSignout();
 			announceToScreenReader(strings.capturing);
 			let progressTrack = document.getElementById("progress-bar-track") as HTMLElement;
 			if (progressTrack) { progressTrack.style.display = "none"; }
-			kickoffFullPageCapture();
+			// Defer kickoff one paint so the iframe commits scrollTo(0,0) before captureVisibleTab fires.
+			void iframe.offsetHeight;
+			iframe.contentWindow?.scrollTo(0, 0);
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					kickoffFullPageCapture();
+				});
+			});
 		}
 	}
 }
@@ -2389,8 +2383,8 @@ modeButtons.forEach((btn, idx) => {
 	btn.addEventListener("click", () => {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === currentMode) { return; }
-		// Block mode switching mid-capture (captureVisibleTab needs the iframe visible).
-		if (captureInProgress && mode !== "fullpage") { return; }
+		// Pivoting away from fullpage mid-capture aborts; re-entry restarts.
+		if (captureInProgress && mode !== "fullpage") { abortCurrentCapture(); }
 
 		// Update selected state visually + ARIA
 		document.querySelectorAll(".mode-btn").forEach((b) => {
@@ -2436,7 +2430,6 @@ modeButtons.forEach((btn, idx) => {
 
 // --- Full-page capture lifecycle helpers ---
 
-// Sends `dimensions` to start the worker's scroll-and-stitch loop.
 function kickoffFullPageCapture() {
 	if (!captureDimensions || captureInProgress || fullPageComplete) { return; }
 	captureInProgress = true;
@@ -2446,6 +2439,18 @@ function kickoffFullPageCapture() {
 		pageHeight: captureDimensions.pageHeight,
 		contentHeight: captureDimensions.contentHeight
 	});
+}
+
+// Aborts the in-flight capture: tells the worker to stop the loop and clears the local progress UI.
+function abortCurrentCapture() {
+	if (!captureInProgress) { return; }
+	safeSend({ action: "cancelCapture" });
+	captureInProgress = false;
+	stitchYOffset = 0;
+	capturePanel.style.display = "none";
+	let progressTrack = document.getElementById("progress-bar-track") as HTMLElement;
+	if (progressTrack) { progressTrack.style.display = "none"; }
+	showPreviewFrame();
 }
 
 // Post-loadContent state for invocations that don't need a full-page screenshot
@@ -2935,22 +2940,23 @@ port.onMessage.addListener((message: any) => {
 					previewContainer.appendChild(previewImg);
 				}
 
-				// Update sidebar to preview mode — hide progress, show Clip button
+				// Hide capture progress in all modes — capture is done.
 				capturePanel.style.display = "none";
-				saveBtn.textContent = strings.saveToOneNote;
-				saveBtn.disabled = false;
+				// Active mode owns Save state; don't force-enable here if user pivoted.
+				if (currentMode === "fullpage") {
+					saveBtn.textContent = strings.saveToOneNote;
+					saveBtn.disabled = false;
+				}
 
-				// Re-enable mode buttons and sign-out now that capture is complete
-				document.querySelectorAll(".mode-btn").forEach((b: Element) => {
-					(b as HTMLButtonElement).disabled = false;
-					b.classList.remove("disabled");
-				});
 				enableSignout();
 				captureInProgress = false;
 				announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
 
-				let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
-				if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
+				// Only re-focus fullpage button if user is still in fullpage.
+				if (currentMode === "fullpage") {
+					let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
+					if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
+				}
 
 				safeSend({ action: "finalizeComplete" });
 			};
@@ -3262,11 +3268,9 @@ port.onMessage.addListener((message: any) => {
 		iframe.style.display = "none";
 		previewFrameWrap.style.display = "none";
 		capturePanel.style.display = "none";
-		// Reset mode buttons to initial state (disabled until capture completes)
+		// Buttons stay interactive; the sign-in overlay covers them while signed out.
 		document.querySelectorAll(".mode-btn").forEach((b) => {
 			b.classList.remove("selected");
-			(b as HTMLButtonElement).disabled = true;
-			b.classList.add("disabled");
 		});
 		let fpBtn = document.querySelector('.mode-btn[data-mode="fullpage"]');
 		if (fpBtn) { fpBtn.classList.add("selected"); }

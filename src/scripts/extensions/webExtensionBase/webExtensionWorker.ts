@@ -311,6 +311,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 				let captureCount = 0;
 				let lastScrollY = -1;
 				let lastScrollData: { scrollY: number; pageHeight: number };
+				// Set true on cancelCapture to short-circuit the capture loop and stop focus-stealing.
+				let captureCancelled = false;
 
 				// Per-port save accumulator — images streamed via saveImage chunks
 				let pendingSave: any = undefined; // tslint:disable-line:no-null-keyword
@@ -428,6 +430,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						captureCount = 0;
 						lastScrollY = -1;
 						lastScrollData = { scrollY: 0, pageHeight: 0 };
+						captureCancelled = false;
 
 						if (!viewportHeight) {
 							cleanup();
@@ -445,12 +448,19 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						port.postMessage({ action: "scroll", scrollTo: 0 });
 					}
 
+					if (message.action === "cancelCapture") {
+						captureCancelled = true;
+					}
+
 					if (message.action === "scrollResult") {
 						lastScrollData = { scrollY: message.scrollY, pageHeight: message.pageHeight };
 						setTimeout(() => {
-						// Re-focus renderer window before capture — handles user clicking away
+							if (captureCancelled) { return; }
+							// Re-focus renderer window before capture — handles user clicking away
 							WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+								if (captureCancelled) { return; }
 								WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "png" }, (dataUrl: string) => {
+									if (captureCancelled) { return; }
 									if (!dataUrl) {
 										cleanup();
 										return;
@@ -472,8 +482,9 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 					}
 
 					if (message.action === "drawComplete") {
-					// Detect scroll stall: if scrollY didn't change, we've hit the
-					// real bottom even if scrollHeight is inflated
+						if (captureCancelled) { return; }
+						// Detect scroll stall: if scrollY didn't change, we've hit the
+						// real bottom even if scrollHeight is inflated
 						let scrollStalled = captureCount > 0 && lastScrollData.scrollY === lastScrollY;
 						lastScrollY = lastScrollData.scrollY;
 						captureCount++;
