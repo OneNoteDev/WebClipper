@@ -1,15 +1,21 @@
-import { Clipper } from "../clipperUI/frontEndGlobals";
 import { Constants } from "../constants";
 import { HttpWithRetries } from "../http/httpWithRetries";
+import { Logger } from "../logging/logger";
 import { StringUtils } from "../stringUtils";
 import { UrlUtils } from "../urlUtils";
 import { UserInfoData, AuthType } from "../userInfo";
-import { DataBoundary } from "./dataBoundary";
+import { DataBoundary } from "./DataBoundary";
 
 export class UserDataBoundaryHelper {
+	private logger: Logger;
+
+	constructor(logger: Logger) {
+		this.logger = logger;
+	}
+
 	/**
 	 * fetch the user data bounday from the emailAddress
-	 * @param userInfo 
+	 * @param userInfo
 	 * @returns user data boudary
 	 */
 	public async getUserDataBoundary(userInfo: UserInfoData): Promise<string | undefined> {
@@ -32,7 +38,7 @@ export class UserDataBoundaryHelper {
 
 	/**
 	 * fetch the user data bounday from the emailAddress
-	 * @param userInfo 
+	 * @param userInfo
 	 * @returns user data boudary
 	 */
 	private async getUserDataBoundaryInternal(userInfo: UserInfoData): Promise<string | undefined> {
@@ -66,10 +72,10 @@ export class UserDataBoundaryHelper {
 						try {
 							parsedResponse = JSON.parse(responseText);
 						} catch (error) {
-							Clipper.logger.logJsonParseUnexpected(responseText);
+							this.logger.logJsonParseUnexpected(responseText);
 							reject(error);
 						}
-						if (parsedResponse && parsedResponse.telemetryRegion) {
+						if (parsedResponse?.telemetryRegion) {
 							resolve(parsedResponse.telemetryRegion);
 						} else {
 							resolve(DataBoundary[DataBoundary.UNKNOWN]);

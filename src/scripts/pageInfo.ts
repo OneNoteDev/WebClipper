@@ -1,3 +1,5 @@
+import { OneNoteApi } from "./oneNoteApi";
+
 /**
  * Data object that represents the page we want to clip
  */

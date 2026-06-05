@@ -24,6 +24,7 @@ async function handleResponse(message): Promise<string> {
 		case OffscreenMessageTypes.getPathnameResponse:
 			return message.data;
 		default:
+			// eslint-disable-next-line no-console -- diagnostic for unknown offscreen response type
 			console.warn(`Unexpected message type received: '${message.type}'.`);
 			return;
 	}

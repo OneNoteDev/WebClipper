@@ -2,6 +2,7 @@ import {SmartValue} from "../communicator/smartValue";
 
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
+import { OneNoteApi } from "../oneNoteApi";
 
 import * as Log from "./log";
 import {Context} from "./context";
@@ -23,14 +24,14 @@ export abstract class SessionLogger extends Logger {
 	protected currentSessionState: Log.Session.State = Log.Session.State.Ended;
 	protected logQueue: Log.LogDataPackage[] = [];
 	protected streams: { [key: string]: any[] } = {};
-	protected userHasInteracted: boolean = false;
+	protected userHasInteracted = false;
 	protected sessionId: SmartValue<string> = undefined;
 
 	constructor(options?: SessionLoggerOptions) {
 		super();
 
-		this.sessionId = options && options.sessionId ? options.sessionId : new SmartValue<string>();
-		this.contextStrategy = options ? options.contextStrategy : undefined;
+		this.sessionId = options?.sessionId ?? new SmartValue<string>();
+		this.contextStrategy = options?.contextStrategy;
 	}
 
 	protected abstract handleClickEvent(clickId: string): void;

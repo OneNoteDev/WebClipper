@@ -17,17 +17,14 @@ export module Failure {
 		/* unexpected */
 		ClickedButtonWithNoId,
 		EndSessionWithoutTrigger,
-		GetChangeLog,
 		GetComputedStyle,
 		GetLocalizedString,
 		GetSetting,
-		IFrameMessageHandlerHasNoOtherWindow,
 		InvalidArgument,
 		IsFeatureEnabled,
 		JsonParse,
 		NotImplemented,
 		OnLaunchOneNoteButton,
-		OrphanedWebClippersDueToExtensionRefresh,
 		RegionSelectionProcessing,
 		RenderFailurePanel,
 		ReservedPropertyOverwriteAttempted,
@@ -38,9 +35,6 @@ export module Failure {
 		UnhandledApiCode,
 		UnhandledExceptionThrown,
 		UserSetWithInvalidExpiredData,
-		WebExtensionWindowCreate,
-		/* expected */
-		UnclippablePage,
-		UnsupportedBrowser
+		WebExtensionWindowCreate
 	}
 }

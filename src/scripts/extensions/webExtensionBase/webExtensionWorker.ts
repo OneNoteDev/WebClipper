@@ -1,5 +1,3 @@
-/// <reference path="../../../../node_modules/onenoteapi/target/oneNoteApi.d.ts" />
-
 import {AuthType, UpdateReason, UserInfo} from "../../userInfo";
 import {ClientInfo} from "../../clientInfo";
 import {ClientType} from "../../clientType";
@@ -14,20 +12,15 @@ import * as Log from "../../logging/log";
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
 
-import {ChangeLog} from "../../versioning/changeLog";
-
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
-import {InjectHelper} from "../injectHelper";
 
 import {InvokeInfo} from "../invokeInfo";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
-import {InjectUrls} from "./injectUrls";
 import {WebExtension} from "./webExtension";
-import {WebExtensionBackgroundMessageHandler} from "./webExtensionMessageHandler";
 
-type TabRemoveInfo = chrome.tabs.TabRemoveInfo;
-type WebResponseCacheDetails = chrome.webRequest.WebResponseCacheDetails;
+type TabRemoveInfo = chrome.tabs.OnRemovedInfo;
+type WebResponseCacheDetails = chrome.webRequest.OnCompletedDetails;
 type Window = chrome.windows.Window;
 
 // Escape user-provided strings before inlining into the OneNote citation HTML
@@ -42,8 +35,6 @@ function escapeHtml(s: string): string {
 }
 
 export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
-	private injectUrls: InjectUrls;
-	private noOpTrackerInvoked: boolean;
 	private activeRendererCleanup: () => void;
 	private activeRendererWindowId: number;
 	// Original InvokeOptions, set by closeAllFramesAndInvokeClipper and forwarded
@@ -51,14 +42,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 	private pendingInvokeMode: string;
 	private pendingInvokeData: string;
 
-	constructor(injectUrls: InjectUrls, tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
-		let messageHandlerThunk = () => { return new WebExtensionBackgroundMessageHandler(tab.id); };
-		super(clientInfo, auth, new ClipperData(new LocalStorage()), messageHandlerThunk, messageHandlerThunk);
+	constructor(tab: W3CTab, clientInfo: SmartValue<ClientInfo>, auth: AuthenticationHelper) {
+		super(clientInfo, auth, new ClipperData(new LocalStorage()));
 
-		this.injectUrls = injectUrls;
 		this.tab = tab;
 		this.tabId = tab.id;
-		this.noOpTrackerInvoked = false;
 		this.pendingInvokeMode = "";
 		this.pendingInvokeData = "";
 
@@ -81,8 +69,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 			if (!clientInfoData.flightingInfo) {
 				this.logger.setContextProperty(Log.Context.Custom.FlightInfo, "");
 			}
-
-			this.invokeDebugLoggingIfEnabled();
 		});
 	}
 
@@ -126,10 +112,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		});
 
 		// Capture invocation intent for the contentCapture listener to forward.
-		this.pendingInvokeMode = (options && options.invokeMode !== undefined)
+		this.pendingInvokeMode = (options?.invokeMode !== undefined)
 			? InvokeMode[options.invokeMode]
 			: "";
-		this.pendingInvokeData = (options && options.invokeDataForMode) ? options.invokeDataForMode : "";
+		this.pendingInvokeData = options?.invokeDataForMode ?? "";
 
 		if (this.activeRendererWindowId) {
 			WebExtension.browser.windows.update(this.activeRendererWindowId, { focused: true }, () => {
@@ -147,149 +133,6 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		this.getLocalizedStringsForBrowser(() => {
 			this.openRendererWindow();
 		});
-	}
-
-	/**
-	 * Notify the UI to invoke the clipper. Resolve with true if it was thought to be successfully
-	 * injected; otherwise resolves with false.
-	 */
-	protected invokeClipperBrowserSpecific(): Promise<boolean> {
-		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.scripting.executeScript({
-				target: { tabId: this.tab.id },
-				func: () => {}
-			}, () => {
-				if (WebExtension.browser.runtime.lastError) {
-					Log.ErrorUtils.sendFailureLogRequest({
-						label: Log.Failure.Label.UnclippablePage,
-						properties: {
-							failureType: Log.Failure.Type.Expected,
-							failureInfo: { error: WebExtension.browser.runtime.lastError.message },
-							stackTrace: Log.Failure.getStackTrace()
-						},
-						clientInfo: this.clientInfo
-					});
-
-					// In Firefox, alert() is not callable from the service worker, so it looks like we have to no-op here
-					if (this.clientInfo.get().clipperType !== ClientType.FirefoxExtension) {
-						InjectHelper.alertUserOfUnclippablePage();
-					}
-					resolve(false);
-				} else {
-					if (this.clientInfo.get().clipperType === ClientType.FirefoxExtension) {
-						WebExtension.browser.management.uninstallSelf();
-						resolve(true);
-					} else {
-						WebExtension.browser.scripting.executeScript({
-							target: { tabId: this.tab.id },
-							files: [this.injectUrls.webClipperInjectUrl]
-						});
-
-						if (!this.noOpTrackerInvoked) {
-							this.setUpNoOpTrackers(this.tab.url);
-							this.noOpTrackerInvoked = true;
-						}
-						resolve(true);
-					}
-				}
-			});
-		});
-	}
-
-	/**
-	 * Notify the UI to invoke the frontend script that handles logging to the conosle. Resolve with
-	 * true if it was thought to be successfully injected; otherwise resolves with false.
-	 */
-	protected invokeDebugLoggingBrowserSpecific(): Promise<boolean> {
-		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.scripting.executeScript({
-				target: { tabId: this.tab.id },
-				files: [this.injectUrls.debugLoggingInjectUrl]
-			}, () => {
-				if (WebExtension.browser.runtime.lastError) {
-					// We are probably on a page like about:blank, which is pretty normal
-					resolve(false);
-				} else {
-					resolve(true);
-				}
-			});
-		});
-	}
-
-	protected invokePageNavBrowserSpecific(): Promise<boolean> {
-		return new Promise<boolean>((resolve) => {
-			WebExtension.browser.scripting.executeScript({
-				target: { tabId: this.tab.id },
-				func: () => {}
-			}, () => {
-				// It's safest to not use lastError in the resolve due to special behavior in the Chrome API
-				if (WebExtension.browser.runtime.lastError) {
-					// We are probably on a page like about:blank, which is pretty normal
-					resolve(false);
-				} else {
-					WebExtension.browser.scripting.executeScript({
-						target: { tabId: this.tab.id },
-						files: [this.injectUrls.pageNavInjectUrl]
-					});
-					resolve(true);
-				}
-			});
-		});
-	}
-
-	/**
-	 * Notify the UI to invoke the What's New tooltip. Resolve with true if it was thought to be successfully
-	 * injected; otherwise resolves with false.
-	 */
-	protected invokeWhatsNewTooltipBrowserSpecific(newVersions: ChangeLog.Update[]): Promise<boolean> {
-		return this.invokePageNavBrowserSpecific();
-	}
-
-	protected invokeTooltipBrowserSpecific(): Promise<boolean> {
-		return this.invokePageNavBrowserSpecific();
-	}
-
-	protected isAllowedFileSchemeAccessBrowserSpecific(callback: (allowed: boolean) => void): void {
-		if (!WebExtension.browser.extension.isAllowedFileSchemeAccess) {
-			callback(true);
-			return;
-		}
-
-		WebExtension.browser.extension.isAllowedFileSchemeAccess((isAllowed) => {
-			if (!isAllowed && this.tab.url.indexOf("file:///") === 0) {
-				callback(false);
-			} else {
-				callback(true);
-			}
-		});
-	}
-
-	/**
-	 * Gets the visible tab's screenshot as an image url
-	 */
-	protected takeTabScreenshot(): Promise<string> {
-		return new Promise<string>((resolve) => {
-			WebExtension.browser.tabs.query({ active: true, lastFocusedWindow: true }, () => {
-				WebExtension.browser.tabs.captureVisibleTab({ format: "png" }, (dataUrl: string) => {
-					resolve(dataUrl);
-				});
-			});
-		});
-	}
-
-	/**
-	 * Cancels an in-progress full-page screenshot capture.
-	 */
-	protected cancelFullPageScreenshot(): void {
-		this.activeRendererCleanup();
-	}
-
-	/**
-	 * Legacy: called by clipper.tsx via communicator. In the new flow, openRendererWindow() is used instead.
-	 */
-	protected takeFullPageScreenshot(htmlContent: string): Promise<string[]> {
-		this.openRendererWindow();
-		return new Promise<string[]>(() => { /* renderer window handles everything */ });
 	}
 
 	/**
@@ -355,7 +198,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		// pendingContent so the eventual loadContent port message can carry the
 		// full payload in one shot.
 		let captureListener = (rawMsg: any, sender: any) => {
-			if (!sender.tab || sender.tab.id !== this.tab.id) { return; }
+			if (sender.tab?.id !== this.tab.id) { return; }
 			let msg: any;
 			try { msg = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg; } catch (e) { return; }
 			if (msg.action !== "contentCaptureComplete") { return; }
@@ -381,7 +224,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		// If signed in, inject content capture script immediately (runs in parallel with window opening)
 		if (signedIn) {
 			// Check local file permission before injecting — file:/// tabs need explicit permission
-			let isLocalFile = this.tab.url && this.tab.url.indexOf("file:///") === 0;
+			let isLocalFile = this.tab.url?.indexOf("file:///") === 0;
 			let sendLocalFileNotAllowed = () => {
 				let tabUrl = this.tab.url || "";
 				let isPdf = /\.pdf$/i.test(tabUrl);
@@ -408,7 +251,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						files: ["contentCaptureInject.js"]
 					});
 					// Handle promise rejection (MV3 "Blocked" error on file:// without permission)
-					if (injectPromise && injectPromise.catch) {
+					if (injectPromise?.catch) {
 						injectPromise.catch(function() {
 							chrome.runtime.onMessage.removeListener(captureListener);
 							sendLocalFileNotAllowed();
@@ -428,294 +271,305 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 		}
 
 		WebExtension.browser.windows.getCurrent((currentWindow: chrome.windows.Window) => {
-		let sidebarWidth = 321; // matches renderer.less #sidebar { width: 321px }
-		let screenMargin = 32; // leave breathing room so renderer doesn't cover the full screen
-		let browserWidth = currentWindow && currentWindow.width ? currentWindow.width : 1024;
-		let browserHeight = currentWindow && currentWindow.height ? currentWindow.height : 768;
-		let browserLeft = currentWindow ? (currentWindow.left || 0) : 0;
-		let browserTop = currentWindow ? (currentWindow.top || 0) : 0;
+			let sidebarWidth = 321; // matches renderer.less #sidebar { width: 321px }
+			let screenMargin = 32; // leave breathing room so renderer doesn't cover the full screen
+			let browserWidth = currentWindow?.width ?? 1024;
+			let browserHeight = currentWindow?.height ?? 768;
+			let browserLeft = currentWindow ? (currentWindow.left || 0) : 0;
+			let browserTop = currentWindow ? (currentWindow.top || 0) : 0;
 
-		// Content width: cap at 1024 (matches legacy clipper). Lower than the
-		// 1280 ceiling we used to ship — keeps the popup from covering most of
-		// the screen when the browser is large. Trade-off: sites with desktop
-		// breakpoints between 1024 and 1280 (e.g. some MS Learn navs) may
-		// render their tablet/mobile layout in our captures.
-		let contentWidth = Math.min(browserWidth, 1024);
-		let renderWidth = contentWidth + sidebarWidth;
+			// Content width: cap at 1024 (matches legacy clipper). Lower than the
+			// 1280 ceiling we used to ship — keeps the popup from covering most of
+			// the screen when the browser is large. Trade-off: sites with desktop
+			// breakpoints between 1024 and 1280 (e.g. some MS Learn navs) may
+			// render their tablet/mobile layout in our captures.
+			let contentWidth = Math.min(browserWidth, 1024);
+			let renderWidth = contentWidth + sidebarWidth;
 
-		// Clamp to browser window bounds so we don't overflow off-screen.
-		// Browser window is our best proxy for screen size (no screen API in service worker).
-		// If browser is smaller than our desired width, shrink content to fit.
-		let maxWidth = Math.max(browserWidth, 1000); // at least 1000px (sidebar + 679px content)
-		if (renderWidth > maxWidth) {
-			renderWidth = maxWidth;
-			contentWidth = renderWidth - sidebarWidth;
-		}
+			// Clamp to browser window bounds so we don't overflow off-screen.
+			// Browser window is our best proxy for screen size (no screen API in service worker).
+			// If browser is smaller than our desired width, shrink content to fit.
+			let maxWidth = Math.max(browserWidth, 1000); // at least 1000px (sidebar + 679px content)
+			if (renderWidth > maxWidth) {
+				renderWidth = maxWidth;
+				contentWidth = renderWidth - sidebarWidth;
+			}
 
-		// Height: cap at 980px so the popup doesn't fill near-full-height on
-		// 1080p+ monitors. Floor at 600 so capture progress UI fits comfortably.
-		// On smaller browsers we still shrink to fit (browserHeight - margin).
-		let renderHeight = Math.max(Math.min(browserHeight - screenMargin, 980), 600);
+			// Height: cap at 980px so the popup doesn't fill near-full-height on
+			// 1080p+ monitors. Floor at 600 so capture progress UI fits comfortably.
+			// On smaller browsers we still shrink to fit (browserHeight - margin).
+			let renderHeight = Math.max(Math.min(browserHeight - screenMargin, 980), 600);
 
-		// Position: align with browser window's top-left
-		let renderLeft = browserLeft;
-		let renderTop = browserTop;
+			// Position: align with browser window's top-left
+			let renderLeft = browserLeft;
+			let renderTop = browserTop;
 
-		let setupPort = (port: chrome.runtime.Port) => {
-			activePort = port;
-			let viewportHeight: number;
-			let captureContentHeight: number;
-			let captureCount = 0;
-			let lastScrollY: number = -1;
-			let lastScrollData: { scrollY: number; pageHeight: number };
+			let setupPort = (port: chrome.runtime.Port) => {
+				activePort = port;
+				let viewportHeight: number;
+				let captureContentHeight: number;
+				let captureCount = 0;
+				let lastScrollY = -1;
+				let lastScrollData: { scrollY: number; pageHeight: number };
+				// Set true on cancelCapture to short-circuit the capture loop and stop focus-stealing.
+				let captureCancelled = false;
 
-			// Per-port save accumulator — images streamed via saveImage chunks
-			let pendingSave: any = undefined; // tslint:disable-line:no-null-keyword
-			let saveImages: string[] = [];
-			let saveAttachmentData = "";
-			let saveImagesReceived = 0;
-			let saveAttachmentReceived = false;
+				// Per-port save accumulator — images streamed via saveImage chunks
+				let pendingSave: any = undefined; // tslint:disable-line:no-null-keyword
+				let saveImages: string[] = [];
+				let saveAttachmentData = "";
+				let saveImagesReceived = 0;
+				let saveAttachmentReceived = false;
 
-			let cleaned = false;
-			let cleanup = () => {
-				if (cleaned) { return; }
-				cleaned = true;
-				this.activeRendererCleanup = () => { /* no-op */ };
-				this.activeRendererWindowId = 0;
-				try { port.disconnect(); } catch (e) { /* ignore */ }
-				WebExtension.browser.windows.remove(renderWindowId, () => {
-					if (WebExtension.browser.runtime.lastError) { /* window may already be closed */ }
-				});
-				// Drop the in-memory captured payload so the worker doesn't hold
-				// onto multi-megabyte HTML after the renderer is gone.
-				pendingContent = undefined;
-				try { chrome.runtime.onMessage.removeListener(captureListener); } catch (e) { /* ignore */ }
-				try { WebExtension.browser.tabs.onUpdated.removeListener(navListener); } catch (e) { /* ignore */ }
-			};
-			this.activeRendererCleanup = cleanup;
+				let cleaned = false;
+				let cleanup = () => {
+					if (cleaned) { return; }
+					cleaned = true;
+					this.activeRendererCleanup = () => { /* no-op */ };
+					this.activeRendererWindowId = 0;
+					try { port.disconnect(); } catch (e) { /* ignore */ }
+					WebExtension.browser.windows.remove(renderWindowId, () => {
+						if (WebExtension.browser.runtime.lastError) { /* window may already be closed */ }
+					});
+					// Drop the in-memory captured payload so the worker doesn't hold
+					// onto multi-megabyte HTML after the renderer is gone.
+					pendingContent = undefined;
+					try { chrome.runtime.onMessage.removeListener(captureListener); } catch (e) { /* ignore */ }
+					try { WebExtension.browser.tabs.onUpdated.removeListener(navListener); } catch (e) { /* ignore */ }
+				};
+				this.activeRendererCleanup = cleanup;
 
-			// Detect when user navigates away on the original tab — renderer becomes stale
-			let navListener = (tabId: number, changeInfo: any) => {
-				if (tabId === this.tab.id && changeInfo.url && !cleaned) {
+				// Detect when user navigates away on the original tab — renderer becomes stale
+				let navListener = (tabId: number, changeInfo: any) => {
+					if (tabId === this.tab.id && changeInfo.url && !cleaned) {
 					// Log equivalent of legacy HideClipperDueToSpaNavigate
-					let navEvent = new Log.Event.BaseEvent(Log.Event.Label.HideClipperDueToSpaNavigate);
-					this.logger.logEvent(navEvent);
-					// Notify renderer so it can close
-					try { port.postMessage({ action: "pageNavigated" }); } catch (e) { /* port may be dead */ }
-				}
-			};
-			WebExtension.browser.tabs.onUpdated.addListener(navListener);
-
-			// Handle renderer window being closed by user
-			port.onDisconnect.addListener(() => {
-				if (!cleaned) { cleanup(); }
-			});
-
-			let workerSelf = this; // capture for use in executeSave (function declarations can't access arrow `this`)
-			port.onMessage.addListener((message: any) => {
-				if (message.action === "ready") {
-					// Set zoom to 100% before loading content
-					let flushLoadContent = () => {
-						if (contentCaptured && pendingContent) {
-							port.postMessage(buildLoadContent());
-						}
-					};
-					try {
-						WebExtension.browser.tabs.query({ windowId: renderWindowId }, (tabs: chrome.tabs.Tab[]) => {
-							if (tabs && tabs.length > 0 && tabs[0].id) {
-								WebExtension.browser.tabs.setZoom(tabs[0].id, 1, flushLoadContent);
-							} else {
-								flushLoadContent();
-							}
-						});
-					} catch (e) {
-						flushLoadContent();
+						let navEvent = new Log.Event.BaseEvent(Log.Event.Label.HideClipperDueToSpaNavigate);
+						this.logger.logEvent(navEvent);
+						// Notify renderer so it can close
+						try { port.postMessage({ action: "pageNavigated" }); } catch (e) { /* port may be dead */ }
 					}
-				}
+				};
+				WebExtension.browser.tabs.onUpdated.addListener(navListener);
 
-				// V1 parity: refresh user state on renderer open (legacy getInitialUser).
-				// updateUserInfoData is cache-aware — no network call if cached token
-				// is fresh. Renderer reads localStorage on userRefreshed.
-				if (message.action === "refreshUser") {
-					let notify = () => {
-						try { port.postMessage({ action: "userRefreshed" }); } catch (e) { /* port may be dead */ }
-					};
-					this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.InitialRetrieval).then(notify, notify);
-				}
+				// Handle renderer window being closed by user
+				port.onDisconnect.addListener(() => {
+					if (!cleaned) { cleanup(); }
+				});
 
-				// --- Sign-in from renderer (self-contained sign-in) ---
-				if (message.action === "signIn") {
-					let authType: AuthType = (AuthType as any)[message.authType];
-					this.doSignInAction(authType).then(() => {
-						return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.SignInAttempt);
-					}).then((updatedUser: UserInfo) => {
-						if (updatedUser && updatedUser.user) {
-							this.clipperData.setValue("isUserLoggedIn", "true");
-							port.postMessage({
-								action: "signInResult",
-								success: true,
-								user: {
-									email: updatedUser.user.emailAddress || "",
-									name: updatedUser.user.fullName || "",
-									authType: updatedUser.user.authType || "",
-									cid: updatedUser.user.cid || ""
+				let workerSelf = this; // capture for use in executeSave (function declarations can't access arrow `this`)
+				port.onMessage.addListener((message: any) => {
+					if (message.action === "ready") {
+					// Set zoom to 100% before loading content
+						let flushLoadContent = () => {
+							if (contentCaptured && pendingContent) {
+								port.postMessage(buildLoadContent());
+							}
+						};
+						try {
+							WebExtension.browser.tabs.query({ windowId: renderWindowId }, (tabs: chrome.tabs.Tab[]) => {
+								if (tabs && tabs.length > 0 && tabs[0].id) {
+									WebExtension.browser.tabs.setZoom(tabs[0].id, 1, flushLoadContent);
+								} else {
+									flushLoadContent();
 								}
 							});
-							// Now inject content capture into original tab
-							chrome.runtime.onMessage.addListener(captureListener);
-							WebExtension.browser.scripting.executeScript({
-								target: { tabId: this.tab.id },
-								files: ["contentCaptureInject.js"]
-							});
-						} else {
+						} catch (e) {
+							flushLoadContent();
+						}
+					}
+
+					// V1 parity: refresh user state on renderer open (legacy getInitialUser).
+					// updateUserInfoData is cache-aware — no network call if cached token
+					// is fresh. Renderer reads localStorage on userRefreshed.
+					if (message.action === "refreshUser") {
+						let notify = () => {
+							try { port.postMessage({ action: "userRefreshed" }); } catch (e) { /* port may be dead */ }
+						};
+						this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.InitialRetrieval).then(notify, notify);
+					}
+
+					// --- Sign-in from renderer (self-contained sign-in) ---
+					if (message.action === "signIn") {
+						let authType: AuthType = (AuthType as any)[message.authType];
+						this.doSignInAction(authType).then(() => {
+							return this.auth.updateUserInfoData(this.clientInfo.get().clipperId, UpdateReason.SignInAttempt);
+						}).then((updatedUser: UserInfo) => {
+							if (updatedUser?.user) {
+								this.clipperData.setValue("isUserLoggedIn", "true");
+								port.postMessage({
+									action: "signInResult",
+									success: true,
+									user: {
+										email: updatedUser.user.emailAddress || "",
+										name: updatedUser.user.fullName || "",
+										authType: updatedUser.user.authType || "",
+										cid: updatedUser.user.cid || ""
+									}
+								});
+								// Now inject content capture into original tab
+								chrome.runtime.onMessage.addListener(captureListener);
+								WebExtension.browser.scripting.executeScript({
+									target: { tabId: this.tab.id },
+									files: ["contentCaptureInject.js"]
+								});
+							} else {
 							// Cancellation: no error string. Renderer just resets
 							// the sign-in panel buttons (matches legacy clipper).
-							port.postMessage({ action: "signInResult", success: false, cancelled: true });
-						}
-					}).catch((errorObject: any) => {
-						let errMsg = errorObject.errorDescription || errorObject.error || "Sign-in failed";
-						port.postMessage({ action: "signInResult", success: false, error: errMsg });
-					});
-				}
-
-				if (message.action === "dimensions") {
-					viewportHeight = message.viewportHeight;
-					captureContentHeight = message.contentHeight;
-					// Reset capture loop state — handles re-capture after sign-out/sign-in
-					captureCount = 0;
-					lastScrollY = -1;
-					lastScrollData = { scrollY: 0, pageHeight: 0 };
-
-					if (!viewportHeight) {
-						cleanup();
-						return;
+								port.postMessage({ action: "signInResult", success: false, cancelled: true });
+							}
+						}).catch((errorObject: any) => {
+							let errMsg = errorObject.errorDescription || errorObject.error || "Sign-in failed";
+							port.postMessage({ action: "signInResult", success: false, error: errMsg });
+						});
 					}
 
-					// Initialize the renderer's stitch canvas
-					port.postMessage({
-						action: "initCanvas",
-						viewportHeight: viewportHeight,
-						contentHeight: captureContentHeight,
-						pageHeight: message.pageHeight
-					});
+					if (message.action === "dimensions") {
+						viewportHeight = message.viewportHeight;
+						captureContentHeight = message.contentHeight;
+						// Reset capture loop state — handles re-capture after sign-out/sign-in
+						captureCount = 0;
+						lastScrollY = -1;
+						lastScrollData = { scrollY: 0, pageHeight: 0 };
+						captureCancelled = false;
 
-					port.postMessage({ action: "scroll", scrollTo: 0 });
-				}
+						if (!viewportHeight) {
+							cleanup();
+							return;
+						}
 
-				if (message.action === "scrollResult") {
-					lastScrollData = { scrollY: message.scrollY, pageHeight: message.pageHeight };
-					setTimeout(() => {
-						// Re-focus renderer window before capture — handles user clicking away
-						WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
-							WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "png" }, (dataUrl: string) => {
-								if (!dataUrl) {
-									cleanup();
-									return;
-								}
+						// Initialize the renderer's stitch canvas
+						port.postMessage({
+							action: "initCanvas",
+							viewportHeight: viewportHeight,
+							contentHeight: captureContentHeight,
+							pageHeight: message.pageHeight
+						});
 
-								// Send capture to renderer for incremental stitching
-								let estimatedTotal = Math.ceil((captureContentHeight || lastScrollData.pageHeight) / viewportHeight);
-								port.postMessage({
-									action: "drawCapture",
-									dataUrl: dataUrl,
-									index: captureCount,
-									scrollY: lastScrollData.scrollY,
-									viewportHeight: viewportHeight,
-									totalViewports: Math.max(estimatedTotal, captureCount + 1)
+						port.postMessage({ action: "scroll", scrollTo: 0 });
+					}
+
+					if (message.action === "cancelCapture") {
+						captureCancelled = true;
+					}
+
+					if (message.action === "scrollResult") {
+						lastScrollData = { scrollY: message.scrollY, pageHeight: message.pageHeight };
+						setTimeout(() => {
+							if (captureCancelled) { return; }
+							// Re-focus renderer window before capture — handles user clicking away
+							WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+								if (captureCancelled) { return; }
+								WebExtension.browser.tabs.captureVisibleTab(renderWindowId, { format: "png" }, (dataUrl: string) => {
+									if (captureCancelled) { return; }
+									if (!dataUrl) {
+										cleanup();
+										return;
+									}
+
+									// Send capture to renderer for incremental stitching
+									let estimatedTotal = Math.ceil((captureContentHeight || lastScrollData.pageHeight) / viewportHeight);
+									port.postMessage({
+										action: "drawCapture",
+										dataUrl: dataUrl,
+										index: captureCount,
+										scrollY: lastScrollData.scrollY,
+										viewportHeight: viewportHeight,
+										totalViewports: Math.max(estimatedTotal, captureCount + 1)
+									});
 								});
 							});
-						});
-					}, 500);
-				}
+						}, 500);
+					}
 
-				if (message.action === "drawComplete") {
-					// Detect scroll stall: if scrollY didn't change, we've hit the
-					// real bottom even if scrollHeight is inflated
-					let scrollStalled = captureCount > 0 && lastScrollData.scrollY === lastScrollY;
-					lastScrollY = lastScrollData.scrollY;
-					captureCount++;
+					if (message.action === "drawComplete") {
+						if (captureCancelled) { return; }
+						// Detect scroll stall: if scrollY didn't change, we've hit the
+						// real bottom even if scrollHeight is inflated
+						let scrollStalled = captureCount > 0 && lastScrollData.scrollY === lastScrollY;
+						lastScrollY = lastScrollData.scrollY;
+						captureCount++;
 
-					let maxCaptureHeight = 16384;
-					let atBottom = lastScrollData.scrollY + viewportHeight >= lastScrollData.pageHeight
+						let maxCaptureHeight = 16384;
+						let atBottom = lastScrollData.scrollY + viewportHeight >= lastScrollData.pageHeight
 						|| scrollStalled
 						|| (captureCount * viewportHeight) >= maxCaptureHeight;
 
-					if (atBottom) {
-						port.postMessage({ action: "finalize" });
-					} else {
-						port.postMessage({ action: "scroll", scrollTo: captureCount * viewportHeight });
+						if (atBottom) {
+							port.postMessage({ action: "finalize" });
+						} else {
+							port.postMessage({ action: "scroll", scrollTo: captureCount * viewportHeight });
+						}
 					}
-				}
 
-				if (message.action === "finalizeComplete") {
+					if (message.action === "finalizeComplete") {
 					// Keep window alive — user can switch modes, edit title, then save
-				}
+					}
 
-				// --- Telemetry from renderer — route to worker's logger ---
-				if (message.action === "telemetry") {
-					try {
-						Log.parseAndLogDataPackage(message.data as Log.LogDataPackage, this.logger);
-					} catch (e) { /* ignore malformed telemetry */ }
-				}
+					// --- Telemetry from renderer — route to worker's logger ---
+					if (message.action === "telemetry") {
+						try {
+							Log.parseAndLogDataPackage(message.data as Log.LogDataPackage, this.logger);
+						} catch (e) { /* ignore malformed telemetry */ }
+					}
 
-				if (message.action === "save") {
+					if (message.action === "save") {
 					// Store save metadata — wait for image chunks before executing
-					pendingSave = message;
-					saveImages = [];
-					saveAttachmentData = "";
-					saveImagesReceived = 0;
-					saveAttachmentReceived = false;
+						pendingSave = message;
+						saveImages = [];
+						saveAttachmentData = "";
+						saveImagesReceived = 0;
+						saveAttachmentReceived = false;
 
-					let expectedImages = message.saveImageCount || 0;
-					if (expectedImages === 0 && !message.saveAttachment) {
+						let expectedImages = message.saveImageCount || 0;
+						if (expectedImages === 0 && !message.saveAttachment) {
 						// No images to wait for (article/bookmark) — execute immediately
-						executeSave();
+							executeSave();
+						}
 					}
-				}
 
-				if (message.action === "saveImage") {
-					saveImages[message.index] = message.dataUrl;
-					saveImagesReceived++;
-					checkSaveReady();
-				}
-
-				if (message.action === "saveAttachment") {
-					saveAttachmentData = message.dataUrl;
-					saveAttachmentReceived = true;
-					checkSaveReady();
-				}
-
-				function checkSaveReady() {
-					if (!pendingSave) { return; }
-					let expectedImages = pendingSave.saveImageCount || 0;
-					let needsAttachment = pendingSave.saveAttachment || false;
-					if (saveImagesReceived >= expectedImages && (!needsAttachment || saveAttachmentReceived)) {
-						executeSave();
+					if (message.action === "saveImage") {
+						saveImages[message.index] = message.dataUrl;
+						saveImagesReceived++;
+						checkSaveReady();
 					}
-				}
 
-				function executeSave() {
-					if (!pendingSave) { return; }
-					let msg = pendingSave;
-					pendingSave = undefined; // prevent re-entry
+					if (message.action === "saveAttachment") {
+						saveAttachmentData = message.dataUrl;
+						saveAttachmentReceived = true;
+						checkSaveReady();
+					}
 
-					let saveMode = msg.mode || "fullpage";
-					let saveTitle = msg.title || "";
-					let saveAnnotation = msg.annotation || "";
-					let saveSectionId = msg.sectionId || "";
-					let saveUrl = msg.url || "";
-					let savePageMetadata: { [key: string]: string } | undefined = msg.pageMetadata;
+					function checkSaveReady() {
+						if (!pendingSave) { return; }
+						let expectedImages = pendingSave.saveImageCount || 0;
+						let needsAttachment = pendingSave.saveAttachment || false;
+						if (saveImagesReceived >= expectedImages && (!needsAttachment || saveAttachmentReceived)) {
+							executeSave();
+						}
+					}
 
-					// Ensure fresh token before save (matches old clipper.tsx ensureFreshUserBeforeClip)
-					workerSelf.auth.updateUserInfoData(workerSelf.clientInfo.get().clipperId, UpdateReason.TokenRefreshForPendingClip).then(() => {
-						return workerSelf.clipperData.getValue("userInformation");
-					}, () => {
-						return workerSelf.clipperData.getValue("userInformation");
-					}).then((userInfoJson: string) => {
+					function executeSave() {
+						if (!pendingSave) { return; }
+						let msg = pendingSave;
+						pendingSave = undefined; // prevent re-entry
+
+						let saveMode = msg.mode || "fullpage";
+						let saveTitle = msg.title || "";
+						let saveAnnotation = msg.annotation || "";
+						let saveSectionId = msg.sectionId || "";
+						let saveUrl = msg.url || "";
+						let savePageMetadata: { [key: string]: string } | undefined = msg.pageMetadata;
+
+						// Ensure fresh token before save (matches old clipper.tsx ensureFreshUserBeforeClip)
+						workerSelf.auth.updateUserInfoData(workerSelf.clientInfo.get().clipperId, UpdateReason.TokenRefreshForPendingClip).then(() => {
+							return workerSelf.clipperData.getValue("userInformation");
+						}, () => {
+							return workerSelf.clipperData.getValue("userInformation");
+						}).then((userInfoJson: string) => {
 							let accessToken = "";
 							try {
 								let userInfo = JSON.parse(userInfoJson);
-								accessToken = userInfo && userInfo.data ? userInfo.data.accessToken : "";
+								accessToken = userInfo?.data ? userInfo.data.accessToken : "";
 							} catch (e) { /* ignore */ }
 
 							if (!accessToken) {
@@ -736,11 +590,11 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								if (parseInt(offsetMins, 10) < 10) { offsetMins = "0" + offsetMins; }
 								let createdTime = offsetSign + offsetHours + ":" + offsetMins;
 								let fontStyle = "font-size: 16px; font-family: Verdana;";
-								let locale = (typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
+								let locale = (typeof chrome !== "undefined" && chrome.i18n?.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
 								let metaTags = "";
 								if (savePageMetadata) {
 									for (let key in savePageMetadata) {
-										if (Object.prototype.hasOwnProperty.call(savePageMetadata, key)) {
+										if (Object.hasOwn(savePageMetadata, key)) {
 											metaTags += "<meta name=\"" + escapeAttr(key)
 												+ "\" content=\"" + escapeAttr(savePageMetadata[key]) + "\" />";
 										}
@@ -799,7 +653,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 										response.json().then((data) => {
 											let pageUrl = "";
 											try {
-												pageUrl = data && data.links && data.links.oneNoteWebUrl ? data.links.oneNoteWebUrl.href : "";
+												pageUrl = data?.links?.oneNoteWebUrl ? data.links.oneNoteWebUrl.href : "";
 											} catch (e) { /* ignore */ }
 											port.postMessage({ action: "saveResult", success: true, pageUrl: pageUrl });
 										}).catch(() => {
@@ -900,7 +754,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 											if (parseInt(oM, 10) < 10) { oM = "0" + oM; }
 											let ct = offsetSign2 + oH + ":" + oM;
 											let fStyle = "font-size: 16px; font-family: Verdana;";
-											let distLocale = (typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
+											let distLocale = (typeof chrome !== "undefined" && chrome.i18n?.getUILanguage) ? chrome.i18n.getUILanguage() : "en";
 											let distHtml = "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=" + distLocale + ">"
 												+ "<head>"
 												+ "<title>" + escapeHtml(pageTitle) + "</title>"
@@ -1013,171 +867,171 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								port.postMessage({ action: "saveResult", success: false, error: "Unsupported mode" });
 							}
 						});
-				}
+					}
 
-				if (message.action === "startRegion") {
+					if (message.action === "startRegion") {
 					// Focus original tab, inject standalone overlay, listen for result
-					let regionTabId = this.tab.id as number;
-					let regionWindowId = 0;
-					WebExtension.browser.tabs.get(regionTabId, (t: any) => {
-						if (!t || !t.windowId) { return; }
-						regionWindowId = t.windowId;
-						WebExtension.browser.windows.update(regionWindowId, { focused: true }, () => {
-							if (WebExtension.browser.runtime.lastError) { /* ignore */ }
-							// Inject i18n strings before overlay script so it can read them.
-							// Define as non-writable / non-configurable so page JS can't swap
-							// in spoofed UI strings between the two executeScript calls.
-							let regionStrings = message.regionStrings || {};
-							WebExtension.browser.scripting.executeScript({
-								target: { tabId: regionTabId },
-								func: function(s: any) {
-									try {
-										Object.defineProperty(window, "__regionStrings", {
-											value: Object.freeze(s),
-											writable: false,
-											configurable: false,
-											enumerable: false
-										});
-									} catch (e) {
-										// Property already locked from a prior region invocation — keep existing.
-									}
-								},
-								args: [regionStrings]
-							}, () => {
+						let regionTabId = this.tab.id as number;
+						let regionWindowId = 0;
+						WebExtension.browser.tabs.get(regionTabId, (t: any) => {
+							if (!t?.windowId) { return; }
+							regionWindowId = t.windowId;
+							WebExtension.browser.windows.update(regionWindowId, { focused: true }, () => {
+								if (WebExtension.browser.runtime.lastError) { /* ignore */ }
+								// Inject i18n strings before overlay script so it can read them.
+								// Define as non-writable / non-configurable so page JS can't swap
+								// in spoofed UI strings between the two executeScript calls.
+								let regionStrings = message.regionStrings || {};
 								WebExtension.browser.scripting.executeScript({
 									target: { tabId: regionTabId },
-									files: ["regionOverlay.js"]
+									func: function(s: any) {
+										try {
+											Object.defineProperty(window, "__regionStrings", {
+												value: Object.freeze(s),
+												writable: false,
+												configurable: false,
+												enumerable: false
+											});
+										} catch (e) {
+										// Property already locked from a prior region invocation — keep existing.
+										}
+									},
+									args: [regionStrings]
+								}, () => {
+									WebExtension.browser.scripting.executeScript({
+										target: { tabId: regionTabId },
+										files: ["regionOverlay.js"]
+									});
 								});
 							});
 						});
-					});
 
-					// Listen for overlay messages (regionSelected / regionCancelled)
-					// Messages are JSON strings (required by offscreen.ts message handler)
-					let regionListener = (rawMsg: any, sender: any) => {
-						if (!sender.tab || sender.tab.id !== regionTabId) { return; }
-						let msg: any;
-						try { msg = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg; } catch (e) { return; }
+						// Listen for overlay messages (regionSelected / regionCancelled)
+						// Messages are JSON strings (required by offscreen.ts message handler)
+						let regionListener = (rawMsg: any, sender: any) => {
+							if (sender.tab?.id !== regionTabId) { return; }
+							let msg: any;
+							try { msg = typeof rawMsg === "string" ? JSON.parse(rawMsg) : rawMsg; } catch (e) { return; }
 
-						if (msg.action === "regionSelected") {
-							WebExtension.browser.runtime.onMessage.removeListener(regionListener);
-							// Brief delay for overlay DOM removal, then capture
-							setTimeout(() => {
-								WebExtension.browser.tabs.captureVisibleTab(regionWindowId, { format: "jpeg", quality: 95 }, (dataUrl: string) => {
-									if (!dataUrl) {
-										port.postMessage({ action: "regionCancelled" });
-									} else {
+							if (msg.action === "regionSelected") {
+								WebExtension.browser.runtime.onMessage.removeListener(regionListener);
+								// Brief delay for overlay DOM removal, then capture
+								setTimeout(() => {
+									WebExtension.browser.tabs.captureVisibleTab(regionWindowId, { format: "jpeg", quality: 95 }, (dataUrl: string) => {
+										if (!dataUrl) {
+											port.postMessage({ action: "regionCancelled" });
+										} else {
 										// Send full image + coords via port (same pattern as drawCapture in fullpage)
-										port.postMessage({
-											action: "regionCaptured",
-											dataUrl: dataUrl,
-											x: msg.x, y: msg.y, width: msg.width, height: msg.height, dpr: msg.dpr
+											port.postMessage({
+												action: "regionCaptured",
+												dataUrl: dataUrl,
+												x: msg.x, y: msg.y, width: msg.width, height: msg.height, dpr: msg.dpr
+											});
+										}
+										WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+											if (WebExtension.browser.runtime.lastError) { /* ignore */ }
 										});
-									}
-									WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
-										if (WebExtension.browser.runtime.lastError) { /* ignore */ }
 									});
+								}, 150);
+							}
+
+							if (msg.action === "regionCancelled") {
+								WebExtension.browser.runtime.onMessage.removeListener(regionListener);
+								port.postMessage({ action: "regionCancelled" });
+								WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
+									if (WebExtension.browser.runtime.lastError) { /* ignore */ }
 								});
-							}, 150);
-						}
-
-						if (msg.action === "regionCancelled") {
-							WebExtension.browser.runtime.onMessage.removeListener(regionListener);
-							port.postMessage({ action: "regionCancelled" });
-							WebExtension.browser.windows.update(renderWindowId, { focused: true }, () => {
-								if (WebExtension.browser.runtime.lastError) { /* ignore */ }
-							});
-						}
-					};
-					WebExtension.browser.runtime.onMessage.addListener(regionListener);
-				}
-
-				if (message.action === "signOut") {
-					let authType: AuthType = (AuthType as any)[message.authType];
-					if (authType !== undefined) {
-						this.doSignOutAction(authType);
+							}
+						};
+						WebExtension.browser.runtime.onMessage.addListener(regionListener);
 					}
-					// Clear user data from storage
-					this.clipperData.removeKey("userInformation");
-					this.clipperData.removeKey("curSection");
-					this.clipperData.removeKey("notebooks");
-					this.clipperData.removeKey("isUserLoggedIn");
 
-					// Tell renderer to show sign-in panel (keep window open)
-					port.postMessage({ action: "signOutComplete" });
+					if (message.action === "signOut") {
+						let authType: AuthType = (AuthType as any)[message.authType];
+						if (authType !== undefined) {
+							this.doSignOutAction(authType);
+						}
+						// Clear user data from storage
+						this.clipperData.removeKey("userInformation");
+						this.clipperData.removeKey("curSection");
+						this.clipperData.removeKey("notebooks");
+						this.clipperData.removeKey("isUserLoggedIn");
+
+						// Tell renderer to show sign-in panel (keep window open)
+						port.postMessage({ action: "signOutComplete" });
+					}
+
+					if (message.action === "openFeedback") {
+						let ci = this.clientInfo.get();
+						let usid = sessionUsid;
+						let feedbackUrl = "https://feedbackportal.microsoft.com/feedback/post/c06dcc30-2e1c-ec11-b6e7-0022481f8472";
+						feedbackUrl += "?LogCategory=OneNoteClipperUsage";
+						if (message.pageUrl) { feedbackUrl += "&originalUrl=" + encodeURIComponent(message.pageUrl); }
+						if (ci.clipperId) { feedbackUrl += "&clipperId=" + encodeURIComponent(ci.clipperId); }
+						if (usid) { feedbackUrl += "&usid=" + encodeURIComponent(usid); }
+						if (ci.clipperVersion) { feedbackUrl += "&version=" + encodeURIComponent(ci.clipperVersion); }
+						feedbackUrl += "&type=" + encodeURIComponent(ClientType[ci.clipperType]);
+						WebExtension.browser.windows.create({
+							url: feedbackUrl,
+							type: "popup",
+							width: 1000,
+							height: 700,
+							focused: true
+						});
+					}
+				});
+			};
+
+			// Listen for the renderer page to connect via port
+			let onConnect = (port: chrome.runtime.Port) => {
+				if (port.name !== "renderer") {
+					return;
 				}
-
-				if (message.action === "openFeedback") {
-					let ci = this.clientInfo.get();
-					let usid = sessionUsid;
-					let feedbackUrl = "https://feedbackportal.microsoft.com/feedback/post/c06dcc30-2e1c-ec11-b6e7-0022481f8472";
-					feedbackUrl += "?LogCategory=OneNoteClipperUsage";
-					if (message.pageUrl) { feedbackUrl += "&originalUrl=" + encodeURIComponent(message.pageUrl); }
-					if (ci.clipperId) { feedbackUrl += "&clipperId=" + encodeURIComponent(ci.clipperId); }
-					if (usid) { feedbackUrl += "&usid=" + encodeURIComponent(usid); }
-					if (ci.clipperVersion) { feedbackUrl += "&version=" + encodeURIComponent(ci.clipperVersion); }
-					feedbackUrl += "&type=" + encodeURIComponent(ClientType[ci.clipperType]);
-					WebExtension.browser.windows.create({
-						url: feedbackUrl,
-						type: "popup",
-						width: 1000,
-						height: 700,
-						focused: true
-					});
-				}
-			});
-		};
-
-		// Listen for the renderer page to connect via port
-		let onConnect = (port: chrome.runtime.Port) => {
-			if (port.name !== "renderer") {
-				return;
-			}
-			WebExtension.browser.runtime.onConnect.removeListener(onConnect);
-
-			if (windowReady) {
-				setupPort(port);
-			} else {
-				// Window.create callback hasn't fired yet, defer
-				pendingPort = port;
-			}
-		};
-
-		WebExtension.browser.runtime.onConnect.addListener(onConnect);
-
-		// Create the renderer window. Must be focused so Chrome paints it
-		// for captureVisibleTab.
-		WebExtension.browser.windows.create({
-			url: rendererUrl,
-			type: "popup",
-			width: renderWidth,
-			height: renderHeight,
-			left: renderLeft,
-			top: renderTop,
-			focused: true
-		}, (renderWindow: chrome.windows.Window) => {
-			if (!renderWindow) {
 				WebExtension.browser.runtime.onConnect.removeListener(onConnect);
-				return;
-			}
-			renderWindowId = renderWindow.id;
-			this.activeRendererWindowId = renderWindowId;
-			windowReady = true;
 
-			// Close renderer if the source tab navigates away
-			let onTabUpdated = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
-				if (tabId === this.tab.id && changeInfo.url) {
-					WebExtension.browser.tabs.onUpdated.removeListener(onTabUpdated);
-					this.activeRendererCleanup();
+				if (windowReady) {
+					setupPort(port);
+				} else {
+				// Window.create callback hasn't fired yet, defer
+					pendingPort = port;
 				}
 			};
-			WebExtension.browser.tabs.onUpdated.addListener(onTabUpdated);
 
-			// If port connected before window.create callback, start now
-			if (pendingPort) {
-				setupPort(pendingPort);
-			}
-		});
+			WebExtension.browser.runtime.onConnect.addListener(onConnect);
+
+			// Create the renderer window. Must be focused so Chrome paints it
+			// for captureVisibleTab.
+			WebExtension.browser.windows.create({
+				url: rendererUrl,
+				type: "popup",
+				width: renderWidth,
+				height: renderHeight,
+				left: renderLeft,
+				top: renderTop,
+				focused: true
+			}, (renderWindow: chrome.windows.Window) => {
+				if (!renderWindow) {
+					WebExtension.browser.runtime.onConnect.removeListener(onConnect);
+					return;
+				}
+				renderWindowId = renderWindow.id;
+				this.activeRendererWindowId = renderWindowId;
+				windowReady = true;
+
+				// Close renderer if the source tab navigates away
+				let onTabUpdated = (tabId: number, changeInfo: chrome.tabs.OnUpdatedInfo) => {
+					if (tabId === this.tab.id && changeInfo.url) {
+						WebExtension.browser.tabs.onUpdated.removeListener(onTabUpdated);
+						this.activeRendererCleanup();
+					}
+				};
+				WebExtension.browser.tabs.onUpdated.addListener(onTabUpdated);
+
+				// If port connected before window.create callback, start now
+				if (pendingPort) {
+					setupPort(pendingPort);
+				}
+			});
 		}); // end getCurrent
 	}
 
@@ -1217,7 +1071,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 							if (details.responseHeaders) {
 								for (let i = 0; i < details.responseHeaders.length; i++) {
 									if (details.responseHeaders[i].name === Constants.HeaderValues.correlationId) {
-										correlationId = details.responseHeaders[i].value;
+										correlationId = details.responseHeaders[i].value || "";
 										break;
 									}
 								}
@@ -1248,15 +1102,9 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						WebExtension.browser.tabs.onRemoved.addListener(closeListener);
 					});
 				} catch (e) {
-					// In the event that there was an exception thrown during the creation of the popup, fallback to using window.open with a monitor
-					this.logger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, { error: e.message });
-
-					this.launchPopupAndWaitForClose(url).then((redirectOccurred) => {
-						// From chrome's background, we currently are unable to reliably determine if the redirect happened
-						resolve(true /* redirectOccurred */);
-					}, (errorObject) => {
-						reject(errorObject);
-					});
+					let errorMessage = (e as Error).message;
+					this.logger.logFailure(Log.Failure.Label.WebExtensionWindowCreate, Log.Failure.Type.Unexpected, { error: errorMessage });
+					reject({ error: errorMessage });
 				}
 			});
 		});

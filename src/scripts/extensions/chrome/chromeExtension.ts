@@ -4,8 +4,4 @@ import { WebExtension } from "../webExtensionBase/webExtension";
 WebExtension.browser = chrome;
 WebExtension.offscreenUrl = chrome.runtime.getURL("offscreen.html");
 
-let clipperBackground = new WebExtension(ClientType.ChromeExtension, {
-	debugLoggingInjectUrl: "chromeDebugLoggingInject.js",
-	webClipperInjectUrl: "chromeInject.js",
-	pageNavInjectUrl: "chromePageNavInject.js"
-});
+let clipperBackground = new WebExtension(ClientType.ChromeExtension);

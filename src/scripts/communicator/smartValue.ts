@@ -70,7 +70,7 @@ export class SmartValue<T> {
 			this.subscriptions[i].times--;
 			this.subscriptions[i].func(this.t);
 
-			let noMoreExecutions = this.subscriptions[i] && this.subscriptions[i].times === 0;
+			let noMoreExecutions = this.subscriptions[i]?.times === 0;
 			if (noMoreExecutions) {
 				this.subscriptions.splice(i, 1);
 			}

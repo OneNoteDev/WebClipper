@@ -1,5 +1,6 @@
 import {sendToOffscreenDocument} from "../communicator/offscreenCommunicator";
 import {OffscreenMessageTypes} from "../communicator/offscreenMessageTypes";
+import { OneNoteApi } from "../oneNoteApi";
 import * as Log from "./log";
 
 export module LogHelpers {

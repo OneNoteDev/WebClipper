@@ -54,6 +54,7 @@ async function handleMessages(message, sender, sendResponse) {
 			);
 			break;
 		default:
+			// eslint-disable-next-line no-console -- diagnostic for unknown offscreen request type
 			console.warn(`Unexpected message type received: '${message.type}'.`);
 			return false;
 	}

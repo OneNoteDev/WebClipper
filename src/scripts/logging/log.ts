@@ -53,7 +53,6 @@ export {Failure} from "./submodules/failure";
 export {Funnel} from "./submodules/funnel";
 export {LogDataPackage} from "./submodules/logDataPackage";
 export {LogMethods} from "./submodules/logMethods";
-export {NoOp} from "./submodules/noop";
 export {PropertyName} from "./submodules/propertyName";
 export {Session} from "./submodules/session";
 export {Status} from "./submodules/status";

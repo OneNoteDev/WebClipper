@@ -1,3 +1,4 @@
+import { OneNoteApi } from "../oneNoteApi";
 import * as Log from "./log";
 import {ConsoleLoggerPure} from "./consoleLoggerPure";
 import {ConsoleOutput} from "./consoleOutput";

@@ -1,28 +1,15 @@
 import {ClientType} from "../../clientType";
-import {Constants} from "../../constants";
-import {ResponsePackage} from "../../responsePackage";
-import {UrlUtils} from "../../urlUtils";
-
-import {TooltipType} from "../../clipperUI/tooltipType";
-
-import {VideoUtils} from "../../domParsers/videoUtils";
 
 import {Localization} from "../../localization/localization";
 
-import * as Log from "../../logging/log";
-
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
-
-import {ChangeLog} from "../../versioning/changeLog";
-import {Version} from "../../versioning/version";
 
 import {ExtensionBase} from "../extensionBase";
 import {InvokeInfo} from "../invokeInfo";
 import {InvokeSource} from "../invokeSource";
 import {InvokeMode, InvokeOptions} from "../invokeOptions";
 
-import {InjectUrls} from "./injectUrls";
 import {WebExtensionWorker} from "./webExtensionWorker";
 
 // We are using the typing from chrome.d.ts, but it is the same for all of the WebExtensions
@@ -33,12 +20,8 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 	public static browser: Browser;
 	public static offscreenUrl: string;
 
-	public injectUrls: InjectUrls;
-
-	constructor(clientType: ClientType, injectUrls: InjectUrls) {
+	constructor(clientType: ClientType) {
 		super(clientType, new ClipperData(new LocalStorage()));
-
-		this.injectUrls = injectUrls;
 
 		this.registerBrowserButton();
 
@@ -56,25 +39,8 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		return WebExtension.browser.runtime.getManifest().version;
 	}
 
-	protected addPageNavListener(callback: (tab: W3CTab) => void) {
-		WebExtension.browser.webNavigation.onCompleted.addListener((details) => {
-			// The callback is called on iframes as well, so we ignore those as we are only interested in main frame navigation
-			if (details.frameId === 0) {
-				WebExtension.browser.tabs.get(details.tabId, (tab: W3CTab) => {
-					if (!WebExtension.browser.runtime.lastError && tab) {
-						callback(tab);
-					}
-				});
-			}
-		});
-	}
-
-	protected checkIfTabIsOnWhitelistedUrl(tab: W3CTab): boolean {
-		return !UrlUtils.onBlacklistedDomain(tab.url) && UrlUtils.onWhitelistedDomain(tab.url);
-	}
-
 	protected createWorker(tab: W3CTab): WebExtensionWorker {
-		return new WebExtensionWorker(this.injectUrls, tab, this.clientInfo, this.auth);
+		return new WebExtensionWorker(tab, this.clientInfo, this.auth);
 	}
 
 	protected getIdFromTab(tab: W3CTab): number {
@@ -89,18 +55,6 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 				this.onInstalled();
 			});
 		}
-	}
-
-	protected checkIfTabMatchesATooltipType(tab: W3CTab, tooltipTypes: TooltipType[]): TooltipType {
-		if (UrlUtils.onBlacklistedDomain(tab.url)) {
-			return undefined;
-		}
-		return UrlUtils.checkIfUrlMatchesAContentType(tab.url, tooltipTypes);
-	}
-
-	protected async checkIfTabIsAVideoDomain(tab: W3CTab): Promise<boolean> {
-		let domain = await VideoUtils.videoDomainIfSupported(tab.url);
-		return !!domain;
 	}
 
 	private invokeClipperInTab(tab: W3CTab, invokeInfo: InvokeInfo, options: InvokeOptions) {
@@ -261,9 +215,9 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 		};
 
 		WebExtension.browser.tabs.onCreated.addListener((tab: W3CTab) => {
-		if (matchesAnyUnclippablePage(tab.url)) {
-			WebExtension.browser.action.disable(tab.id);
-		}
+			if (matchesAnyUnclippablePage(tab.url)) {
+				WebExtension.browser.action.disable(tab.id);
+			}
 		});
 
 		WebExtension.browser.tabs.onUpdated.addListener((tabId: number, changeInfo: any, tab: W3CTab) => {

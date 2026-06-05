@@ -1,3 +1,4 @@
+import { OneNoteApi } from "../oneNoteApi";
 import * as Log from "../logging/log";
 import {Logger} from "../logging/logger";
 import {ExtensionWorkerBase} from "./extensionWorkerBase";

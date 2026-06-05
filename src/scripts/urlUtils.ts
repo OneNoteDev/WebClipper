@@ -1,31 +1,16 @@
 import {ObjectUtils} from "./objectUtils";
 import {Settings} from "./settings";
 
-import {TooltipType} from "./clipperUI/tooltipType";
 import {sendToOffscreenDocument} from "./communicator/offscreenCommunicator";
 import {OffscreenMessageTypes} from "./communicator/offscreenMessageTypes";
 
 export module UrlUtils {
-	export function checkIfUrlMatchesAContentType(url: string, tooltipTypes: TooltipType[]): TooltipType {
-		for (let i = 0; i < tooltipTypes.length; ++i) {
-			let tooltipType = tooltipTypes[i];
-			let contentTypeAsString = TooltipType[tooltipType];
-			let contentTypeRegexes = Settings.getSetting(contentTypeAsString + "Domains");
-			let concatenatedRegExes = new RegExp(contentTypeRegexes.join("|"), "i");
-			if (concatenatedRegExes.test(url)) {
-				return tooltipType;
-			}
-		}
-
-		return;
-	}
-
 	export function getFileNameFromUrl(url: string, fallbackResult?: string): string {
 		if (!url) {
 			return fallbackResult;
 		}
 		let regexResult = /\/(?=[^\/]+\.\w{3,4}$).+/g.exec(url);
-		return regexResult && regexResult[0] ? regexResult[0].slice(1) : fallbackResult;
+		return regexResult?.[0] ? regexResult[0].slice(1) : fallbackResult;
 	}
 
 	export async function getHostname(url: string): Promise<string> {

@@ -1,5 +1,5 @@
 declare module LogManager {
-	export function createExtLogger(sessionId: any, uiCommunicator?: any): any;
+	export function createExtLogger(sessionId: any): any;
 
 	export interface MiscLogEventData {
 		label: string;

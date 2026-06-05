@@ -1,8 +1,9 @@
+import { OneNoteApi } from "../oneNoteApi";
 import {ResponsePackage} from "../responsePackage";
 
 import { Storage } from "../storage/storage";
 import { AuthType, JwtAcessTokenInfo } from "../userInfo";
-import * as jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export interface TimeStampedData {
 	data: any;
@@ -81,7 +82,7 @@ export class CachedHttp {
 	 * Returns true if the timestamped data is older than the expiry time; false otherwise.
 	 */
 	public static valueHasExpired(value: TimeStampedData, expiryTime: number): boolean {
-		let lastUpdated = value && value.lastUpdated ? value.lastUpdated : 0;
+		let lastUpdated = value?.lastUpdated ?? 0;
 		return (Date.now() - lastUpdated >= expiryTime);
 	}
 
@@ -110,7 +111,7 @@ export class CachedHttp {
 		if (userAuthType === AuthType[AuthType.OrgId]) {
 			const token: string = valueAsJson.accessToken;
 			try {
-				const decodedToken: JwtAcessTokenInfo = jwt_decode(token);
+				const decodedToken: JwtAcessTokenInfo = jwtDecode(token);
 				if (decodedToken) {
 					valueAsJson.emailAddress = decodedToken.upn;
 				}

@@ -2,19 +2,15 @@
 	"compilerOptions": {
 		"jsx": "preserve",
 		"module": "commonjs",
+		"target": "es2022",
+		"lib": ["es2022", "dom"],
 		"types": [
 			"chrome",
-			"es6-promise",
-			"jquery",
-			"mithril",
-			"pdf",
-			"qunit",
-			"rangy",
-			"safari-extension",
-			"sinon",
-			"urijs",
-			"velocity-animate"
+			"pdf"
 		],
-		"outDir": "./build"
-	}
+		"rootDir": "./src",
+		"outDir": "./build",
+		"noEmitOnError": true
+	},
+	"include": ["src/**/*"]
 }

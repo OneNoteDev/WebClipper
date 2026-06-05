@@ -12,14 +12,15 @@ import {ClipperStorageKeys} from "../storage/clipperStorageKeys";
 import {UserInfo, UpdateReason} from "../userInfo";
 import {Constants} from "../constants";
 import {ObjectUtils} from "../objectUtils";
+import { OneNoteApi } from "../oneNoteApi";
 import {ResponsePackage} from "../responsePackage";
 import {StringUtils} from "../stringUtils";
 import {UserInfoData} from "../userInfo";
 import { UrlUtils } from "../urlUtils";
 import { UserDataBoundaryHelper } from "./userDataBoundaryHelper";
-import { DataBoundary } from "./dataBoundary";
+import { DataBoundary } from "./DataBoundary";
 
-declare var browser;
+declare let browser;
 
 export class AuthenticationHelper {
 	public user: SmartValue<UserInfo>;
@@ -48,7 +49,7 @@ export class AuthenticationHelper {
 						this.logger.logJsonParseUnexpected(storedUserInformation);
 					}
 
-					if (currentInfo && currentInfo.data && ObjectUtils.isNumeric(currentInfo.data.accessTokenExpiration)) {
+					if (currentInfo?.data && ObjectUtils.isNumeric(currentInfo.data.accessTokenExpiration)) {
 						// Expiration is in seconds, not milliseconds. Give additional leniency to account for response time.
 						updateInterval = Math.max((currentInfo.data.accessTokenExpiration * 1000) - 180000, 0);
 					}
@@ -70,7 +71,7 @@ export class AuthenticationHelper {
 					getInfoEvent.setCustomProperty(Log.PropertyName.Custom.UserUpdateReason, UpdateReason[updateReason]);
 
 					if (isValidUser) {
-						const dataBoundaryHelper = new UserDataBoundaryHelper();
+						const dataBoundaryHelper = new UserDataBoundaryHelper(this.logger);
 						let userDataBoundary: string = await dataBoundaryHelper.getUserDataBoundary(response.data);
 						// The default logging has been configured to WW Pipeline. Once we find the
 						// userdataboundary and if it is EUDB , reinit the logger with EU Pipeline
@@ -137,7 +138,7 @@ export class AuthenticationHelper {
 	 * Determines whether or not the given string is valid JSON and has the required elements.
 	 */
 	protected isValidUserInformation(userInfo: UserInfoData): boolean {
-		if (userInfo && userInfo.accessToken && userInfo.accessTokenExpiration > 0 && userInfo.authType) {
+		if (userInfo?.accessToken && userInfo.accessTokenExpiration > 0 && userInfo.authType) {
 			return true;
 		}
 

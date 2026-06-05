@@ -203,12 +203,12 @@ try {
 	let raw = localStorage.getItem("locStrings");
 	if (raw) {
 		let parsed = JSON.parse(raw);
-		locStrings = (parsed && parsed.data) || {};
+		locStrings = (parsed?.data) || {};
 	}
 } catch (e) { /* ignore */ }
 
 function loc(key: string, fallback: string): string {
-	return (locStrings && locStrings[key]) || fallback;
+	return (locStrings?.[key]) || fallback;
 }
 
 // Set HTML lang + dir from stored locale (extensionBase stores navigator.language in localStorage.locale).
@@ -318,7 +318,7 @@ window.onerror = function(msg, file, line, col, error) {
 	logFailure(Failure.Label.UnhandledExceptionThrown, Failure.Type.Unexpected, { error: errorStr }, "Renderer");
 };
 window.onunhandledrejection = function(e: any) {
-	let reason = e && e.reason ? (e.reason.message || String(e.reason)) : "Unknown rejection";
+	let reason = e?.reason ? (e.reason.message || String(e.reason)) : "Unknown rejection";
 	logFailure(Failure.Label.UnhandledExceptionThrown, Failure.Type.Unexpected, { error: reason }, "Renderer");
 };
 
@@ -716,7 +716,7 @@ try {
 	let userInfoRaw = localStorage.getItem("userInformation");
 	if (userInfoRaw) {
 		let userInfo = JSON.parse(userInfoRaw);
-		if (userInfo && userInfo.data) {
+		if (userInfo?.data) {
 			let email = userInfo.data.emailAddress || "";
 			let name = userInfo.data.fullName || "";
 			userAuthType = userInfo.data.authType || "";
@@ -757,7 +757,7 @@ try {
 	let uiRaw = localStorage.getItem("userInformation");
 	if (uiRaw) {
 		let ui = JSON.parse(uiRaw);
-		isSignedIn = !!(ui && ui.data && ui.data.accessToken);
+		isSignedIn = !!(ui?.data?.accessToken);
 	}
 } catch (e) { /* not signed in */ }
 
@@ -811,7 +811,7 @@ if (!isSignedIn) {
 		let uiRaw = localStorage.getItem("userInformation");
 		if (uiRaw) {
 			let ui = JSON.parse(uiRaw);
-			if (ui && ui.data && ui.data.cid) { setTelemetryContext(Context.Custom.UserInfoId, ui.data.cid); }
+			if (ui?.data?.cid) { setTelemetryContext(Context.Custom.UserInfoId, ui.data.cid); }
 		}
 	} catch (e) { /* ignore */ }
 }
@@ -841,7 +841,7 @@ async function fetchFreshNotebooks() {
 		let userInfoRaw = localStorage.getItem("userInformation");
 		if (!userInfoRaw) { return; }
 		let userInfo = JSON.parse(userInfoRaw);
-		let accessToken = userInfo && userInfo.data ? userInfo.data.accessToken : "";
+		let accessToken = userInfo?.data ? userInfo.data.accessToken : "";
 		if (!accessToken) { return; }
 		// Don't skip on token expiry — try the fetch anyway. The API will return 401 if
 		// truly expired, and we silently keep cached data. Skipping here caused stale
@@ -897,14 +897,7 @@ async function fetchFreshNotebooks() {
 		logTelemetryEvent(getNotebooksEvent);
 	}
 }
-// Lock all interactive controls during initial capture — prevents race conditions
-// (e.g., clicking sign-out mid-capture corrupts state)
-document.querySelectorAll(".mode-btn").forEach((btn) => {
-	if (btn.getAttribute("data-mode") !== "fullpage") {
-		(btn as HTMLButtonElement).disabled = true;
-		btn.classList.add("disabled");
-	}
-});
+// Sign-out and Save lock until capture completes; mode buttons stay interactive.
 saveBtn.disabled = true;
 disableSignout();
 // Show initial capture progress (bar hidden until first drawCapture with viewport counts)
@@ -912,7 +905,7 @@ capturePanel.style.display = "flex";
 statusText.textContent = strings.capturing;
 announceToScreenReader(strings.capturing);
 (document.getElementById("progress-bar-track") as HTMLElement).style.display = "none";
-// During capture, Cancel is the only actionable control — focus it
+// Cancel is the safest initial focus target; user can Tab to a mode button.
 if (isSignedIn) { setTimeout(function() { cancelBtn.focus(); }, 100); }
 
 // Section selection persistence is handled by selectSection() in the custom dropdown
@@ -979,7 +972,7 @@ function resetSaveState() {
 // Persist preview-frame body so highlights survive mode switches (V1 parity).
 function saveWorkingState() {
 	let pDoc = previewFrame.contentDocument;
-	if (!pDoc || !pDoc.body) { return; }
+	if (!pDoc?.body) { return; }
 	if (currentMode === "article") {
 		articleWorkingHtml = pDoc.body.innerHTML;
 	} else if (currentMode === "selection") {
@@ -1013,17 +1006,18 @@ function switchToFullPage() {
 		statusText.textContent = strings.capturing;
 		saveBtn.disabled = true;
 		if (captureDimensions && !captureInProgress) {
-			document.querySelectorAll(".mode-btn").forEach((b: Element) => {
-				if (b.getAttribute("data-mode") !== "fullpage") {
-					(b as HTMLButtonElement).disabled = true;
-					b.classList.add("disabled");
-				}
-			});
 			disableSignout();
 			announceToScreenReader(strings.capturing);
 			let progressTrack = document.getElementById("progress-bar-track") as HTMLElement;
 			if (progressTrack) { progressTrack.style.display = "none"; }
-			kickoffFullPageCapture();
+			// Defer kickoff one paint so the iframe commits scrollTo(0,0) before captureVisibleTab fires.
+			void iframe.offsetHeight;
+			iframe.contentWindow?.scrollTo(0, 0);
+			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					kickoffFullPageCapture();
+				});
+			});
 		}
 	}
 }
@@ -1133,13 +1127,13 @@ function extractArticle() {
 					try {
 						let reader = new mod.Readability(docClone, { charThreshold: 100 });
 						let article = reader.parse();
-						let desc = (article && article.excerpt) || metaDesc;
-						let pubTime = (article && article.publishedTime) || "";
+						let desc = (article?.excerpt) || metaDesc;
+						let pubTime = (article?.publishedTime) || "";
 						finalize(desc, pubTime);
 					} catch (e) {
 						finalize(metaDesc, "");
 					}
-				})["catch"](function() { finalize(metaDesc, ""); });
+				}).catch(function() { finalize(metaDesc, ""); });
 			} else {
 				finalize(metaDesc, "");
 			}
@@ -1264,7 +1258,7 @@ function buildPageMetadataForReadability(article: any): { [key: string]: string 
 function extractArticleViaReadability() {
 	// Clone content-frame document — Readability mutates the DOM
 	let iframeDoc = iframe.contentDocument;
-	if (!iframeDoc || !iframeDoc.body) {
+	if (!iframeDoc?.body) {
 		showArticleError();
 		return;
 	}
@@ -1274,7 +1268,7 @@ function extractArticleViaReadability() {
 		let reader = new mod.Readability(docClone, { charThreshold: 100 });
 		let article = reader.parse();
 
-		if (article && article.content) {
+		if (article?.content) {
 			cachedArticleHtml = cleanArticleHtml(article.content);
 			cachedOEmbedData = null;
 			cachedPageMetadata = buildPageMetadataForReadability(article);
@@ -1287,7 +1281,7 @@ function extractArticleViaReadability() {
 		} else {
 			showArticleError();
 		}
-	})["catch"](function() {
+	}).catch(function() {
 		showArticleError();
 	});
 }
@@ -1361,7 +1355,7 @@ function renderArticleHtml(html: string) {
 	// Re-initialize highlighter if enabled, including custom cursor
 	if (highlighterEnabled) {
 		initHighlighter();
-		if (pDoc && pDoc.body) {
+		if (pDoc?.body) {
 			let curUrl = chrome.runtime.getURL("images/editoroptions/highlight_cursor.cur");
 			pDoc.body.style.cursor = "url('" + curUrl + "') 16 16, text";
 		}
@@ -1372,14 +1366,14 @@ function renderArticleHtml(html: string) {
 
 function applyArticleFont() {
 	let pDoc = previewFrame.contentDocument;
-	if (!pDoc || !pDoc.body) { return; }
+	if (!pDoc?.body) { return; }
 	let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 	pDoc.body.style.fontFamily = fontFamily + ", 'Segoe UI', sans-serif";
 }
 
 function applyArticleFontSize() {
 	let pDoc = previewFrame.contentDocument;
-	if (!pDoc || !pDoc.body) { return; }
+	if (!pDoc?.body) { return; }
 	pDoc.body.style.fontSize = articleFontSize + "px";
 }
 
@@ -1391,7 +1385,7 @@ function initHighlighter() {
 function createHighlighterInstance() {
 	let pDoc = previewFrame.contentDocument;
 	let highlighterCtor = (window as any).TextHighlighter;
-	if (!highlighterCtor || !pDoc || !pDoc.body) { return; }
+	if (!highlighterCtor || !pDoc?.body) { return; }
 	textHighlighterInstance = new highlighterCtor(pDoc.body, {
 		color: "#fefe56",
 		highlightedClass: "highlighted",
@@ -1406,7 +1400,7 @@ function createHighlighterInstance() {
 	// Listen for clicks on delete buttons
 	pDoc.body.addEventListener("click", function(e: MouseEvent) {
 		let target = e.target as HTMLElement;
-		if (target && target.classList && target.classList.contains("delete-highlight")) {
+		if (target?.classList?.contains("delete-highlight")) {
 			e.stopPropagation();
 			let ts = target.getAttribute("data-timestamp");
 			// Remove the delete button itself first
@@ -1498,7 +1492,7 @@ highlightBtn.addEventListener("click", () => {
 		highlightBtn.setAttribute("aria-pressed", "true");
 		if (imgEl) { imgEl.src = "images/editoroptions/highlight_tool_on.svg"; }
 		initHighlighter();
-		if (pDoc && pDoc.body) {
+		if (pDoc?.body) {
 			let curUrl = chrome.runtime.getURL("images/editoroptions/highlight_cursor.cur");
 			pDoc.body.style.cursor = "url('" + curUrl + "') 16 16, text";
 		}
@@ -1507,7 +1501,7 @@ highlightBtn.addEventListener("click", () => {
 		highlightBtn.setAttribute("aria-pressed", "false");
 		if (imgEl) { imgEl.src = "images/editoroptions/highlight_tool_off.svg"; }
 		destroyHighlighter();
-		if (pDoc && pDoc.body) { pDoc.body.style.cursor = ""; }
+		if (pDoc?.body) { pDoc.body.style.cursor = ""; }
 	}
 	announceToScreenReader(strings.toggleHighlighter);
 });
@@ -1847,7 +1841,7 @@ function renderRegionThumbnails() {
 
 // Inline page range parser (mirrors StringUtils.parsePageRange from legacy clipper)
 function parsePageRange(text: string, maxRange: number): { ok: boolean; pages: number[]; error: string } {
-	if (!text || !text.trim()) { return { ok: false, pages: [], error: "" }; }
+	if (!text?.trim()) { return { ok: false, pages: [], error: "" }; }
 	let splitText = text.trim().split(",");
 	let range: number[] = [];
 	for (let i = 0; i < splitText.length; i++) {
@@ -1889,17 +1883,26 @@ function getPdfSelectedIndices(): number[] {
 	return result.pages.map(function(p) { return p - 1; });
 }
 
+function getPdfJs(): Promise<any> {
+	if ((window as any).pdfjsLib) { return Promise.resolve((window as any).pdfjsLib); }
+	return new Promise(function(resolve) {
+		window.addEventListener("pdfjs-ready", function() {
+			resolve((window as any).pdfjsLib);
+		}, { once: true });
+	});
+}
+
 // Render a single PDF page to a data URL via canvas (scale=2 for quality, matching legacy)
 function renderPdfPage(pageIndex: number): Promise<string> {
 	if (pdfPageDataUrls[pageIndex]) { return Promise.resolve(pdfPageDataUrls[pageIndex]); }
 	return new Promise(function(resolve) {
 		pdfDoc.getPage(pageIndex + 1).then(function(page: any) {
-			let viewport = page.getViewport(2);
+			let viewport = page.getViewport({ scale: 2 });
 			let canvas = document.createElement("canvas");
 			canvas.width = viewport.width;
 			canvas.height = viewport.height;
 			let ctx = canvas.getContext("2d");
-			page.render({ canvasContext: ctx, viewport: viewport }).then(function() {
+			page.render({ canvasContext: ctx, viewport: viewport }).promise.then(function() {
 				let dataUrl = canvas.toDataURL();
 				pdfPageDataUrls[pageIndex] = dataUrl;
 				resolve(dataUrl);
@@ -2164,7 +2167,7 @@ function setupPdfOptions() {
 // V1 PdfPreviewAttachment: 84x96 icon + filename at top of preview when Attach PDF is on.
 function renderPdfAttachmentIndicator() {
 	let existing = document.getElementById("pdf-attachment-indicator");
-	if (existing && existing.parentNode) { existing.parentNode.removeChild(existing); }
+	if (existing?.parentNode) { existing.parentNode.removeChild(existing); }
 	if (!pdfAttach || !previewContainer) { return; }
 	let url = sourceUrlText.textContent || pdfSourceUrl;
 	let fullName = getPdfFileName(url);
@@ -2224,8 +2227,9 @@ function loadPdf(url: string) {
 	let isLocal = url.indexOf("file:///") === 0;
 
 	let processPdf = function(source: any, byteLen?: number) {
-		// PDFJS.getDocument returns a PDFDocumentLoadingTask with .then(ok, err) but no .catch
-		(window as any).PDFJS.getDocument(source).then(function(pdf: any) {
+		getPdfJs().then(function(pdfjsLib: any) {
+			return pdfjsLib.getDocument(source).promise;
+		}).then(function(pdf: any) {
 			pdfDoc = pdf;
 			pdfPageCount = pdf.numPages;
 			pdfPagesRendered = new Array(pdfPageCount);
@@ -2244,7 +2248,7 @@ function loadPdf(url: string) {
 
 			// Remove loading indicator
 			let loadEl = document.getElementById("pdf-initial-loading");
-			if (loadEl && loadEl.parentNode) { loadEl.parentNode.removeChild(loadEl); }
+			if (loadEl?.parentNode) { loadEl.parentNode.removeChild(loadEl); }
 
 			// Render initial pages
 			renderPdfPagesInPreview(0, pdfInitialPageLoad);
@@ -2252,7 +2256,7 @@ function loadPdf(url: string) {
 			renderPdfAttachmentIndicator();
 
 			announceToScreenReader(strings.modePdf + " — " + pdfPageCount + " " + strings.page + (pdfPageCount !== 1 ? "s" : ""));
-		}, function(err: any) {
+		}).catch(function(err: any) {
 			if (isLocal) {
 				showLocalPdfBlockedPanel();
 			} else {
@@ -2302,7 +2306,7 @@ function updateAttachCheckbox() {
 function showLocalPdfBlockedPanel() {
 	if (document.getElementById("pdf-blocked-panel")) { return; }
 	let loadEl = document.getElementById("pdf-initial-loading");
-	if (loadEl && loadEl.parentNode) { loadEl.parentNode.removeChild(loadEl); }
+	if (loadEl?.parentNode) { loadEl.parentNode.removeChild(loadEl); }
 	let panel = document.createElement("div");
 	panel.id = "pdf-blocked-panel";
 	panel.setAttribute("role", "alert");
@@ -2379,8 +2383,8 @@ modeButtons.forEach((btn, idx) => {
 	btn.addEventListener("click", () => {
 		let mode = btn.getAttribute("data-mode");
 		if (mode === currentMode) { return; }
-		// Block mode switching mid-capture (captureVisibleTab needs the iframe visible).
-		if (captureInProgress && mode !== "fullpage") { return; }
+		// Pivoting away from fullpage mid-capture aborts; re-entry restarts.
+		if (captureInProgress && mode !== "fullpage") { abortCurrentCapture(); }
 
 		// Update selected state visually + ARIA
 		document.querySelectorAll(".mode-btn").forEach((b) => {
@@ -2426,7 +2430,6 @@ modeButtons.forEach((btn, idx) => {
 
 // --- Full-page capture lifecycle helpers ---
 
-// Sends `dimensions` to start the worker's scroll-and-stitch loop.
 function kickoffFullPageCapture() {
 	if (!captureDimensions || captureInProgress || fullPageComplete) { return; }
 	captureInProgress = true;
@@ -2436,6 +2439,18 @@ function kickoffFullPageCapture() {
 		pageHeight: captureDimensions.pageHeight,
 		contentHeight: captureDimensions.contentHeight
 	});
+}
+
+// Aborts the in-flight capture: tells the worker to stop the loop and clears the local progress UI.
+function abortCurrentCapture() {
+	if (!captureInProgress) { return; }
+	safeSend({ action: "cancelCapture" });
+	captureInProgress = false;
+	stitchYOffset = 0;
+	capturePanel.style.display = "none";
+	let progressTrack = document.getElementById("progress-bar-track") as HTMLElement;
+	if (progressTrack) { progressTrack.style.display = "none"; }
+	showPreviewFrame();
 }
 
 // Post-loadContent state for invocations that don't need a full-page screenshot
@@ -2915,34 +2930,35 @@ port.onMessage.addListener((message: any) => {
 				fullPageComplete = true;
 				showPreviewFrame();
 
-					// Only update the panel when user is in Full Page; other modes own previewContainer.
-					if (currentMode === "fullpage") {
-						iframe.style.display = "none";
-						previewContainer.innerHTML = "";
-						previewContainer.style.display = "block";
-						let previewImg = document.createElement("img");
-						previewImg.src = dataUrl;
-						previewContainer.appendChild(previewImg);
-					}
+				// Only update the panel when user is in Full Page; other modes own previewContainer.
+				if (currentMode === "fullpage") {
+					iframe.style.display = "none";
+					previewContainer.innerHTML = "";
+					previewContainer.style.display = "block";
+					let previewImg = document.createElement("img");
+					previewImg.src = dataUrl;
+					previewContainer.appendChild(previewImg);
+				}
 
-					// Update sidebar to preview mode — hide progress, show Clip button
-					capturePanel.style.display = "none";
+				// Hide capture progress in all modes — capture is done.
+				capturePanel.style.display = "none";
+				// Active mode owns Save state; don't force-enable here if user pivoted.
+				if (currentMode === "fullpage") {
 					saveBtn.textContent = strings.saveToOneNote;
 					saveBtn.disabled = false;
+				}
 
-					// Re-enable mode buttons and sign-out now that capture is complete
-					document.querySelectorAll(".mode-btn").forEach((b: Element) => {
-						(b as HTMLButtonElement).disabled = false;
-						b.classList.remove("disabled");
-					});
-					enableSignout();
-					captureInProgress = false;
-					announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
+				enableSignout();
+				captureInProgress = false;
+				announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
 
+				// Only re-focus fullpage button if user is still in fullpage.
+				if (currentMode === "fullpage") {
 					let fpModeBtn = document.querySelector('.mode-btn[data-mode="fullpage"]') as HTMLElement;
 					if (fpModeBtn) { setTimeout(function() { fpModeBtn.focus(); }, 100); }
+				}
 
-					safeSend({ action: "finalizeComplete" });
+				safeSend({ action: "finalizeComplete" });
 			};
 			reader.readAsDataURL(blob);
 		}) as BlobCallback, "image/jpeg", 0.95);
@@ -2994,9 +3010,11 @@ port.onMessage.addListener((message: any) => {
 		if (regionImages.length === 0) {
 			let fallbackMode = modeBeforeRegion || (pdfMode ? "pdf" : "fullpage");
 			let fallbackBtn = document.querySelector('.mode-btn[data-mode="' + fallbackMode + '"]') as HTMLButtonElement;
-			if (fallbackBtn) { fallbackBtn.click(); }
-			let regionBtn = document.querySelector('.mode-btn[data-mode="region"]') as HTMLElement;
-			if (regionBtn) { setTimeout(function() { regionBtn.focus(); }, 0); }
+			if (fallbackBtn) {
+				fallbackBtn.click();
+				// Focus follows aria-pressed — screen readers otherwise announce the wrong button state.
+				setTimeout(function() { fallbackBtn.focus(); }, 0);
+			}
 		} else {
 			// User cancelled mid-add but already has captures — stay in region mode
 			// so they can save what they have or add another region.
@@ -3252,11 +3270,9 @@ port.onMessage.addListener((message: any) => {
 		iframe.style.display = "none";
 		previewFrameWrap.style.display = "none";
 		capturePanel.style.display = "none";
-		// Reset mode buttons to initial state (disabled until capture completes)
+		// Buttons stay interactive; the sign-in overlay covers them while signed out.
 		document.querySelectorAll(".mode-btn").forEach((b) => {
 			b.classList.remove("selected");
-			(b as HTMLButtonElement).disabled = true;
-			b.classList.add("disabled");
 		});
 		let fpBtn = document.querySelector('.mode-btn[data-mode="fullpage"]');
 		if (fpBtn) { fpBtn.classList.add("selected"); }
@@ -3369,7 +3385,7 @@ saveBtn.addEventListener("click", () => {
 			articleBody = composeOEmbedForSave(oembedSnap, cachedOEmbedDescription);
 		} else {
 			let pDoc = previewFrame.contentDocument;
-			if (pDoc && pDoc.body && pDoc.body.querySelector(".highlighted")) {
+			if (pDoc?.body?.querySelector(".highlighted")) {
 				let clone = pDoc.body.cloneNode(true) as HTMLElement;
 				let delBtns = clone.querySelectorAll(".delete-highlight");
 				for (let i = delBtns.length - 1; i >= 0; i--) {
@@ -3519,7 +3535,7 @@ let minHeight = 600;
 	if (chromeDelta <= 0) { return; }
 	try {
 		chrome.windows.getCurrent({}, function(w: any) {
-			if (!w || !w.id || !w.width) { return; }
+			if (!w?.id || !w.width) { return; }
 			let newOuter = w.width + chromeDelta;
 			captureWidth = newOuter; // update lock target before the resize so the resize handler doesn't fight us
 			chrome.windows.update(w.id, { width: newOuter });
@@ -3543,7 +3559,7 @@ window.addEventListener("resize", () => {
 		resizing = true;
 		try {
 			chrome.windows.getCurrent({}, (w: any) => {
-				if (w && w.state === "maximized") {
+				if (w?.state === "maximized") {
 					chrome.windows.update(w.id, { state: "normal", width: captureWidth, height: captureHeight }, () => { resizing = false; });
 				} else {
 					window.resizeTo(captureWidth, captureHeight);
