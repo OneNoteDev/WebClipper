@@ -523,13 +523,15 @@ function populateSectionDropdown() {
 				curSectionId = cur.section ? cur.section.id : "";
 			} catch (e) { /* ignore */ }
 		}
+		// Fall back to the first section so the dropdown opens to a visible, expanded path.
+		let hasStoredSelection = !!curSectionId && sectionExists(notebooks, curSectionId);
+		if (!hasStoredSelection) {
+			curSectionId = findFirstSectionId(notebooks);
+		}
 		flattenSections(notebooks, curSectionId);
-		// If no section was selected, select the first one
-		if (!selectedSectionId) {
-			let first = sectionList.querySelector("li") as HTMLElement;
-			if (first) {
-				selectSection(first.getAttribute("data-id") || "", first.textContent || "");
-			}
+		if (!hasStoredSelection && selectedSectionId) {
+			let sel = sectionList.querySelector(".section-item-selected") as HTMLElement;
+			if (sel) { selectSection(sel.getAttribute("data-id") || "", sel.title || sel.textContent || ""); }
 		}
 	} catch (e) {
 		sectionSelected.textContent = loc("WebClipper.SectionPicker.NotebookLoadFailureMessage", "Error loading notebooks");
@@ -537,33 +539,66 @@ function populateSectionDropdown() {
 	}
 }
 
+// Collapse every heading except those on the path to the selected section;
+// returns true when this subtree contains it so ancestors can stay expanded.
 function flattenSections(notebooks: any[], preselectedId: string) {
 	for (let nb of notebooks) {
-		addNotebookHeading(nb.name);
+		let heading = addNotebookHeading(nb.name);
+		let onPath = false;
 		if (nb.sections) {
 			for (let sec of nb.sections) {
 				addSectionItem(sec.id, sec.name, nb.name + " > " + sec.name, preselectedId, 1);
+				if (preselectedId && sec.id === preselectedId) { onPath = true; }
 			}
 		}
 		if (nb.sectionGroups) {
-			flattenSectionGroups(nb.sectionGroups, nb.name, preselectedId, 1);
+			if (flattenSectionGroups(nb.sectionGroups, nb.name, preselectedId, 1)) { onPath = true; }
 		}
+		setHeadingCollapsed(heading, !onPath);
 	}
+	refreshSectionVisibility();
 }
 
-function flattenSectionGroups(groups: any[], parentPath: string, preselectedId: string, depth: number) {
+function flattenSectionGroups(groups: any[], parentPath: string, preselectedId: string, depth: number): boolean {
+	let anyOnPath = false;
 	for (let group of groups) {
 		let path = parentPath + " > " + group.name;
-		addGroupHeading(group.name, depth);
+		let heading = addGroupHeading(group.name, depth);
+		let onPath = false;
 		if (group.sections) {
 			for (let sec of group.sections) {
 				addSectionItem(sec.id, sec.name, path + " > " + sec.name, preselectedId, depth + 1);
+				if (preselectedId && sec.id === preselectedId) { onPath = true; }
 			}
 		}
 		if (group.sectionGroups) {
-			flattenSectionGroups(group.sectionGroups, path, preselectedId, depth + 1);
+			if (flattenSectionGroups(group.sectionGroups, path, preselectedId, depth + 1)) { onPath = true; }
+		}
+		setHeadingCollapsed(heading, !onPath);
+		if (onPath) { anyOnPath = true; }
+	}
+	return anyOnPath;
+}
+
+function findFirstSectionId(nodes: any[]): string {
+	for (let node of nodes) {
+		if (node.sections) {
+			for (let sec of node.sections) { if (sec.id) { return sec.id; } }
+		}
+		if (node.sectionGroups) {
+			let id = findFirstSectionId(node.sectionGroups);
+			if (id) { return id; }
 		}
 	}
+	return "";
+}
+
+function sectionExists(nodes: any[], id: string): boolean {
+	for (let node of nodes) {
+		if (node.sections?.some((sec: any) => sec.id === id)) { return true; }
+		if (node.sectionGroups && sectionExists(node.sectionGroups, id)) { return true; }
+	}
+	return false;
 }
 
 // Walk to the next/previous visible row in the section list.
@@ -575,6 +610,33 @@ function focusAdjacentSectionRow(from: HTMLElement, dir: 1 | -1) {
 			if (cur.offsetParent) { cur.focus(); return; } // skip collapsed (display:none → offsetParent is undefined)
 		}
 		cur = (dir === 1 ? cur.nextElementSibling : cur.previousElementSibling) as HTMLElement;
+	}
+}
+
+// Sets collapsed state only; callers run refreshSectionVisibility() afterward.
+function setHeadingCollapsed(li: HTMLElement, collapsed: boolean) {
+	li.classList.toggle("collapsed", collapsed);
+	li.setAttribute("aria-expanded", collapsed ? "false" : "true");
+	let arrow = li.querySelector(".collapse-arrow") as HTMLImageElement | null;
+	if (arrow) { arrow.src = collapsed ? "images/arrow_right.png" : "images/arrow_down.png"; }
+}
+
+// Hide rows under any collapsed ancestor, tracking the shallowest collapsed depth.
+function refreshSectionVisibility() {
+	let hideDeeperThan = Infinity;
+	let rows = sectionList.children;
+	for (let i = 0; i < rows.length; i++) {
+		let row = rows[i] as HTMLElement;
+		let depth = parseInt(row.getAttribute("data-depth") || "0", 10);
+		if (depth > hideDeeperThan) {
+			row.style.display = "none";
+			continue;
+		}
+		row.style.display = "";
+		hideDeeperThan = Infinity;
+		if (row.classList.contains("section-heading") && row.classList.contains("collapsed")) {
+			hideDeeperThan = depth;
+		}
 	}
 }
 
@@ -593,19 +655,8 @@ function makeCollapsibleHeading(li: HTMLLIElement, depth: number) {
 	li.insertBefore(arrow, li.firstChild);
 	li.setAttribute("aria-expanded", "true");
 	let toggle = () => {
-		let collapsed = li.classList.toggle("collapsed");
-		li.setAttribute("aria-expanded", collapsed ? "false" : "true");
-		arrow.src = collapsed ? "images/arrow_right.png" : "images/arrow_down.png";
-		// Toggle visibility of sibling items until next heading at same or shallower depth
-		let next = li.nextElementSibling as HTMLElement;
-		while (next) {
-			if (next.classList.contains("section-heading")) {
-				let nextDepth = parseInt(next.getAttribute("data-depth") || "0", 10);
-				if (nextDepth <= depth) { break; } // same or higher level — stop
-			}
-			next.style.display = collapsed ? "none" : "";
-			next = next.nextElementSibling as HTMLElement;
-		}
+		setHeadingCollapsed(li, !li.classList.contains("collapsed"));
+		refreshSectionVisibility();
 	};
 	li.addEventListener("click", toggle);
 	li.addEventListener("keydown", (e) => {
@@ -644,6 +695,7 @@ function addNotebookHeading(name: string) {
 	li.appendChild(span);
 	makeCollapsibleHeading(li, 0);
 	sectionList.appendChild(li);
+	return li;
 }
 
 function addGroupHeading(name: string, depth: number) {
@@ -659,12 +711,14 @@ function addGroupHeading(name: string, depth: number) {
 	li.appendChild(span);
 	makeCollapsibleHeading(li, depth);
 	sectionList.appendChild(li);
+	return li;
 }
 
 function addSectionItem(id: string, displayName: string, fullPath: string, preselectedId: string, depth: number) {
 	let li = document.createElement("li");
 	li.className = "section-item";
 	li.setAttribute("data-id", id);
+	li.setAttribute("data-depth", "" + depth);
 	li.setAttribute("role", "option");
 	li.setAttribute("tabindex", "-1");
 	setRowIndent(li, depth);
@@ -877,15 +931,13 @@ async function fetchFreshNotebooks() {
 		let previousSectionId = selectedSectionId;
 		sectionList.innerHTML = "";
 		selectedSectionId = "";
-		flattenSections(freshNotebooks, previousSectionId);
-
-		// If previously selected section no longer exists, select the first one
-		let sectionStillExists = !!selectedSectionId;
-		if (!selectedSectionId) {
-			let first = sectionList.querySelector("li") as HTMLElement;
-			if (first) {
-				selectSection(first.getAttribute("data-id") || "", first.textContent || "");
-			}
+		// Keep the prior selection when it still exists; otherwise fall back to the first section.
+		let sectionStillExists = !!previousSectionId && sectionExists(freshNotebooks, previousSectionId);
+		let targetSectionId = sectionStillExists ? previousSectionId : findFirstSectionId(freshNotebooks);
+		flattenSections(freshNotebooks, targetSectionId);
+		if (!sectionStillExists && selectedSectionId) {
+			let sel = sectionList.querySelector(".section-item-selected") as HTMLElement;
+			if (sel) { selectSection(sel.getAttribute("data-id") || "", sel.title || sel.textContent || ""); }
 		}
 		getNotebooksEvent.setStatus(Status.Succeeded);
 		getNotebooksEvent.setCustomProperty(PropertyName.Custom.CurrentSectionStillExists, sectionStillExists);
