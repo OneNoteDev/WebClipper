@@ -98,6 +98,17 @@ const microsoftStream: TranscriptPlatform = {
 
 const PLATFORMS: TranscriptPlatform[] = [youTube, microsoftStream];
 
+// Context-menu documentUrlPatterns (Chrome match-pattern glob form) that mirror
+// the host matchers above, so the "Clip Transcript" item only appears on video
+// pages. Kept alongside the matchers so the two representations stay in sync.
+export const TRANSCRIPT_DOCUMENT_URL_PATTERNS: string[] = [
+	"*://*.youtube.com/watch*",
+	"*://youtu.be/*",
+	"*://*.sharepoint.com/*stream.aspx*",
+	"*://*.sharepoint-df.com/*stream.aspx*",
+	"*://*.stream.microsoft.com/*"
+];
+
 // Returns the platform configuration matching the given URL, or null when the
 // URL is not a supported transcript source (or cannot be parsed).
 export function getTranscriptPlatform(rawUrl: string): TranscriptPlatform | null {

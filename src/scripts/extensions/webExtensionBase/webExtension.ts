@@ -2,6 +2,8 @@ import {ClientType} from "../../clientType";
 
 import {Localization} from "../../localization/localization";
 
+import {TRANSCRIPT_DOCUMENT_URL_PATTERNS} from "../../contentCapture/transcriptPlatforms";
+
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
 
@@ -141,7 +143,11 @@ export class WebExtension extends ExtensionBase<WebExtensionWorker, W3CTab, numb
 
 				for (let i = 0; i < menus.length; i++) {
 					if (documentUrlPatternList) {
-						menus[i].documentUrlPatterns = documentUrlPatternList;
+						// Restrict the transcript item to supported video pages; all other
+						// items use the general allow-list. (Firefox ignores documentUrlPatterns.)
+						menus[i].documentUrlPatterns = (menus[i].id === "WebClipper.Label.ClipTranscriptToOneNote")
+							? TRANSCRIPT_DOCUMENT_URL_PATTERNS
+							: documentUrlPatternList;
 					}
 					WebExtension.browser.contextMenus.create(menus[i]);
 				}
