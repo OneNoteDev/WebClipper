@@ -1,6 +1,7 @@
 export enum InvokeMode {
 	ContextImage,
 	ContextTextSelection,
+	ContextTranscript,
 	Default
 }
 

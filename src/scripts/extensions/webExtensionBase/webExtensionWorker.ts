@@ -539,6 +539,96 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 						checkSaveReady();
 					}
 
+					if (message.action === "requestTranscript") {
+						let transcriptTabId = this.tab.id as number;
+						(WebExtension.browser.scripting as any).executeScript({
+							target: { tabId: transcriptTabId },
+							func: async function() {
+								try {
+									let videoTitle = document.title || "";
+
+									// Step 1: Expand the description if collapsed
+									let expandBtn = document.querySelector(
+										"tp-yt-paper-button#expand.ytd-text-inline-expander"
+									) as HTMLElement | null;
+									if (expandBtn) {
+										expandBtn.click();
+										await new Promise(function(r) { setTimeout(r, 500); });
+									}
+
+									// Step 2: Click "Show transcript" button
+									let transcriptBtn = document.querySelector(
+										"ytd-video-description-transcript-section-renderer button[aria-label=\"Show transcript\"]"
+									) as HTMLElement | null;
+									if (!transcriptBtn) {
+										return { success: false, error: "Could not find 'Show transcript' button. The video may not have a transcript available, or the description needs to be expanded first." };
+									}
+									transcriptBtn.click();
+
+									// Step 3: Wait for the transcript panel to render
+									let maxWait = 5000;
+									let pollInterval = 250;
+									let elapsed = 0;
+									let transcriptPanel: Element | null = null;
+									while (elapsed < maxWait) {
+										await new Promise(function(r) { setTimeout(r, pollInterval); });
+										elapsed += pollInterval;
+										transcriptPanel = document.querySelector("ytd-transcript-renderer, ytd-engagement-panel-section-list-renderer[target-id=\"engagement-panel-searchable-transcript\"]");
+										if (transcriptPanel) {
+											await new Promise(function(r) { setTimeout(r, 500); });
+											break;
+										}
+									}
+									if (!transcriptPanel) {
+										return { success: false, error: "Transcript panel did not appear within timeout." };
+									}
+
+									// Step 4: Scrape transcript segments from the DOM
+									let segments = transcriptPanel.querySelectorAll("ytd-transcript-segment-renderer");
+									if (!segments || segments.length === 0) {
+										segments = transcriptPanel.querySelectorAll("[class*=\"segment\"]");
+									}
+									if (!segments || segments.length === 0) {
+										return { success: false, error: "Transcript panel opened but no segments found." };
+									}
+
+									let entries: Array<{ timestamp: string; text: string }> = [];
+									for (let i = 0; i < segments.length; i++) {
+										let seg = segments[i] as HTMLElement;
+										let timestampEl = seg.querySelector(".segment-timestamp, [class*=\"timestamp\"]") as HTMLElement | null;
+										let textEl = seg.querySelector(".segment-text, yt-formatted-string, [class*=\"text\"]") as HTMLElement | null;
+										let timestamp = timestampEl?.innerText?.trim() || "";
+										let text = textEl?.innerText?.trim() || seg.innerText?.trim() || "";
+										if (text) {
+											entries.push({ timestamp: timestamp, text: text });
+										}
+									}
+
+									if (entries.length === 0) {
+										return { success: false, error: "Transcript panel rendered but could not extract text from segments." };
+									}
+
+									return {
+										success: true,
+										videoTitle: videoTitle,
+										transcript: entries
+									};
+								} catch (e: any) {
+									return { success: false, error: "Exception: " + (e?.message ? e.message : String(e)) };
+								}
+							}
+						}).then((results: any[]) => {
+							let data = results?.[0]?.result;
+							if (!data) {
+								port.postMessage({ action: "transcriptResult", success: false, error: "No result from transcript extraction." });
+								return;
+							}
+							port.postMessage({ action: "transcriptResult", success: data.success, error: data.error || "", videoTitle: data.videoTitle || "", transcript: data.transcript || [] });
+						}).catch((err: any) => {
+							port.postMessage({ action: "transcriptResult", success: false, error: "Script execution error: " + (err?.message || String(err)) });
+						});
+					}
+
 					function checkSaveReady() {
 						if (!pendingSave) { return; }
 						let expectedImages = pendingSave.saveImageCount || 0;
@@ -708,8 +798,8 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 									).join("&nbsp;");
 									buildPage(bodyOnml, imageParts);
 								});
-							} else if (saveMode === "article" || saveMode === "selection") {
-								// Selection shares the article save path; renderer composes the body.
+							} else if (saveMode === "article" || saveMode === "selection" || saveMode === "transcript") {
+								// Selection and transcript share the article save path; renderer composes the body.
 								let articleHtml = msg.contentHtml || "";
 								buildPage(articleHtml, []);
 							} else if (saveMode === "bookmark") {

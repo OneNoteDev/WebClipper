@@ -153,6 +153,14 @@ let cachedBookmarkHtml = ""; // Bookmark card HTML, extracted lazily from conten
 let bookmarkLoaded = false;
 let contentDocReady = false; // true once content-frame has loaded HTML
 
+// Transcript state
+let transcriptLoaded = false;
+let cachedTranscriptHtml = ""; // Save HTML (real embed) for sending to OneNote
+let cachedTranscriptPreviewHtml = ""; // Preview HTML (thumbnail placeholder) for the clipper window
+let transcriptLoading = false;
+let isTranscriptPage = false; // true when page is YouTube (or other transcript-capable platform)
+let invokedFromContextTranscript = false;
+
 // PDF state
 let pdfMode = false;               // true when page is a PDF
 let pdfDoc: any;                    // PDFDocumentProxy from pdf.js
@@ -356,7 +364,7 @@ port.onMessage.addListener((msg: any) => {
 // Apply localized strings to UI elements
 sidebarTitle.textContent = strings.clipperTitle;
 cancelBtn.textContent = strings.cancel;
-let modeMap: any = { fullpage: strings.modeFullPage, article: strings.modeArticle, bookmark: strings.modeBookmark, region: strings.modeRegion, selection: strings.modeSelection };
+let modeMap: any = { fullpage: strings.modeFullPage, article: strings.modeArticle, bookmark: strings.modeBookmark, region: strings.modeRegion, selection: strings.modeSelection, transcript: "Transcript" };
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	let mode = btn.getAttribute("data-mode");
 	if (mode && modeMap[mode]) {
@@ -372,7 +380,8 @@ let tooltipMap: any = {
 	article: loc("WebClipper.ClipType.Button.Tooltip", "Clip just the {0} in an easy-to-read format.").replace("{0}", strings.modeArticle.toLowerCase()),
 	bookmark: loc("WebClipper.ClipType.Bookmark.Button.Tooltip", "Clip just the title, thumbnail, synopsis, and link."),
 	region: loc("WebClipper.ClipType.Region.Button.Tooltip", "Take a screenshot of the part of the page you'll select."),
-	selection: loc("WebClipper.ClipType.Selection.Button.Tooltip", "Clip just the text you selected.")
+	selection: loc("WebClipper.ClipType.Selection.Button.Tooltip", "Clip just the text you selected."),
+	transcript: "Clip the video transcript with timestamps."
 };
 document.querySelectorAll(".mode-btn").forEach((btn) => {
 	let mode = btn.getAttribute("data-mode");
@@ -1781,6 +1790,169 @@ function renderBookmarkHtml(html: string) {
 	pDoc.close();
 }
 
+// --- Transcript mode ---
+
+function switchToTranscript() {
+	saveWorkingState();
+	resetSaveState();
+	currentMode = "transcript";
+	iframe.style.display = "none";
+	previewContainer.style.display = "none";
+	capturePanel.style.display = "none";
+	previewFrameWrap.style.display = "flex";
+	articleHeader.style.display = "none";
+	if (pdfOptionsPanel) { pdfOptionsPanel.style.display = "none"; }
+
+	if (transcriptLoaded) {
+		renderTranscriptHtml(cachedTranscriptPreviewHtml || cachedTranscriptHtml);
+		saveBtn.disabled = false;
+		saveBtn.textContent = strings.saveToOneNote;
+	} else if (!transcriptLoading) {
+		loadTranscript();
+	}
+}
+
+function loadTranscript() {
+	transcriptLoading = true;
+	saveBtn.disabled = true;
+	// Show loading state in preview
+	let loadingDoc = previewFrame.contentDocument;
+	if (loadingDoc) {
+		loadingDoc.open();
+		loadingDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>Loading transcript...</div></body></html>");
+		loadingDoc.close();
+	}
+	safeSend({ action: "requestTranscript" });
+}
+
+function onTranscriptResult(data: any) {
+	transcriptLoading = false;
+	if (!data.success) {
+		transcriptLoaded = false;
+		let errDoc = previewFrame.contentDocument;
+		if (errDoc) {
+			errDoc.open();
+			errDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#c00;padding:20px;text-align:center;}</style></head><body><div>" + escapeHtml(data.error || "Failed to load transcript.") + "</div></body></html>");
+			errDoc.close();
+		}
+		return;
+	}
+
+	// Build the video URL base for timestamp links
+	let videoUrl = sourceUrlText.textContent || "";
+
+	// Parse timestamp string (e.g. "1:23" or "1:02:30") to total seconds
+	function timestampToSeconds(ts: string): number {
+		let parts = ts.split(":").map(function(p) { return parseInt(p, 10) || 0; });
+		if (parts.length === 3) { return parts[0] * 3600 + parts[1] * 60 + parts[2]; }
+		if (parts.length === 2) { return parts[0] * 60 + parts[1]; }
+		return parts[0] || 0;
+	}
+
+	// Build timestamped URL (strips existing t= param, adds new one)
+	function makeTimestampUrl(seconds: number): string {
+		try {
+			let url = new URL(videoUrl);
+			url.searchParams.set("t", seconds + "s");
+			return url.toString();
+		} catch (e) {
+			return videoUrl + "&t=" + seconds + "s";
+		}
+	}
+
+	// Build HTML from transcript entries: [{timestamp, text}]
+	let entries: Array<{ timestamp: string; text: string }> = data.transcript || [];
+	let titleHtml = "<h2 style=\"margin:0 0 12px;font-size:16px;color:#2e75b5;\">" + escapeHtml(data.videoTitle || titleField.value || "Transcript") + "</h2>";
+
+	let tableHtml = "<table style=\"border-collapse:collapse;width:100%;font-size:13px;line-height:1.6;margin-top:16px;\">";
+	for (let i = 0; i < entries.length; i++) {
+		let e = entries[i];
+		let seconds = timestampToSeconds(e.timestamp);
+		let tsUrl = makeTimestampUrl(seconds);
+		let tsLink = "<a href=\"" + escapeAttr(tsUrl) + "\" style=\"color:#2e75b5;text-decoration:none;\">" + escapeHtml(e.timestamp) + "</a>";
+		tableHtml += "<tr><td style=\"vertical-align:top;padding:4px 12px 4px 0;white-space:nowrap;font-variant-numeric:tabular-nums;\">" + tsLink + "</td><td style=\"vertical-align:top;padding:4px 0;\">" + escapeHtml(e.text) + "</td></tr>";
+	}
+	tableHtml += "</table>";
+
+	// Extract video ID for thumbnail
+	let videoId = "";
+	try {
+		let parsedUrl = new URL(videoUrl);
+		videoId = parsedUrl.searchParams.get("v") || "";
+		if (!videoId && parsedUrl.hostname === "youtu.be") {
+			videoId = parsedUrl.pathname.slice(1);
+		}
+	} catch (e) { /* ignore */ }
+
+	// Build thumbnail placeholder for preview
+	let thumbnailHtml = "";
+	if (videoId) {
+		let thumbUrl = "https://img.youtube.com/vi/" + encodeURIComponent(videoId) + "/hqdefault.jpg";
+		thumbnailHtml = "<a href=\"" + escapeAttr(videoUrl) + "\" style=\"display:block;position:relative;max-width:100%;margin-bottom:8px;text-decoration:none;\">"
+			+ "<img src=\"" + escapeAttr(thumbUrl) + "\" style=\"width:100%;border-radius:8px;display:block;\" />"
+			+ "<div style=\"position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;background:rgba(0,0,0,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;\">"
+			+ "<div style=\"width:0;height:0;border-style:solid;border-width:12px 0 12px 22px;border-color:transparent transparent transparent #fff;margin-left:4px;\"></div>"
+			+ "</div></a>";
+	}
+
+	// Preview uses thumbnail placeholder (iframe won't render in extension context)
+	let previewHtml = titleHtml + thumbnailHtml + tableHtml;
+
+	// Fetch oEmbed for the real embed (used in save HTML sent to OneNote)
+	tryOEmbed(videoUrl).then(function(oembedData) {
+		let embedHtml = "";
+		if (oembedData?.html) {
+			let sanitized = sanitizeProviderHtml(oembedData.html);
+			let iframeSrc = extractIframeSrc(sanitized);
+			if (iframeSrc) {
+				embedHtml = "<div style=\"position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;margin-bottom:8px;\">"
+					+ "<iframe style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:none;\" "
+					+ "src=\"" + escapeAttr(iframeSrc) + "\" "
+					+ "allowfullscreen></iframe></div>";
+			}
+		}
+		// Save HTML uses real embed; fallback to thumbnail if oEmbed fails
+		cachedTranscriptHtml = titleHtml + (embedHtml || thumbnailHtml) + tableHtml;
+		cachedTranscriptPreviewHtml = previewHtml;
+		transcriptLoaded = true;
+		renderTranscriptHtml(previewHtml);
+		if (currentMode === "transcript") {
+			saveBtn.disabled = false;
+			saveBtn.textContent = strings.saveToOneNote;
+		}
+	}).catch(function() {
+		cachedTranscriptHtml = previewHtml;
+		cachedTranscriptPreviewHtml = previewHtml;
+		transcriptLoaded = true;
+		renderTranscriptHtml(previewHtml);
+		if (currentMode === "transcript") {
+			saveBtn.disabled = false;
+			saveBtn.textContent = strings.saveToOneNote;
+		}
+	});
+}
+
+function extractIframeSrc(html: string): string {
+	let match = html.match(/src=["']([^"']+)["']/);
+	return match ? match[1] : "";
+}
+
+function renderTranscriptHtml(html: string) {
+	let pDoc = previewFrame.contentDocument;
+	if (!pDoc) { return; }
+	let css = "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.5; "
+		+ "max-width: 700px; margin: 20px auto; padding: 0 20px; color: #1a1a1a; }"
+		+ "a { pointer-events: none; cursor: default; }"
+		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
+		+ "table { border-collapse: collapse; }"
+		+ "tr:hover { background: #f5f5f5; }";
+	let fullHtml = "<!DOCTYPE html><html><head><style>" + css + "</style></head><body>"
+		+ html + "</body></html>";
+	pDoc.open();
+	pDoc.write(fullHtml);
+	pDoc.close();
+}
+
 // --- Region mode ---
 
 let regionImages: string[] = []; // Accumulated region captures
@@ -2473,6 +2645,9 @@ modeButtons.forEach((btn, idx) => {
 		} else if (mode === "pdf") {
 			switchToPdf();
 			setTelemetryContext(Context.Custom.ContentType, "Pdf");
+		} else if (mode === "transcript") {
+			switchToTranscript();
+			setTelemetryContext(Context.Custom.ContentType, "Transcript");
 		}
 		// Announce mode change to screen readers
 		let modeLabel = btn.querySelector("span");
@@ -2520,9 +2695,16 @@ function enterReadyStateWithoutCapture() {
 	triggerInitialModeAutoEngage();
 }
 
-// Auto-engage Selection / Region / Article mode based on invocation intent.
+// Auto-engage Selection / Region / Article / Transcript mode based on invocation intent.
 function triggerInitialModeAutoEngage() {
-	if (invokedFromContextSelection && cachedSelectionHtml) {
+	if (invokedFromContextTranscript) {
+		let transcriptBtn = document.querySelector('.mode-btn[data-mode="transcript"]') as HTMLElement;
+		if (transcriptBtn) {
+			transcriptBtn.style.display = "";
+			(transcriptBtn as HTMLButtonElement).click();
+			transcriptBtn.focus();
+		}
+	} else if (invokedFromContextSelection && cachedSelectionHtml) {
 		let selBtn = document.querySelector('.mode-btn[data-mode="selection"]') as HTMLElement;
 		if (selBtn) {
 			selBtn.style.display = "";
@@ -2578,14 +2760,16 @@ port.onMessage.addListener((message: any) => {
 		invokedFromContextSelection = message.invokeMode === "ContextTextSelection";
 		contextImageSrcUrl = message.invokeData || "";
 		invokedFromContextImage = message.invokeMode === "ContextImage" && !!contextImageSrcUrl;
+		invokedFromContextTranscript = message.invokeMode === "ContextTranscript";
 		// Toolbar-only mode hint; context-menu invocations carry explicit intent.
 		siteSuggestsArticleMode =
 			!invokedFromContextSelection &&
 			!invokedFromContextImage &&
+			!invokedFromContextTranscript &&
 			isOEmbedProviderUrl(pageUrl);
 
 		// Skip-capture flows: hide iframe via visibility (preserves layout for measurement).
-		if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode) {
+		if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode || invokedFromContextTranscript) {
 			iframe.style.visibility = "hidden";
 		}
 
@@ -2593,6 +2777,16 @@ port.onMessage.addListener((message: any) => {
 		if (pageTitle && !titleField.value) { titleField.value = pageTitle; }
 		if (pageUrl && !sourceUrlText.textContent) { sourceUrlText.textContent = pageUrl; sourceUrl.title = pageUrl; }
 		if (pageTitle) { originalTitle = pageTitle; }
+
+		// Show transcript button for supported video platforms (YouTube)
+		try {
+			let hostname = new URL(pageUrl).hostname.toLowerCase();
+			if (hostname.includes("youtube.com") || hostname === "youtu.be" || hostname === "m.youtube.com") {
+				isTranscriptPage = true;
+				let transcriptBtn = document.querySelector(".mode-btn[data-mode=\"transcript\"]") as HTMLElement;
+				if (transcriptBtn) { transcriptBtn.style.display = ""; }
+			}
+		} catch (e) { /* invalid URL */ }
 
 		{
 			// Local file not allowed — show helpful permission message in preview area
@@ -2824,7 +3018,7 @@ port.onMessage.addListener((message: any) => {
 					};
 					// Skip eager capture when invocation implies a specific non-FullPage
 					// mode; switchToFullPage kicks off on demand if user enters it.
-					if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode) {
+					if (invokedFromContextSelection || invokedFromContextImage || siteSuggestsArticleMode || invokedFromContextTranscript) {
 						enterReadyStateWithoutCapture();
 					} else {
 						kickoffFullPageCapture();
@@ -3086,6 +3280,10 @@ port.onMessage.addListener((message: any) => {
 			(document.getElementById("progress-bar-track") as HTMLElement).style.display = "";
 			announceToScreenReader(strings.pdfPageProgress.replace("{0}", "" + cur).replace("{1}", "" + total));
 		}
+	}
+
+	if (message.action === "transcriptResult") {
+		onTranscriptResult(message);
 	}
 
 	if (message.action === "saveResult") {
@@ -3350,7 +3548,7 @@ saveBtn.addEventListener("click", () => {
 
 	// ClipCommonOptions — match legacy saveToOneNoteLogger.ts
 	// ClipMode uses legacy enum names: FullPage, Augmentation (not Article), Bookmark, Region
-	let clipModeMap: { [key: string]: string } = { fullpage: "FullPage", article: "Augmentation", bookmark: "Bookmark", region: "Region", pdf: "Pdf" };
+	let clipModeMap: { [key: string]: string } = { fullpage: "FullPage", article: "Augmentation", bookmark: "Bookmark", region: "Region", pdf: "Pdf", transcript: "Transcript" };
 	let clipCommonEvent = new Event.BaseEvent(Event.Label.ClipCommonOptions);
 	clipCommonEvent.setCustomProperty(PropertyName.Custom.ClipMode, clipModeMap[currentMode] || currentMode);
 	clipCommonEvent.setCustomProperty(PropertyName.Custom.PageTitleModified, titleField.value !== originalTitle);
@@ -3463,6 +3661,10 @@ saveBtn.addEventListener("click", () => {
 		safeSend(saveMsg);
 	} else if (currentMode === "bookmark") {
 		saveMsg.contentHtml = cachedBookmarkHtml || "";
+		saveMsg.saveImageCount = 0;
+		safeSend(saveMsg);
+	} else if (currentMode === "transcript") {
+		saveMsg.contentHtml = cachedTranscriptHtml || "";
 		saveMsg.saveImageCount = 0;
 		safeSend(saveMsg);
 	} else if (currentMode === "pdf") {

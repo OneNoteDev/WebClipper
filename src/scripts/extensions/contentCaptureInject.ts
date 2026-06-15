@@ -237,6 +237,16 @@
 		return getDoctype(doc) + doc.documentElement.outerHTML;
 	}
 
+	// --- Pre-capture: expand collapsed content on known platforms ---
+
+	// YouTube: expand the video description so the full text is captured
+	if (window.location.hostname.includes("youtube.com")) {
+		let expandBtn = document.querySelector("tp-yt-paper-button#expand.ytd-text-inline-expander") as HTMLElement | null;
+		if (expandBtn) {
+			expandBtn.click();
+		}
+	}
+
 	// --- Main capture flow (matches DomUtils.getCleanDomOfCurrentPage) ---
 
 	let doc = cloneDocument(document);

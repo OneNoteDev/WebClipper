@@ -1,0 +1,2 @@
+[mcps.servers]
+playwright = { args = ["@playwright/mcp@latest", "--browser", "msedge"], command = "npx", tools = ["*"], type = "stdio" }

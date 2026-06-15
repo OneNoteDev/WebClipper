@@ -191,6 +191,10 @@ gulp.task("bundleContentCaptureInject", function () {
     return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/", "contentCaptureInject.js");
 });
 
+gulp.task("bundleTranscriptCaptureInject", function () {
+    return bundleEntry(PATHS.BUILDROOT + "scripts/contentCapture/", "transcriptCaptureInject.js");
+});
+
 gulp.task("bundleRenderer", function () {
     return bundleEntry(PATHS.BUILDROOT + "scripts/", "renderer.js");
 });
@@ -216,6 +220,7 @@ gulp.task("bundle", gulp.series(
     "bundleOffscreen",
     "bundleRegionOverlay",
     "bundleContentCaptureInject",
+    "bundleTranscriptCaptureInject",
     "bundleRenderer",
     "bundleLogManager",
     "bundleChrome",
@@ -309,7 +314,7 @@ function exportCommonWebExtensionFiles(targetDir) {
 function exportChromeJS() {
     var targetDir = PATHS.TARGET.CHROME;
 
-    var bundles = ["appendIsInstalledMarker.js", "offscreen.js", "regionOverlay.js", "contentCaptureInject.js", "renderer.js"];
+    var bundles = ["appendIsInstalledMarker.js", "offscreen.js", "regionOverlay.js", "contentCaptureInject.js", "transcriptCaptureInject.js", "renderer.js"];
     var bundleStreams = bundles.map(function(name) {
         return gulp.src([PATHS.BUNDLEROOT + name]).pipe(concat(name)).pipe(gulp.dest(targetDir));
     });
@@ -345,7 +350,7 @@ function exportChromeLibFiles() {
 function exportEdgeJS() {
     var targetDir = PATHS.TARGET.EDGE_EXTENSION;
 
-    var bundles = ["appendIsInstalledMarker.js", "offscreen.js", "regionOverlay.js", "contentCaptureInject.js", "renderer.js"];
+    var bundles = ["appendIsInstalledMarker.js", "offscreen.js", "regionOverlay.js", "contentCaptureInject.js", "transcriptCaptureInject.js", "renderer.js"];
     var bundleStreams = bundles.map(function(name) {
         return gulp.src([PATHS.BUNDLEROOT + name]).pipe(concat(name)).pipe(gulp.dest(targetDir));
     });

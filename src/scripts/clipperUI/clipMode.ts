@@ -4,5 +4,6 @@
 	FullPage,
 	Pdf,
 	Region,
-	Selection
+	Selection,
+	Transcript
 }
