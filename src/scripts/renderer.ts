@@ -1840,6 +1840,7 @@ function onTranscriptResult(data: any) {
 
 	// Build the video URL base for timestamp links
 	let videoUrl = sourceUrlText.textContent || "";
+	let platform = data.platform || "";
 
 	// Parse timestamp string (e.g. "1:23" or "1:02:30") to total seconds
 	function timestampToSeconds(ts: string): number {
@@ -1853,36 +1854,54 @@ function onTranscriptResult(data: any) {
 	function makeTimestampUrl(seconds: number): string {
 		try {
 			let url = new URL(videoUrl);
-			url.searchParams.set("t", seconds + "s");
+			if (platform === "microsoftstream") {
+				// Stream uses startTime query param in seconds
+				url.searchParams.set("startTime", String(seconds));
+			} else {
+				url.searchParams.set("t", seconds + "s");
+			}
 			return url.toString();
 		} catch (e) {
-			return videoUrl + "&t=" + seconds + "s";
+			return videoUrl + (platform === "microsoftstream" ? "&startTime=" + seconds : "&t=" + seconds + "s");
 		}
 	}
 
-	// Build HTML from transcript entries: [{timestamp, text}]
-	let entries: Array<{ timestamp: string; text: string }> = data.transcript || [];
+	// Build HTML from transcript entries: [{timestamp, text, speaker?}]
+	let entries: Array<{ timestamp: string; text: string; speaker?: string }> = data.transcript || [];
 	let titleHtml = "<h2 style=\"margin:0 0 12px;font-size:16px;color:#2e75b5;\">" + escapeHtml(data.videoTitle || titleField.value || "Transcript") + "</h2>";
 
+	// For Stream, group consecutive entries by speaker to reduce visual noise
 	let tableHtml = "<table style=\"border-collapse:collapse;width:100%;font-size:13px;line-height:1.6;margin-top:16px;\">";
+	let lastSpeaker = "";
 	for (let i = 0; i < entries.length; i++) {
 		let e = entries[i];
 		let seconds = timestampToSeconds(e.timestamp);
 		let tsUrl = makeTimestampUrl(seconds);
 		let tsLink = "<a href=\"" + escapeAttr(tsUrl) + "\" style=\"color:#2e75b5;text-decoration:none;\">" + escapeHtml(e.timestamp) + "</a>";
+
+		// Show speaker name when it changes (Stream transcripts include speakers)
+		let speakerHtml = "";
+		if (platform === "microsoftstream" && e.speaker && e.speaker !== lastSpeaker) {
+			speakerHtml = "<tr><td colspan=\"2\" style=\"padding:8px 0 2px;font-weight:600;color:#333;\">" + escapeHtml(e.speaker) + "</td></tr>";
+			lastSpeaker = e.speaker;
+		}
+
+		tableHtml += speakerHtml;
 		tableHtml += "<tr><td style=\"vertical-align:top;padding:4px 12px 4px 0;white-space:nowrap;font-variant-numeric:tabular-nums;\">" + tsLink + "</td><td style=\"vertical-align:top;padding:4px 0;\">" + escapeHtml(e.text) + "</td></tr>";
 	}
 	tableHtml += "</table>";
 
-	// Extract video ID for thumbnail
+	// Extract video ID for YouTube thumbnail
 	let videoId = "";
-	try {
-		let parsedUrl = new URL(videoUrl);
-		videoId = parsedUrl.searchParams.get("v") || "";
-		if (!videoId && parsedUrl.hostname === "youtu.be") {
-			videoId = parsedUrl.pathname.slice(1);
-		}
-	} catch (e) { /* ignore */ }
+	if (platform !== "microsoftstream") {
+		try {
+			let parsedUrl = new URL(videoUrl);
+			videoId = parsedUrl.searchParams.get("v") || "";
+			if (!videoId && parsedUrl.hostname === "youtu.be") {
+				videoId = parsedUrl.pathname.slice(1);
+			}
+		} catch (e) { /* ignore */ }
+	}
 
 	// Build thumbnail placeholder for preview
 	let thumbnailHtml = "";
@@ -1893,6 +1912,9 @@ function onTranscriptResult(data: any) {
 			+ "<div style=\"position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;background:rgba(0,0,0,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;\">"
 			+ "<div style=\"width:0;height:0;border-style:solid;border-width:12px 0 12px 22px;border-color:transparent transparent transparent #fff;margin-left:4px;\"></div>"
 			+ "</div></a>";
+	} else if (platform === "microsoftstream") {
+		// Simple video link header for Stream (no public thumbnail API)
+		thumbnailHtml = "<p style=\"margin:0 0 12px;\"><a href=\"" + escapeAttr(videoUrl) + "\" style=\"color:#2e75b5;\">" + escapeHtml(videoUrl) + "</a></p>";
 	}
 
 	// Preview uses thumbnail placeholder (iframe won't render in extension context)
@@ -2778,10 +2800,14 @@ port.onMessage.addListener((message: any) => {
 		if (pageUrl && !sourceUrlText.textContent) { sourceUrlText.textContent = pageUrl; sourceUrl.title = pageUrl; }
 		if (pageTitle) { originalTitle = pageTitle; }
 
-		// Show transcript button for supported video platforms (YouTube)
+		// Show transcript button for supported video platforms (YouTube, Microsoft Stream)
 		try {
 			let hostname = new URL(pageUrl).hostname.toLowerCase();
-			if (hostname.includes("youtube.com") || hostname === "youtu.be" || hostname === "m.youtube.com") {
+			let pathname = new URL(pageUrl).pathname.toLowerCase();
+			if (hostname.includes("youtube.com") || hostname === "youtu.be" || hostname === "m.youtube.com"
+				|| hostname.includes(".sharepoint.com") || hostname.includes(".sharepoint-df.com")
+				|| hostname.includes("stream.microsoft.com")
+				|| pathname.includes("/stream.aspx")) {
 				isTranscriptPage = true;
 				let transcriptBtn = document.querySelector(".mode-btn[data-mode=\"transcript\"]") as HTMLElement;
 				if (transcriptBtn) { transcriptBtn.style.display = ""; }

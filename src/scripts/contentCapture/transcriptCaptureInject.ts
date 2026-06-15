@@ -43,7 +43,7 @@
 		if (host === "www.youtube.com" || host === "youtube.com" || host === "youtu.be" || host === "m.youtube.com") {
 			return "youtube";
 		}
-		if (host.indexOf(".sharepoint.com") !== -1 || host.indexOf("stream.microsoft.com") !== -1) {
+		if (host.indexOf(".sharepoint.com") !== -1 || host.indexOf(".sharepoint-df.com") !== -1 || host.indexOf("stream.microsoft.com") !== -1) {
 			return "microsoftstream";
 		}
 		return null;
@@ -138,10 +138,70 @@
 
 	// --- Microsoft Stream / SharePoint extraction ---
 
-	function extractStreamTranscript(): TranscriptResult {
+	async function extractStreamTranscript(): Promise<TranscriptResult> {
 		let videoTitle = document.title || null;
 
-		// Strategy 1: Look for <track> elements on <video> tags
+		// Strategy 1: Click the Transcript button to open the panel
+		let transcriptBtn = document.querySelector(
+			"button[aria-label=\"Transcript\"]"
+		) as HTMLElement | null;
+		if (transcriptBtn) {
+			let isExpanded = transcriptBtn.getAttribute("aria-expanded") === "true";
+			if (!isExpanded) {
+				transcriptBtn.click();
+				await new Promise(function(r) { setTimeout(r, 1000); });
+			}
+
+			// Wait for transcript list items to render
+			let maxWait = 8000;
+			let pollInterval = 300;
+			let elapsed = 0;
+			let cells: NodeListOf<Element> | null = null;
+			while (elapsed < maxWait) {
+				cells = document.querySelectorAll(".ms-List-cell[data-list-index]");
+				if (cells && cells.length > 0) {
+					break;
+				}
+				await new Promise(function(r) { setTimeout(r, pollInterval); });
+				elapsed += pollInterval;
+			}
+			if (cells && cells.length > 0) {
+				let entries: TranscriptEntry[] = [];
+				for (let i = 0; i < cells.length; i++) {
+					let cell = cells[i] as HTMLElement;
+					let timestampEl = cell.querySelector("[id^=\"Header-timestamp-\"]") as HTMLElement | null;
+					let textEl = cell.querySelector("[id^=\"sub-entry-\"]") as HTMLElement | null;
+					let timestamp = timestampEl?.innerText?.trim() || "";
+					let text = textEl?.innerText?.trim() || "";
+					if (text) {
+						// Parse timestamp string to milliseconds
+						let startMs = 0;
+						let timeParts = timestamp.split(":").map(function(p) { return parseInt(p, 10) || 0; });
+						if (timeParts.length === 3) {
+							startMs = (timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]) * 1000;
+						} else if (timeParts.length === 2) {
+							startMs = (timeParts[0] * 60 + timeParts[1]) * 1000;
+						}
+						entries.push({ startMs: startMs, durationMs: 0, text: text });
+					}
+				}
+				if (entries.length > 0) {
+					return {
+						action: "transcriptCaptureComplete",
+						success: true,
+						platform: "microsoftstream",
+						transcript: entries,
+						videoTitle: videoTitle,
+						language: null,
+						availableLanguages: null,
+						error: null,
+						captionUrl: null
+					};
+				}
+			}
+		}
+
+		// Strategy 2: Look for <track> elements on <video> tags
 		let video = document.querySelector("video");
 		if (video) {
 			let tracks = video.querySelectorAll("track");
@@ -174,7 +234,7 @@
 			}
 		}
 
-		// Strategy 2: Look for rendered transcript panel in DOM
+		// Strategy 3: Look for rendered transcript panel in DOM (legacy selectors)
 		let transcriptSection = document.querySelector(
 			'section[aria-label="Transcript"], [data-automation-id="transcript-panel"], .transcript-container'
 		);
@@ -187,7 +247,7 @@
 					let text = line.innerText?.trim();
 					if (text) {
 						entries.push({
-							startMs: i * 1000, // Approximation — real timestamps not always exposed in DOM
+							startMs: i * 1000,
 							durationMs: 1000,
 							text: text
 						});
@@ -207,7 +267,7 @@
 			}
 		}
 
-		// Strategy 3: Check for VTT URLs in page source (some Stream embeds have them in scripts/data attributes)
+		// Strategy 4: Check for VTT URLs in page source
 		let allElements = document.querySelectorAll("[data-vtt-url], [data-captions-url]");
 		for (let i = 0; i < allElements.length; i++) {
 			let el = allElements[i] as HTMLElement;
@@ -254,7 +314,7 @@
 	if (platform === "youtube") {
 		result = await extractYouTubeTranscriptInfo();
 	} else if (platform === "microsoftstream") {
-		result = extractStreamTranscript();
+		result = await extractStreamTranscript();
 	} else {
 		result = makeError(null, "This page is not a supported video platform (YouTube or Microsoft Stream).");
 	}
