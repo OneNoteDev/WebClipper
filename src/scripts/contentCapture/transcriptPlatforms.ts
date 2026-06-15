@@ -23,6 +23,13 @@ export interface TranscriptScrapeConfig {
 	// Delays (ms) to wait after the expand / open clicks before polling.
 	expandWaitMs?: number;
 	openWaitMs?: number;
+	// Set when the transcript panel is a virtualized list that only renders the
+	// rows near the viewport (e.g. Fluent UI ms-List). The scraper then scrolls
+	// the panel top-to-bottom, accumulating rows keyed by indexAttribute.
+	virtualized?: boolean;
+	// Attribute that uniquely and stably identifies a row across DOM recycling
+	// (required when virtualized so rows are de-duplicated and ordered correctly).
+	indexAttribute?: string;
 }
 
 export interface TranscriptPlatform {
@@ -78,7 +85,9 @@ const microsoftStream: TranscriptPlatform = {
 		timestampSelector: "[id^=\"Header-timestamp-\"]",
 		textSelector: "[id^=\"sub-entry-\"]",
 		speakerSelector: "[class*=\"itemDisplayName\"]",
-		openWaitMs: 1000
+		openWaitMs: 1000,
+		virtualized: true,
+		indexAttribute: "data-list-index"
 	},
 	buildTimestampUrl(url: URL, seconds: number): string {
 		let u = new URL(url.toString());

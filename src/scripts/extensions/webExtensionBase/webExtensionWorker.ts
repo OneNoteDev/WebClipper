@@ -597,19 +597,95 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 										return { success: false, errorCode: "noEntries", error: "The transcript panel did not load any entries." };
 									}
 
-									// Step 4: Scrape each entry's timestamp, text and optional speaker.
-									let entries: Array<{ timestamp: string; text: string; speaker: string }> = [];
-									for (let i = 0; i < items.length; i++) {
-										let item = items[i] as HTMLElement;
+									// Step 4: Collect entries. A virtualized panel (e.g. Fluent UI
+									// ms-List) only keeps the rows near the viewport in the DOM, so
+									// scroll it top-to-bottom and accumulate rows keyed by their
+									// stable index as the DOM recycles them.
+									function parseItem(item: HTMLElement) {
 										let timestampEl = scrape.timestampSelector ? item.querySelector(scrape.timestampSelector) as HTMLElement | null : null;
 										let textEl = scrape.textSelector ? item.querySelector(scrape.textSelector) as HTMLElement | null : null;
 										let speakerEl = scrape.speakerSelector ? item.querySelector(scrape.speakerSelector) as HTMLElement | null : null;
-										let timestamp = timestampEl?.innerText?.trim() || "";
-										let text = textEl?.innerText?.trim() || item.innerText?.trim() || "";
-										let speaker = speakerEl?.innerText?.trim() || "";
-										if (text) {
-											entries.push({ timestamp: timestamp, text: text, speaker: speaker });
+										return {
+											timestamp: timestampEl?.innerText?.trim() || "",
+											text: textEl?.innerText?.trim() || item.innerText?.trim() || "",
+											speaker: speakerEl?.innerText?.trim() || ""
+										};
+									}
+
+									let collected: { [key: string]: { idx: number; timestamp: string; text: string; speaker: string } } = {};
+									let autoOrder = 0;
+									function harvest() {
+										let cells = document.querySelectorAll(scrape.itemSelector);
+										for (let c = 0; c < cells.length; c++) {
+											let cell = cells[c] as HTMLElement;
+											let parsed = parseItem(cell);
+											if (!parsed.text) { continue; }
+											let key: string;
+											let idx: number;
+											let attr = scrape.indexAttribute ? cell.getAttribute(scrape.indexAttribute) : null;
+											if (attr !== null) {
+												key = attr;
+												idx = parseInt(attr, 10);
+											} else {
+												key = "auto-" + autoOrder;
+												idx = autoOrder;
+												autoOrder++;
+											}
+											if (!collected[key]) {
+												collected[key] = { idx: idx, timestamp: parsed.timestamp, text: parsed.text, speaker: parsed.speaker };
+											}
 										}
+									}
+
+									function getScrollParent(el: HTMLElement | null): HTMLElement | null {
+										let node = el ? el.parentElement : null;
+										while (node) {
+											let style = window.getComputedStyle(node);
+											if ((style.overflowY === "auto" || style.overflowY === "scroll") && node.scrollHeight > node.clientHeight + 4) {
+												return node;
+											}
+											node = node.parentElement;
+										}
+										return null;
+									}
+
+									if (scrape.virtualized) {
+										let scroller = getScrollParent(items[0] as HTMLElement);
+										if (scroller) {
+											let startScroll = Date.now();
+											let maxDurationMs = 120000;
+											scroller.scrollTop = 0;
+											await wait(300);
+											harvest();
+											let stall = 0;
+											while (Date.now() - startScroll < maxDurationMs) {
+												let prevTop = scroller.scrollTop;
+												let step = Math.max(scroller.clientHeight - 40, 100);
+												scroller.scrollTop = Math.min(scroller.scrollTop + step, scroller.scrollHeight);
+												await wait(220);
+												harvest();
+												let atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2;
+												stall = (scroller.scrollTop === prevTop) ? stall + 1 : 0;
+												if (atBottom || stall >= 3) {
+													await wait(300);
+													harvest();
+													break;
+												}
+											}
+										} else {
+											harvest();
+										}
+									} else {
+										harvest();
+									}
+
+									// Order entries by their stable index (insertion order otherwise).
+									let orderedKeys = Object.keys(collected);
+									orderedKeys.sort(function(a, b) { return collected[a].idx - collected[b].idx; });
+									let entries: Array<{ timestamp: string; text: string; speaker: string }> = [];
+									for (let k = 0; k < orderedKeys.length; k++) {
+										let c = collected[orderedKeys[k]];
+										entries.push({ timestamp: c.timestamp, text: c.text, speaker: c.speaker });
 									}
 
 									if (entries.length === 0) {
