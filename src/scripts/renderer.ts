@@ -1827,6 +1827,14 @@ function loadTranscript() {
 	safeSend({ action: "requestTranscript" });
 }
 
+// Wraps the composed transcript HTML in a fixed-width container so OneNote sizes
+// the page outline to a readable width. OneNote auto-sizes the content outline
+// from the markup, and relative widths (width:100% / max-width) collapse to a
+// thin column, so an explicit pixel width is required.
+function wrapTranscriptForSave(innerHtml: string): string {
+	return "<div style=\"width:600px;font-family:Verdana;font-size:16px;\">" + innerHtml + "</div>";
+}
+
 function transcriptErrorMessage(data: any): string {
 	let byCode: { [key: string]: string } = {
 		unsupported: loc("WebClipper.Transcript.Error.Unsupported", "This page is not a supported video platform."),
@@ -1881,8 +1889,10 @@ function onTranscriptResult(data: any) {
 	let titleHtml = "<h2 style=\"margin:0 0 12px;font-size:16px;color:#2e75b5;\">" + escapeHtml(data.videoTitle || titleField.value || transcriptHeading) + "</h2>";
 
 	// Layout table (role=presentation so assistive tech reads it as plain text, not
-	// a data grid). Speaker names are shown as a row whenever the speaker changes.
-	let tableHtml = "<table role=\"presentation\" style=\"border-collapse:collapse;width:100%;font-size:13px;line-height:1.6;margin-top:16px;\">";
+	// a data grid). OneNote ignores width:100% on tables and collapses columns to
+	// their minimum content width, so explicit pixel widths are set on the table
+	// and both columns to keep the text column readable.
+	let tableHtml = "<table role=\"presentation\" style=\"border-collapse:collapse;width:600px;table-layout:fixed;font-size:13px;line-height:1.6;margin-top:16px;\">";
 	let lastSpeaker = "";
 	for (let i = 0; i < entries.length; i++) {
 		let e = entries[i];
@@ -1891,11 +1901,11 @@ function onTranscriptResult(data: any) {
 		let tsLink = "<a href=\"" + escapeAttr(tsUrl) + "\" style=\"color:#2e75b5;text-decoration:none;\">" + escapeHtml(e.timestamp) + "</a>";
 
 		if (e.speaker && e.speaker !== lastSpeaker) {
-			tableHtml += "<tr><td colspan=\"2\" style=\"padding:8px 0 2px;font-weight:600;color:#333;\">" + escapeHtml(e.speaker) + "</td></tr>";
+			tableHtml += "<tr><td colspan=\"2\" style=\"width:600px;padding:8px 0 2px;font-weight:600;color:#333;\">" + escapeHtml(e.speaker) + "</td></tr>";
 			lastSpeaker = e.speaker;
 		}
 
-		tableHtml += "<tr><td style=\"vertical-align:top;padding:4px 12px 4px 0;white-space:nowrap;font-variant-numeric:tabular-nums;\">" + tsLink + "</td><td style=\"vertical-align:top;padding:4px 0;\">" + escapeHtml(e.text) + "</td></tr>";
+		tableHtml += "<tr><td style=\"width:56px;vertical-align:top;padding:4px 12px 4px 0;white-space:nowrap;font-variant-numeric:tabular-nums;\">" + tsLink + "</td><td style=\"width:532px;vertical-align:top;padding:4px 0;\">" + escapeHtml(e.text) + "</td></tr>";
 	}
 	tableHtml += "</table>";
 
@@ -1926,14 +1936,23 @@ function onTranscriptResult(data: any) {
 			let sanitized = sanitizeProviderHtml(oembedData.html);
 			let iframeSrc = extractIframeSrc(sanitized);
 			if (iframeSrc) {
-				embedHtml = "<div style=\"position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;margin-bottom:8px;\">"
-					+ "<iframe title=\"" + escapeAttr(data.videoTitle || transcriptHeading) + "\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:none;\" "
+				// OneNote ingests the iframe verbatim — it does NOT execute the CSS
+				// aspect-ratio trick (height:0 + padding-bottom + absolute child), which
+				// would collapse the embed to nothing. Use explicit pixel width/height
+				// attributes and no wrapper so OneNote renders the player.
+				let embedW = (oembedData.width && oembedData.width > 0) ? oembedData.width : 600;
+				let embedH = (oembedData.height && oembedData.height > 0) ? oembedData.height : Math.round(embedW * 9 / 16);
+				embedHtml = "<div style=\"margin-bottom:8px;\"><iframe title=\"" + escapeAttr(data.videoTitle || transcriptHeading) + "\" "
+					+ "width=\"" + embedW + "\" height=\"" + embedH + "\" "
 					+ "src=\"" + escapeAttr(iframeSrc) + "\" "
-					+ "allowfullscreen></iframe></div>";
+					+ "data-original-src=\"" + escapeAttr(videoUrl) + "\" "
+					+ "frameborder=\"0\" allowfullscreen=\"allowfullscreen\"></iframe></div>";
 			}
 		}
-		// Save HTML uses real embed; fallback to thumbnail if oEmbed fails
-		cachedTranscriptHtml = titleHtml + (embedHtml || thumbnailHtml) + tableHtml;
+		// Save HTML uses real embed; fallback to thumbnail if oEmbed fails.
+		// Wrap in a fixed-width container so OneNote sizes the page outline to a
+		// readable width (relative widths collapse to a thin column in OneNote).
+		cachedTranscriptHtml = wrapTranscriptForSave(titleHtml + (embedHtml || thumbnailHtml) + tableHtml);
 		cachedTranscriptPreviewHtml = previewHtml;
 		transcriptLoaded = true;
 		renderTranscriptHtml(previewHtml);
@@ -1942,7 +1961,7 @@ function onTranscriptResult(data: any) {
 			saveBtn.textContent = strings.saveToOneNote;
 		}
 	}).catch(function() {
-		cachedTranscriptHtml = previewHtml;
+		cachedTranscriptHtml = wrapTranscriptForSave(previewHtml);
 		cachedTranscriptPreviewHtml = previewHtml;
 		transcriptLoaded = true;
 		renderTranscriptHtml(previewHtml);
