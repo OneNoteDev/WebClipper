@@ -8,6 +8,7 @@ import {Session} from "./logging/submodules/session";
 import {Status} from "./logging/submodules/status";
 
 import {tryOEmbed, sanitizeProviderHtml, isOEmbedProviderUrl, OEmbedData} from "./contentCapture/oembedExtractor";
+import {getTranscriptPlatform, isTranscriptSupported} from "./contentCapture/transcriptPlatforms";
 
 // Renderer page script - connects to service worker via port
 // and handles scroll/capture commands. Content HTML arrives inline
@@ -1819,28 +1820,44 @@ function loadTranscript() {
 	let loadingDoc = previewFrame.contentDocument;
 	if (loadingDoc) {
 		loadingDoc.open();
-		loadingDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div>Loading transcript...</div></body></html>");
+		loadingDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#666;}</style></head><body><div role=\"status\">" + escapeHtml(loc("WebClipper.Transcript.Loading", "Loading transcript...")) + "</div></body></html>");
 		loadingDoc.close();
 	}
+	announceToScreenReader(loc("WebClipper.Transcript.Loading", "Loading transcript..."));
 	safeSend({ action: "requestTranscript" });
+}
+
+function transcriptErrorMessage(data: any): string {
+	let byCode: { [key: string]: string } = {
+		unsupported: loc("WebClipper.Transcript.Error.Unsupported", "This page is not a supported video platform."),
+		buttonNotFound: loc("WebClipper.Transcript.Error.ButtonNotFound", "Could not find the transcript button. This video may not have a transcript available."),
+		noEntries: loc("WebClipper.Transcript.Error.NoEntries", "The transcript panel did not load any entries."),
+		noText: loc("WebClipper.Transcript.Error.NoText", "The transcript panel opened but no text could be extracted.")
+	};
+	return byCode[data.errorCode] || data.error || loc("WebClipper.Transcript.Error.Generic", "Failed to load transcript.");
 }
 
 function onTranscriptResult(data: any) {
 	transcriptLoading = false;
 	if (!data.success) {
 		transcriptLoaded = false;
+		let message = transcriptErrorMessage(data);
+		announceToScreenReader(message);
 		let errDoc = previewFrame.contentDocument;
 		if (errDoc) {
 			errDoc.open();
-			errDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#c00;padding:20px;text-align:center;}</style></head><body><div>" + escapeHtml(data.error || "Failed to load transcript.") + "</div></body></html>");
+			errDoc.write("<!DOCTYPE html><html><head><style>body{font-family:Segoe UI,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#c00;padding:20px;text-align:center;}</style></head><body><div role=\"alert\">" + escapeHtml(message) + "</div></body></html>");
 			errDoc.close();
 		}
 		return;
 	}
 
-	// Build the video URL base for timestamp links
+	// Resolve the platform config (selectors, deep-link + thumbnail builders) from
+	// the source URL so this rendering stays platform-agnostic.
 	let videoUrl = sourceUrlText.textContent || "";
-	let platform = data.platform || "";
+	let platformConfig = getTranscriptPlatform(videoUrl);
+	let parsedVideoUrl: URL | null = null;
+	try { parsedVideoUrl = new URL(videoUrl); } catch (e) { parsedVideoUrl = null; }
 
 	// Parse timestamp string (e.g. "1:23" or "1:02:30") to total seconds
 	function timestampToSeconds(ts: string): number {
@@ -1850,28 +1867,22 @@ function onTranscriptResult(data: any) {
 		return parts[0] || 0;
 	}
 
-	// Build timestamped URL (strips existing t= param, adds new one)
+	// Build a deep link into the source video at the given offset.
 	function makeTimestampUrl(seconds: number): string {
-		try {
-			let url = new URL(videoUrl);
-			if (platform === "microsoftstream") {
-				// Stream uses startTime query param in seconds
-				url.searchParams.set("startTime", String(seconds));
-			} else {
-				url.searchParams.set("t", seconds + "s");
-			}
-			return url.toString();
-		} catch (e) {
-			return videoUrl + (platform === "microsoftstream" ? "&startTime=" + seconds : "&t=" + seconds + "s");
+		if (platformConfig && parsedVideoUrl) {
+			return platformConfig.buildTimestampUrl(parsedVideoUrl, seconds);
 		}
+		return videoUrl;
 	}
 
 	// Build HTML from transcript entries: [{timestamp, text, speaker?}]
 	let entries: Array<{ timestamp: string; text: string; speaker?: string }> = data.transcript || [];
-	let titleHtml = "<h2 style=\"margin:0 0 12px;font-size:16px;color:#2e75b5;\">" + escapeHtml(data.videoTitle || titleField.value || "Transcript") + "</h2>";
+	let transcriptHeading = loc("WebClipper.Transcript.Heading", "Transcript");
+	let titleHtml = "<h2 style=\"margin:0 0 12px;font-size:16px;color:#2e75b5;\">" + escapeHtml(data.videoTitle || titleField.value || transcriptHeading) + "</h2>";
 
-	// For Stream, group consecutive entries by speaker to reduce visual noise
-	let tableHtml = "<table style=\"border-collapse:collapse;width:100%;font-size:13px;line-height:1.6;margin-top:16px;\">";
+	// Layout table (role=presentation so assistive tech reads it as plain text, not
+	// a data grid). Speaker names are shown as a row whenever the speaker changes.
+	let tableHtml = "<table role=\"presentation\" style=\"border-collapse:collapse;width:100%;font-size:13px;line-height:1.6;margin-top:16px;\">";
 	let lastSpeaker = "";
 	for (let i = 0; i < entries.length; i++) {
 		let e = entries[i];
@@ -1879,46 +1890,34 @@ function onTranscriptResult(data: any) {
 		let tsUrl = makeTimestampUrl(seconds);
 		let tsLink = "<a href=\"" + escapeAttr(tsUrl) + "\" style=\"color:#2e75b5;text-decoration:none;\">" + escapeHtml(e.timestamp) + "</a>";
 
-		// Show speaker name when it changes (Stream transcripts include speakers)
-		let speakerHtml = "";
-		if (platform === "microsoftstream" && e.speaker && e.speaker !== lastSpeaker) {
-			speakerHtml = "<tr><td colspan=\"2\" style=\"padding:8px 0 2px;font-weight:600;color:#333;\">" + escapeHtml(e.speaker) + "</td></tr>";
+		if (e.speaker && e.speaker !== lastSpeaker) {
+			tableHtml += "<tr><td colspan=\"2\" style=\"padding:8px 0 2px;font-weight:600;color:#333;\">" + escapeHtml(e.speaker) + "</td></tr>";
 			lastSpeaker = e.speaker;
 		}
 
-		tableHtml += speakerHtml;
 		tableHtml += "<tr><td style=\"vertical-align:top;padding:4px 12px 4px 0;white-space:nowrap;font-variant-numeric:tabular-nums;\">" + tsLink + "</td><td style=\"vertical-align:top;padding:4px 0;\">" + escapeHtml(e.text) + "</td></tr>";
 	}
 	tableHtml += "</table>";
 
-	// Extract video ID for YouTube thumbnail
-	let videoId = "";
-	if (platform !== "microsoftstream") {
-		try {
-			let parsedUrl = new URL(videoUrl);
-			videoId = parsedUrl.searchParams.get("v") || "";
-			if (!videoId && parsedUrl.hostname === "youtu.be") {
-				videoId = parsedUrl.pathname.slice(1);
-			}
-		} catch (e) { /* ignore */ }
-	}
-
-	// Build thumbnail placeholder for preview
+	// Build a thumbnail (when the platform exposes one) or a plain source link header.
+	let thumbUrl = (platformConfig?.getThumbnailUrl && parsedVideoUrl)
+		? platformConfig.getThumbnailUrl(parsedVideoUrl)
+		: null;
 	let thumbnailHtml = "";
-	if (videoId) {
-		let thumbUrl = "https://img.youtube.com/vi/" + encodeURIComponent(videoId) + "/hqdefault.jpg";
+	if (thumbUrl) {
 		thumbnailHtml = "<a href=\"" + escapeAttr(videoUrl) + "\" style=\"display:block;position:relative;max-width:100%;margin-bottom:8px;text-decoration:none;\">"
-			+ "<img src=\"" + escapeAttr(thumbUrl) + "\" style=\"width:100%;border-radius:8px;display:block;\" />"
+			+ "<img src=\"" + escapeAttr(thumbUrl) + "\" alt=\"\" style=\"width:100%;border-radius:8px;display:block;\" />"
 			+ "<div style=\"position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;background:rgba(0,0,0,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;\">"
 			+ "<div style=\"width:0;height:0;border-style:solid;border-width:12px 0 12px 22px;border-color:transparent transparent transparent #fff;margin-left:4px;\"></div>"
 			+ "</div></a>";
-	} else if (platform === "microsoftstream") {
-		// Simple video link header for Stream (no public thumbnail API)
+	} else if (videoUrl) {
 		thumbnailHtml = "<p style=\"margin:0 0 12px;\"><a href=\"" + escapeAttr(videoUrl) + "\" style=\"color:#2e75b5;\">" + escapeHtml(videoUrl) + "</a></p>";
 	}
 
 	// Preview uses thumbnail placeholder (iframe won't render in extension context)
 	let previewHtml = titleHtml + thumbnailHtml + tableHtml;
+
+	announceToScreenReader(loc("WebClipper.Transcript.Loaded", "Transcript loaded."));
 
 	// Fetch oEmbed for the real embed (used in save HTML sent to OneNote)
 	tryOEmbed(videoUrl).then(function(oembedData) {
@@ -1928,7 +1927,7 @@ function onTranscriptResult(data: any) {
 			let iframeSrc = extractIframeSrc(sanitized);
 			if (iframeSrc) {
 				embedHtml = "<div style=\"position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;margin-bottom:8px;\">"
-					+ "<iframe style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:none;\" "
+					+ "<iframe title=\"" + escapeAttr(data.videoTitle || transcriptHeading) + "\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:none;\" "
 					+ "src=\"" + escapeAttr(iframeSrc) + "\" "
 					+ "allowfullscreen></iframe></div>";
 			}
@@ -2800,19 +2799,12 @@ port.onMessage.addListener((message: any) => {
 		if (pageUrl && !sourceUrlText.textContent) { sourceUrlText.textContent = pageUrl; sourceUrl.title = pageUrl; }
 		if (pageTitle) { originalTitle = pageTitle; }
 
-		// Show transcript button for supported video platforms (YouTube, Microsoft Stream)
-		try {
-			let hostname = new URL(pageUrl).hostname.toLowerCase();
-			let pathname = new URL(pageUrl).pathname.toLowerCase();
-			if (hostname.includes("youtube.com") || hostname === "youtu.be" || hostname === "m.youtube.com"
-				|| hostname.includes(".sharepoint.com") || hostname.includes(".sharepoint-df.com")
-				|| hostname.includes("stream.microsoft.com")
-				|| pathname.includes("/stream.aspx")) {
-				isTranscriptPage = true;
-				let transcriptBtn = document.querySelector(".mode-btn[data-mode=\"transcript\"]") as HTMLElement;
-				if (transcriptBtn) { transcriptBtn.style.display = ""; }
-			}
-		} catch (e) { /* invalid URL */ }
+		// Show transcript button for supported video platforms (see transcriptPlatforms.ts)
+		if (isTranscriptSupported(pageUrl)) {
+			isTranscriptPage = true;
+			let transcriptBtn = document.querySelector(".mode-btn[data-mode=\"transcript\"]") as HTMLElement;
+			if (transcriptBtn) { transcriptBtn.style.display = ""; }
+		}
 
 		{
 			// Local file not allowed — show helpful permission message in preview area

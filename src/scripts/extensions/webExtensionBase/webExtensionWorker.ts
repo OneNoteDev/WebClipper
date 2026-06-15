@@ -12,6 +12,8 @@ import * as Log from "../../logging/log";
 import {ClipperData} from "../../storage/clipperData";
 import {LocalStorage} from "../../storage/localStorage";
 
+import {getTranscriptPlatform} from "../../contentCapture/transcriptPlatforms";
+
 import {AuthenticationHelper} from "../authenticationHelper";
 import {ExtensionWorkerBase} from "../extensionWorkerBase";
 
@@ -541,158 +543,98 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 					if (message.action === "requestTranscript") {
 						let transcriptTabId = this.tab.id as number;
-						let tabUrl = this.tab.url || "";
-						let isStream = tabUrl.indexOf(".sharepoint.com") !== -1 || tabUrl.indexOf(".sharepoint-df.com") !== -1 || tabUrl.indexOf("stream.microsoft.com") !== -1 || tabUrl.indexOf("/stream.aspx") !== -1;
+						let platform = getTranscriptPlatform(this.tab.url || "");
+						if (!platform) {
+							port.postMessage({ action: "transcriptResult", success: false, errorCode: "unsupported", error: "This page is not a supported video platform." });
+							return;
+						}
 
+						// A single generic scraper, driven entirely by the platform's selector
+						// config, opens the transcript panel and extracts its entries. Adding a
+						// new platform requires only a new entry in transcriptPlatforms.ts.
 						(WebExtension.browser.scripting as any).executeScript({
 							target: { tabId: transcriptTabId },
-							args: [isStream],
-							func: async function(isStreamPage: boolean) {
+							args: [platform.scrape, platform.id],
+							func: async function(scrape: any, platformId: string) {
+								function wait(ms: number) { return new Promise(function(r) { setTimeout(r, ms); }); }
 								try {
 									let videoTitle = document.title || "";
 
-									if (isStreamPage) {
-										// --- Microsoft Stream / SharePoint Video ---
-
-										// Step 1: Click the Transcript button if panel is not already open
-										let transcriptBtn = document.querySelector(
-											"button[aria-label=\"Transcript\"]"
-										) as HTMLElement | null;
-										if (!transcriptBtn) {
-											return { success: false, error: "Could not find 'Transcript' button. The video may not have a transcript available." };
-										}
-										let isExpanded = transcriptBtn.getAttribute("aria-expanded") === "true";
-										if (!isExpanded) {
-											transcriptBtn.click();
-											await new Promise(function(r) { setTimeout(r, 1000); });
-										}
-
-										// Step 2: Wait for transcript list items to render
-										let maxWait = 8000;
-										let pollInterval = 300;
-										let elapsed = 0;
-										let cells: NodeListOf<Element> | null = null;
-										while (elapsed < maxWait) {
-											cells = document.querySelectorAll(".ms-List-cell[data-list-index]");
-											if (cells && cells.length > 0) {
-												break;
-											}
-											await new Promise(function(r) { setTimeout(r, pollInterval); });
-											elapsed += pollInterval;
-										}
-										if (!cells || cells.length === 0) {
-											return { success: false, error: "Transcript panel opened but no transcript items found." };
-										}
-
-										// Step 3: Scrape transcript entries
-										let entries: Array<{ timestamp: string; text: string; speaker?: string }> = [];
-										for (let i = 0; i < cells.length; i++) {
-											let cell = cells[i] as HTMLElement;
-											let timestampEl = cell.querySelector("[id^=\"Header-timestamp-\"]") as HTMLElement | null;
-											let textEl = cell.querySelector("[id^=\"sub-entry-\"]") as HTMLElement | null;
-											let speakerEl = cell.querySelector("[class*=\"itemDisplayName\"]") as HTMLElement | null;
-											let timestamp = timestampEl?.innerText?.trim() || "";
-											let text = textEl?.innerText?.trim() || "";
-											let speaker = speakerEl?.innerText?.trim() || "";
-											if (text) {
-												entries.push({ timestamp: timestamp, text: text, speaker: speaker });
-											}
-										}
-
-										if (entries.length === 0) {
-											return { success: false, error: "Transcript panel rendered but could not extract text from entries." };
-										}
-
-										return {
-											success: true,
-											platform: "microsoftstream",
-											videoTitle: videoTitle,
-											transcript: entries
-										};
-									} else {
-										// --- YouTube ---
-
-										// Step 1: Expand the description if collapsed
-										let expandBtn = document.querySelector(
-											"tp-yt-paper-button#expand.ytd-text-inline-expander"
-										) as HTMLElement | null;
+									// Step 1: Optionally reveal the transcript control.
+									if (scrape.expandSelector) {
+										let expandBtn = document.querySelector(scrape.expandSelector) as HTMLElement | null;
 										if (expandBtn) {
 											expandBtn.click();
-											await new Promise(function(r) { setTimeout(r, 500); });
+											await wait(scrape.expandWaitMs || 500);
 										}
-
-										// Step 2: Click "Show transcript" button
-										let transcriptBtn = document.querySelector(
-											"ytd-video-description-transcript-section-renderer button[aria-label=\"Show transcript\"]"
-										) as HTMLElement | null;
-										if (!transcriptBtn) {
-											return { success: false, error: "Could not find 'Show transcript' button. The video may not have a transcript available, or the description needs to be expanded first." };
-										}
-										transcriptBtn.click();
-
-										// Step 3: Wait for the transcript panel to render
-										let maxWait = 5000;
-										let pollInterval = 250;
-										let elapsed = 0;
-										let transcriptPanel: Element | null = null;
-										while (elapsed < maxWait) {
-											await new Promise(function(r) { setTimeout(r, pollInterval); });
-											elapsed += pollInterval;
-											transcriptPanel = document.querySelector("ytd-transcript-renderer, ytd-engagement-panel-section-list-renderer[target-id=\"engagement-panel-searchable-transcript\"]");
-											if (transcriptPanel) {
-												await new Promise(function(r) { setTimeout(r, 500); });
-												break;
-											}
-										}
-										if (!transcriptPanel) {
-											return { success: false, error: "Transcript panel did not appear within timeout." };
-										}
-
-										// Step 4: Scrape transcript segments from the DOM
-										let segments = transcriptPanel.querySelectorAll("ytd-transcript-segment-renderer");
-										if (!segments || segments.length === 0) {
-											segments = transcriptPanel.querySelectorAll("[class*=\"segment\"]");
-										}
-										if (!segments || segments.length === 0) {
-											return { success: false, error: "Transcript panel opened but no segments found." };
-										}
-
-										let entries: Array<{ timestamp: string; text: string }> = [];
-										for (let i = 0; i < segments.length; i++) {
-											let seg = segments[i] as HTMLElement;
-											let timestampEl = seg.querySelector(".segment-timestamp, [class*=\"timestamp\"]") as HTMLElement | null;
-											let textEl = seg.querySelector(".segment-text, yt-formatted-string, [class*=\"text\"]") as HTMLElement | null;
-											let timestamp = timestampEl?.innerText?.trim() || "";
-											let text = textEl?.innerText?.trim() || seg.innerText?.trim() || "";
-											if (text) {
-												entries.push({ timestamp: timestamp, text: text });
-											}
-										}
-
-										if (entries.length === 0) {
-											return { success: false, error: "Transcript panel rendered but could not extract text from segments." };
-										}
-
-										return {
-											success: true,
-											platform: "youtube",
-											videoTitle: videoTitle,
-											transcript: entries
-										};
 									}
+
+									// Step 2: Open the transcript panel.
+									let openBtn = document.querySelector(scrape.openSelector) as HTMLElement | null;
+									if (!openBtn) {
+										return { success: false, errorCode: "buttonNotFound", error: "Could not find the transcript button. This video may not have a transcript available." };
+									}
+									let alreadyOpen = scrape.respectAriaExpanded && openBtn.getAttribute("aria-expanded") === "true";
+									if (!alreadyOpen) {
+										openBtn.click();
+										await wait(scrape.openWaitMs || 800);
+									}
+
+									// Step 3: Wait for the transcript line items to render.
+									let maxWait = 8000;
+									let pollInterval = 300;
+									let elapsed = 0;
+									let items: NodeListOf<Element> | null = null;
+									while (elapsed < maxWait) {
+										items = document.querySelectorAll(scrape.itemSelector);
+										if (items && items.length > 0) {
+											break;
+										}
+										await wait(pollInterval);
+										elapsed += pollInterval;
+									}
+									if (!items || items.length === 0) {
+										return { success: false, errorCode: "noEntries", error: "The transcript panel did not load any entries." };
+									}
+
+									// Step 4: Scrape each entry's timestamp, text and optional speaker.
+									let entries: Array<{ timestamp: string; text: string; speaker: string }> = [];
+									for (let i = 0; i < items.length; i++) {
+										let item = items[i] as HTMLElement;
+										let timestampEl = scrape.timestampSelector ? item.querySelector(scrape.timestampSelector) as HTMLElement | null : null;
+										let textEl = scrape.textSelector ? item.querySelector(scrape.textSelector) as HTMLElement | null : null;
+										let speakerEl = scrape.speakerSelector ? item.querySelector(scrape.speakerSelector) as HTMLElement | null : null;
+										let timestamp = timestampEl?.innerText?.trim() || "";
+										let text = textEl?.innerText?.trim() || item.innerText?.trim() || "";
+										let speaker = speakerEl?.innerText?.trim() || "";
+										if (text) {
+											entries.push({ timestamp: timestamp, text: text, speaker: speaker });
+										}
+									}
+
+									if (entries.length === 0) {
+										return { success: false, errorCode: "noText", error: "The transcript panel opened but no text could be extracted." };
+									}
+
+									return {
+										success: true,
+										platform: platformId,
+										videoTitle: videoTitle,
+										transcript: entries
+									};
 								} catch (e: any) {
-									return { success: false, error: "Exception: " + (e?.message ? e.message : String(e)) };
+									return { success: false, errorCode: "exception", error: "Exception: " + (e?.message ? e.message : String(e)) };
 								}
 							}
 						}).then((results: any[]) => {
 							let data = results?.[0]?.result;
 							if (!data) {
-								port.postMessage({ action: "transcriptResult", success: false, error: "No result from transcript extraction." });
+								port.postMessage({ action: "transcriptResult", success: false, errorCode: "noResult", error: "No result from transcript extraction." });
 								return;
 							}
-							port.postMessage({ action: "transcriptResult", success: data.success, error: data.error || "", videoTitle: data.videoTitle || "", platform: data.platform || "", transcript: data.transcript || [] });
+							port.postMessage({ action: "transcriptResult", success: data.success, errorCode: data.errorCode || "", error: data.error || "", videoTitle: data.videoTitle || "", platform: data.platform || "", transcript: data.transcript || [] });
 						}).catch((err: any) => {
-							port.postMessage({ action: "transcriptResult", success: false, error: "Script execution error: " + (err?.message || String(err)) });
+							port.postMessage({ action: "transcriptResult", success: false, errorCode: "scriptError", error: "Script execution error: " + (err?.message || String(err)) });
 						});
 					}
 
