@@ -366,6 +366,52 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 });
 titleField.placeholder = strings.titlePlaceholder;
 noteField.placeholder = strings.notePlaceholder;
+
+// --- Note field auto-grow ------------------------------------------------
+// Grows the Note field with its content up to NOTE_MAX_LINES, then scrolls.
+// A manual drag-resize is remembered as a floor so typing can still grow the
+// field but never auto-shrinks it below the height the user chose.
+const NOTE_LINE_HEIGHT = 20;     // px — must match line-height in renderer.less
+const NOTE_VERTICAL_CHROME = 10; // 8px padding (4+4) + 2px border (1+1)
+const NOTE_MAX_LINES = 7;
+const NOTE_MAX_HEIGHT = NOTE_MAX_LINES * NOTE_LINE_HEIGHT + NOTE_VERTICAL_CHROME;
+let userPreferredNoteHeight = 0; // px; 0 = no manual preference yet
+let lastAutoNoteHeight = 0;
+
+function autoGrowNoteField() {
+	noteField.style.height = "auto";
+	// (offsetHeight - clientHeight) is the exact vertical border to add back under
+	// border-box; it also tracks the focus border change.
+	let borderY = noteField.offsetHeight - noteField.clientHeight;
+	let contentHeight = noteField.scrollHeight + borderY;
+	let fitHeight = Math.min(contentHeight, NOTE_MAX_HEIGHT);
+	let targetHeight = Math.max(fitHeight, userPreferredNoteHeight);
+	noteField.style.height = targetHeight + "px";
+	noteField.style.overflowY = contentHeight > targetHeight ? "auto" : "hidden";
+	lastAutoNoteHeight = noteField.offsetHeight;
+}
+
+function resetNoteFieldSize() {
+	userPreferredNoteHeight = 0;
+	autoGrowNoteField();
+}
+
+noteField.addEventListener("input", autoGrowNoteField);
+// Detect a drag-resize: it starts on the field and ends with a mouseup at a
+// height that no longer matches our last auto value. Record it as the floor (the
+// next keystroke grows past it as needed); the mousedown gate avoids stray clicks.
+let noteResizeInProgress = false;
+noteField.addEventListener("mousedown", () => { noteResizeInProgress = true; });
+document.addEventListener("mouseup", () => {
+	if (!noteResizeInProgress) { return; }
+	noteResizeInProgress = false;
+	if (Math.abs(noteField.offsetHeight - lastAutoNoteHeight) > 1) {
+		userPreferredNoteHeight = noteField.offsetHeight;
+		lastAutoNoteHeight = noteField.offsetHeight;
+		noteField.style.overflowY = "auto";
+	}
+});
+autoGrowNoteField();
 // Mode button tooltips (matches old modeButton.tsx tooltip pattern)
 let tooltipMap: any = {
 	fullpage: loc("WebClipper.ClipType.ScreenShot.Button.Tooltip", "Take a screenshot of the whole page, just like you see it."),
@@ -3313,6 +3359,7 @@ port.onMessage.addListener((message: any) => {
 		// Reset metadata fields
 		titleField.value = "";
 		noteField.value = "";
+		resetNoteFieldSize();
 		sourceUrlText.textContent = "";
 		sourceUrl.title = "";
 		// Clear stale capture content from DOM
