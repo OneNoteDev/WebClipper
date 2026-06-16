@@ -614,18 +614,25 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 
 									let collected: { [key: string]: { idx: number; timestamp: string; text: string; speaker: string } } = {};
 									let autoOrder = 0;
+									let expectedTotal = 0;
 									function harvest() {
 										let cells = document.querySelectorAll(scrape.itemSelector);
 										for (let c = 0; c < cells.length; c++) {
 											let cell = cells[c] as HTMLElement;
 											let parsed = parseItem(cell);
 											if (!parsed.text) { continue; }
+											if (scrape.totalCountAttribute) {
+												let countEl = cell.querySelector("[" + scrape.totalCountAttribute + "]") as HTMLElement | null;
+												let countVal = countEl ? parseInt(countEl.getAttribute(scrape.totalCountAttribute) || "", 10) : NaN;
+												if (!isNaN(countVal) && countVal > expectedTotal) { expectedTotal = countVal; }
+											}
+											let attr = scrape.indexAttribute ? cell.getAttribute(scrape.indexAttribute) : null;
+											let parsedIdx = attr !== null ? parseInt(attr, 10) : NaN;
 											let key: string;
 											let idx: number;
-											let attr = scrape.indexAttribute ? cell.getAttribute(scrape.indexAttribute) : null;
-											if (attr !== null) {
+											if (attr !== null && !isNaN(parsedIdx)) {
 												key = attr;
-												idx = parseInt(attr, 10);
+												idx = parsedIdx;
 											} else {
 												key = "auto-" + autoOrder;
 												idx = autoOrder;
@@ -649,9 +656,12 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 										return null;
 									}
 
+									let reachedBottom = false;
+									let scrollerFound = false;
 									if (scrape.virtualized) {
 										let scroller = getScrollParent(items[0] as HTMLElement);
 										if (scroller) {
+											scrollerFound = true;
 											let startScroll = Date.now();
 											let maxDurationMs = 120000;
 											scroller.scrollTop = 0;
@@ -659,6 +669,10 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 											harvest();
 											let stall = 0;
 											while (Date.now() - startScroll < maxDurationMs) {
+												if (expectedTotal > 0 && Object.keys(collected).length >= expectedTotal) {
+													reachedBottom = true;
+													break;
+												}
 												let prevTop = scroller.scrollTop;
 												let step = Math.max(scroller.clientHeight - 40, 100);
 												scroller.scrollTop = Math.min(scroller.scrollTop + step, scroller.scrollHeight);
@@ -669,6 +683,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 												if (atBottom || stall >= 3) {
 													await wait(300);
 													harvest();
+													reachedBottom = atBottom || (expectedTotal > 0 && Object.keys(collected).length >= expectedTotal);
 													break;
 												}
 											}
@@ -692,11 +707,25 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 										return { success: false, errorCode: "noText", error: "The transcript panel opened but no text could be extracted." };
 									}
 
+									// Determine whether a virtualized capture is complete, so the renderer
+									// can warn the user rather than silently saving a truncated transcript.
+									let complete = true;
+									if (scrape.virtualized) {
+										if (expectedTotal > 0) {
+											complete = entries.length >= expectedTotal;
+										} else if (scrollerFound) {
+											complete = reachedBottom;
+										}
+									}
+
 									return {
 										success: true,
 										platform: platformId,
 										videoTitle: videoTitle,
-										transcript: entries
+										transcript: entries,
+										partial: !complete,
+										capturedCount: entries.length,
+										expectedCount: expectedTotal
 									};
 								} catch (e: any) {
 									return { success: false, errorCode: "exception", error: "Exception: " + (e?.message ? e.message : String(e)) };
@@ -708,7 +737,7 @@ export class WebExtensionWorker extends ExtensionWorkerBase<W3CTab, number> {
 								port.postMessage({ action: "transcriptResult", success: false, errorCode: "noResult", error: "No result from transcript extraction." });
 								return;
 							}
-							port.postMessage({ action: "transcriptResult", success: data.success, errorCode: data.errorCode || "", error: data.error || "", videoTitle: data.videoTitle || "", platform: data.platform || "", transcript: data.transcript || [] });
+							port.postMessage({ action: "transcriptResult", success: data.success, errorCode: data.errorCode || "", error: data.error || "", videoTitle: data.videoTitle || "", platform: data.platform || "", transcript: data.transcript || [], partial: !!data.partial, capturedCount: data.capturedCount || 0, expectedCount: data.expectedCount || 0 });
 						}).catch((err: any) => {
 							port.postMessage({ action: "transcriptResult", success: false, errorCode: "scriptError", error: "Script execution error: " + (err?.message || String(err)) });
 						});

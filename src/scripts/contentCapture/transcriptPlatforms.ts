@@ -30,6 +30,10 @@ export interface TranscriptScrapeConfig {
 	// Attribute that uniquely and stably identifies a row across DOM recycling
 	// (required when virtualized so rows are de-duplicated and ordered correctly).
 	indexAttribute?: string;
+	// Optional attribute (on a row or descendant) that reports the total number of
+	// rows in the full list (e.g. aria-setsize). Used to drive scroll termination
+	// and to detect when a virtualized capture is incomplete.
+	totalCountAttribute?: string;
 }
 
 export interface TranscriptPlatform {
@@ -87,7 +91,8 @@ const microsoftStream: TranscriptPlatform = {
 		speakerSelector: "[class*=\"itemDisplayName\"]",
 		openWaitMs: 1000,
 		virtualized: true,
-		indexAttribute: "data-list-index"
+		indexAttribute: "data-list-index",
+		totalCountAttribute: "aria-setsize"
 	},
 	buildTimestampUrl(url: URL, seconds: number): string {
 		let u = new URL(url.toString());

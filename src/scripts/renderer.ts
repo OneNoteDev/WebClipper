@@ -1927,7 +1927,18 @@ function onTranscriptResult(data: any) {
 	// Preview uses thumbnail placeholder (iframe won't render in extension context)
 	let previewHtml = titleHtml + thumbnailHtml + tableHtml;
 
-	announceToScreenReader(loc("WebClipper.Transcript.Loaded", "Transcript loaded."));
+	if (data.partial) {
+		let warn = loc("WebClipper.Transcript.Partial", "Only part of the transcript could be captured. Open the transcript panel and scroll through it fully, then clip again.");
+		if (data.capturedCount && data.expectedCount) {
+			warn += " (" + data.capturedCount + "/" + data.expectedCount + ")";
+		}
+		announceToScreenReader(warn);
+		// Warn in the in-app preview only; keep the saved OneNote page clean.
+		previewHtml = "<div role=\"alert\" style=\"background:#fff4ce;border:1px solid #e6c200;padding:8px 12px;border-radius:4px;margin-bottom:12px;color:#5c4400;font-size:13px;\">"
+			+ escapeHtml(warn) + "</div>" + previewHtml;
+	} else {
+		announceToScreenReader(loc("WebClipper.Transcript.Loaded", "Transcript loaded."));
+	}
 
 	// Fetch oEmbed for the real embed (used in save HTML sent to OneNote)
 	tryOEmbed(videoUrl).then(function(oembedData) {
