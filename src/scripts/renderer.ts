@@ -371,12 +371,19 @@ noteField.placeholder = strings.notePlaceholder;
 // Grows the Note field with its content up to NOTE_MAX_LINES, then scrolls.
 // A manual drag-resize is remembered as a floor so typing can still grow the
 // field but never auto-shrinks it below the height the user chose.
-const NOTE_LINE_HEIGHT = 20;     // px — must match line-height in renderer.less
-const NOTE_VERTICAL_CHROME = 10; // 8px padding (4+4) + 2px border (1+1)
 const NOTE_MAX_LINES = 7;
-const NOTE_MAX_HEIGHT = NOTE_MAX_LINES * NOTE_LINE_HEIGHT + NOTE_VERTICAL_CHROME;
 let userPreferredNoteHeight = 0; // px; 0 = no manual preference yet
 let lastAutoNoteHeight = 0;
+
+// Derive the N-line cap from the field's live computed style so it stays correct
+// if the CSS line-height, padding, or border ever change (incl. theming).
+function getNoteMaxHeight() {
+	let cs = getComputedStyle(noteField);
+	let lineHeight = parseFloat(cs.lineHeight) || 20;
+	let verticalChrome = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)
+		+ parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+	return NOTE_MAX_LINES * lineHeight + verticalChrome;
+}
 
 function autoGrowNoteField() {
 	noteField.style.height = "auto";
@@ -384,7 +391,7 @@ function autoGrowNoteField() {
 	// border-box; it also tracks the focus border change.
 	let borderY = noteField.offsetHeight - noteField.clientHeight;
 	let contentHeight = noteField.scrollHeight + borderY;
-	let fitHeight = Math.min(contentHeight, NOTE_MAX_HEIGHT);
+	let fitHeight = Math.min(contentHeight, getNoteMaxHeight());
 	let targetHeight = Math.max(fitHeight, userPreferredNoteHeight);
 	noteField.style.height = targetHeight + "px";
 	noteField.style.overflowY = contentHeight > targetHeight ? "auto" : "hidden";
