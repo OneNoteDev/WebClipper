@@ -340,9 +340,11 @@ iframe#preview-frame {
 // Title is a single-line input per design
 #title-field { resize: none; }
 
-// Floor manual drag-resize at one line (auto-grow handled in renderer.ts):
-// 20px line-height + 8px padding + 2px border = 30px.
-#note-field { min-height: 30px; }
+// Note field manual-resize bounds (auto-grow handled in renderer.ts). min-height
+// floors a drag at one line; max-height stops the native resize handle from
+// dragging past the 7-line cap (mirrors NOTE_MAX_LINES in renderer.ts).
+// One line = 20px line-height + 8px padding + 2px border = 30px; 7 lines = 150px.
+#note-field { min-height: 30px; max-height: 150px; }
 
 .source-url {
 	font-size: 14px; line-height: 20px;

@@ -407,13 +407,16 @@ noteField.addEventListener("input", autoGrowNoteField);
 // Detect a drag-resize: it starts on the field and ends with a mouseup at a
 // height that no longer matches our last auto value. Record it as the floor (the
 // next keystroke grows past it as needed); the mousedown gate avoids stray clicks.
+// The floor is clamped to the auto-grow cap so a manual drag can never persist a
+// height taller than NOTE_MAX_LINES (which would otherwise stick across later
+// typing and suppress the scrollbar).
 let noteResizeInProgress = false;
 noteField.addEventListener("mousedown", () => { noteResizeInProgress = true; });
 document.addEventListener("mouseup", () => {
 	if (!noteResizeInProgress) { return; }
 	noteResizeInProgress = false;
 	if (Math.abs(noteField.offsetHeight - lastAutoNoteHeight) > 1) {
-		userPreferredNoteHeight = noteField.offsetHeight;
+		userPreferredNoteHeight = Math.min(noteField.offsetHeight, getNoteMaxHeight());
 		lastAutoNoteHeight = noteField.offsetHeight;
 		noteField.style.overflowY = "auto";
 	}
