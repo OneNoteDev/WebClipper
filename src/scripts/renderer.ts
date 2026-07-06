@@ -257,6 +257,8 @@ let strings = {
 	changeFontSerif: loc("WebClipper.Accessibility.ScreenReader.ChangeFontToSerif", "Change font to Serif"),
 	decreaseFontSize: loc("WebClipper.Accessibility.ScreenReader.DecreaseFontSize", "Decrease font size"),
 	increaseFontSize: loc("WebClipper.Accessibility.ScreenReader.IncreaseFontSize", "Increase font size"),
+	fontSizeDecreasedTo: loc("WebClipper.Accessibility.ScreenReader.FontSizeDecreasedTo", "Font size decreased to {0}"),
+	fontSizeIncreasedTo: loc("WebClipper.Accessibility.ScreenReader.FontSizeIncreasedTo", "Font size increased to {0}"),
 	sansSerifLabel: loc("WebClipper.Preview.Header.SansSerifButtonLabel", "Sans-serif"),
 	serifLabel: loc("WebClipper.Preview.Header.SerifButtonLabel", "Serif"),
 	fontFamilySerif: loc("WebClipper.FontFamily.Preview.SerifDefault", "Georgia"),
@@ -1525,13 +1527,13 @@ fontDecreaseBtn.addEventListener("click", () => {
 	if (articleFontSize <= 8) { return; }
 	articleFontSize -= 2;
 	applyArticleFontSize();
-	announceToScreenReader(strings.decreaseFontSize);
+	announceToScreenReader(strings.fontSizeDecreasedTo.replace("{0}", "" + articleFontSize));
 });
 fontIncreaseBtn.addEventListener("click", () => {
 	if (articleFontSize >= 72) { return; }
 	articleFontSize += 2;
 	applyArticleFontSize();
-	announceToScreenReader(strings.increaseFontSize);
+	announceToScreenReader(strings.fontSizeIncreasedTo.replace("{0}", "" + articleFontSize));
 });
 
 // Highlighter toggle
