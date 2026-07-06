@@ -790,6 +790,8 @@ let feedbackLabel = document.getElementById("feedback-label");
 if (feedbackLabel) { feedbackLabel.textContent = strings.feedback; }
 signoutLink.addEventListener("click", (e) => {
 	e.preventDefault();
+	// Stop any in-flight full-page capture so the worker's loop doesn't outlive the session.
+	abortCurrentCapture();
 	logFunnel(Funnel.Label.SignOut);
 	logSessionEnd(Session.EndTrigger.SignOut);
 	// Clear user context before new session — prevents next sign-in events from carrying old user's identity
@@ -949,9 +951,8 @@ async function fetchFreshNotebooks() {
 		logTelemetryEvent(getNotebooksEvent);
 	}
 }
-// Sign-out and Save lock until capture completes; mode buttons stay interactive.
+// Save locks until capture completes; Sign-out stays available (it locks only during a save).
 saveBtn.disabled = true;
-disableSignout();
 // Show initial capture progress (bar hidden until first drawCapture with viewport counts)
 capturePanel.style.display = "flex";
 statusText.textContent = strings.capturing;
@@ -962,7 +963,7 @@ if (isSignedIn) { setTimeout(function() { cancelBtn.focus(); }, 100); }
 
 // Section selection persistence is handled by selectSection() in the custom dropdown
 
-// --- Accessible signout disable/enable ---
+// Signout is an <a> (no .disabled) so a11y state is toggled by hand; only ever driven by lock/unlockSidebar.
 function disableSignout() {
 	signoutLink.style.pointerEvents = "none";
 	signoutLink.style.opacity = "0.4";
@@ -1058,7 +1059,6 @@ function switchToFullPage() {
 		statusText.textContent = strings.capturing;
 		saveBtn.disabled = true;
 		if (captureDimensions && !captureInProgress) {
-			disableSignout();
 			announceToScreenReader(strings.capturing);
 			let progressTrack = document.getElementById("progress-bar-track") as HTMLElement;
 			if (progressTrack) { progressTrack.style.display = "none"; }
@@ -2124,7 +2124,6 @@ function enterPdfMode(url: string) {
 			btn.setAttribute("aria-pressed", "false");
 		}
 	});
-	enableSignout();
 
 	// Show PDF options, hide capture panel
 	pdfOptionsPanel.style.display = "block";
@@ -2515,7 +2514,6 @@ function enterReadyStateWithoutCapture() {
 		(b as HTMLButtonElement).disabled = false;
 		b.classList.remove("disabled");
 	});
-	enableSignout();
 	announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
 	triggerInitialModeAutoEngage();
 }
@@ -3000,7 +2998,6 @@ port.onMessage.addListener((message: any) => {
 					saveBtn.disabled = false;
 				}
 
-				enableSignout();
 				captureInProgress = false;
 				announceToScreenReader(loc("WebClipper.Label.ClipSuccessful", "Capture complete"));
 
@@ -3298,7 +3295,6 @@ port.onMessage.addListener((message: any) => {
 		currentMode = "fullpage";
 		// Unlock sidebar (clears disabled state from lockSidebar during save)
 		unlockSidebar();
-		enableSignout();
 		userEmailSpan.textContent = "";
 		userAuthType = "";
 		userInfoDiv.style.display = "none";
