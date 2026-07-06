@@ -161,9 +161,9 @@ iframe#preview-frame {
 		color: @colorNeutralForeground1; cursor: pointer; border-radius: 4px;
 		height: 28px; vertical-align: middle; padding: 0;
 		transition: background 0.1s;
-		&:hover:not(.active):not(:disabled) { background: @colorSubtleBackgroundHover; }
+		&:hover:not(.active):not([aria-disabled="true"]) { background: @colorSubtleBackgroundHover; }
 		&:focus { outline: 2px solid @focusRingColor !important; outline-offset: 2px; }
-		&:disabled { opacity: 0.4; cursor: default; }
+		&[aria-disabled="true"] { opacity: 0.4; cursor: default; }
 		&.active {
 			background: @colorSubtleBackgroundHover;
 			border-color: @colorCompoundBrandBackground;

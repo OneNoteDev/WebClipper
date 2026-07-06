@@ -1431,8 +1431,8 @@ function applyArticleFontSize() {
 }
 
 function updateFontSizeButtonStates() {
-	fontDecreaseBtn.disabled = articleFontSize <= 8;
-	fontIncreaseBtn.disabled = articleFontSize >= 72;
+	fontDecreaseBtn.setAttribute("aria-disabled", articleFontSize <= 8 ? "true" : "false");
+	fontIncreaseBtn.setAttribute("aria-disabled", articleFontSize >= 72 ? "true" : "false");
 }
 
 function initHighlighter() {
