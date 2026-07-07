@@ -15,6 +15,7 @@
 	--colorNeutralStroke3: #f0f0f0;
 	--colorSubtleBackgroundHover: #f5f5f5;
 	--colorSubtleBackgroundPressed: #e0e0e0;
+	--colorBrandForeground1: #7719aa;
 	--previewAreaBackground: #e8e6e4;
 	--previewSurfaceBackground: #ffffff;
 	--previewFrameBorderColor: rgba(0,0,0,0.08);
@@ -36,9 +37,9 @@
 @media (prefers-color-scheme: dark) {
 	:root {
 		color-scheme: dark;
-		--colorNeutralBackground1: #1f1f1f;
-		--colorNeutralBackground2: #262626;
-		--colorNeutralBackground3: #2b2b2b;
+		--colorNeutralBackground1: #292929;
+		--colorNeutralBackground2: #1f1f1f;
+		--colorNeutralBackground3: #141414;
 		--colorNeutralForeground1: #ffffff;
 		--colorNeutralForeground2: #d6d6d6;
 		--colorNeutralForeground3: #b3b3b3;
@@ -46,12 +47,13 @@
 		--colorNeutralStroke1: #5c5c5c;
 		--colorNeutralStroke2: #3d3d3d;
 		--colorNeutralStroke3: #2f2f2f;
-		--colorSubtleBackgroundHover: #2b2b2b;
-		--colorSubtleBackgroundPressed: #333333;
+		--colorSubtleBackgroundHover: #1f1f1f;
+		--colorSubtleBackgroundPressed: #141414;
+		--colorBrandForeground1: #b77bff;
 		--previewAreaBackground: #111111;
 		--previewSurfaceBackground: #1a1a1a;
 		--previewFrameBorderColor: rgba(255,255,255,0.12);
-		--scrollbarThumbColor: rgba(255,255,255,0.24);
+		--scrollbarThumbColor: rgba(255,255,255,0.4);
 		--layerShadow: 0 4px 12px rgba(0,0,0,0.45), 0 0 2px rgba(0,0,0,0.35);
 		--dangerForeground: #ff99a4;
 		--dangerBackground: #4a1b20;
@@ -61,6 +63,7 @@
 		--regionRemoveIcon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23ffffff' d='M6.5 1a1.5 1.5 0 0 0-1.5 1.5V3H3a.5.5 0 0 0 0 1h.5v8.5A1.5 1.5 0 0 0 5 14h6a1.5 1.5 0 0 0 1.5-1.5V4h.5a.5.5 0 0 0 0-1h-2v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zM4.5 4h7v8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V4zm2 2a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5z'/%3E%3C/svg%3E");
 		--sectionPickerChevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5l3.5 3.5 3.5-3.5' stroke='%23d6d6d6' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 		--modeIconImageFilter: brightness(0) invert(1);
+		--modeIconSelectedImageFilter: brightness(0) saturate(100%) invert(76%) sepia(38%) saturate(4608%) hue-rotate(220deg) brightness(103%) contrast(102%);
 		--previewLoadingForeground: #c8c8c8;
 	}
 }
@@ -88,6 +91,7 @@
 @colorNeutralStroke3: var(--colorNeutralStroke3);         // Subtle separator
 @colorSubtleBackgroundHover: var(--colorSubtleBackgroundHover);
 @colorSubtleBackgroundPressed: var(--colorSubtleBackgroundPressed);
+@colorBrandForeground1: var(--colorBrandForeground1);
 
 // --- OneNote brand ramp (from Fluent 2 "Colors/Brand/OneNote/*" in Figma) ---
 // Used for primary button, focus ring, selected states
@@ -229,8 +233,8 @@ iframe#preview-frame {
 		&:focus { outline: 2px solid @focusRingColor !important; outline-offset: 2px; }
 		&.active {
 			background: @colorSubtleBackgroundHover;
-			border-color: @colorCompoundBrandBackground;
-			color: @colorCompoundBrandBackground;
+			border-color: @colorBrandForeground1;
+			color: @colorBrandForeground1;
 		}
 		img { width: 18px; height: 18px; vertical-align: middle; }
 	}
@@ -341,8 +345,8 @@ iframe#preview-frame {
 	&:active { background: @colorSubtleBackgroundPressed; }
 	&.selected {
 		background: @colorSubtleBackgroundHover;
-		border-color: @colorCompoundBrandBackground;
-		color: @colorCompoundBrandBackground;
+		border-color: @colorBrandForeground1;
+		color: @colorBrandForeground1;
 	}
 	&.disabled {
 		opacity: 0.4; cursor: default;
@@ -395,7 +399,7 @@ iframe#preview-frame {
 	&::placeholder { color: @colorNeutralForeground4; }
 	&:focus {
 		outline: none;
-		border-color: @colorCompoundBrandBackground;
+		border-color: @colorBrandForeground1;
 		border-bottom-width: 2px;
 		padding-bottom: 3px; // compensate for thicker border to avoid shift
 	}
@@ -442,7 +446,7 @@ iframe#preview-frame {
 	background-position: right 8px center;
 	&:focus {
 		outline: none;
-		border-color: @colorCompoundBrandBackground;
+		border-color: @colorBrandForeground1;
 		border-bottom-width: 2px;
 		padding-bottom: 3px;
 	}
@@ -506,7 +510,7 @@ iframe#preview-frame {
 	&:hover { background: @colorSubtleBackgroundHover; }
 	&.section-item-selected {
 		background: @colorSubtleBackgroundHover;
-		color: @colorCompoundBrandBackground;
+		color: @colorBrandForeground1;
 		font-weight: 600;
 	}
 }
@@ -641,7 +645,7 @@ iframe#preview-frame {
 	border-radius: 2px; overflow: hidden;
 }
 #progress-bar-fill {
-	height: 100%; background: @colorCompoundBrandBackground;
+	height: 100%; background: @colorBrandForeground1;
 	border-radius: 2px; width: 0%;
 	transition: width 0.3s ease;
 }
@@ -681,7 +685,7 @@ iframe#preview-frame {
 	white-space: nowrap;
 	cursor: pointer;
 	line-height: 16px;
-	&:hover { text-decoration: underline; color: @colorCompoundBrandBackground; }
+	&:hover { text-decoration: underline; color: @colorBrandForeground1; }
 }
 
 // inline-flex + align-items:center for deterministic vertical alignment of the
@@ -699,7 +703,7 @@ iframe#preview-frame {
 	color: @colorNeutralForeground3; // #707070 — softer than the text color
 }
 #feedback-link:hover .feedback-icon {
-	color: @colorCompoundBrandBackground; // match hover state
+	color: @colorBrandForeground1; // match hover state
 }
 
 // Region thumbnails — natural size (no pixelation), left-aligned (matches old clipper), 24px gap between
@@ -761,7 +765,7 @@ iframe#preview-frame {
 	cursor: pointer;
 	text-align: center;
 	transition: background 0.1s, border-color 0.1s, color 0.1s;
-	&:hover { border-color: @colorCompoundBrandBackground; color: @colorCompoundBrandBackground; background: @colorSubtleBackgroundHover; }
+	&:hover { border-color: @colorBrandForeground1; color: @colorBrandForeground1; background: @colorSubtleBackgroundHover; }
 	// Fluent Add icon (24x24) — uses currentColor so it tints with the button text color
 	&::before {
 		content: "";
@@ -851,7 +855,7 @@ iframe#preview-frame {
 // For bordered elements (button, textarea, dropdown): keep the 1px border, turn it purple,
 // and add a 1px inset shadow for a total 2px visible purple edge (Fluent 2 focus stroke width).
 // For text links (<a>, section-list items with no border): use outer outline with offset.
-@focusRingColor: @oneNoteBrand80;
+@focusRingColor: @colorBrandForeground1;
 
 #sidebar button:focus,
 #sidebar textarea:focus,
