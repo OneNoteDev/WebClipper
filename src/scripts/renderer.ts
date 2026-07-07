@@ -1370,17 +1370,23 @@ function cleanArticleHtml(html: string): string {
 	return tempDoc.body ? tempDoc.body.innerHTML : html;
 }
 
+function getRootCssVariable(name: string, fallback: string) {
+	let value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+	return value || fallback;
+}
+
 function renderArticleHtml(html: string) {
 	let pDoc = previewFrame.contentDocument;
 	if (!pDoc) { return; }
 	let fontFamily = articleSerif ? strings.fontFamilySerif : strings.fontFamilySansSerif;
 	let fontSize = articleFontSize + "px";
+	let scrollbarThumbColor = getRootCssVariable("--scrollbarThumbColor", "rgba(0,0,0,0.2)");
 	let articleCss = "body { font-family: " + fontFamily + ", 'Segoe UI', sans-serif; font-size: " + fontSize + "; line-height: 1.6; "
 		+ "max-width: 624px; margin: 24px 0; padding: 0 20px; color: #1a1a1a; margin-bottom: 16px; }"
 		+ "img { max-width: 100%; height: auto; }"
 		// pointer-events:none on links so the iframe doesn't navigate away on click (matches bookmark mode).
 		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
-		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
+		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:" + scrollbarThumbColor + ";border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
 		+ "h2 { font-size: 18px; color: rgb(46,117,181); }"
 		+ "h3, h4, h5, h6 { color: rgb(91,155,213); margin-top: 14pt; margin-bottom: 14pt; }"
 		+ "figure { margin-inline-start: 0; }"
@@ -1762,10 +1768,11 @@ function escapeAttr(str: string): string {
 function renderBookmarkHtml(html: string) {
 	let pDoc = previewFrame.contentDocument;
 	if (!pDoc) { return; }
+	let scrollbarThumbColor = getRootCssVariable("--scrollbarThumbColor", "rgba(0,0,0,0.2)");
 	let bookmarkCss = "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 11pt; line-height: 1.5; "
 		+ "max-width: 624px; margin: 24px 0; padding: 0 20px; color: #1a1a1a; }"
 		+ "a { color: #2e75b5; text-decoration: underline; pointer-events: none; cursor: default; }"
-		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
+		+ "::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:" + scrollbarThumbColor + ";border-radius:3px} ::-webkit-scrollbar-track{background:transparent}"
 		+ "h2 { font-size: 18px; color: rgb(46,117,181); font-weight: normal; }"
 		+ "img { border-radius: 2px; }"
 		// Preview-only: constrain bookmark to body width.
