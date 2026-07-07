@@ -412,6 +412,7 @@ try {
 	let defaultSize = parseInt(loc("WebClipper.FontSize.Preview.SansSerifDefault", "16px"), 10);
 	if (defaultSize > 0) { articleFontSize = defaultSize; }
 } catch (e) { /* keep default 16 */ }
+updateFontSizeButtonStates();
 
 // Document title is set unconditionally; the page title and source URL arrive
 // in the loadContent port message and are populated there (no session-storage
@@ -1429,6 +1430,11 @@ function applyArticleFontSize() {
 	pDoc.body.style.fontSize = articleFontSize + "px";
 }
 
+function updateFontSizeButtonStates() {
+	fontDecreaseBtn.setAttribute("aria-disabled", articleFontSize <= 8 ? "true" : "false");
+	fontIncreaseBtn.setAttribute("aria-disabled", articleFontSize >= 72 ? "true" : "false");
+}
+
 function initHighlighter() {
 	// Parent-window script operating on the sandboxed (allow-same-origin) preview-frame.
 	createHighlighterInstance();
@@ -1525,12 +1531,14 @@ fontDecreaseBtn.addEventListener("click", () => {
 	if (articleFontSize <= 8) { return; }
 	articleFontSize -= 2;
 	applyArticleFontSize();
+	updateFontSizeButtonStates();
 	announceToScreenReader(strings.decreaseFontSize);
 });
 fontIncreaseBtn.addEventListener("click", () => {
 	if (articleFontSize >= 72) { return; }
 	articleFontSize += 2;
 	applyArticleFontSize();
+	updateFontSizeButtonStates();
 	announceToScreenReader(strings.increaseFontSize);
 });
 
