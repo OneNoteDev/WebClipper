@@ -1,5 +1,76 @@
 // Renderer window styles — sidebar panel for capture progress and preview
-// Color values follow Fluent 2 design tokens (white theme).
+// Color values follow Fluent 2 design tokens and adapt to system light/dark theme.
+
+:root {
+	color-scheme: light;
+	--colorNeutralBackground1: #ffffff;
+	--colorNeutralBackground2: #fafafa;
+	--colorNeutralBackground3: #f5f5f5;
+	--colorNeutralForeground1: #242424;
+	--colorNeutralForeground2: #424242;
+	--colorNeutralForeground3: #707070;
+	--colorNeutralForeground4: #b4b4b4;
+	--colorNeutralStroke1: #d1d1d1;
+	--colorNeutralStroke2: #e0e0e0;
+	--colorNeutralStroke3: #f0f0f0;
+	--colorSubtleBackgroundHover: #f5f5f5;
+	--colorSubtleBackgroundPressed: #e0e0e0;
+	--colorBrandForeground1: #7719aa;
+	--previewAreaBackground: #e8e6e4;
+	--previewSurfaceBackground: #ffffff;
+	--previewFrameBorderColor: rgba(0,0,0,0.08);
+	--scrollbarThumbColor: rgba(0,0,0,0.2);
+	--layerShadow: 0 4px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.1);
+	--buttonForegroundOnBrand: #fff;
+	--successStatusIcon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%230e700e' d='M5 3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm9.05 5.55l-5 5a.5.5 0 0 1-.71 0l-2.5-2.5a.5.5 0 1 1 .71-.71L8.7 12.5l4.64-4.65a.5.5 0 0 1 .71.7z'/%3E%3C/svg%3E");
+	--errorStatusIcon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23c50f1f' d='M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 3a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 1 0-2 1 1 0 0 1 0 2z'/%3E%3C/svg%3E");
+	--dangerForeground: #a80000;
+	--dangerBackground: #fdeaea;
+	--regionRemoveBorder: rgba(0,0,0,0.08);
+	--regionRemoveBackground: rgba(0,0,0,0.05);
+	--regionRemoveHoverBackground: rgba(0,0,0,0.1);
+	--regionRemoveIcon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23242424' d='M6.5 1a1.5 1.5 0 0 0-1.5 1.5V3H3a.5.5 0 0 0 0 1h.5v8.5A1.5 1.5 0 0 0 5 14h6a1.5 1.5 0 0 0 1.5-1.5V4h.5a.5.5 0 0 0 0-1h-2v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zM4.5 4h7v8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V4zm2 2a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5z'/%3E%3C/svg%3E");
+	--sectionPickerChevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5l3.5 3.5 3.5-3.5' stroke='%23424242' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	--modeIconImageFilter: brightness(0);
+	--modeIconSelectedImageFilter: brightness(0) saturate(100%) invert(15%) sepia(84%) saturate(4421%) hue-rotate(277deg) brightness(88%) contrast(92%);
+	--previewLoadingForeground: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		color-scheme: dark;
+		--colorNeutralBackground1: #292929;
+		--colorNeutralBackground2: #1f1f1f;
+		--colorNeutralBackground3: #141414;
+		--colorNeutralForeground1: #ffffff;
+		--colorNeutralForeground2: #d6d6d6;
+		--colorNeutralForeground3: #b3b3b3;
+		--colorNeutralForeground4: #8a8a8a;
+		--colorNeutralStroke1: #5c5c5c;
+		--colorNeutralStroke2: #3d3d3d;
+		--colorNeutralStroke3: #2f2f2f;
+		--colorSubtleBackgroundHover: #1f1f1f;
+		--colorSubtleBackgroundPressed: #141414;
+		--colorBrandForeground1: #c9a3ff;
+		--previewAreaBackground: #111111;
+		--previewSurfaceBackground: #1a1a1a;
+		--previewFrameBorderColor: rgba(255,255,255,0.12);
+		--scrollbarThumbColor: rgba(255,255,255,0.4);
+		--layerShadow: 0 4px 12px rgba(0,0,0,0.45), 0 0 2px rgba(0,0,0,0.35);
+		--successStatusIcon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%2354b054' d='M5 3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm9.05 5.55l-5 5a.5.5 0 0 1-.71 0l-2.5-2.5a.5.5 0 1 1 .71-.71L8.7 12.5l4.64-4.65a.5.5 0 0 1 .71.7z'/%3E%3C/svg%3E");
+		--errorStatusIcon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23ff99a4' d='M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 3a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 1 0-2 1 1 0 0 1 0 2z'/%3E%3C/svg%3E");
+		--dangerForeground: #ff99a4;
+		--dangerBackground: #4a1b20;
+		--regionRemoveBorder: rgba(255,255,255,0.16);
+		--regionRemoveBackground: rgba(255,255,255,0.08);
+		--regionRemoveHoverBackground: rgba(255,255,255,0.14);
+		--regionRemoveIcon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23ffffff' d='M6.5 1a1.5 1.5 0 0 0-1.5 1.5V3H3a.5.5 0 0 0 0 1h.5v8.5A1.5 1.5 0 0 0 5 14h6a1.5 1.5 0 0 0 1.5-1.5V4h.5a.5.5 0 0 0 0-1h-2v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zM4.5 4h7v8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V4zm2 2a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5z'/%3E%3C/svg%3E");
+		--sectionPickerChevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5l3.5 3.5 3.5-3.5' stroke='%23d6d6d6' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+		--modeIconImageFilter: brightness(0) invert(1);
+		--modeIconSelectedImageFilter: brightness(0) saturate(100%) invert(76%) sepia(38%) saturate(4608%) hue-rotate(220deg) brightness(103%) contrast(102%);
+		--previewLoadingForeground: #c8c8c8;
+	}
+}
 
 // Segoe UI for non-Windows users (matches V1; loaded from OneNote CDN).
 @font-face {
@@ -12,18 +83,19 @@
 }
 
 // --- Fluent 2 neutral tokens (light theme) ---
-@colorNeutralBackground1: #ffffff;        // Sidebar / surface
-@colorNeutralBackground2: #fafafa;        // Subtle hover
-@colorNeutralBackground3: #f5f5f5;        // Input / field rest
-@colorNeutralForeground1: #242424;        // Primary text
-@colorNeutralForeground2: #424242;        // Labels / secondary text
-@colorNeutralForeground3: #707070;        // Tertiary text (source URL)
-@colorNeutralForeground4: #b4b4b4;        // Placeholder
-@colorNeutralStroke1: #d1d1d1;            // Input/button border
-@colorNeutralStroke2: #e0e0e0;            // Divider
-@colorNeutralStroke3: #f0f0f0;            // Subtle separator
-@colorSubtleBackgroundHover: #f5f5f5;
-@colorSubtleBackgroundPressed: #e0e0e0;
+@colorNeutralBackground1: var(--colorNeutralBackground1); // Sidebar / surface
+@colorNeutralBackground2: var(--colorNeutralBackground2); // Subtle hover
+@colorNeutralBackground3: var(--colorNeutralBackground3); // Input / field rest
+@colorNeutralForeground1: var(--colorNeutralForeground1); // Primary text
+@colorNeutralForeground2: var(--colorNeutralForeground2); // Labels / secondary text
+@colorNeutralForeground3: var(--colorNeutralForeground3); // Tertiary text (source URL)
+@colorNeutralForeground4: var(--colorNeutralForeground4); // Placeholder
+@colorNeutralStroke1: var(--colorNeutralStroke1);         // Input/button border
+@colorNeutralStroke2: var(--colorNeutralStroke2);         // Divider
+@colorNeutralStroke3: var(--colorNeutralStroke3);         // Subtle separator
+@colorSubtleBackgroundHover: var(--colorSubtleBackgroundHover);
+@colorSubtleBackgroundPressed: var(--colorSubtleBackgroundPressed);
+@colorBrandForeground1: var(--colorBrandForeground1);
 
 // --- OneNote brand ramp (from Fluent 2 "Colors/Brand/OneNote/*" in Figma) ---
 // Used for primary button, focus ring, selected states
@@ -41,7 +113,7 @@ html, body {
 	width: 100%; height: 100%;
 	font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, sans-serif;
 }
-body { display: flex; }
+body { display: flex; background: @colorNeutralBackground1; color: @colorNeutralForeground1; }
 
 // Preview area wrapper — flex column for article header + content
 // When .preview-ready is added (after capture), child panels gain a thin rounded frame.
@@ -52,7 +124,7 @@ body { display: flex; }
 #preview-area {
 	flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%;
 	position: relative;
-	background: #e8e6e4; // visible contrast against white page content inside the rounded frame
+	background: var(--previewAreaBackground); // visible contrast around page content inside the rounded frame
 
 	// Rounded frame — thin inner ring only, no drop shadow
 	&.preview-ready::after {
@@ -60,7 +132,7 @@ body { display: flex; }
 		position: absolute; top: 0; left: 0; right: 0; bottom: 0;
 		pointer-events: none; z-index: 10;
 		border-radius: @preview-radius;
-		box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+		box-shadow: inset 0 0 0 1px var(--previewFrameBorderColor);
 	}
 
 	// When ready, add real margin on child panels so content isn't hidden behind the rounded corners
@@ -125,7 +197,7 @@ iframe#content-frame {
 iframe#preview-frame {
 	flex: 1; min-width: 0; min-height: 0;
 	border: none; display: block;
-	background: #fff;
+	background: var(--previewSurfaceBackground);
 }
 
 // Preview area — shown after capture with scrollable image
@@ -134,12 +206,12 @@ iframe#preview-frame {
 #preview-container {
 	flex: 1; min-width: 0; min-height: 0;
 	overflow-y: auto; display: none;
-	background: #e8e6e4;
+	background: var(--previewAreaBackground);
 	// Full-width for full-page screenshot preview, but not for region thumbnails
 	> img { width: 100%; display: block; }
 	// Show scrollbar to indicate scrollable content
 	&::-webkit-scrollbar { display: block; width: 6px; }
-	&::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+	&::-webkit-scrollbar-thumb { background: var(--scrollbarThumbColor); border-radius: 3px; }
 	&::-webkit-scrollbar-track { background: transparent; }
 	&:focus-visible {
 		outline: none;
@@ -166,8 +238,8 @@ iframe#preview-frame {
 		&[aria-disabled="true"] { opacity: 0.4; cursor: default; }
 		&.active {
 			background: @colorSubtleBackgroundHover;
-			border-color: @colorCompoundBrandBackground;
-			color: @colorCompoundBrandBackground;
+			border-color: @colorBrandForeground1;
+			color: @colorBrandForeground1;
 		}
 		img { width: 18px; height: 18px; vertical-align: middle; }
 	}
@@ -246,7 +318,7 @@ iframe#preview-frame {
 	// Visible scrollbar so user can see there's more content below
 	// !important overrides the global ::-webkit-scrollbar { display: none } at bottom of file
 	&::-webkit-scrollbar { display: block !important; width: 5px !important; }
-	&::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2) !important; border-radius: 3px; }
+	&::-webkit-scrollbar-thumb { background: var(--scrollbarThumbColor) !important; border-radius: 3px; }
 	&::-webkit-scrollbar-track { background: transparent; }
 }
 
@@ -278,8 +350,8 @@ iframe#preview-frame {
 	&:active { background: @colorSubtleBackgroundPressed; }
 	&.selected {
 		background: @colorSubtleBackgroundHover;
-		border-color: @colorCompoundBrandBackground;
-		color: @colorCompoundBrandBackground;
+		border-color: @colorBrandForeground1;
+		color: @colorBrandForeground1;
 	}
 	&.disabled {
 		opacity: 0.4; cursor: default;
@@ -299,10 +371,10 @@ iframe#preview-frame {
 	// brand color of the selected text/border.
 	.mode-icon-img {
 		width: 20px; height: 20px; flex-shrink: 0;
-		filter: brightness(0);
+		filter: var(--modeIconImageFilter);
 	}
 	&.selected .mode-icon-img {
-		filter: brightness(0) saturate(100%) invert(15%) sepia(84%) saturate(4421%) hue-rotate(277deg) brightness(88%) contrast(92%);
+		filter: var(--modeIconSelectedImageFilter);
 	}
 }
 
@@ -332,7 +404,7 @@ iframe#preview-frame {
 	&::placeholder { color: @colorNeutralForeground4; }
 	&:focus {
 		outline: none;
-		border-color: @colorCompoundBrandBackground;
+		border-color: @colorBrandForeground1;
 		border-bottom-width: 2px;
 		padding-bottom: 3px; // compensate for thicker border to avoid shift
 	}
@@ -374,12 +446,12 @@ iframe#preview-frame {
 	user-select: none;
 	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 	// Chevron down arrow
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5l3.5 3.5 3.5-3.5' stroke='%23424242' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-image: var(--sectionPickerChevron);
 	background-repeat: no-repeat;
 	background-position: right 8px center;
 	&:focus {
 		outline: none;
-		border-color: @colorCompoundBrandBackground;
+		border-color: @colorBrandForeground1;
 		border-bottom-width: 2px;
 		padding-bottom: 3px;
 	}
@@ -398,10 +470,10 @@ iframe#preview-frame {
 	background: @colorNeutralBackground1;
 	border: 1px solid @colorNeutralStroke1;
 	border-radius: 4px;
-	box-shadow: 0 4px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.1);
+	box-shadow: var(--layerShadow);
 	z-index: 50;
 	&::-webkit-scrollbar { display: block !important; width: 5px !important; }
-	&::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2) !important; border-radius: 3px; }
+	&::-webkit-scrollbar-thumb { background: var(--scrollbarThumbColor) !important; border-radius: 3px; }
 	&::-webkit-scrollbar-track { background: transparent; }
 }
 
@@ -443,7 +515,7 @@ iframe#preview-frame {
 	&:hover { background: @colorSubtleBackgroundHover; }
 	&.section-item-selected {
 		background: @colorSubtleBackgroundHover;
-		color: @colorCompoundBrandBackground;
+		color: @colorBrandForeground1;
 		font-weight: 600;
 	}
 }
@@ -476,7 +548,7 @@ iframe#preview-frame {
 // Clip — Fluent primary (OneNote brand /80 rest → /60 hover → /50 pressed)
 #save-btn {
 	background: @colorCompoundBrandBackground;
-	color: #fff;
+	color: var(--buttonForegroundOnBrand);
 	border: 1px solid @colorCompoundBrandBackground;
 	&:hover { background: @colorCompoundBrandBackgroundHover; border-color: @colorCompoundBrandBackgroundHover; }
 	&:active { background: @colorCompoundBrandBackgroundPressed; border-color: @colorCompoundBrandBackgroundPressed; }
@@ -507,12 +579,10 @@ iframe#preview-frame {
 		display: inline-block; width: 20px; height: 20px; flex-shrink: 0;
 	}
 	.status-icon-success {
-		// Checkmark Square — Fluent success semantic color
-		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%230e700e' d='M5 3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm9.05 5.55l-5 5a.5.5 0 0 1-.71 0l-2.5-2.5a.5.5 0 1 1 .71-.71L8.7 12.5l4.64-4.65a.5.5 0 0 1 .71.7z'/%3E%3C/svg%3E") no-repeat center/contain;
+		background: var(--successStatusIcon) no-repeat center/contain;
 	}
 	.status-icon-error {
-		// Error Circle — Fluent danger semantic color
-		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath fill='%23c50f1f' d='M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 3a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5A.75.75 0 0 1 10 5zm0 10a1 1 0 1 1 0-2 1 1 0 0 1 0 2z'/%3E%3C/svg%3E") no-repeat center/contain;
+		background: var(--errorStatusIcon) no-repeat center/contain;
 	}
 	.status-title {
 		font-size: 12px; font-weight: 600; line-height: 16px;
@@ -578,7 +648,7 @@ iframe#preview-frame {
 	border-radius: 2px; overflow: hidden;
 }
 #progress-bar-fill {
-	height: 100%; background: @colorCompoundBrandBackground;
+	height: 100%; background: @colorBrandForeground1;
 	border-radius: 2px; width: 0%;
 	transition: width 0.3s ease;
 }
@@ -618,7 +688,7 @@ iframe#preview-frame {
 	white-space: nowrap;
 	cursor: pointer;
 	line-height: 16px;
-	&:hover { text-decoration: underline; color: @colorCompoundBrandBackground; }
+	&:hover { text-decoration: underline; color: @colorBrandForeground1; }
 }
 
 // inline-flex + align-items:center for deterministic vertical alignment of the
@@ -636,7 +706,7 @@ iframe#preview-frame {
 	color: @colorNeutralForeground3; // #707070 — softer than the text color
 }
 #feedback-link:hover .feedback-icon {
-	color: @colorCompoundBrandBackground; // match hover state
+	color: @colorBrandForeground1; // match hover state
 }
 
 // Region thumbnails — natural size (no pixelation), left-aligned (matches old clipper), 24px gap between
@@ -665,19 +735,19 @@ iframe#preview-frame {
 	height: 28px; padding: 0; padding-inline: 8px 12px;
 	margin-bottom: 8px; // gap between button and image
 	border-radius: 4px;
-	border: 1px solid rgba(0,0,0,0.08);
-	background: rgba(0,0,0,0.05); // translucent black alpha 5% per sticky note
+	border: 1px solid var(--regionRemoveBorder);
+	background: var(--regionRemoveBackground);
 	color: @colorNeutralForeground1;
 	font-size: 13px; font-weight: 400; line-height: 20px;
 	font-family: inherit;
 	cursor: pointer;
 	transition: background 0.1s;
-	&:hover { background: rgba(0,0,0,0.1); }
+	&:hover { background: var(--regionRemoveHoverBackground); }
 	// Trash icon — clean filled path
 	&::before {
 		content: "";
 		display: inline-block; width: 16px; height: 16px; flex-shrink: 0;
-		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23242424' d='M6.5 1a1.5 1.5 0 0 0-1.5 1.5V3H3a.5.5 0 0 0 0 1h.5v8.5A1.5 1.5 0 0 0 5 14h6a1.5 1.5 0 0 0 1.5-1.5V4h.5a.5.5 0 0 0 0-1h-2v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zM4.5 4h7v8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V4zm2 2a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5z'/%3E%3C/svg%3E") no-repeat center/contain;
+		background: var(--regionRemoveIcon) no-repeat center/contain;
 	}
 }
 
@@ -698,7 +768,7 @@ iframe#preview-frame {
 	cursor: pointer;
 	text-align: center;
 	transition: background 0.1s, border-color 0.1s, color 0.1s;
-	&:hover { border-color: @colorCompoundBrandBackground; color: @colorCompoundBrandBackground; background: @colorSubtleBackgroundHover; }
+	&:hover { border-color: @colorBrandForeground1; color: @colorBrandForeground1; background: @colorSubtleBackgroundHover; }
 	// Fluent Add icon (24x24) — uses currentColor so it tints with the button text color
 	&::before {
 		content: "";
@@ -758,7 +828,7 @@ iframe#preview-frame {
 	cursor: pointer;
 	margin-bottom: 10px;
 	transition: background 0.1s;
-	background: @colorCompoundBrandBackground; color: #fff;
+	background: @colorCompoundBrandBackground; color: var(--buttonForegroundOnBrand);
 	&:hover { background: @colorCompoundBrandBackgroundHover; border-color: @colorCompoundBrandBackgroundHover; }
 	&:disabled { opacity: 0.4; cursor: default; }
 }
@@ -773,7 +843,7 @@ iframe#preview-frame {
 
 .signin-error {
 	font-size: 12px;
-	color: #a80000; // Fluent danger color
+	color: var(--dangerForeground);
 	margin-top: 8px;
 	line-height: 16px;
 }
@@ -788,7 +858,7 @@ iframe#preview-frame {
 // For bordered elements (button, textarea, dropdown): keep the 1px border, turn it purple,
 // and add a 1px inset shadow for a total 2px visible purple edge (Fluent 2 focus stroke width).
 // For text links (<a>, section-list items with no border): use outer outline with offset.
-@focusRingColor: @oneNoteBrand80;
+@focusRingColor: @colorBrandForeground1;
 
 #sidebar button:focus,
 #sidebar textarea:focus,
@@ -1117,8 +1187,8 @@ iframe#preview-frame {
 }
 
 .pdf-range-error {
-	color: #a80000; font-size: 12px; margin-top: 2px;
-	padding: 4px 8px; background: #fdeaea; border-radius: 4px;
+	color: var(--dangerForeground); font-size: 12px; margin-top: 2px;
+	padding: 4px 8px; background: var(--dangerBackground); border-radius: 4px;
 }
 
 #pdf-checkboxes {
@@ -1140,7 +1210,7 @@ iframe#preview-frame {
 }
 
 .pdf-attach-warning {
-	color: #a80000; font-size: 12px;
+	color: var(--dangerForeground); font-size: 12px;
 	padding: 4px 0 0 0; padding-inline-start: 20px;
 }
 
@@ -1174,7 +1244,7 @@ iframe#preview-frame {
 		opacity: 0.3;
 	}
 	.pdf-loading-indicator {
-		text-align: center; padding: 20px; color: #666;
+		text-align: center; padding: 20px; color: var(--previewLoadingForeground);
 		font-size: 13px;
 	}
 	// V1 .attachment-overlay parity: 84x96 box, 48px icon, filename below.
