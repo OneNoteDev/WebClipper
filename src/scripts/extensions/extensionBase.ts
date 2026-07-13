@@ -30,7 +30,7 @@ export abstract class ExtensionBase<TWorker extends ExtensionWorkerBase<TTab, TT
 	protected clipperData: ClipperData;
 	protected auth: AuthenticationHelper;
 	protected clientInfo: SmartValue<ClientInfo>;
-	protected static version = "3.11.1";
+	protected static version = "3.11.2";
 
 	constructor(clipperType: ClientType, clipperData: ClipperData) {
 		this.workers = [];

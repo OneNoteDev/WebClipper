@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.11.2 (July 2026)
+* Improvement : Added system-adaptive dark mode; a11y improvements; enabled Sign out during page capture; and legacy code cleanup.
+
 ## 3.11.1 (May 2026)
 * Improvement : Restored V1 parity for video pages (YouTube, Vimeo) via oEmbed, right-click "Clip Selection" and "Clip Image", article-mode highlighter, and PDF-attach visual indicator.
 
