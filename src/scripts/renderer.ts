@@ -368,6 +368,62 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
 });
 titleField.placeholder = strings.titlePlaceholder;
 noteField.placeholder = strings.notePlaceholder;
+
+// --- Note field auto-grow ------------------------------------------------
+// Grows the Note field with its content up to NOTE_MAX_LINES, then scrolls.
+// A manual drag-resize is remembered as a floor so typing can still grow the
+// field but never auto-shrinks it below the height the user chose.
+const NOTE_MAX_LINES = 7;
+let userPreferredNoteHeight = 0; // px; 0 = no manual preference yet
+let lastAutoNoteHeight = 0;
+
+// Derive the N-line cap from the field's live computed style so it stays correct
+// if the CSS line-height, padding, or border ever change (incl. theming).
+function getNoteMaxHeight() {
+	let cs = getComputedStyle(noteField);
+	let lineHeight = parseFloat(cs.lineHeight) || 20;
+	let verticalChrome = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)
+		+ parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+	return NOTE_MAX_LINES * lineHeight + verticalChrome;
+}
+
+function autoGrowNoteField() {
+	noteField.style.height = "auto";
+	// (offsetHeight - clientHeight) is the exact vertical border to add back under
+	// border-box; it also tracks the focus border change.
+	let borderY = noteField.offsetHeight - noteField.clientHeight;
+	let contentHeight = noteField.scrollHeight + borderY;
+	let fitHeight = Math.min(contentHeight, getNoteMaxHeight());
+	let targetHeight = Math.max(fitHeight, userPreferredNoteHeight);
+	noteField.style.height = targetHeight + "px";
+	noteField.style.overflowY = contentHeight > targetHeight ? "auto" : "hidden";
+	lastAutoNoteHeight = noteField.offsetHeight;
+}
+
+function resetNoteFieldSize() {
+	userPreferredNoteHeight = 0;
+	autoGrowNoteField();
+}
+
+noteField.addEventListener("input", autoGrowNoteField);
+// Detect a drag-resize: it starts on the field and ends with a mouseup at a
+// height that no longer matches our last auto value. Record it as the floor (the
+// next keystroke grows past it as needed); the mousedown gate avoids stray clicks.
+// The floor is clamped to the auto-grow cap so a manual drag can never persist a
+// height taller than NOTE_MAX_LINES (which would otherwise stick across later
+// typing and suppress the scrollbar).
+let noteResizeInProgress = false;
+noteField.addEventListener("mousedown", () => { noteResizeInProgress = true; });
+document.addEventListener("mouseup", () => {
+	if (!noteResizeInProgress) { return; }
+	noteResizeInProgress = false;
+	if (Math.abs(noteField.offsetHeight - lastAutoNoteHeight) > 1) {
+		userPreferredNoteHeight = Math.min(noteField.offsetHeight, getNoteMaxHeight());
+		lastAutoNoteHeight = noteField.offsetHeight;
+		noteField.style.overflowY = "auto";
+	}
+});
+autoGrowNoteField();
 // Mode button tooltips (matches old modeButton.tsx tooltip pattern)
 let tooltipMap: any = {
 	fullpage: loc("WebClipper.ClipType.ScreenShot.Button.Tooltip", "Take a screenshot of the whole page, just like you see it."),
@@ -3326,6 +3382,7 @@ port.onMessage.addListener((message: any) => {
 		// Reset metadata fields
 		titleField.value = "";
 		noteField.value = "";
+		resetNoteFieldSize();
 		sourceUrlText.textContent = "";
 		sourceUrl.title = "";
 		// Clear stale capture content from DOM
