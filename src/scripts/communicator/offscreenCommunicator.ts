@@ -35,6 +35,10 @@ export async function sendToOffscreenDocument(type: string, data: any): Promise<
 	let chromeRuntime = chrome.runtime as any;
 	let chromeOffscreen = (chrome as any).offscreen;
 
+	if (typeof chromeRuntime.getContexts !== "function" || !chromeOffscreen) {
+		return handleWithoutOffscreenDocument(type, data);
+	}
+
 	const existingContexts = await chromeRuntime.getContexts({
 		contextTypes: [chromeRuntime.ContextType.OFFSCREEN_DOCUMENT],
 		documentUrls: [offscreenUrl]
@@ -63,4 +67,27 @@ export async function sendToOffscreenDocument(type: string, data: any): Promise<
 			});
 		});
 	});
+}
+
+function handleWithoutOffscreenDocument(type: string, data: any): string {
+	switch (type) {
+		case OffscreenMessageTypes.getFromLocalStorage:
+			return localStorage.getItem(data.key);
+		case OffscreenMessageTypes.setToLocalStorage:
+			localStorage.setItem(data.key, data.value);
+			return "SUCCESS";
+		case OffscreenMessageTypes.removeFromLocalStorage:
+			localStorage.removeItem(data.key);
+			return "SUCCESS";
+		case OffscreenMessageTypes.getHostname: {
+			let url = new URL(data.url, offscreenUrl);
+			return url.protocol + "//" + url.host + "/";
+		}
+		case OffscreenMessageTypes.getPathname:
+			return new URL(data.url, offscreenUrl).pathname;
+		default:
+			// eslint-disable-next-line no-console -- match the offscreen handler's failure mode
+			console.warn(`Unexpected message type received: '${type}'.`);
+			return;
+	}
 }

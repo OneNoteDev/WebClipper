@@ -1,0 +1,64 @@
+{
+    "manifest_version": 3,
+    "name": "OneNote Web Clipper",
+    "description": "__MSG_appDesc__",
+    "default_locale": "en",
+    "version": "3.11.2",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "Clipper@OneNote.com"
+        }
+    },
+    "background": {
+        "scripts": [
+            "firefoxExtension.js"
+        ]
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://onenote.officeapps.live.com/*",
+                "https://ppc-onenote.officeapps.live.com/*",
+                "https://onenote.officeapps-df.live.com/*",
+                "https://onenote.officeapps.live-int.com/*"
+            ],
+            "js": [
+                "appendIsInstalledMarker.js"
+            ],
+            "run_at": "document_start",
+            "all_frames": true
+        }
+    ],
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "contextMenus",
+        "tabs",
+        "webRequest",
+        "webNavigation"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    },
+    "icons": {
+        "16": "icons/icon-16.png",
+        "19": "icons/icon-19.png",
+        "32": "icons/icon-32.png",
+        "38": "icons/icon-38.png",
+        "48": "icons/icon-48.png",
+        "64": "icons/icon-64.png",
+        "96": "icons/icon-96.png",
+        "128": "icons/icon-128.png",
+        "256": "icons/icon-256.png"
+    },
+    "action": {
+        "default_title": "OneNote Web Clipper",
+        "default_icon": {
+            "19": "icons/icon-19.png",
+            "38": "icons/icon-38.png"
+        }
+    }
+}
