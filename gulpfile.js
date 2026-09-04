@@ -26,6 +26,7 @@ var PATHS = {
     TARGET: {
         ROOT: "target/",
         CHROME: "target/chrome/",
+        FIREFOX: "target/firefox/",
         EDGE_ROOT: "target/edge/OneNoteWebClipper/edgeextension/",
         EDGE_EXTENSION: "target/edge/OneNoteWebClipper/edgeextension/manifest/extension/"
     },
@@ -207,6 +208,10 @@ gulp.task("bundleChrome", function () {
     return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/chrome/", "chromeExtension.js");
 });
 
+gulp.task("bundleFirefox", function () {
+    return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/firefox/", "firefoxExtension.js");
+});
+
 gulp.task("bundleEdge", function () {
     return bundleEntry(PATHS.BUILDROOT + "scripts/extensions/edge/", "edgeExtension.js");
 });
@@ -219,6 +224,7 @@ gulp.task("bundle", gulp.series(
     "bundleRenderer",
     "bundleLogManager",
     "bundleChrome",
+    "bundleFirefox",
     "bundleEdge"
 ));
 
@@ -235,6 +241,7 @@ function lowerCasePathName() {
 
 var targetDirHasExportedCommonJs = {};
 targetDirHasExportedCommonJs[PATHS.TARGET.CHROME] = false;
+targetDirHasExportedCommonJs[PATHS.TARGET.FIREFOX] = false;
 targetDirHasExportedCommonJs[PATHS.TARGET.EDGE_EXTENSION] = false;
 function exportCommonJS(targetDir) {
     if (targetDirHasExportedCommonJs[targetDir]) {
@@ -342,6 +349,31 @@ function exportChromeLibFiles() {
     return exportCommonLibFiles(PATHS.TARGET.CHROME);
 }
 
+function exportFirefoxJS() {
+    var targetDir = PATHS.TARGET.FIREFOX;
+    var bundles = ["appendIsInstalledMarker.js", "regionOverlay.js", "contentCaptureInject.js", "renderer.js"];
+    var bundleStreams = bundles.map(function(name) {
+        return gulp.src([PATHS.BUNDLEROOT + name]).pipe(concat(name)).pipe(gulp.dest(targetDir));
+    });
+    var backgroundTask = gulp.src([
+        targetDir + "logManager.js",
+        PATHS.BUNDLEROOT + "firefoxExtension.js"
+    ]).pipe(concat("firefoxExtension.js")).pipe(gulp.dest(targetDir));
+
+    return exportCommonJS(targetDir).then(function() {
+        return streamsToPromise.apply(null, bundleStreams.concat([backgroundTask]));
+    });
+}
+
+function exportFirefoxSrcFiles() {
+    var targetDir = PATHS.TARGET.FIREFOX;
+    return Promise.all([
+        exportCommonSrcFiles(targetDir),
+        exportCommonWebExtensionFiles(targetDir),
+        streamToPromise(gulp.src([PATHS.SRC.ROOT + "scripts/extensions/firefox/manifest.json"]).pipe(gulp.dest(targetDir)))
+    ]);
+}
+
 function exportEdgeJS() {
     var targetDir = PATHS.TARGET.EDGE_EXTENSION;
 
@@ -443,6 +475,12 @@ gulp.task("exportChromeSrcFiles", function() { return exportChromeSrcFiles(); })
 gulp.task("exportChromeLibFiles", function() { return exportChromeLibFiles(); });
 gulp.task("exportChrome", gulp.series("exportChromeJS", "exportChromeCSS", "exportChromeSrcFiles", "exportChromeLibFiles"));
 
+gulp.task("exportFirefoxJS", function() { return exportFirefoxJS(); });
+gulp.task("exportFirefoxCSS", function() { return exportCommonCSS(PATHS.TARGET.FIREFOX); });
+gulp.task("exportFirefoxSrcFiles", function() { return exportFirefoxSrcFiles(); });
+gulp.task("exportFirefoxLibFiles", function() { return exportCommonLibFiles(PATHS.TARGET.FIREFOX); });
+gulp.task("exportFirefox", gulp.series("exportFirefoxJS", "exportFirefoxCSS", "exportFirefoxSrcFiles", "exportFirefoxLibFiles"));
+
 gulp.task("exportEdgeJS", function() { return exportEdgeJS(); });
 gulp.task("exportEdgeCSS", function() { return exportEdgeCSS(); });
 gulp.task("exportEdgeSrcFiles", function() { return exportEdgeSrcFiles(); });
@@ -450,11 +488,11 @@ gulp.task("exportEdgePackageFiles", function() { return exportEdgePackageFiles()
 gulp.task("exportEdgeLibFiles", function() { return exportEdgeLibFiles(); });
 gulp.task("exportEdge", gulp.series("exportEdgeJS", "exportEdgeCSS", "exportEdgeSrcFiles", "exportEdgePackageFiles", "exportEdgeLibFiles"));
 
-gulp.task("exportJS", gulp.series("exportChromeJS", "exportEdgeJS"));
-gulp.task("exportCSS", gulp.series("exportChromeCSS", "exportEdgeCSS"));
-gulp.task("exportSrcFiles", gulp.series("exportChromeSrcFiles", "exportEdgeSrcFiles"));
+gulp.task("exportJS", gulp.series("exportChromeJS", "exportFirefoxJS", "exportEdgeJS"));
+gulp.task("exportCSS", gulp.series("exportChromeCSS", "exportFirefoxCSS", "exportEdgeCSS"));
+gulp.task("exportSrcFiles", gulp.series("exportChromeSrcFiles", "exportFirefoxSrcFiles", "exportEdgeSrcFiles"));
 
-gulp.task("export", gulp.series("exportAllCommonJS", "exportChrome", "exportEdge"));
+gulp.task("export", gulp.series("exportAllCommonJS", "exportChrome", "exportFirefox", "exportEdge"));
 
 ////////////////////////////////////////
 // PACKAGING TASKS
@@ -465,7 +503,13 @@ gulp.task("packageChrome", function() {
         .pipe(gulp.dest(PATHS.TARGET.CHROME));
 });
 
-gulp.task("package", gulp.series("packageChrome"));
+gulp.task("packageFirefox", function() {
+    return gulp.src([PATHS.TARGET.FIREFOX + "/**/*", "!" + PATHS.TARGET.FIREFOX + "/OneNoteWebClipper.xpi"], { encoding: false })
+        .pipe(zip("OneNoteWebClipper.xpi"))
+        .pipe(gulp.dest(PATHS.TARGET.FIREFOX));
+});
+
+gulp.task("package", gulp.series("packageChrome", "packageFirefox"));
 
 ////////////////////////////////////////
 // PRODUCTION-ONLY TASKS
@@ -513,6 +557,7 @@ gulp.task("watchSrcFiles", function() {
         PATHS.SRC.ROOT + "images/*",
         PATHS.SRC.ROOT + "renderer.html",
         PATHS.SRC.ROOT + "scripts/extensions/chrome/manifest.json",
+        PATHS.SRC.ROOT + "scripts/extensions/firefox/manifest.json",
         PATHS.SRC.ROOT + "scripts/extensions/offscreen.html",
         PATHS.SRC.ROOT + "scripts/extensions/edge/edgeExtension.html",
         PATHS.SRC.ROOT + "scripts/extensions/edge/manifest.json"
