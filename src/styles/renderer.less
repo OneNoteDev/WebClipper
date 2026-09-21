@@ -490,7 +490,7 @@ iframe#preview-frame {
 	margin-top: 4px;
 	cursor: pointer;
 	user-select: none;
-	img { width: 14px; height: 14px; flex-shrink: 0; }
+	img { width: 14px; height: 14px; flex-shrink: 0; filter: var(--modeIconImageFilter); }
 	&:first-child { margin-top: 0; }
 	&:hover { background: @colorSubtleBackgroundHover; }
 	// Collapse/expand arrow icon (reuses legacy onenotepicker arrows).
@@ -499,7 +499,6 @@ iframe#preview-frame {
 	.collapse-arrow {
 		flex-shrink: 0;
 		width: 10px; height: 10px;
-		filter: var(--modeIconImageFilter);
 		opacity: 0.6;
 		transition: transform 0.15s;
 	}
@@ -511,7 +510,7 @@ iframe#preview-frame {
 	cursor: pointer;
 	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 	display: flex; align-items: center; gap: 6px;
-	img { width: 14px; height: 14px; flex-shrink: 0; }
+	img { width: 14px; height: 14px; flex-shrink: 0; filter: var(--modeIconImageFilter); }
 	span { overflow: hidden; text-overflow: ellipsis; }
 	&:hover { background: @colorSubtleBackgroundHover; }
 	&.section-item-selected {
