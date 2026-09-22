@@ -1071,6 +1071,21 @@ iframe#preview-frame {
 		background: Canvas !important;
 		border-bottom: 1px solid ButtonText !important;
 
+		// Recolor the highlighter silhouette; a zero-offset shadow cannot tint an opaque image.
+		#highlight-btn {
+			img { display: none; }
+			&::before {
+				content: "";
+				width: 18px; height: 18px;
+				forced-color-adjust: none;
+				background: currentColor;
+				mask: url("images/editoroptions/highlight_tool_off.svg") no-repeat center/contain;
+			}
+			&.active::before {
+				mask-image: url("images/editoroptions/highlight_tool_on.svg");
+			}
+		}
+
 		button {
 			border: 1px solid ButtonText !important;
 			color: ButtonText !important;
