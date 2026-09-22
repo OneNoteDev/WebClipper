@@ -826,20 +826,38 @@ let signinError = document.getElementById("signin-error") as HTMLDivElement;
 let signinProgress = document.getElementById("signin-progress") as HTMLDivElement;
 let signinMsaBtn = document.getElementById("signin-msa-btn") as HTMLButtonElement;
 let signinOrgIdBtn = document.getElementById("signin-orgid-btn") as HTMLButtonElement;
+let signinBackground = document.querySelectorAll<HTMLElement>("#preview-area, #sidebar, #aria-status");
 signinMsaBtn.textContent = loc("WebClipper.Action.SigninMsa", "Sign in with a Microsoft account");
 signinOrgIdBtn.textContent = loc("WebClipper.Action.SigninOrgId", "Sign in with a work or school account");
 
+document.addEventListener("keydown", (e) => {
+	if (e.key !== "Tab" || signinOverlay.style.display === "none") { return; }
+	let buttons = [signinMsaBtn, signinOrgIdBtn].filter((button) => !button.disabled);
+	e.preventDefault();
+	if (!buttons.length) {
+		signinProgress.focus();
+		return;
+	}
+	let index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+	let nextIndex = index < 0 ? (e.shiftKey ? buttons.length - 1 : 0)
+		: (index + (e.shiftKey ? -1 : 1) + buttons.length) % buttons.length;
+	buttons[nextIndex].focus();
+});
+
 function showSignInPanel() {
 	signinOverlay.style.display = "flex";
+	// Inert also removes the background previews and live region from the accessibility tree.
+	signinBackground.forEach((element) => { element.inert = true; });
 	// Focus first sign-in button for keyboard/screen reader users
-	setTimeout(function() { signinMsaBtn.focus(); }, 100);
+	signinMsaBtn.focus();
 }
 
 function hideSignInPanel() {
 	signinOverlay.style.display = "none";
+	signinBackground.forEach((element) => { element.inert = false; });
 	// Move focus to first mode button
 	let firstModeBtn = document.querySelector(".mode-btn") as HTMLElement;
-	if (firstModeBtn) { setTimeout(function() { firstModeBtn.focus(); }, 100); }
+	if (firstModeBtn) { firstModeBtn.focus(); }
 }
 
 function showSignInProgress() {
@@ -847,6 +865,7 @@ function showSignInProgress() {
 	signinOrgIdBtn.disabled = true;
 	signinProgress.style.display = "block";
 	signinError.style.display = "none";
+	signinProgress.focus();
 }
 
 function showSignInError(msg: string) {
@@ -855,6 +874,7 @@ function showSignInError(msg: string) {
 	signinProgress.style.display = "none";
 	signinError.textContent = msg;
 	signinError.style.display = "block";
+	signinMsaBtn.focus();
 }
 
 // Log renderer invocation
@@ -3276,6 +3296,7 @@ port.onMessage.addListener((message: any) => {
 				signinOrgIdBtn.disabled = false;
 				signinProgress.style.display = "none";
 				signinError.style.display = "none";
+				signinMsaBtn.focus();
 			} else {
 				showSignInError(message.error || loc("WebClipper.Error.SignInUnsuccessful", "Sign-in failed. Please try again."));
 			}
@@ -3335,7 +3356,7 @@ port.onMessage.addListener((message: any) => {
 		iframe.style.display = "none";
 		previewFrameWrap.style.display = "none";
 		capturePanel.style.display = "none";
-		// Buttons stay interactive; the sign-in overlay covers them while signed out.
+		// The sign-in overlay makes the background inert while signed out.
 		document.querySelectorAll(".mode-btn").forEach((b) => {
 			b.classList.remove("selected");
 		});
