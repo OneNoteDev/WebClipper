@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.11.3 (September 2026)
+* Improvement : Fixed sign-in page focus order, highlighter mode toggling, and expand/collapse button contrast.
+
 ## 3.11.2 (July 2026)
 * Improvement : Added system-adaptive dark mode; a11y improvements; enabled Sign out during page capture; and legacy code cleanup.
 
