@@ -13,7 +13,8 @@
         "build:prod": "gulp full --production",
         "full": "gulp full",
         "clean": "gulp clean",
-        "lint": "gulp lint"
+        "lint": "gulp lint",
+        "test": "node --test --test-reporter=tap tests/*.test.cjs"
     },
     "repository": {
         "type": "git",
@@ -22,6 +23,7 @@
     "devDependencies": {
         "@mozilla/readability": "^0.6.0",
         "@types/chrome": "0.1.42",
+        "@types/node": "22.15.30",
         "@types/pdf": "0.0.31",
         "cssnano": "8.0.1",
         "del": "8.0.1",
@@ -36,6 +38,7 @@
         "gulp-rename": "2.1.0",
         "gulp-uglify": "^3.0.2",
         "gulp-zip": "6.1.0",
+        "jsdom": "26.1.0",
         "pdfjs-dist": "5.7.284",
         "postcss": "8.5.15",
         "typescript": "5.7.2",
