@@ -781,10 +781,6 @@ try {
 			userEmailSpan.title = email || "";
 		}
 	}
-	// Hide feedback for MSA users (matches old sidebar behavior)
-	if (userAuthType === "Msa") {
-		feedbackLink.style.display = "none";
-	}
 } catch (e) {
 	userInfoDiv.style.display = "none";
 }
@@ -3249,7 +3245,7 @@ port.onMessage.addListener((message: any) => {
 				userEmailSpan.title = message.user.email || "";
 				userAuthType = message.user.authType || "";
 				userInfoDiv.style.display = "";
-				feedbackLink.style.display = (userAuthType === "Msa") ? "none" : "";
+				feedbackLink.style.display = "";
 				// Context properties — match legacy clipper.tsx
 				setTelemetryContext(Context.Custom.AuthType, userAuthType);
 				if (message.user.cid) { setTelemetryContext(Context.Custom.UserInfoId, message.user.cid); }

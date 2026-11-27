@@ -13,7 +13,8 @@
         "build:prod": "gulp full --production",
         "full": "gulp full",
         "clean": "gulp clean",
-        "lint": "gulp lint"
+        "lint": "gulp lint",
+        "test": "node --test tests/*.test.cjs"
     },
     "repository": {
         "type": "git",
@@ -22,6 +23,7 @@
     "devDependencies": {
         "@mozilla/readability": "^0.6.0",
         "@types/chrome": "0.1.42",
+        "@types/node": "25.9.1",
         "@types/pdf": "0.0.31",
         "cssnano": "8.0.1",
         "del": "8.0.1",
